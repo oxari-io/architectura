@@ -5,9 +5,9 @@ import pandas as pd
 from sklearn.utils.estimator_checks import check_estimator
 import abc
 from sklearn.impute import SimpleImputer, _base
+from base import common 
 
-
-class BaseImputer(_base._BaseImputer):
+class OxariImputer(_base._BaseImputer, common.OxariMixin, abc.ABC):
     """
     Handles imputation of missing values for values that are zero. Fit and Transform have to be implemented accordingly.
     """
@@ -22,7 +22,7 @@ class BaseImputer(_base._BaseImputer):
         
     
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "BaseImputer":
+    def fit(self, X, y, **kwargs) -> "OxariImputer":
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
         # Set self.n_features_in_ = X.shape[1]

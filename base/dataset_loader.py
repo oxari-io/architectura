@@ -7,7 +7,7 @@ import abc
 from base.common import OxariMixin
 
 
-class BaseLoader(OxariMixin):
+class OxariDataLoader(OxariMixin):
     """
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
     Should be capable of reading the data from csv-file or from database
@@ -19,29 +19,29 @@ class BaseLoader(OxariMixin):
         self._df_filled: pd.DataFrame = None
         self._df_estimated: pd.DataFrame = None
 
-    def set_path(self, path: Union[str, PathLike] = None) -> "BaseLoader":
+    def set_path(self, path: Union[str, PathLike] = None) -> "OxariDataLoader":
         self.path = Path(path)
         return self
 
-    def read_data(self) -> "BaseLoader":
+    def read_data(self) -> "OxariDataLoader":
         if not self.path.exists():
             raise Exception(f"Path '{self.path}' does not exist")
         self._df_original = pd.DataFrame(self.path)
         return self
 
-    def set_original_data(self, df: pd.DataFrame) -> "BaseLoader":
+    def set_original_data(self, df: pd.DataFrame) -> "OxariDataLoader":
         self._df_original = df
         return self
 
-    def set_preprocessed_data(self, df: pd.DataFrame) -> "BaseLoader":
+    def set_preprocessed_data(self, df: pd.DataFrame) -> "OxariDataLoader":
         self._df_preprocessed = df
         return self
 
-    def set_filled_data(self, df: pd.DataFrame) -> "BaseLoader":
+    def set_filled_data(self, df: pd.DataFrame) -> "OxariDataLoader":
         self._df_filled = df
         return self
 
-    def set_estimated(self, df: pd.DataFrame) -> "BaseLoader":
+    def set_estimated(self, df: pd.DataFrame) -> "OxariDataLoader":
         self._df_estimated = df
         return self
 
@@ -62,7 +62,7 @@ class BaseLoader(OxariMixin):
         return self._df_estimated.copy()
 
     @abc.abstractmethod
-    def train_test_val_split(self, split_size_test: float, split_size_val: float) -> "BaseLoader":
+    def train_test_val_split(self, split_size_test: float, split_size_val: float) -> "OxariDataLoader":
         """
         Creating targets(y) and features(X) from pandas.DataFrame
         Split the data with sklearn train_test_split() and returns 3 subsets: training, testing, and validation;

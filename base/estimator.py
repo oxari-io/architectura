@@ -5,8 +5,10 @@ import pandas as pd
 from sklearn.utils.estimator_checks import check_estimator
 import abc
 
+from base import common 
 
-class BaseScopeEstimator(abc.ABC, sklearn.base.BaseEstimator, sklearn.base.RegressorMixin):
+
+class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixin, common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
@@ -15,7 +17,7 @@ class BaseScopeEstimator(abc.ABC, sklearn.base.BaseEstimator, sklearn.base.Regre
         pass
 
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "BaseScopeEstimator":
+    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
         # Set self.n_features_in_ = X.shape[1]

@@ -6,7 +6,7 @@ from sklearn.utils.estimator_checks import check_estimator
 import abc
 from base import common 
 
-class OxariPreprocessor(sklearn.base.BaseEstimator, sklearn.base.TransformerMixin, common.OxariMixin, abc.ABC):
+class OxariPostprocessor(sklearn.base.BaseEstimator, sklearn.base.TransformerMixin, common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
@@ -15,7 +15,7 @@ class OxariPreprocessor(sklearn.base.BaseEstimator, sklearn.base.TransformerMixi
         pass
 
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "OxariPreprocessor":
+    def fit(self, X, y, **kwargs) -> "OxariPostprocessor":
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
         # Set self.n_features_in_ = X.shape[1]

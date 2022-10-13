@@ -18,14 +18,14 @@ class OxariPipeline(abc.ABC):
         self,
         dataset: OxariDataLoader = None,
         preprocessor: OxariPreprocessor = None,
-        missing_value_estimator: OxariImputer = None,
+        imputer: OxariImputer = None,
         scope_estimator: OxariScopeEstimator = None,
         postprocessor: OxariPostprocessor = None,
         database_deployer=None,
     ):
         self.dataset = dataset
         self.preprocessor = preprocessor
-        self.missing_value_estimator = missing_value_estimator
+        self.imputer = imputer
         self.scope_estimator = scope_estimator
         self.postprocessor = postprocessor
         # self.resources_postprocessor = database_deployer

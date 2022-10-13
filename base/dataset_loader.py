@@ -33,8 +33,8 @@ class PartialLoader(OxariMixin, abc.ABC):
         super().__init__()
         self.verbose = verbose
         self.data: pd.DataFrame = None
-        self.columns:List[str] = None
-        
+        self.columns: List[str] = None
+
     @abc.abstractmethod
     def run(self) -> "PartialLoader":
         """
@@ -94,14 +94,14 @@ class OxariDataLoader(OxariMixin, abc.ABC):
     def __init__(
         self,
         object_filename,
-        acope_loader: ScopeLoader,
-        financial_loader: FinancialLoader,
-        categorical_loader: CategoricalLoader,
+        scope_loader: ScopeLoader = None,
+        financial_loader: FinancialLoader = None,
+        categorical_loader: CategoricalLoader = None,
         other_loaders: Dict[str, PartialLoader] = None,
         verbose=False,
         **kwargs,
     ):
-        self.scope_loader = acope_loader
+        self.scope_loader = scope_loader
         self.financial_loader = financial_loader
         self.categorical_loader = categorical_loader
         self.other_loaders = other_loaders
@@ -120,7 +120,7 @@ class OxariDataLoader(OxariMixin, abc.ABC):
         # TODO: Think whether this should be called via @property
         self._df_original = self.scope_loader.data.merge(self.financial_loader.data, on="isin", how="left").merge(self.categorical_loader.data, on="isin", how="left")
         return self
-    
+
     def set_original_data(self, df: pd.DataFrame) -> "OxariDataLoader":
         self._df_original = df
         return self
@@ -166,5 +166,3 @@ class OxariDataLoader(OxariMixin, abc.ABC):
         numpy array: arrays for X (train, test, val) and 3 for y (train, test, val)
         """
         return self
-
-

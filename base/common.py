@@ -42,6 +42,9 @@ class OxariEvaluator(abc.ABC):
     
 
 class OxariMixin(abc.ABC): 
+    def __init__(self, object_filename, **kwargs) -> None:
+        self.object_filename = object_filename
+
 
     @abc.abstractmethod
     def run(self, **kwargs) -> "OxariMixin":
@@ -80,7 +83,7 @@ class OxariMixin(abc.ABC):
             return pickle.load(f)
 
 class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator,  abc.ABC):
-    """Just for intellisense to work"""
+    """Just for intellisense convenience. Not really necessary but allows autocompletion"""
     
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariTransformer":

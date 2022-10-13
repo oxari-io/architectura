@@ -12,7 +12,7 @@ class OxariImputer(_base._BaseImputer, common.OxariMixin, abc.ABC):
     Handles imputation of missing values for values that are zero. Fit and Transform have to be implemented accordingly.
     """
     
-    def __init__(self, missing_values=np.nan, verbose=0, copy=True, add_indicator=False, **kwargs):
+    def __init__(self, missing_values=np.nan, verbose:int=0, copy:bool=False, add_indicator:bool=False, **kwargs):
         super().__init__(
             missing_values=missing_values,
             add_indicator=add_indicator

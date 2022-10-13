@@ -1,34 +1,126 @@
 from os import PathLike
 from pathlib import Path
-from typing import Union
+from typing import Dict, List, Union
 import pandas as pd
 import numpy as np
 import abc
 from base.common import OxariMixin
+from base.mappings import CatMapping, NumMapping
 
 
-class OxariDataLoader(OxariMixin):
+class DatasourceMixin(OxariMixin, abc.ABC):
+    @abc.abstractmethod
+    def _check_if_data_exists(self) -> bool:
+        """
+        Implementation should check if self.path is set and then check the specifics for it.
+        """
+        return None
+
+
+class LocalDatasourceMixin(DatasourceMixin):
+    def __init__(self, path: str = None, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.path = Path(path)
+        self._check_if_data_exists()
+
+    def _check_if_data_exists(self):
+        if not self.path.exists():
+            raise Exception(f"Path(s) does not exist! Got {self.path}")
+
+
+class PartialLoader(OxariMixin, abc.ABC):
+    def __init__(self, verbose=False, **kwargs) -> None:
+        super().__init__()
+        self.verbose = verbose
+        self.data: pd.DataFrame = None
+        self.columns:List[str] = None
+        
+    @abc.abstractmethod
+    def run(self) -> "PartialLoader":
+        """
+        Reads the files and combines them to one single file.
+        """
+        return self
+
+
+class ScopeLoader(PartialLoader, abc.ABC):
+    def __init__(self, threshold=5, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.threshold = threshold
+        self.columns = NumMapping.get_targets()
+
+    def _clean_up_targets(self, **kwargs):
+        # before logging some scopes have very small values so we discard them
+        # TODO: find a more efficient way to do the following
+
+        data = kwargs.get("data", self.data)
+        num_inititial = data.shape[0]
+
+        threshold = kwargs.get("threshold", self.threshold)
+
+        # dropping datapoints that have no scopes
+        data = data.dropna(how="all", subset=self.scopes_columns)
+        # dropping data entries where unlogged scopes are lower than threshold
+        ss = NumMapping.get_targets()
+        data[ss].loc[data[ss] < threshold] = np.nan
+        # for s in NumMapping.get_targets():
+        #     data.loc[data[s] < threshold, [s]] = np.nan
+
+        if self.verbose:
+            num_remaining = data.shape[0]
+            print(
+                f"*** From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes ***"
+            )
+        return data
+
+
+class FinancialLoader(PartialLoader, abc.ABC):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.columns = NumMapping.get_features()
+
+
+class CategoricalLoader(PartialLoader, abc.ABC):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.columns = CatMapping.get_features()
+
+
+class OxariDataLoader(OxariMixin, abc.ABC):
     """
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
     Should be capable of reading the data from csv-file or from database
     """
-    def __init__(self, ) -> None:
-        self.path: Path = None
+    def __init__(
+        self,
+        object_filename,
+        acope_loader: ScopeLoader,
+        financial_loader: FinancialLoader,
+        categorical_loader: CategoricalLoader,
+        other_loaders: Dict[str, PartialLoader] = None,
+        verbose=False,
+        **kwargs,
+    ):
+        self.scope_loader = acope_loader
+        self.financial_loader = financial_loader
+        self.categorical_loader = categorical_loader
+        self.other_loaders = other_loaders
+        self.object_filename = object_filename
+        self.verbose = verbose
         self._df_original: pd.DataFrame = None
         self._df_preprocessed: pd.DataFrame = None
         self._df_filled: pd.DataFrame = None
         self._df_estimated: pd.DataFrame = None
+        self.threshold = kwargs.pop("threshold", 5)
 
-    def set_path(self, path: Union[str, PathLike] = None) -> "OxariDataLoader":
-        self.path = Path(path)
+    def run(self, **kwargs) -> "OxariDataLoader":
+        self.scope_loader = self.scope_loader.run()
+        self.financial_loader = self.financial_loader.run()
+        self.categorical_loader = self.categorical_loader.run()
+        # TODO: Think whether this should be called via @property
+        self._df_original = self.scope_loader.data.merge(self.financial_loader.data, on="isin", how="left").merge(self.categorical_loader.data, on="isin", how="left")
         return self
-
-    def read_data(self) -> "OxariDataLoader":
-        if not self.path.exists():
-            raise Exception(f"Path '{self.path}' does not exist")
-        self._df_original = pd.DataFrame(self.path)
-        return self
-
+    
     def set_original_data(self, df: pd.DataFrame) -> "OxariDataLoader":
         self._df_original = df
         return self
@@ -74,3 +166,5 @@ class OxariDataLoader(OxariMixin):
         numpy array: arrays for X (train, test, val) and 3 for y (train, test, val)
         """
         return self
+
+

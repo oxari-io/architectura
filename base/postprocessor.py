@@ -6,7 +6,7 @@ from sklearn.utils.estimator_checks import check_estimator
 import abc
 from base import common 
 
-class OxariPostprocessor(sklearn.base.BaseEstimator, sklearn.base.TransformerMixin, common.OxariMixin, abc.ABC):
+class OxariPostprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments

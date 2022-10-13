@@ -5,7 +5,11 @@
 # import pandas as pd
 # from sklearn.utils.estimator_checks import check_estimator
 import abc
+from ctypes import Union
 from pickle import pickle
+import numpy as np
+import pandas as pd
+import sklearn
 import logging
 import csv
 
@@ -40,16 +44,16 @@ class OxariEvaluator(abc.ABC):
 class OxariMixin(abc.ABC): 
 
     @abc.abstractmethod
-    def run(self, **kwargs):
-        pass
+    def run(self, **kwargs) -> "OxariMixin":
+        return self
   
     
-    def set_logger(self, logger: OxariLogger)-> "OxariLogger":
+    def set_logger(self, logger: OxariLogger)-> "OxariMixin":
         self._logger = logger
         return self
     
 
-    def set_evaluator(self, evaluator: OxariEvaluator)-> "OxariLogger":
+    def set_evaluator(self, evaluator: OxariEvaluator)-> "OxariMixin":
         self._evaluator = evaluator
         return self
     
@@ -74,3 +78,21 @@ class OxariMixin(abc.ABC):
     def load_state(cls, filename):
         with open(filename, 'rb') as f:
             return pickle.load(f)
+
+class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator,  abc.ABC):
+    """Just for intellisense to work"""
+    
+    @abc.abstractmethod
+    def fit(self, X, y, **kwargs) -> "OxariTransformer":
+        return self
+
+    @abc.abstractmethod
+    def transform(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        pass
+    
+class LogarithmScaler(OxariTransformer, OxariMixin):
+    def fit(self, X, y, **kwargs) -> "LogarithmScaler":
+        return self
+
+    def transform(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        return np.log1p(X)

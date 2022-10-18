@@ -8,7 +8,7 @@ from sklearn.impute import SimpleImputer
 from base.mappings import NumMapping
 from base.metrics import mape
 
-class BucketImputer(OxariImputer):
+class ScopeBucketImputer(OxariImputer):
     def __init__(self, buckets_number = 3, **kwargs):
         # self._imputer = SimpleImputer(missing_values, verbose, copy, add_indicator, **kwargs)
         super().__init__(**kwargs)
@@ -38,12 +38,11 @@ class BucketImputer(OxariImputer):
             X.loc[filter_] = X.loc[filter_].fillna(X.loc[filter_].mean())
 
         # filling remaining gaps with overall mean
-        # NOTE: this only happens on numerical feature. Categorical variable are not imputed
         X.loc[ : , NumMapping.get_features()] = X[NumMapping.get_features()].fillna(X[NumMapping.get_features()].mean())        
         return self
     
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        # using sector&year specific median since using global mean would be dumb
+        # using sector specific median since using global mean would be dumb
         for col in self.columns_to_fit:
             X[col] = X.groupby("sector_name")[col].apply(lambda x: x.fillna(x.median()))
             # some values dont get filled after the line above, maybe bc of "sector_name"?
@@ -55,6 +54,7 @@ class BucketImputer(OxariImputer):
 
     @staticmethod
     def _split_in_buckets_per_scope(data, scope, buckets_number = 3):
+
         """
         scope has to be string-like --> "scope_i" where i is in [1,2]
         """
@@ -66,8 +66,6 @@ class BucketImputer(OxariImputer):
         
         full_intervall = max_ - min_ # 980
         offset = full_intervall /  buckets_number # 980/3 = 326
-        
-        
         
         multiplier = np.arange(0, buckets_number-1)
         split_points = (multiplier * offset) + min_ # (0+20, 326+20, 652+20) 

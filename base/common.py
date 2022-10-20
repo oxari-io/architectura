@@ -1,4 +1,3 @@
-
 # from typing import Union
 # import sklearn
 # import numpy as np
@@ -14,6 +13,7 @@ import logging
 import csv
 from sklearn.impute import SimpleImputer, _base
 
+
 class OxariLogger:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
@@ -28,52 +28,73 @@ class OxariLogger:
     """
     def __init__():
         # https://docs.python.org/3/howto/logging-cookbook.html
-        pass  
+        pass
 
 
 class OxariEvaluator(abc.ABC):
+    
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+    
     @abc.abstractmethod
-    def evaluate(self, y_true, y_pred):
+    def evaluate(self, y_true, y_pred, **kwargs):
         """
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
         pass
-    
-    
-    
 
-class OxariMixin(abc.ABC): 
+class OxariOptimizer(abc.ABC):
+    
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+    
+    @abc.abstractmethod
+    def optimize(self, **kwargs):
+        """
+        Evaluates multiple metrics and returns a dict with all computed scores.
+        """
+        pass
+
+    # def compute_error_metrics(self, y_true, y_pred):
+    #     """
+    #     Testing the performance of the ML model
+    #     Write the results in model/metrics
+    #     Parameters:
+    #     y_true (np.array): true value to compare predicted value
+    #     y_pred (np.array): predicted value output by the model
+    #     """
+    #     raise NotImplementedError
+
+
+class OxariMixin(abc.ABC):
     def __init__(self, object_filename, **kwargs) -> None:
         self.object_filename = object_filename
-
+        self.start_time = None
+        self.end_time = None
+    
 
     @abc.abstractmethod
     def run(self, **kwargs) -> "OxariMixin":
+        """
+        Every component needs to call initialize and finish inside the run function. 
+        """
         return self
-  
-    
-    def set_logger(self, logger: OxariLogger)-> "OxariMixin":
+
+
+    def set_logger(self, logger: OxariLogger) -> "OxariMixin":
         self._logger = logger
         return self
-    
 
-    def set_evaluator(self, evaluator: OxariEvaluator)-> "OxariMixin":
+    def set_evaluator(self, evaluator: OxariEvaluator) -> "OxariMixin":
         self._evaluator = evaluator
         return self
-    
-    
-    @abc.abstractmethod
-    def compute_error_metrics(self, y_true, y_pred):
-        """
-        Testing the performance of the ML model
-        Write the results in model/metrics
-        Parameters:
-        y_true (np.array): true value to compare predicted value
-        y_pred (np.array): predicted value output by the model
-        """
-        raise NotImplementedError
-    
-    
+
+    def set_optimizer(self, optimizer: OxariOptimizer) -> "OxariMixin":
+        self._optimizer = optimizer
+        return self
+
+
+
     def save_state(self):
         with open(self.object_filename, "wb") as f:
             pickle.dump(self, f)
@@ -83,9 +104,9 @@ class OxariMixin(abc.ABC):
         with open(filename, 'rb') as f:
             return pickle.load(f)
 
-class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator,  abc.ABC):
+
+class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
-    
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariTransformer":
         return self
@@ -93,21 +114,28 @@ class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator
     @abc.abstractmethod
     def transform(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
-    
+
+
+class OxariClassifier(sklearn.base.ClassifierMixin, sklearn.base.BaseEstimator, abc.ABC):
+    """Just for intellisense convenience. Not really necessary but allows autocompletion"""
+    @abc.abstractmethod
+    def fit(self, X, y, **kwargs) -> "OxariClassifier":
+        return self
+
+    @abc.abstractmethod
+    def transform(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        pass
+
+
 class OxariImputer(_base._BaseImputer, OxariMixin, abc.ABC):
     """
     Handles imputation of missing values for values that are zero. Fit and Transform have to be implemented accordingly.
     """
-    
-    def __init__(self, missing_values=np.nan, verbose:int=0, copy:bool=False, add_indicator:bool=False, **kwargs):
-        super().__init__(
-            missing_values=missing_values,
-            add_indicator=add_indicator
-        )
+    def __init__(self, missing_values=np.nan, verbose: int = 0, copy: bool = False, add_indicator: bool = False, **kwargs):
+        super().__init__(missing_values=missing_values, add_indicator=add_indicator)
         self.verbose = verbose
         self.copy = copy
-        
-    
+
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariImputer":
         # Takes X and y and trains regressor.
@@ -118,7 +146,7 @@ class OxariImputer(_base._BaseImputer, OxariMixin, abc.ABC):
         # Attributes that have been estimated from the data must always have a name ending with trailing underscore. (e.g.: self.coef_)
         # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
         return self
-    
+
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass

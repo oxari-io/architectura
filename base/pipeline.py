@@ -6,10 +6,11 @@ from sklearn.utils.estimator_checks import check_estimator
 import abc
 
 from base.dataset_loader import OxariDataLoader
-from base import common 
+from base import common
+
 
 class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
-    def __init__(self, imputer:common.OxariImputer=None, **kwargs):
+    def __init__(self, imputer: common.OxariImputer = None, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
@@ -26,7 +27,6 @@ class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         # Attributes that have been estimated from the data must always have a name ending with trailing underscore. (e.g.: self.coef_)
         # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
         return self
-
 
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -97,10 +97,10 @@ class OxariPostprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
         return self
 
-
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
+
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
 class OxariPipeline(abc.ABC):
@@ -118,6 +118,8 @@ class OxariPipeline(abc.ABC):
         self.imputer = imputer
         self.scope_estimator = scope_estimator
         self.postprocessor = postprocessor
+        self._start_time = None
+        self._end_time = None
         # self.resources_postprocessor = database_deployer
 
     @abc.abstractmethod
@@ -125,3 +127,4 @@ class OxariPipeline(abc.ABC):
         # load dataset and hold in class
         #  dataset
         pass
+

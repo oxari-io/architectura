@@ -1,1 +1,1 @@
-from .pipeline import *
+from .pipeline import * #TODO: Import the individual classes properly

@@ -6,7 +6,7 @@ import numpy as np
 import abc
 from base.common import OxariMixin
 from base.mappings import CatMapping, NumMapping
-
+from sklearn.model_selection import train_test_split
 
 class DatasourceMixin(OxariMixin, abc.ABC):
     @abc.abstractmethod
@@ -153,16 +153,54 @@ class OxariDataLoader(OxariMixin, abc.ABC):
     def estimated_data(self):
         return self._df_estimated.copy()
 
-    @abc.abstractmethod
-    def train_test_val_split(self, split_size_test: float, split_size_val: float) -> "OxariDataLoader":
+    # # @abc.abstractmethod
+    # def train_test_val_split(self, split_size_test: float, split_size_val: float) -> "OxariDataLoader":
+    #     """
+    #     Creating targets(y) and features(X) from pandas.DataFrame
+    #     Split the data with sklearn train_test_split() and returns 3 subsets: training, testing, and validation;
+    #     Parameters:
+    #     data (pandas.DataFrame): pre-processed dataset in pandas format from data pipeline
+    #     split_size_test (float): ratio (from 0 to 1) of the splitting training-testing dataset
+    #     split_size_val (float): ratio (from 0 to 1) of the splitting training-val dataset
+    #     Returns:
+    #     numpy array: arrays for X (train, test, val) and 3 for y (train, test, val)
+    #     """
+    #     return self
+    
+    def train_test_val_split(self, split_size_test, split_size_val, list_of_skipped_columns, scope):
         """
-        Creating targets(y) and features(X) from pandas.DataFrame
-        Split the data with sklearn train_test_split() and returns 3 subsets: training, testing, and validation;
+        Splitting the data in trianing, testing, and validation sets
+        with a splitting threshold of split_size_test, and split_size_val respectively
+
         Parameters:
         data (pandas.DataFrame): pre-processed dataset in pandas format from data pipeline
-        split_size_test (float): ratio (from 0 to 1) of the splitting training-testing dataset
-        split_size_val (float): ratio (from 0 to 1) of the splitting training-val dataset
-        Returns:
-        numpy array: arrays for X (train, test, val) and 3 for y (train, test, val)
+        split_size_test (float): splitting threshold between training set and testing + validation sets
+        split_size_val (float): splitting threshold between testing set and validation set
+
+        Return:
+        X_train (numpy array): training data (features)
+        y_train (numpy array): training data (targets)
+        X_train_full (numpy array): not splitted training data (features)
+        y_train_full (numpy array): not splitted training data (targets)
+        X_test (numpy array): testing data (features)
+        y_test (numpy array): testing data (targets)
+        X_val (numpy array): validation data (features)
+        y_val (numpy array): validation data (targets)
         """
-        return self
+
+        #  REVIEWME: is this needed? probably not
+        # excluding -1 as they are not valid targets
+        # data = data.loc[data[self.scope] != -1]
+
+        # split in features and targets
+        X, y = self._df_filled.drop(columns = list_of_skipped_columns),  self._df_filled[f"group_label_{scope}"]
+
+        # verbose
+        print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
+
+        X_train_full, X_test, y_train_full, y_test = train_test_split(X, y, test_size=split_size_test)
+
+        # splitting further - train and validation sets will be used for optimization; test set will be used for performance assesment
+        X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full, test_size=split_size_val)
+
+        return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val

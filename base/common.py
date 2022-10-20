@@ -93,9 +93,3 @@ class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator
     def transform(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
     
-class LogarithmScaler(OxariTransformer, OxariMixin):
-    def fit(self, X, y, **kwargs) -> "LogarithmScaler":
-        return self
-
-    def transform(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        return np.log1p(X)

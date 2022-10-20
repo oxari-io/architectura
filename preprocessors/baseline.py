@@ -17,7 +17,7 @@ class DummyPreprocessor(preprocessor.OxariPreprocessor):
         super().__init__(**kwargs)
         self.fin_transformer = fin_transformer or prep.StandardScaler()
         self.cat_transformer = cat_transformer or ce.TargetEncoder()
-        self.scope_transformer = scope_transformer 
+        self.scope_transformer = scope_transformer or LogarithmScaler()
         self.scope_columns = NumMapping.get_targets()
         self.financial_columns = NumMapping.get_features()
         self.categorical_columns = CatMapping.get_features()

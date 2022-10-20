@@ -21,7 +21,7 @@ class DefaultPipeline(pipeline.OxariPipeline):
         database_deployer=None,
     ):
         dataset = dataset or CSVDataLoader()
-        preprocessor = preprocessor or BaselinePreprocessor()
+        preprocessor = preprocessor or BaselinePreprocessor(imputer=DummyImputer())
         scope_estimator = DefaultScopeEstimator()
         # postprocessor = DummyPostprocessor()
         super().__init__(dataset, preprocessor, imputer, scope_estimator, postprocessor, database_deployer)

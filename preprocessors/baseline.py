@@ -8,6 +8,7 @@ from base.common import LogarithmScaler, OxariMixin, OxariTransformer
 from base.dataset_loader import OxariDataLoader
 import numpy as np
 import pandas as pd
+from base.mappings import CatMapping, NumMapping
 
 
 class DefaultPreprocessor(preprocessor.OxariPreprocessor):
@@ -16,26 +17,29 @@ class DefaultPreprocessor(preprocessor.OxariPreprocessor):
         self.fin_transformer = fin_transformer
         self.cat_transformer = cat_transformer
         self.scope_transformer = scope_transformer
+        self.scope_columns = NumMapping.get_targets()
+        self.financial_columns = NumMapping.get_features()
+        self.categorical_columns = CatMapping.get_features()
 
     def run(self, **kwargs) -> "DefaultPreprocessor":
         return super().run(**kwargs)
 
-    def fit(self, X: OxariDataLoader, y: Any, **kwargs) -> "DefaultPreprocessor":
-        data = X.original_data
+    def fit(self, X:pd.DataFrame, y, **kwargs) -> "DefaultPreprocessor":
+        data = X
         # log scaling the scopes
-        self.scope_transformer = self.scope_transformer.fit(data[X.scope_loader.columns])
+        self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical
-        self.fin_transformer = self.fin_transformer.fit(data[X.financial_loader.columns])
+        self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
         # encode categorical
-        self.cat_transformer = self.cat_transformer.fit(X=data[X.categorical_loader.columns], y=(data[X.scope_loader.columns].sum(axis=1) / 3))
+        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=(data[self.scope_columns][0]))
         return data
 
-    def transform(self, X: OxariDataLoader, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        data = X.original_data
+    def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        data = X
         # log scaling the scopes -> NOTE: NOT NECESSARY DURING INFERENCE
-        data[X.scope_loader.columns] = self.scope_transformer.transform(data[X.scope_loader.columns])
+        data[self.scope_columns] = self.scope_transformer.transform(data[self.scope_columns])
         # transform numerical
-        data[X.financial_loader.columns] = self.fin_transformer.transform(data[X.financial_loader.columns])
+        data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
         # encode categorical
-        data[X.categorical_loader.columns] = self.cat_transformer.transform(X=data[X.categorical_loader.columns], y=(data[X.scope_loader.columns].sum(axis=1) / 3))
+        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=(data[self.scope_columns[0]]))
         return data

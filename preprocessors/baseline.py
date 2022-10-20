@@ -1,0 +1,80 @@
+import abc
+from typing import Any, Union
+from base import preprocessor
+import sklearn.preprocessing as prep 
+import category_encoders as ce
+import sklearn
+from base.common import OxariMixin, OxariTransformer
+from base.dataset_loader import OxariDataLoader
+import numpy as np
+import pandas as pd
+from base.mappings import CatMapping, NumMapping
+from .helper.custom_scalers import LogarithmScaler
+
+
+class DummyPreprocessor(preprocessor.OxariPreprocessor):
+    def __init__(self, scope_transformer=None, fin_transformer=None, cat_transformer=None, **kwargs):
+        super().__init__(**kwargs)
+        self.fin_transformer = fin_transformer or prep.StandardScaler()
+        self.cat_transformer = cat_transformer or ce.TargetEncoder()
+        self.scope_transformer = scope_transformer or LogarithmScaler()
+        self.scope_columns = NumMapping.get_targets()
+        self.financial_columns = NumMapping.get_features()
+        self.categorical_columns = CatMapping.get_features()
+
+    def run(self, **kwargs) -> "DummyPreprocessor":
+        return super().run(**kwargs)
+
+    def fit(self, X:pd.DataFrame, y, **kwargs) -> "DummyPreprocessor":
+        data = X
+        # log scaling the scopes
+        self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
+        # transform numerical
+        self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
+        # encode categorical
+        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=(data[self.scope_columns][0]))
+        return data
+
+    def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        data = X
+        # log scaling the scopes -> NOTE: NOT NECESSARY DURING INFERENCE
+        data[self.scope_columns] = self.scope_transformer.transform(data[self.scope_columns])
+        # transform numerical
+        data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
+        # encode categorical
+        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=(data[self.scope_columns[0]]))
+        return data
+
+
+class BaselinePreprocessor(preprocessor.OxariPreprocessor):
+    def __init__(self, scope_transformer=None, fin_transformer=None, cat_transformer=None, **kwargs):
+        super().__init__(**kwargs)
+        self.fin_transformer = fin_transformer or prep.RobustScaler()
+        self.cat_transformer = cat_transformer or ce.TargetEncoder()
+        self.scope_transformer = scope_transformer or LogarithmScaler()
+        self.scope_columns = NumMapping.get_targets()
+        self.financial_columns = NumMapping.get_features()
+        self.categorical_columns = CatMapping.get_features()
+
+    def run(self, **kwargs) -> "BaselinePreprocessor":
+        return super().run(**kwargs)
+
+    def fit(self, X:pd.DataFrame, y, **kwargs) -> "BaselinePreprocessor":
+        data = X
+        # log scaling the scopes
+        self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
+        # transform numerical
+        self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
+        # encode categorical
+        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=(data[self.scope_columns][0]))
+        return data
+
+    def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        data = X
+        # log scaling the scopes -> NOTE: NOT NECESSARY DURING INFERENCE
+        data[self.scope_columns] = self.scope_transformer.transform(data[self.scope_columns])
+        # transform numerical
+        data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
+        # encode categorical
+        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=(data[self.scope_columns[0]]))
+        return data

@@ -1,5 +1,5 @@
 from typing import Union
-from base.imputer import OxariImputer
+from base.common import OxariImputer
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer

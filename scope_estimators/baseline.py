@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-class DummyScopeEstimator(OxariScopeEstimator):
+class DefaultScopeEstimator(OxariScopeEstimator):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         

@@ -1,13 +1,13 @@
 from base import pipeline
 from base.dataset_loader import OxariDataLoader
-from base.estimator import OxariScopeEstimator
-from base.imputer import OxariImputer
-from base.postprocessor import OxariPostprocessor
-from base.preprocessor import OxariPreprocessor
+from base import OxariScopeEstimator
+from base import OxariPostprocessor
+from base import OxariPreprocessor
+from base.common import OxariImputer
 from dataset_loader.csv_loader import CSVDataLoader
-from imputers.dummy import DummyImputer
-from preprocessors.default import DefaultPreprocessor
-from scope_estimators.dummy import DummyScopeEstimator
+from imputers.baseline import DummyImputer
+from preprocessors.baseline import BaselinePreprocessor
+from scope_estimators.baseline import DefaultScopeEstimator
 
 
 class DefaultPipeline(pipeline.OxariPipeline):
@@ -21,9 +21,8 @@ class DefaultPipeline(pipeline.OxariPipeline):
         database_deployer=None,
     ):
         dataset = dataset or CSVDataLoader()
-        preprocessor = preprocessor or DefaultPreprocessor()
-        imputer = imputer or DummyImputer()
-        scope_estimator = DummyScopeEstimator()
+        preprocessor = preprocessor or BaselinePreprocessor()
+        scope_estimator = DefaultScopeEstimator()
         # postprocessor = DummyPostprocessor()
         super().__init__(dataset, preprocessor, imputer, scope_estimator, postprocessor, database_deployer)
 

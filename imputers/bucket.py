@@ -1,6 +1,6 @@
 import itertools
 from typing import Union
-from base.imputer import OxariImputer
+from base.common import OxariImputer
 from base.dataset_loader import OxariDataLoader
 import numpy as np
 import pandas as pd

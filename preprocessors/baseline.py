@@ -1,6 +1,6 @@
 import abc
 from typing import Any, Union
-from base import preprocessor
+from base.pipeline import OxariPreprocessor
 import sklearn.preprocessing as prep 
 import category_encoders as ce
 import sklearn
@@ -12,7 +12,7 @@ from base.mappings import CatMapping, NumMapping
 from .helper.custom_scalers import LogarithmScaler
 
 
-class DummyPreprocessor(preprocessor.OxariPreprocessor):
+class DummyPreprocessor(OxariPreprocessor):
     def __init__(self, scope_transformer=None, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(**kwargs)
         self.fin_transformer = fin_transformer or prep.StandardScaler()
@@ -46,7 +46,7 @@ class DummyPreprocessor(preprocessor.OxariPreprocessor):
         return data
 
 
-class BaselinePreprocessor(preprocessor.OxariPreprocessor):
+class BaselinePreprocessor(OxariPreprocessor):
     def __init__(self, scope_transformer=None, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(**kwargs)
         self.fin_transformer = fin_transformer or prep.RobustScaler()

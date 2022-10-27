@@ -4,8 +4,8 @@
 # import pandas as pd
 # from sklearn.utils.estimator_checks import check_estimator
 import abc
-from ctypes import Union
-from pickle import pickle
+from typing import Union
+import pickle
 import numpy as np
 import pandas as pd
 import sklearn
@@ -73,12 +73,12 @@ class OxariMixin(abc.ABC):
         self.end_time = None
     
 
-    @abc.abstractmethod
-    def run(self, **kwargs) -> "OxariMixin":
-        """
-        Every component needs to call initialize and finish inside the run function. 
-        """
-        return self
+    # @abc.abstractmethod
+    # def run(self, **kwargs) -> "OxariMixin":
+    #     """
+    #     Every component needs to call initialize and finish inside the run function. 
+    #     """
+    #     return self
 
 
     def set_logger(self, logger: OxariLogger) -> "OxariMixin":
@@ -92,8 +92,6 @@ class OxariMixin(abc.ABC):
     def set_optimizer(self, optimizer: OxariOptimizer) -> "OxariMixin":
         self._optimizer = optimizer
         return self
-
-
 
     def save_state(self):
         with open(self.object_filename, "wb") as f:
@@ -123,11 +121,11 @@ class OxariClassifier(sklearn.base.ClassifierMixin, sklearn.base.BaseEstimator, 
         return self
 
     @abc.abstractmethod
-    def transform(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
 
 
-class OxariImputer(_base._BaseImputer, OxariMixin, abc.ABC):
+class OxariImputer(_base._BaseImputer, abc.ABC):
     """
     Handles imputation of missing values for values that are zero. Fit and Transform have to be implemented accordingly.
     """

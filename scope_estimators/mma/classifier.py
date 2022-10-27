@@ -1,9 +1,8 @@
 import pandas as pd
 import pickle
 import numpy as np
-# import xgboost as xgb
-# import optuna
 import joblib
+import optuna
 
 from sklearn.metrics import accuracy_score, r2_score, roc_auc_score, f1_score, balanced_accuracy_score, precision_recall_fscore_support, classification_report
 from tqdm import tqdm
@@ -25,10 +24,10 @@ OPTUNA_DIR = Path("model/optuna")
 
 
 class ClassifierOptimizer(OxariOptimizer):
-    def __init__(self, n_trials, n_startup_trials, sampler=None, **kwargs) -> None:
+    def __init__(self, num_trials = 1, num_startup_trials = 1, sampler=None, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.n_trials = n_trials
-        self.n_startup_trials = n_startup_trials
+        self.num_trials = num_trials
+        self.num_startup_trials = num_startup_trials
         self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
@@ -64,7 +63,7 @@ class ClassifierOptimizer(OxariOptimizer):
         df.to_csv(OPTUNA_DIR / f"df_optuna_hps_CL_{self.scope}_buckets_{self.n_buckets}.csv", index=False)
 
         # save the study so that we can plot the results
-        joblib.dump(study, OPTUNA_DIR / f"optuna_hps_CL_{self.scope}_{self.n_buckets}_buckets.pkl")
+        # joblib.dump(study, OPTUNA_DIR / f"optuna_hps_CL_{self.scope}_{self.n_buckets}_buckets.pkl")
 
         return study.best_params
 
@@ -170,12 +169,6 @@ class ClassifierEvaluator(OxariEvaluator):
         # print(
         #     f"STRICT Adj Accuracy for tuned model {self.strict_adjacent_accuracy_score(y_test, y_pred)}", "\n")
 
-        # error_table_class = pd.read_csv(METRICS_DIR/"error_metrics_class.csv")
-
-        # error_table_class = error_table_class.append(, ignore_index=True)
-
-        # error_table_class.to_csv(METRICS_DIR/"error_metrics_class.csv", index=False)
-
         return {
             "scope": self.scope,
             "n_buckets": self.n_buckets,
@@ -222,19 +215,22 @@ class ClassifierEvaluator(OxariEvaluator):
 
 
 class BucketClassifier(OxariClassifier, OxariMixin):
-    def __init__(self, object_filename, scope, use_hp=False, n_buckets=10, n_startup_trials=1, n_trials=1):
+    def __init__(self, object_filename, scope, optimizer = None, evaluator = None ,use_hp=False, n_buckets=10):
 
         self.object_filename = object_filename
 
         # self.scope = check_scope(scope)
         self.scope = scope
+        self.n_buckets = n_buckets
 
         self.columns = None
 
+        self.optimizer = optimizer or ClassifierOptimizer()
+
+        self.evaluator = evaluator or ClassifierEvaluator(scope = self.scope, n_buckets = self.n_buckets)
+
         # self.verbose = verbose
 
-
-        self.n_buckets = n_buckets
 
         self.cl = RandomForestClassifier()
 
@@ -263,10 +259,6 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         return self
 
         
-
-
-
-
 
     def predict(self, X):
         """

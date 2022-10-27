@@ -13,8 +13,7 @@ class RevenueBucketImputer(OxariImputer):
         super().__init__(**kwargs)
         self.bucket_number = buckets_number
         self.list_of_skipped_columns = ['year', 'isin'] + NumMapping.get_targets()
-        self.columns_to_fit = NumMapping.get_features() - ["revenue"]
-
+        self.columns_to_fit = NumMapping.get_features().remove("revenue")
 
         
     def fit(self, X:pd.DataFrame, y, **kwargs) -> "OxariImputer":

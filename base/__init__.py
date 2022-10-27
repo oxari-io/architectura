@@ -1,1 +1,2 @@
-from .pipeline import * #TODO: Import the individual classes properly
+from .pipeline import OxariScopeEstimator, OxariPostprocessor, OxariPreprocessor
+

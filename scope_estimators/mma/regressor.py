@@ -47,12 +47,177 @@ DATA_DIR = Path("model/data")
 OPTUNA_DIR = Path("model/optuna")
 
 
-class Regressor(MLModelInterface):
+class RegressorOptimizer(OxariOptimizer):
+    def __init__(self, n_trials, n_startup_trials, sampler=None, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.n_trials = n_trials
+        self.n_startup_trials = n_startup_trials
+        self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
+        self.scope = None
+        self.bucket_specific = None
+
+    def optimize(self, name, X_train, y_train, X_val, y_val, num_startup_trials, n_trials):
+        """
+        Explores the hyperparameter search space with optuna.
+        Creates csv and pickle files with the saved hyperparameters for regression
+
+        Parameters:
+        name (string): name of the model RFR --> RandomForestRegressor; GBR --> GradientBoostingRegressor; XGB --> XGBoostRegressor
+        X_train (numpy array): training data 
+        y_train (numpy array): training data 
+        X_val (numpy array): validation data
+        y_val (numpy array): validation data 
+        num_startup_trials (int): 
+        n_trials (int): 
+
+        Return:
+        study.best_params (data structure): contains the best found hyperparameters within the given space
+        """
+
+        # create optuna study
+        # num_startup_trials is the number of random iterations at the beginiing
+        study = optuna.create_study(study_name=f"{name}_hp_tuning_{self.scope}_bucket{self.bucket_specific}",
+                                    direction="minimize", sampler=optuna.samplers.TPESampler(n_startup_trials=num_startup_trials, warn_independent_sampling=False),
+                                    )
+
+        study.optimize(lambda trial: self.tune_hps_regressors(
+            trial, name, X_train, y_train, X_val, y_val), n_trials=n_trials, show_progress_bar=False)
+
+        df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
+        df.to_csv(OPTUNA_DIR / f"csvs/df_optuna_{name}_hps_{self.scope}_buckets_{self.bucket_specific}.csv", index=False)
+
+        # save the study so that we can plot the results
+        # joblib.dump(study, OPTUNA_DIR /
+        #             f"pkls/optuna_{name}_hps_tuning_{self.scope}_{self.bucket_specific}_buckets.pkl")
+
+        return study.best_params
+
+
+    def tune_hps_regressors(self, trial, regr_name, X_train, y_train, X_val, y_val):
+        # TODO: add docstring here
+
+        if regr_name == "GBR":
+
+            param_space = {
+                # The number of boosting stages to perform
+                "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
+                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
+                "max_depth": trial.suggest_int("max_depth", 3, 21, 3),
+                # The fraction of samples to be used for fitting the individual base learners
+                "subsample": trial.suggest_float("subsample", 0.5, 0.9, step=0.1),
+                # The number of features to consider when looking for the best split
+                "max_features": trial.suggest_categorical("max_features", ["auto", "sqrt"]),
+                }
+
+            model = GradientBoostingRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "RFR":
+            #  definin search space of RandomForest 
+            param_space = {
+                # this parameter means using the GPU when training our model to speedup the training process
+                'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
+                # 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'mae']),
+                # Whether bootstrap samples are used when building trees
+                'bootstrap': trial.suggest_categorical('bootstrap',['True','False']),
+                # The maximum depth of the tree.
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                # The number of features to consider when looking for the best split
+                'max_features': trial.suggest_categorical('max_features', ['auto', 'sqrt']),
+                'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
+                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 1, 5, 1),
+                # Grow trees with max_leaf_nodes in best-first fashion.
+                # 'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 1, 100),
+                "n_jobs" : -1
+                }
+
+            model = RandomForestRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "XGB":
+
+            param_space = {
+            # L2 regularization term on weights.
+            # 'lambda': trial.suggest_loguniform('lambda', 1e-3, 10.0),
+            # # L1 regularization term on weights.
+            # 'alpha': trial.suggest_loguniform('alpha', 1e-3, 10.0),
+            # Subsample ratio of columns when constructing each tree.
+            'colsample_bytree': trial.suggest_float('colsample_bytree', (0.4, 0.7, 0.1)),
+            # Subsample ratio of the training instances.
+            'subsample': trial.suggest_float('subsample', (0.4, 0.7, 0.1)),
+            'learning_rate': trial.suggest_float('learning_rate', (0.01, 0.3)),
+            'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
+            
+            # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit. 
+            'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+
+            # 'random_state': trial.suggest_categorical('random_state', [2020]),
+            # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning. 
+            'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, 1),
+        }
+
+            model = xgb.XGBRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        # if regr_name == "ADB":
+        #     param_space = {
+        #         "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
+        #         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
+        #         'splitter': trial.suggest_categorical('max_depth', ["best", "random"]),
+        #         'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+        #     }
+
+        #     model = AdaBoostRegressor(**param_space)
+        #     model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_val)
+
+        return smape(y_val, y_pred)
+
+
+
+
+class RegressorEvaluator(OxariEvaluator):
+    def __init__(self, scope, n_buckets, **kwargs) -> None:
+        super().__init__()
+        self.scope = scope
+        self.n_buckets = n_buckets
+    
+
+    def evaluate(self, y_true, y_pred, table_name):
+
+        # TODO: add docstring here
+
+        print(
+            f"Computing error metrics RGR {self.scope}, bucket - {self.bucket_specific}")
+
+        # compute metrics of interest
+        error_metrics = {"scope": self.scope, "bucket": self.bucket_specific, "sMAPE": smape(y_true, y_pred),
+                         "R2": r2_score(y_true, y_pred),
+                         "MAE": mean_absolute_error(y_true, y_pred), "RMSE": mean_squared_error(y_true, y_pred, squared=False),
+                         "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False), "MAPE": mape(y_true, y_pred)}
+
+        # read error metrics table
+        error_metrics_regressors = pd.read_csv(
+            METRICS_DIR / table_name)
+
+        # append to table
+        error_metrics_regressors = error_metrics_regressors.append(
+            error_metrics, ignore_index=True)
+
+        # save table
+        error_metrics_regressors.to_csv(
+            METRICS_DIR / table_name, index=False)
+
+
+
+class BucketRegressor(MLModelInterface):
     # TODO: add docstring
     def __init__(self, object_filename, scope, bucket_specific, use_hp=False, n_buckets=10,  n_startup_trials=1, n_trials=1):
         self.object_filename = object_filename
 
         self.scope = check_scope(scope)
+        
         self.n_trials = n_trials
 
         self.n_startup_trials = n_startup_trials
@@ -65,6 +230,7 @@ class Regressor(MLModelInterface):
 
         self.list_of_skipped_columns = [
             'scope_1', 'scope_2', "scope_3", 'isin', "year", f"group_label_{self.scope}"]
+
 
     def subset_data(self, data):
         """
@@ -91,7 +257,7 @@ class Regressor(MLModelInterface):
         split_size_test (float): splitting threshold between training set and testing + validation sets
         split_size_val (float): splitting threshold between testing set and validation set
 
-        Return:
+         Return:
         X_train (numpy array): training data
         y_train (numpy array): training data 
         X_train_full (numpy array): not splitted training data 
@@ -120,66 +286,6 @@ class Regressor(MLModelInterface):
 
         return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
 
-    def compute_error_metrics(self, y_true, y_pred, table_name):
-
-        # TODO: add docstring here
-
-        print(
-            f"Computing error metrics RGR {self.scope}, bucket - {self.bucket_specific}")
-
-        # compute metrics of interest
-        error_metrics = {"scope": self.scope, "bucket": self.bucket_specific, "sMAPE": smape(y_true, y_pred),
-                         "R2": r2_score(y_true, y_pred),
-                         "MAE": mean_absolute_error(y_true, y_pred), "RMSE": mean_squared_error(y_true, y_pred, squared=False),
-                         "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False), "MAPE": mape(y_true, y_pred)}
-
-        # read error metrics table
-        error_metrics_regressors = pd.read_csv(
-            METRICS_DIR / table_name)
-
-        # append to table
-        error_metrics_regressors = error_metrics_regressors.append(
-            error_metrics, ignore_index=True)
-
-        # save table
-        error_metrics_regressors.to_csv(
-            METRICS_DIR / table_name, index=False)
-
-    def tune_hp(self, name, X_train, y_train, X_val, y_val, num_startup_trials, n_trials):
-        """
-        Explores the hyperparameter search space with optuna.
-        Creates csv and pickle files with the saved hyperparameters for regression
-
-        Parameters:
-        name (string): name of the model RFR --> RandomForestRegressor; GBR --> GradientBoostingRegressor; XGB --> XGBoostRegressor
-        X_train (numpy array): training data 
-        y_train (numpy array): training data 
-        X_val (numpy array): validation data
-        y_val (numpy array): validation data 
-        num_startup_trials (int): 
-        n_trials (int): 
-
-        Return:
-        study.best_params (data structure): contains the best found hyperparameters within the given space
-        """
-
-        # create optuna study
-        # num_startup_trials is the number of random iterations at the beginiing
-        study = optuna.create_study(study_name=f"{name}_hp_tuning_{self.scope}_bucket{self.bucket_specific}",
-                                    direction="minimize", sampler=optuna.samplers.TPESampler(n_startup_trials=num_startup_trials, warn_independent_sampling=False),
-                                    )
-
-        study.optimize(lambda trial: tune_hps_regressors(
-            trial, name, X_train, y_train, X_val, y_val), n_trials=n_trials, show_progress_bar=False)
-
-        df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
-        df.to_csv(OPTUNA_DIR / f"csvs/df_optuna_{name}_hps_{self.scope}_buckets_{self.bucket_specific}.csv", index=False)
-
-        # save the study so that we can plot the results
-        joblib.dump(study, OPTUNA_DIR /
-                    f"pkls/optuna_{name}_hps_tuning_{self.scope}_{self.bucket_specific}_buckets.pkl")
-
-        return study.best_params
 
     def build_voting_regressor(self, X_train, y_train, X_val, y_val):
         """

@@ -1,5 +1,5 @@
 from typing import Union
-from base.estimator import OxariScopeEstimator
+from base.pipeline import OxariScopeEstimator
 import numpy as np
 import pandas as pd
 
@@ -13,3 +13,9 @@ class DefaultScopeEstimator(OxariScopeEstimator):
     
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
         return super().predict(X)
+
+    def check_conformance(self):
+        pass
+
+    def deploy(self):
+        pass

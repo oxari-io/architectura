@@ -12,7 +12,9 @@ COLS_CATEGORICALS = CatMapping.get_features()
 
 class CSVScopeLoader(ScopeLoader, LocalDatasourceMixin):
     def __init__(self, **kwargs):
+
         self.path = kwargs.pop("path", DATA_DIR / "scopes.csv")
+
         super().__init__(**kwargs)
 
     def run(self) -> "ScopeLoader":
@@ -47,15 +49,15 @@ class CSVCategoricalLoader(CategoricalLoader, LocalDatasourceMixin):
 
 class CSVDataLoader(OxariDataLoader):
     def __init__(self,
-                 object_filename,
-                 scope_loader: ScopeLoader = CSVScopeLoader(),
-                 financial_loader: FinancialLoader = CSVFinancialLoader(),
-                 categorical_loader: CategoricalLoader = CSVCategoricalLoader(),
+                #  object_filename,
+                 scope_loader: ScopeLoader = CSVScopeLoader(path  = DATA_DIR / "scopes.csv"),
+                 financial_loader: FinancialLoader = CSVFinancialLoader(path = DATA_DIR / "financials.csv"),
+                 categorical_loader: CategoricalLoader = CSVCategoricalLoader(path =  DATA_DIR / "categoricals.csv"),
                  other_loaders: Dict[str, PartialLoader] = {},
                  verbose=False,
                  **kwargs):
         super().__init__(
-            object_filename,
+            # object_filename,
             scope_loader,
             financial_loader,
             categorical_loader,

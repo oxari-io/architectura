@@ -1,10 +1,10 @@
 
-from ctypes import Union
+from typing import Union
 import numpy as np
 import pandas as pd
 from base.common import OxariTransformer, OxariMixin
 
-class LogarithmScaler(OxariTransformer, OxariMixin):
+class LogarithmScaler(OxariTransformer):
     def fit(self, X, y, **kwargs) -> "LogarithmScaler":
         return self
 

@@ -20,15 +20,16 @@ class DefaultPipeline(pipeline.OxariPipeline):
         postprocessor: OxariPostprocessor = None,
         database_deployer=None,
     ):
-        dataset = dataset or CSVDataLoader()
-        preprocessor = preprocessor or BaselinePreprocessor(imputer=DummyImputer())
-        scope_estimator = DefaultScopeEstimator()
+        self.dataset = dataset or CSVDataLoader() ### None os CSVLoader OK
+        self.preprocessor = preprocessor or BaselinePreprocessor(imputer=DummyImputer())
+        self.imputer = imputer or OxariImputer()
+        self.scope_estimator = DefaultScopeEstimator()
         # postprocessor = DummyPostprocessor()
         super().__init__(dataset, preprocessor, imputer, scope_estimator, postprocessor, database_deployer)
 
     def run_pipeline(self, **kwargs):
         # kwargs.pop("")
-        df_processed = self.preprocessor.fit_transform(dataset._df_original)
+        df_processed = self.preprocessor.fit_transform(self.dataset._df_original)
         self.dataset = self.dataset.set_preprocessed_data(df_processed)
         df_filled = self.imputer.fit_transform(dataset._df_filled)
         self.dataset = self.dataset.set_filled_data(df_filled)

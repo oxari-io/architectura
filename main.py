@@ -3,6 +3,7 @@ from dataset_loader.csv_loader import CSVDataLoader
 from scope_estimators.mini_model_army import MiniModelArmyEstimator
 from preprocessors.baseline import BaselinePreprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
+from scope_estimators.mma.classifier import ClassifierOptimizer
 
 
 

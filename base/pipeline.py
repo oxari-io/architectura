@@ -18,7 +18,7 @@ class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         self.imputer = imputer
 
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "OxariPreprocessor":
+    def fit(self, X, y=None, **kwargs) -> "OxariPreprocessor":
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
         # Set self.n_features_in_ = X.shape[1]
@@ -32,6 +32,10 @@ class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
 
+
+    def set_imputer(self, imputer: common.OxariImputer) -> "OxariPreprocessor":
+        self.imputer = imputer
+        return self
 
 class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixin, common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
@@ -108,14 +112,12 @@ class OxariPipeline(abc.ABC):
         self,
         dataset: OxariDataLoader = None,
         preprocessor: OxariPreprocessor = None,
-        imputer: common.OxariImputer = None,
         scope_estimator: OxariScopeEstimator = None,
         postprocessor: OxariPostprocessor = None,
         database_deployer=None,
     ):
         self.dataset = dataset
         self.preprocessor = preprocessor
-        self.imputer = imputer
         self.scope_estimator = scope_estimator
         self.postprocessor = postprocessor
         self._start_time = None

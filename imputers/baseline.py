@@ -9,7 +9,7 @@ class DummyImputer(OxariImputer):
     def __init__(self, missing_values=np.nan, verbose=0, copy=True, add_indicator=False, **kwargs):
         self._imputer = SimpleImputer(missing_values, verbose, copy, add_indicator, **kwargs)
         
-    def fit(self, X, y, **kwargs) -> "OxariImputer":
+    def fit(self, X, y=None, **kwargs) -> "OxariImputer":
         self._imputer.fit(X, y, **kwargs)
         return self
     

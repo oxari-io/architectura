@@ -17,10 +17,10 @@ from sklearn.ensemble import GradientBoostingRegressor, AdaBoostRegressor, Rando
 from sklearn.model_selection import train_test_split, cross_val_score
 
 from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score, r2_score, mean_squared_log_error
+from base.common import OxariEvaluator, OxariMixin, OxariOptimizer, OxariRegressor
 # from sklearn.metrics import root_mean_squared_error as rmse
 # from sklearn.metrics import mean_absolute_percentage_error as mape
-from model.misc.metrics import mape
-
+# from model.misc.metrics import mape
 
 # from lightgbm import LGBMRegressor
 # from catboost import CatBoostRegressor
@@ -31,15 +31,14 @@ from model.misc.metrics import mape
 from tqdm import tqdm
 from pmdarima.metrics import smape
 
-from model.misc.mappings import NumMapping as Mapping
-from model.misc.metrics import adjusted_r_squared
-from model.misc.hyperparams_tuning import tune_hps_regressors
+# from model.misc.mappings import NumMapping as Mapping
+# from model.misc.metrics import adjusted_r_squared
+# from model.misc.hyperparams_tuning import tune_hps_regressors
 
 from pathlib import Path
-from model.abstract_base_class import MLModelInterface
+# from model.abstract_base_class import MLModelInterface
 
-from model.misc.ML_toolkit import add_bucket_label, check_scope
-
+# from model.misc.ML_toolkit import add_bucket_label, check_scope
 
 OBJECT_DIR = Path("model/objects")
 METRICS_DIR = Path("model/metrics")
@@ -48,15 +47,15 @@ OPTUNA_DIR = Path("model/optuna")
 
 
 class RegressorOptimizer(OxariOptimizer):
-    def __init__(self, n_trials, n_startup_trials, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.n_trials = n_trials
         self.n_startup_trials = n_startup_trials
-        self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
+        self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False)
         self.scope = None
         self.bucket_specific = None
 
-    def optimize(self, name, X_train, y_train, X_val, y_val, num_startup_trials, n_trials):
+    def optimize(self, name, X_train, y_train, X_val, y_val, num_startup_trials, n_trials, **kwargs):
         """
         Explores the hyperparameter search space with optuna.
         Creates csv and pickle files with the saved hyperparameters for regression
@@ -73,25 +72,98 @@ class RegressorOptimizer(OxariOptimizer):
         Return:
         study.best_params (data structure): contains the best found hyperparameters within the given space
         """
+        # selecting the models that will be trained to build the voting regressor --> tuple(name, model)
+        models = [("GBR", GradientBoostingRegressor), ("RFR", RandomForestRegressor), ("XGB", xgb.XGBRegressor)]
+        # scores will be used to compute weights for voting mechanism
+        info = {}
+        # candidates will be given to VotingRegressor
+        candidates = {}
+        grp_train = kwargs.get('grp_train')
+        grp_val = kwargs.get('grp_val')
+        for n in np.unique(grp_train):
+            selector_train = grp_train == n
+            selector_val = grp_val == n
+            
+            
+            for name, Model in models:
+
+                # print(f"Training {name} ... ")
+
+                study = optuna.create_study(
+                    study_name=f"{name}_hp_tuning_{self.scope}_bucket{self.bucket_specific}",
+                    direction="minimize",
+                    sampler=optuna.samplers.TPESampler(n_startup_trials=num_startup_trials, warn_independent_sampling=False),
+                )
+                study.optimize(lambda trial: self.tune_hps_regressors(trial, name, X_train[selector_train], y_train[selector_train], X_val[selector_val], y_val[selector_val]), n_trials=n_trials, show_progress_bar=False)
+
+                candidates[n] = {}
+                info[n] = {}
+                candidates[n][name]["best_params"] = study.best_params 
+                candidates[n][name]["Model"] = Model 
+                info[n][name] = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
-        study = optuna.create_study(study_name=f"{name}_hp_tuning_{self.scope}_bucket{self.bucket_specific}",
-                                    direction="minimize", sampler=optuna.samplers.TPESampler(n_startup_trials=num_startup_trials, warn_independent_sampling=False),
-                                    )
 
-        study.optimize(lambda trial: self.tune_hps_regressors(
-            trial, name, X_train, y_train, X_val, y_val), n_trials=n_trials, show_progress_bar=False)
 
-        df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
-        df.to_csv(OPTUNA_DIR / f"csvs/df_optuna_{name}_hps_{self.scope}_buckets_{self.bucket_specific}.csv", index=False)
+        # df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
+        # df.to_csv(OPTUNA_DIR / f"csvs/df_optuna_{name}_hps_{self.scope}_buckets_{self.bucket_specific}.csv", index=False)
 
         # save the study so that we can plot the results
         # joblib.dump(study, OPTUNA_DIR /
         #             f"pkls/optuna_{name}_hps_tuning_{self.scope}_{self.bucket_specific}_buckets.pkl")
 
-        return study.best_params
+        
+        return candidates, info
 
+    # def build_voting_regressor(self, X_train, y_train, X_val, y_val):
+    #     """
+    #     For each model, it makes an optuna study in order to explore the best hyperparameters
+    #     The best hyperparameters are passed to each model for training
+    #     Performance scores of each individual model is used as weights for the voting regressor
+
+    #     Parameters:
+    #     X_train (numpy array): training data (features)
+    #     y_train (numpy array): training data (targets)
+    #     X_test (numpy array): testing data (features)
+    #     y_test (numpy array): testing data (target)
+    #     """
+
+    #     # selecting the models that will be trained to build the voting regressor --> tuple(name, model)
+    #     models = [("GBR", GradientBoostingRegressor()), ("RFR", RandomForestRegressor(n_jobs=-1)), ("XGB", xgb.XGBRegressor(n_jobs=-1, base_score=0.5))]
+
+    #     # self.vanilla_voting_regressor = VotingRegressor(estimators=models, n_jobs=-1)
+
+    #     # scores will be used to compute weights for voting mechanism
+    #     scores = []
+
+    #     # candidates will be given to VotingRegressor
+    #     candidates = []
+
+    #     # do hyperparams tuning for each of the three models --> OPTUNA!
+    #     for name, model in models:
+
+    #         # print(f"Training {name} ... ")
+
+    #         best_hps = self.tune_hp(name, X_train, y_train, X_val, y_val, num_startup_trials=self.n_startup_trials, n_trials=self.n_trials)
+
+    #         model.set_params(**best_hps)
+
+    #         # loop through the models and train individually
+    #         model.fit(X_train, y_train)
+
+    #         # calculate the score of each individual model to weight voting mechanism
+    #         y_pred = model.predict(X_val)
+
+    #         model_score = smape(y_val, y_pred)
+
+    #         # the lower the smape the better
+    #         scores.append(100 - model_score)
+
+    #         # append a tuple ("name", model) to then give it to VotingRegressor
+    #         candidates.append((name, model))
+
+    #     return VotingRegressor(estimators=candidates, weights=scores, n_jobs=-1)
 
     def tune_hps_regressors(self, trial, regr_name, X_train, y_train, X_val, y_val):
         # TODO: add docstring here
@@ -107,19 +179,19 @@ class RegressorOptimizer(OxariOptimizer):
                 "subsample": trial.suggest_float("subsample", 0.5, 0.9, step=0.1),
                 # The number of features to consider when looking for the best split
                 "max_features": trial.suggest_categorical("max_features", ["auto", "sqrt"]),
-                }
+            }
 
             model = GradientBoostingRegressor(**param_space)
             model.fit(X_train, y_train)
 
         if regr_name == "RFR":
-            #  definin search space of RandomForest 
+            #  definin search space of RandomForest
             param_space = {
                 # this parameter means using the GPU when training our model to speedup the training process
                 'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
                 # 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'mae']),
                 # Whether bootstrap samples are used when building trees
-                'bootstrap': trial.suggest_categorical('bootstrap',['True','False']),
+                'bootstrap': trial.suggest_categorical('bootstrap', ['True', 'False']),
                 # The maximum depth of the tree.
                 'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
                 # The number of features to consider when looking for the best split
@@ -128,8 +200,8 @@ class RegressorOptimizer(OxariOptimizer):
                 'min_samples_leaf': trial.suggest_int("min_samples_leaf", 1, 5, 1),
                 # Grow trees with max_leaf_nodes in best-first fashion.
                 # 'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 1, 100),
-                "n_jobs" : -1
-                }
+                "n_jobs": -1
+            }
 
             model = RandomForestRegressor(**param_space)
             model.fit(X_train, y_train)
@@ -137,24 +209,24 @@ class RegressorOptimizer(OxariOptimizer):
         if regr_name == "XGB":
 
             param_space = {
-            # L2 regularization term on weights.
-            # 'lambda': trial.suggest_loguniform('lambda', 1e-3, 10.0),
-            # # L1 regularization term on weights.
-            # 'alpha': trial.suggest_loguniform('alpha', 1e-3, 10.0),
-            # Subsample ratio of columns when constructing each tree.
-            'colsample_bytree': trial.suggest_float('colsample_bytree', (0.4, 0.7, 0.1)),
-            # Subsample ratio of the training instances.
-            'subsample': trial.suggest_float('subsample', (0.4, 0.7, 0.1)),
-            'learning_rate': trial.suggest_float('learning_rate', (0.01, 0.3)),
-            'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
-            
-            # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit. 
-            'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                # L2 regularization term on weights.
+                # 'lambda': trial.suggest_loguniform('lambda', 1e-3, 10.0),
+                # # L1 regularization term on weights.
+                # 'alpha': trial.suggest_loguniform('alpha', 1e-3, 10.0),
+                # Subsample ratio of columns when constructing each tree.
+                'colsample_bytree': trial.suggest_float('colsample_bytree', (0.4, 0.7, 0.1)),
+                # Subsample ratio of the training instances.
+                'subsample': trial.suggest_float('subsample', (0.4, 0.7, 0.1)),
+                'learning_rate': trial.suggest_float('learning_rate', (0.01, 0.3)),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
 
-            # 'random_state': trial.suggest_categorical('random_state', [2020]),
-            # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning. 
-            'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, 1),
-        }
+                # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+
+                # 'random_state': trial.suggest_categorical('random_state', [2020]),
+                # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning.
+                'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, 1),
+            }
 
             model = xgb.XGBRegressor(**param_space)
             model.fit(X_train, y_train)
@@ -175,243 +247,166 @@ class RegressorOptimizer(OxariOptimizer):
         return smape(y_val, y_pred)
 
 
-
-
 class RegressorEvaluator(OxariEvaluator):
     def __init__(self, scope, n_buckets, **kwargs) -> None:
         super().__init__()
         self.scope = scope
         self.n_buckets = n_buckets
-    
 
     def evaluate(self, y_true, y_pred, table_name):
 
         # TODO: add docstring here
 
-        print(
-            f"Computing error metrics RGR {self.scope}, bucket - {self.bucket_specific}")
+        print(f"Computing error metrics RGR {self.scope}, bucket - {self.bucket_specific}")
 
         # compute metrics of interest
-        error_metrics = {"scope": self.scope, "bucket": self.bucket_specific, "sMAPE": smape(y_true, y_pred),
-                         "R2": r2_score(y_true, y_pred),
-                         "MAE": mean_absolute_error(y_true, y_pred), "RMSE": mean_squared_error(y_true, y_pred, squared=False),
-                         "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False), "MAPE": mape(y_true, y_pred)}
+        error_metrics = {
+            "scope": self.scope,
+            "bucket": self.bucket_specific,
+            "sMAPE": smape(y_true, y_pred),
+            "R2": r2_score(y_true, y_pred),
+            "MAE": mean_absolute_error(y_true, y_pred),
+            "RMSE": mean_squared_error(y_true, y_pred, squared=False),
+            "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
+            "MAPE": mape(y_true, y_pred)
+        }
 
         # read error metrics table
-        error_metrics_regressors = pd.read_csv(
-            METRICS_DIR / table_name)
+        error_metrics_regressors = pd.read_csv(METRICS_DIR / table_name)
 
         # append to table
-        error_metrics_regressors = error_metrics_regressors.append(
-            error_metrics, ignore_index=True)
+        error_metrics_regressors = error_metrics_regressors.append(error_metrics, ignore_index=True)
 
         # save table
-        error_metrics_regressors.to_csv(
-            METRICS_DIR / table_name, index=False)
+        error_metrics_regressors.to_csv(METRICS_DIR / table_name, index=False)
 
 
-
-class BucketRegressor(MLModelInterface):
+class BucketRegressor(OxariMixin, OxariRegressor):
     # TODO: add docstring
-    def __init__(self, object_filename, scope, bucket_specific, use_hp=False, n_buckets=10,  n_startup_trials=1, n_trials=1):
+    def __init__(self, object_filename, scope, use_hp=False, n_buckets=10):
         self.object_filename = object_filename
 
-        self.scope = check_scope(scope)
-        
-        self.n_trials = n_trials
-
-        self.n_startup_trials = n_startup_trials
-
+        # self.scope = check_scope(scope)
+        self.scope = scope
         self.n_buckets = n_buckets
+        self.voting_regressors = {}
+        self.list_of_skipped_columns = ['scope_1', 'scope_2', "scope_3", 'isin', "year", f"group_label_{self.scope}"]
 
-        self.bucket_specific = bucket_specific
+    # def subset_data(self, data):
+    #     """
+    #     It subsets the data based on the bucket label
 
-        self.voting_regressor = None
+    #     Parameters:
+    #     data (pandas.DataFrame): pre-processed dataset
 
-        self.list_of_skipped_columns = [
-            'scope_1', 'scope_2', "scope_3", 'isin', "year", f"group_label_{self.scope}"]
+    #     Return:
+    #     data (pandas.DataFrame): data subset by bucket label
 
+    #     """
+    #     # subsetting dataframe
+    #     # returning only the portion of the data where group_label == bucket_specific
+    #     return data.loc[data[f"group_label_{self.scope}"] == self.bucket_specific]
 
-    def subset_data(self, data):
-        """
-        It subsets the data based on the bucket label
+    # def train_test_val_split(self, data, split_size_test=None, split_size_val=None):
+    #     """
+    #     Splitting the data in trianing, testing, and validation sets 
+    #     with a splitting threshold of split_size_test, and split_size_val respectively
 
-        Parameters:
-        data (pandas.DataFrame): pre-processed dataset
+    #     Parameters:
+    #     data (pandas.DataFrame): pre-processed dataset
+    #     split_size_test (float): splitting threshold between training set and testing + validation sets
+    #     split_size_val (float): splitting threshold between testing set and validation set
 
-        Return:
-        data (pandas.DataFrame): data subset by bucket label
+    #      Return:
+    #     X_train (numpy array): training data
+    #     y_train (numpy array): training data 
+    #     X_train_full (numpy array): not splitted training data 
+    #     y_train_full (numpy array): not splitted training data 
+    #     X_test (numpy array): testing data 
+    #     y_test (numpy array): testing data 
+    #     X_val (numpy array): validation data
+    #     y_val (numpy array): validation data 
 
-        """
-        # subsetting dataframe
-        # returning only the portion of the data where group_label == bucket_specific
-        return data.loc[data[f"group_label_{self.scope}"] == self.bucket_specific]
+    #     """
 
-    def train_test_val_split(self, data, split_size_test=None, split_size_val=None):
-        """
-        Splitting the data in trianing, testing, and validation sets 
-        with a splitting threshold of split_size_test, and split_size_val respectively
+    #     # excluding -1 as they are not valid targets
+    #     data = data.loc[data[self.scope] != -1]
 
-        Parameters:
-        data (pandas.DataFrame): pre-processed dataset
-        split_size_test (float): splitting threshold between training set and testing + validation sets
-        split_size_val (float): splitting threshold between testing set and validation set
+    #     X, y = data.drop(columns=self.list_of_skipped_columns), data[self.scope]
 
-         Return:
-        X_train (numpy array): training data
-        y_train (numpy array): training data 
-        X_train_full (numpy array): not splitted training data 
-        y_train_full (numpy array): not splitted training data 
-        X_test (numpy array): testing data 
-        y_test (numpy array): testing data 
-        X_val (numpy array): validation data
-        y_val (numpy array): validation data 
+    #     # verbose
+    #     print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
 
-        """
+    #     X_train_full, X_test, y_train_full, y_test = train_test_split(X, y, test_size=split_size_test, random_state=42)
 
-        # excluding -1 as they are not valid targets
-        data = data.loc[data[self.scope] != -1]
+    #     # splitting further - train and validation sets will be used for hyperparameter-optimization; test set will be used for performance assesment
+    #     X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full, test_size=split_size_val, random_state=42)
 
-
-        X, y = data.drop(
-            columns=self.list_of_skipped_columns), data[self.scope]
-
-        # verbose
-        print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
-
-        X_train_full, X_test, y_train_full, y_test = train_test_split(X, y, test_size=split_size_test, random_state=42)
-
-        # splitting further - train and validation sets will be used for hyperparameter-optimization; test set will be used for performance assesment
-        X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full, test_size=split_size_val, random_state=42)
-
-        return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
+    #     return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
 
 
-    def build_voting_regressor(self, X_train, y_train, X_val, y_val):
-        """
-        For each model, it makes an optuna study in order to explore the best hyperparameters
-        The best hyperparameters are passed to each model for training
-        Performance scores of each individual model is used as weights for the voting regressor
 
-        Parameters:
-        X_train (numpy array): training data (features)
-        y_train (numpy array): training data (targets)
-        X_test (numpy array): testing data (features)
-        y_test (numpy array): testing data (target)
-        """
+    # def run_shap_analysis(self, X_test):
 
-        # selecting the models that will be trained to build the voting regressor --> tuple(name, model)
-        models = [("GBR", GradientBoostingRegressor()), 
-        ("RFR", RandomForestRegressor(n_jobs=-1)), 
-        ("XGB", xgb.XGBRegressor(n_jobs=-1, base_score=0.5)), ("ADB", AdaBoostRegressor())]
+    #     # shap.initjs()
+    #     print("DOING SHAPY")
 
+    #     # feature_names = ["sector_name" , "ppe", "industry_name", "rd_expenses", "employees"]
+    #     # # print(feature_names)
+    #     feature_names = self.columns
+    #     print(feature_names)
 
-        self.vanilla_voting_regressor = VotingRegressor(estimators=models, n_jobs=-1)
+    #     model = self.voting_regressors.named_estimators_["XGB"]
 
-        # scores will be used to compute weights for voting mechanism
-        scores = []
+    #     explainer = shap.TreeExplainer(model)
 
-        # candidates will be given to VotingRegressor
-        candidates = []
+    #     shap_values = explainer(X_test)
 
-        # do hyperparams tuning for each of the three models --> OPTUNA!
-        for name, model in models:
+    #     f = plt.figure()
+    #     # shap.plots.beeswarm(shap_values)
+    #     shap.summary_plot(shap_values, X_test, feature_names=feature_names, plot_type="violin")
+    #     # print("finished plotting shapyy")
+    #     f.savefig("./model/misc/XGB_summary_plot_scope1.png")
 
-            # print(f"Training {name} ... ")
-
-            best_hps = self.tune_hp(name, X_train, y_train, X_val, y_val,
-                                    num_startup_trials=self.n_startup_trials, n_trials=self.n_trials)
-
-            model.set_params(**best_hps)
-
-            # loop through the models and train individually
-            model.fit(X_train, y_train)
-
-            # calculate the score of each individual model to weight voting mechanism
-            y_pred = model.predict(X_val)
-
-            model_score = smape(y_val, y_pred)
-
-            # the lower the smape the better
-            scores.append(100 - model_score)
-
-            # append a tuple ("name", model) to then give it to VotingRegressor
-            candidates.append((name, model))
-
-        self.voting_regressor = VotingRegressor(
-            estimators=candidates, weights=scores, n_jobs=-1)
-
-    def run_shap_analysis(self, X_test):
-
-        # shap.initjs()
-        print("DOING SHAPY")
-
-        # feature_names = ["sector_name" , "ppe", "industry_name", "rd_expenses", "employees"]
-        # # print(feature_names)
-        feature_names = self.columns
-        print(feature_names)
-
-        model = self.voting_regressor.named_estimators_["XGB"]
-
-        explainer = shap.TreeExplainer(model)
-
-        shap_values = explainer(X_test)
-
-        f = plt.figure()
-        # shap.plots.beeswarm(shap_values)
-        shap.summary_plot(shap_values, X_test,
-                          feature_names=feature_names, plot_type="violin")
-        # print("finished plotting shapyy")
-        f.savefig("./model/misc/XGB_summary_plot_scope1.png")
-
-    def process_train(self, data):
+    def fit(self, X, y, **kwargs):
         """
         The main training loop that calls all the other functions
         Subsets data, splits in training, test and validation, builds and trains voting regressor, computes error metrics
 
         """
-
+        groups = kwargs.get('groups')
         # add buckets label that are needed to subset the data
-        data = add_bucket_label(data, self.scope, self.n_buckets)
-        # print(data)
+        X["group"] = groups
 
-        # subsetting data frame as we want one regressor per label
-        data = self.subset_data(data)
+        regressor_kwargs = kwargs.get("rgs")
+        
+        for bucket, candidates_data in regressor_kwargs.items():
+            selector = groups==bucket
+            X_train, y_train, X_val, y_val = train_test_split(X[selector], y[selector], split_size_test=0.3, split_size_val=0.3)
+            for name, candidate_data in candidates_data.items():
+                best_params = candidate_data.get("best_params")
+                ModelConstructor = candidate_data.get("Model")
+                model = ModelConstructor(**best_params)
+                model.fit(X_train, y_train)
 
-        # split the subset in train and test
-        X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val = self.train_test_val_split(data, split_size_test=0.3, split_size_val=0.3)
+                # calculate the score of each individual model to weight voting mechanism
+                y_pred = model.predict(X_val)
 
-        # build voting regressor
-        print("1. Build VotingRegressor")
-        print("\n")
-        print(f"Training each model on {X_train.shape[0]} data points")
-        print(f"Validating each model on {X_val.shape[0]} data points", "\n")
-        self.build_voting_regressor(X_train, y_train, X_val, y_val)
+                model_score = smape(y_val, y_pred)
 
-        # train voting regressor withouth hp tuning and uniform weights
-        self.vanilla_voting_regressor = self.vanilla_voting_regressor.fit(X_train_full, y_train_full)
-        y_pred = vanilla_voting_regressor.predict(X_test)
-        self.compute_error_metrics(y_test, y_pred, "error_metrics_vanilla_regressor.csv")
+                # the lower the smape the better
+                candidate_data["score"] = 100 - model_score            
+                candidate_data["model"] = model            
+        
+            weights = [v["score"] for _, v in regressor_kwargs.items()]
+            models = [(name, v["model"]) for name, v in regressor_kwargs.items()]
+            self.voting_regressors[bucket] =  VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector], y[selector])
+                    
+        return self
 
-        print(f"2. Training VotingRegressor ({self.scope} - bucket {self.bucket_specific}) on {X_train_full.shape[0]} data points")
 
-        self.columns = X_train_full.columns.to_list()
 
-        self.voting_regressor = self.voting_regressor.fit(
-            X_train_full, y_train_full)
-
-        print(f"3. Testing on {X_test.shape[0]} data points ...", "\n")
-        y_pred = self.voting_regressor.predict(X_test)
-        self.compute_error_metrics(y_test, y_pred, "error_metrics_regressors.csv")
-
-        # Test for overfitting by computing error metrics on train set and saving it an different CSV
-        y_pred = self.voting_regressor.predict(X_train_full)
-        self.compute_error_metrics(y_train_full, y_pred, "error_metrics_regressors_overfit_check.csv")
-
-        # if self.scope == "scope_1" and self.bucket_specific == 0:
-        #     self.run_shap_analysis(X_test)
-
-    def process_predict(self, data):
+    def predict(self, X, **kwargs):
         """
         Voting regressor computes prediction
 
@@ -421,13 +416,17 @@ class BucketRegressor(MLModelInterface):
         Return:
         predictions (numpy array): the predicted values
         """
+        groups = kwargs.get('groups')
+        X = X.drop(columns=self.list_of_skipped_columns)
 
-        data = data.drop(columns=self.list_of_skipped_columns)
-        #     file.write("\n")
+        y_pred = np.zeros(X.shape[0])
+        
+        for bucket, voting_regressor in self.voting_regressors.items():
+            selector = bucket == groups
+            y_pred[selector] = voting_regressor.predict(X[selector])
+            
 
-        predictions = self.voting_regressor.predict(data[self.columns])
-
-        return np.exp(predictions)
+        return np.exp(y_pred)
 
     # @staticmethod
     # def get_params(models):
@@ -527,147 +526,147 @@ class BucketRegressor(MLModelInterface):
 
     #     params = ModelML.get_params(models)
 
-        # X_train_full, X_test, y_train_full, y_test = self.train_test_split_by_scope(test_size=0.3, data=data)
+    # X_train_full, X_test, y_train_full, y_test = self.train_test_split_by_scope(test_size=0.3, data=data)
 
-        # # split full train data into validation and train
-        # X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full, test_size = 0.215)
+    # # split full train data into validation and train
+    # X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full, test_size = 0.215)
 
-        # for m in tqdm(models):
-        #     name_ = str(m.__class__).split(".")[-1].rstrip("'>")
-        #     # the following will also perform hyperparameter tuning
-        #     model, score_ = ModelML.train_model(m, X_train, X_val, y_train, y_val, params[name_], self.hyper_params, self.scope, with_hp=self.use_hp)
-        #     print(f"\n training {name_}: {score_} ")
-        #     candidates.append((name_, model))
-        #     scores.append(score_)
+    # for m in tqdm(models):
+    #     name_ = str(m.__class__).split(".")[-1].rstrip("'>")
+    #     # the following will also perform hyperparameter tuning
+    #     model, score_ = ModelML.train_model(m, X_train, X_val, y_train, y_val, params[name_], self.hyper_params, self.scope, with_hp=self.use_hp)
+    #     print(f"\n training {name_}: {score_} ")
+    #     candidates.append((name_, model))
+    #     scores.append(score_)
 
-        # fitting the full training data to the VotingRegressor
-        # self.columns = X_train_full.columns.to_list()
+    # fitting the full training data to the VotingRegressor
+    # self.columns = X_train_full.columns.to_list()
 
-        # print("DOING ERROR METRICS")
-        # error_table = pd.read_csv(DATA_DIR / "error_metrics_oldModel.csv")
-        # y_pred_ensemble = self.ensemble.predict(X_test)
-        # print("SMAPE: " , smape(y_test, y_pred_ensemble))
+    # print("DOING ERROR METRICS")
+    # error_table = pd.read_csv(DATA_DIR / "error_metrics_oldModel.csv")
+    # y_pred_ensemble = self.ensemble.predict(X_test)
+    # print("SMAPE: " , smape(y_test, y_pred_ensemble))
 
-        # def conduct_error_metrics():
-        # df = pd.DataFrame(columns=["model", "scope", "sMAPE", "adjR2", "MAE", "RMSE"])
-        # df.loc[0, "model"] = "OXARI-ENSEMBLE"
+    # def conduct_error_metrics():
+    # df = pd.DataFrame(columns=["model", "scope", "sMAPE", "adjR2", "MAE", "RMSE"])
+    # df.loc[0, "model"] = "OXARI-ENSEMBLE"
 
-        # error_table = pd.DataFrame(columns=["model", "scope", "sMAPE", "adjR2", "MAE", "RMSE"])
+    # error_table = pd.DataFrame(columns=["model", "scope", "sMAPE", "adjR2", "MAE", "RMSE"])
 
-        # print("Error metrics ENSEMBLE")
-        # error_ensemble = {"model" : "OXARI", "scope" : self.scope, "sMAPE" : smape(y_test, y_pred_ensemble),
-        #                   "adjR2" : adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_ensemble)) ,
-        #                   "MAE" : mean_absolute_error(y_test, y_pred_ensemble), "RMSE" : mean_squared_error(y_test, y_pred_ensemble, squared=False)}
+    # print("Error metrics ENSEMBLE")
+    # error_ensemble = {"model" : "OXARI", "scope" : self.scope, "sMAPE" : smape(y_test, y_pred_ensemble),
+    #                   "adjR2" : adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_ensemble)) ,
+    #                   "MAE" : mean_absolute_error(y_test, y_pred_ensemble), "RMSE" : mean_squared_error(y_test, y_pred_ensemble, squared=False)}
 
-        # error_table = pd.read_csv("error_metrics_oldModel.csv")
+    # error_table = pd.read_csv("error_metrics_oldModel.csv")
 
-        # error_table = error_table.append(error_ensemble, ignore_index = True)
+    # error_table = error_table.append(error_ensemble, ignore_index = True)
 
-        # xgboost = xgb.XGBRegressor()
-        # xgboost.fit(X_train_full, y_train_full)
-        # y_pred_xgb = xgboost.predict(X_test)
+    # xgboost = xgb.XGBRegressor()
+    # xgboost.fit(X_train_full, y_train_full)
+    # y_pred_xgb = xgboost.predict(X_test)
 
-        # print("Error metrics XGB")
+    # print("Error metrics XGB")
 
-        # error_xgb = {"model" : "vannilla_XGB", "scope" : self.scope, "sMAPE" : smape(y_test, y_pred_xgb),
-        #                   "adjR2" : adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_xgb)) ,
-        #                   "MAE" : mean_absolute_error(y_test, y_pred_xgb), "RMSE" : mean_squared_error(y_test, y_pred_xgb, squared=False)}
+    # error_xgb = {"model" : "vannilla_XGB", "scope" : self.scope, "sMAPE" : smape(y_test, y_pred_xgb),
+    #                   "adjR2" : adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_xgb)) ,
+    #                   "MAE" : mean_absolute_error(y_test, y_pred_xgb), "RMSE" : mean_squared_error(y_test, y_pred_xgb, squared=False)}
 
-        # error_table = error_table.append(error_xgb, ignore_index = True)
+    # error_table = error_table.append(error_xgb, ignore_index = True)
 
-        # knn = KNeighborsRegressor()
-        # knn.fit(X_train_full, y_train_full)
-        # y_pred_knn = knn.predict(X_test)
+    # knn = KNeighborsRegressor()
+    # knn.fit(X_train_full, y_train_full)
+    # y_pred_knn = knn.predict(X_test)
 
-        # print("Error metrics KNN")
+    # print("Error metrics KNN")
 
-        # error_knn = {"model" : "vannilla_KNN", "scope" : self.scope, "sMAPE" : smape(y_test, y_pred_knn),
-        #                   "adjR2" : adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_knn)) ,
-        #                   "MAE" : mean_absolute_error(y_test, y_pred_knn), "RMSE" : mean_squared_error(y_test, y_pred_knn, squared=False)}
+    # error_knn = {"model" : "vannilla_KNN", "scope" : self.scope, "sMAPE" : smape(y_test, y_pred_knn),
+    #                   "adjR2" : adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_knn)) ,
+    #                   "MAE" : mean_absolute_error(y_test, y_pred_knn), "RMSE" : mean_squared_error(y_test, y_pred_knn, squared=False)}
 
-        # error_table = error_table.append(error_knn, ignore_index = True)
+    # error_table = error_table.append(error_knn, ignore_index = True)
 
-        # lr = LinearRegression().fit(X_train_full, y_train_full)
-        # y_pred_lr = lr.predict(X_test)
+    # lr = LinearRegression().fit(X_train_full, y_train_full)
+    # y_pred_lr = lr.predict(X_test)
 
-        # error_lr = {"model" : "LR", "scope" : self.scope, "sMAPE" : smape(y_test, y_pred_lr),
-        #                   "adjR2" : adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_lr)) ,
-        #                   "MAE" : mean_absolute_error(y_test, y_pred_lr), "RMSE" : mean_squared_error(y_test, y_pred_lr, squared=False)}
+    # error_lr = {"model" : "LR", "scope" : self.scope, "sMAPE" : smape(y_test, y_pred_lr),
+    #                   "adjR2" : adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_lr)) ,
+    #                   "MAE" : mean_absolute_error(y_test, y_pred_lr), "RMSE" : mean_squared_error(y_test, y_pred_lr, squared=False)}
 
-        # error_table = error_table.append(error_lr, ignore_index = True)
+    # error_table = error_table.append(error_lr, ignore_index = True)
 
-        # error_table.to_csv(DATA_DIR/"error_metrics_oldModel.csv", index=False)
+    # error_table.to_csv(DATA_DIR/"error_metrics_oldModel.csv", index=False)
 
-        # print("DONE ERROR METRICS")
+    # print("DONE ERROR METRICS")
 
-        # with open ("error_metrics_oldModel.txt", "a+") as file:
-        #     file.write(f"OXARI ENSEMBLE - {self.scope} \n")
-        #     file.write(f"sMAPE : {smape(y_test, y_pred_ensemble)}")
-        #     file.write("\n")
-        #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_ensemble))}")
-        #     file.write("\n")
-        #     file.write(f"MAE : {mean_absolute_error(y_test, y_pred_ensemble)}")
-        #     file.write("\n")
-        #     file.write(f"RMSE : {mean_squared_error(y_test, y_pred_ensemble, squared=False)}")
-        #     file.write("\n")
-        #     file.write("\n")
-        #     file.write("\n")
+    # with open ("error_metrics_oldModel.txt", "a+") as file:
+    #     file.write(f"OXARI ENSEMBLE - {self.scope} \n")
+    #     file.write(f"sMAPE : {smape(y_test, y_pred_ensemble)}")
+    #     file.write("\n")
+    #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_ensemble))}")
+    #     file.write("\n")
+    #     file.write(f"MAE : {mean_absolute_error(y_test, y_pred_ensemble)}")
+    #     file.write("\n")
+    #     file.write(f"RMSE : {mean_squared_error(y_test, y_pred_ensemble, squared=False)}")
+    #     file.write("\n")
+    #     file.write("\n")
+    #     file.write("\n")
 
-        # with open ("error_metrics_oldModel.txt", "a+") as file:
-        #     file.write(f"XGBoost - {self.scope} \n")
-        #     file.write(f"sMAPE : {smape(y_test, y_pred_xgb)}")
-        #     file.write("\n")
-        #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_xgb))}")
-        #     file.write(f"MAE : {mean_absolute_error(y_test, y_pred_xgb)}")
-        #     file.write("\n")
-        #     file.write(f"RMSE : {mean_squared_error(y_test, y_pred_xgb, squared=False)}")
-        #     file.write("\n")
-        #     file.write("\n")
+    # with open ("error_metrics_oldModel.txt", "a+") as file:
+    #     file.write(f"XGBoost - {self.scope} \n")
+    #     file.write(f"sMAPE : {smape(y_test, y_pred_xgb)}")
+    #     file.write("\n")
+    #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_xgb))}")
+    #     file.write(f"MAE : {mean_absolute_error(y_test, y_pred_xgb)}")
+    #     file.write("\n")
+    #     file.write(f"RMSE : {mean_squared_error(y_test, y_pred_xgb, squared=False)}")
+    #     file.write("\n")
+    #     file.write("\n")
 
-        # with open ("error_metrics_oldModel.txt", "a+") as file:
-        #     file.write(f"vanilla KNN - {self.scope} \n")
-        #     file.write(f"sMAPE : {smape(y_test, y_pred_knn)}")
-        #     file.write("\n")
-        #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_knn))}")
-        #     file.write("\n")
-        #     file.write(f"MAE : {mean_absolute_error(y_test, y_pred_knn)}")
-        #     file.write("\n")
-        #     file.write(f"RMSE : {mean_squared_error(y_test, y_pred_knn, squared=False)}")
-        #     file.write("\n")
-        #     file.write("\n")
+    # with open ("error_metrics_oldModel.txt", "a+") as file:
+    #     file.write(f"vanilla KNN - {self.scope} \n")
+    #     file.write(f"sMAPE : {smape(y_test, y_pred_knn)}")
+    #     file.write("\n")
+    #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_knn))}")
+    #     file.write("\n")
+    #     file.write(f"MAE : {mean_absolute_error(y_test, y_pred_knn)}")
+    #     file.write("\n")
+    #     file.write(f"RMSE : {mean_squared_error(y_test, y_pred_knn, squared=False)}")
+    #     file.write("\n")
+    #     file.write("\n")
 
-        # lr = LinearRegression().fit(X_train_full, y_train_full)
-        # y_pred_lr = lr.predict(X_test)
+    # lr = LinearRegression().fit(X_train_full, y_train_full)
+    # y_pred_lr = lr.predict(X_test)
 
-        # with open ("error_metrics_oldModel.txt", "a+") as file:
-        #     file.write(f"LR - {self.scope} \n")
-        #     file.write(f"sMAPE : {smape(y_test, y_pred_lr)}")
-        #     file.write("\n")
-        #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_lr))}")
-        #     file.write("\n")
-        #     file.write(f"MAE : {mean_absolute_error(y_test, y_pred_lr)}")
-        #     file.write("\n")
-        #     file.write(f"RMSE : {mean_squared_error(y_test, y_pred_lr, squared=False)}")
-        #     file.write("\n")
-        #     file.write("\n")
+    # with open ("error_metrics_oldModel.txt", "a+") as file:
+    #     file.write(f"LR - {self.scope} \n")
+    #     file.write(f"sMAPE : {smape(y_test, y_pred_lr)}")
+    #     file.write("\n")
+    #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_lr))}")
+    #     file.write("\n")
+    #     file.write(f"MAE : {mean_absolute_error(y_test, y_pred_lr)}")
+    #     file.write("\n")
+    #     file.write(f"RMSE : {mean_squared_error(y_test, y_pred_lr, squared=False)}")
+    #     file.write("\n")
+    #     file.write("\n")
 
-        # lr_bin = LinearRegression().fit(X_train_full["revenue"].values.reshape(-1, 1), y_train_full)
+    # lr_bin = LinearRegression().fit(X_train_full["revenue"].values.reshape(-1, 1), y_train_full)
 
-        # y_pred_lr_bin = lr_bin.predict(X_test["revenue"].values.reshape(-1, 1))
+    # y_pred_lr_bin = lr_bin.predict(X_test["revenue"].values.reshape(-1, 1))
 
-        # with open ("error_metrics_oldModel.txt", "a+") as file:
-        #     file.write(f"LR-revenue: {self.scope}")
-        #     file.write("\n")
-        #     file.write(f"sMAPE : {smape(y_test, y_pred_lr_bin)}")
-        #     file.write("\n")
-        #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_lr_bin))}")
-        #     file.write("\n")
-        #     file.write("\n")
-        #     file.write("\n")
+    # with open ("error_metrics_oldModel.txt", "a+") as file:
+    #     file.write(f"LR-revenue: {self.scope}")
+    #     file.write("\n")
+    #     file.write(f"sMAPE : {smape(y_test, y_pred_lr_bin)}")
+    #     file.write("\n")
+    #     file.write(f"adj R2 : {adjusted_r_squared(X_train_full, y_train_full, r2_score(y_test, y_pred_lr_bin))}")
+    #     file.write("\n")
+    #     file.write("\n")
+    #     file.write("\n")
 
-        # if self.scope == "scope_1":
-        #     print("running SHAP")
-        #     self.run_shap_analysis(X_test)
+    # if self.scope == "scope_1":
+    #     print("running SHAP")
+    #     self.run_shap_analysis(X_test)
 
     # def process_predict(self, prediction_data):
     #     X, y = prediction_data.drop(columns = self.list_of_skipped_columns), prediction_data[self.scope]
@@ -681,40 +680,40 @@ class BucketRegressor(MLModelInterface):
     # @staticmethod
     # def train_autoML(X_train, y_train, X_test, y_test):
 
-        # metric: A metric which we want to optimize
+    # metric: A metric which we want to optimize
 
-        # scoring_function: One or more metrics which we want to evaluate the model on
+    # scoring_function: One or more metrics which we want to evaluate the model on
 
-        # Available REGRESSION autosklearn.metrics.*:
-        # *mean_absolute_error
-        # *mean_squared_error
-        # *root_mean_squared_error
-        # *mean_squared_log_error
-        # *median_absolute_error
-        # *r2
+    # Available REGRESSION autosklearn.metrics.*:
+    # *mean_absolute_error
+    # *mean_squared_error
+    # *root_mean_squared_error
+    # *mean_squared_log_error
+    # *median_absolute_error
+    # *r2
 
-        # By default, the regressor will optimize the R^2 metric.
-        # autosklearn.pipeline.components.data_preprocessing.add_preprocessor(NoPreprocessing)
+    # By default, the regressor will optimize the R^2 metric.
+    # autosklearn.pipeline.components.data_preprocessing.add_preprocessor(NoPreprocessing)
 
-        # automl = autosklearn.regression.AutoSklearnRegressor(
-        # time_left_for_this_task=100,
-        # ensemble_size = 20,
-        # ensemble_nbest = 10,
-        # metric = mse,
-        # include = {
-        # #"regressor" : ["gradient_boosting"],
-        # 'data_preprocessor' : ['NoPreprocessing'],
-        # 'feature_preprocessor': ["no_preprocessing"]},
-        # initial_configurations_via_metalearning=0
-        # )
+    # automl = autosklearn.regression.AutoSklearnRegressor(
+    # time_left_for_this_task=100,
+    # ensemble_size = 20,
+    # ensemble_nbest = 10,
+    # metric = mse,
+    # include = {
+    # #"regressor" : ["gradient_boosting"],
+    # 'data_preprocessor' : ['NoPreprocessing'],
+    # 'feature_preprocessor': ["no_preprocessing"]},
+    # initial_configurations_via_metalearning=0
+    # )
 
-        # automl.fit(X = X_train, y = y_train, X_test = X_test, y_test = y_test)
-        # pprint(automl.leaderboard(detailed = True))
+    # automl.fit(X = X_train, y = y_train, X_test = X_test, y_test = y_test)
+    # pprint(automl.leaderboard(detailed = True))
 
-        # print()
+    # print()
 
-        #ensemble_dict = automl.show_models()
-        # print(ensemble_dict)
+    #ensemble_dict = automl.show_models()
+    # print(ensemble_dict)
 
     # def calculate_error_metrics(y_test, X_train, y_train, X_test):
     #     y_pred_ensemble = self.ensemble.predict(X_test)

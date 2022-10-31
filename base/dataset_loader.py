@@ -12,6 +12,7 @@ from typing import Dict, List, Union
 import pandas as pd
 import numpy as np
 import abc
+from base.common import OxariMixin
 # from base.common import OxariMixin
 from base.mappings import CatMapping, NumMapping
 from sklearn.model_selection import train_test_split
@@ -68,11 +69,10 @@ class ScopeLoader(PartialLoader, abc.ABC):
 
         threshold = kwargs.get("threshold", self.threshold)
 
-        # dropping datapoints that have no scopes
-        data = data.dropna(how="all", subset=self.scopes_columns)
         # dropping data entries where unlogged scopes are lower than threshold
-        ss = NumMapping.get_targets()
-        data[ss].loc[data[ss] < threshold] = np.nan
+        data[self.columns] = np.where((data[self.columns] < threshold),np.nan,data[self.columns])
+        # dropping datapoints that have no scopes
+        data = data.dropna(how="all", subset=self.columns)
         # for s in NumMapping.get_targets():
         #     data.loc[data[s] < threshold, [s]] = np.nan
 
@@ -96,7 +96,7 @@ class CategoricalLoader(PartialLoader, abc.ABC):
         self.columns = CatMapping.get_features()
 
 
-class OxariDataLoader(abc.ABC):
+class OxariDataLoader(OxariMixin, abc.ABC):
     """
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
     Should be capable of reading the data from csv-file or from database
@@ -128,7 +128,8 @@ class OxariDataLoader(abc.ABC):
         self.financial_loader = self.financial_loader.run()
         self.categorical_loader = self.categorical_loader.run()
         # TODO: Think whether this should be called via @property
-        self._df_original = self.scope_loader.data.merge(self.financial_loader.data, on="isin", how="left").merge(self.categorical_loader.data, on="isin", how="left")
+        self._df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
+        self._df_original = self._df_original.merge(self.categorical_loader.data, on="isin", how="left")
         return self
 
     def set_original_data(self, df: pd.DataFrame) -> "OxariDataLoader":
@@ -203,14 +204,16 @@ class OxariDataLoader(abc.ABC):
         # data = data.loc[data[self.scope] != -1]
 
         # split in features and targets
-        X, y = self._df_filled.drop(columns = list_of_skipped_columns),  self._df_filled[f"group_label_{scope}"]
+        X, y = self._df_preprocessed.drop(columns = list_of_skipped_columns),  self._df_preprocessed[f"scope_{scope}"]
+        selector = ~np.isnan(y) 
 
         # verbose
         print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
 
-        X_train_full, X_test, y_train_full, y_test = train_test_split(X, y, test_size=split_size_test)
+        X_remaining, X_test, y_remaining, y_test = train_test_split(X[selector], y[selector], test_size=split_size_test)
 
         # splitting further - train and validation sets will be used for optimization; test set will be used for performance assesment
-        X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full, test_size=split_size_val)
+        X_train, X_val, y_train, y_val = train_test_split(X_remaining, y_remaining, test_size=split_size_val)
 
-        return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
+        # return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
+        return X_train, y_train, X_remaining, y_remaining, X_test, y_test, X_val, y_val

@@ -80,6 +80,11 @@ class OxariMixin(abc.ABC):
     #     """
     #     return self
 
+    def optimize(self):
+        pass
+    
+    def evaluate(self):
+        pass
 
     def set_logger(self, logger: OxariLogger) -> "OxariMixin":
         self._logger = logger
@@ -106,11 +111,11 @@ class OxariMixin(abc.ABC):
 class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "OxariTransformer":
+    def fit(self, X, y=None, **kwargs) -> "OxariTransformer":
         return self
 
     @abc.abstractmethod
-    def transform(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
 
 
@@ -121,11 +126,21 @@ class OxariClassifier(sklearn.base.ClassifierMixin, sklearn.base.BaseEstimator, 
         return self
 
     @abc.abstractmethod
-    def predict(self, X, kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        pass
+
+class OxariRegressor(sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, abc.ABC):
+    """Just for intellisense convenience. Not really necessary but allows autocompletion"""
+    @abc.abstractmethod
+    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+        return self
+
+    @abc.abstractmethod
+    def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
 
 
-class OxariImputer(_base._BaseImputer, abc.ABC):
+class OxariImputer(_base._BaseImputer, OxariMixin ,abc.ABC):
     """
     Handles imputation of missing values for values that are zero. Fit and Transform have to be implemented accordingly.
     """
@@ -135,7 +150,7 @@ class OxariImputer(_base._BaseImputer, abc.ABC):
         self.copy = copy
 
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "OxariImputer":
+    def fit(self, X, y=None, **kwargs) -> "OxariImputer":
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
         # Set self.n_features_in_ = X.shape[1]

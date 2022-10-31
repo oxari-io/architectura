@@ -20,27 +20,34 @@ class DefaultPipeline(pipeline.OxariPipeline):
         postprocessor: OxariPostprocessor = None,
         database_deployer=None,
     ):
-        self.dataset = dataset or CSVDataLoader() ### None os CSVLoader OK
-        self.preprocessor = preprocessor or BaselinePreprocessor(imputer=DummyImputer())
-        self.imputer = imputer or OxariImputer()
-        self.scope_estimator = DefaultScopeEstimator()
+        self.dataset = dataset or CSVDataLoader()  ### None os CSVLoader OK
+        self.preprocessor = preprocessor or BaselinePreprocessor()
+        self.preprocessor = self.preprocessor.set_imputer(imputer or DummyImputer())
+        self.scope_estimator = scope_estimator or DefaultScopeEstimator()
         # postprocessor = DummyPostprocessor()
-        super().__init__(dataset, preprocessor, imputer, scope_estimator, postprocessor, database_deployer)
+        super().__init__(dataset=self.dataset, preprocessor=self.preprocessor, scope_estimator=self.scope_estimator, postprocessor=None, database_deployer=None)
 
     def run_pipeline(self, **kwargs):
         # kwargs.pop("")
+        self.dataset = self.dataset.run()
         df_processed = self.preprocessor.fit_transform(self.dataset._df_original)
         self.dataset = self.dataset.set_preprocessed_data(df_processed)
-        df_filled = self.imputer.fit_transform(dataset._df_filled)
-        self.dataset = self.dataset.set_filled_data(df_filled)
-        
-        X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val = self.dataset.train_test_val_split(scope=1)
-        
-        best_parameters, info =  self.scope_estimator._optimizer.optimize(X_train, y_train, X_val, y_val)
-        
-        self.scope_estimator = self.scope_estimator.fit(X_train_full, y_train_full, **best_parameters)
+        # self.dataset = self.dataset.set_filled_data(df_filled)
+
+        # TODO: Implement the train test split params as method parameters of run_pipeline
+        # TODO: Run pipeline needs a parameter for which scope to run on
+        X_train, y_train, X_rem, y_rem, X_test, y_test, X_val, y_val = self.dataset.train_test_val_split(
+            scope=1,
+            split_size_test=0.2,
+            split_size_val=0.2,
+            list_of_skipped_columns=["scope_1", "scope_2", "scope_3", "isin", "year"],
+        )
+
+        best_parameters, info = self.scope_estimator.optimize(X_train, y_train, X_val, y_val)
+
+        self.scope_estimator = self.scope_estimator.fit(X_rem, y_rem, **best_parameters)
         y_pred = self.scope_estimator.predict(X_test)
         self.scope_estimator._evaluator.evaluate(y_pred, y_test)
-        
+
         # self.postprocessor.fit()
         return self

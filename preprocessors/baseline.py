@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Union
 from base.pipeline import OxariPreprocessor
-import sklearn.preprocessing as prep 
+import sklearn.preprocessing as prep
 import category_encoders as ce
 import sklearn
 from base.common import OxariMixin, OxariTransformer
@@ -25,7 +25,7 @@ class DummyPreprocessor(OxariPreprocessor):
     def run(self, **kwargs) -> "DummyPreprocessor":
         return super().run(**kwargs)
 
-    def fit(self, X:pd.DataFrame, y, **kwargs) -> "DummyPreprocessor":
+    def fit(self, X: pd.DataFrame, y, **kwargs) -> "DummyPreprocessor":
         data = X
         # log scaling the scopes
         self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
@@ -59,15 +59,18 @@ class BaselinePreprocessor(OxariPreprocessor):
     def run(self, **kwargs) -> "BaselinePreprocessor":
         return super().run(**kwargs)
 
-    def fit(self, X:pd.DataFrame, y, **kwargs) -> "BaselinePreprocessor":
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
         data = X
         # log scaling the scopes
         self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical
         self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
         # encode categorical
-        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=(data[self.scope_columns][0]))
-        return data
+        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=data[self.scope_columns[0]])
+        # imputer
+        self.imputer = self.imputer.fit(data)
+
+        return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         data = X
@@ -76,5 +79,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         # transform numerical
         data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
         # encode categorical
-        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=(data[self.scope_columns[0]]))
+        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=data[self.scope_columns[0]])
+        # impute all the missing columns
+        data[self.financial_columns + self.categorical_columns] = self.imputer.transform(data[self.financial_columns + self.categorical_columns])
         return data

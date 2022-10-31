@@ -1,3 +1,4 @@
+from typing import Union
 import pandas as pd
 import pickle
 import numpy as np
@@ -9,13 +10,13 @@ from tqdm import tqdm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score, RandomizedSearchCV
 # from model.abstract_base_class import MLModelInterface
-
+from sklearn.preprocessing import KBinsDiscretizer
 # from model.misc.hyperparams_tuning import tune_hps_classifier
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
 
 from pathlib import Path
 
-from base.common import OxariClassifier, OxariEvaluator, OxariMixin, OxariOptimizer
+from base.common import OxariClassifier, OxariEvaluator, OxariMixin, OxariOptimizer, OxariTransformer
 
 OBJECT_DIR = Path("model/objects")
 DATA_DIR = Path("model/data")
@@ -23,8 +24,23 @@ METRICS_DIR = Path("model/metrics")
 OPTUNA_DIR = Path("model/optuna")
 
 
+class ClassfierScopeDiscretizer(OxariTransformer):
+    def __init__(self, n_buckets, prefix="bucket_", **kwargs) -> None:
+        super().__init__()
+        self.n_buckets = n_buckets
+        self.prefix = prefix
+        encode = kwargs.pop("encode", "ordinal")
+        self.discretizer = KBinsDiscretizer(n_buckets, encode=encode, **kwargs)
+
+    def fit(self, X, y=None):
+        self.discretizer.fit(X.values[:,None])
+        return self
+
+    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        return self.discretizer.transform(X.values[:, None], **kwargs)
+
 class ClassifierOptimizer(OxariOptimizer):
-    def __init__(self, num_trials = 1, num_startup_trials = 1, sampler=None, **kwargs) -> None:
+    def __init__(self, num_trials=1, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.num_trials = num_trials
         self.num_startup_trials = num_startup_trials
@@ -50,49 +66,51 @@ class ClassifierOptimizer(OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"classifier_hp_tuning_{self.scope}",
+            study_name=f"classifier_hp_tuning",
             direction="maximize",
             sampler=self.sampler,
         )
 
         # running optimization
         # trials is the full number of iterations
-        study.optimize(lambda trial: self.tune_hps_classifier(trial, X_train, y_train, X_val, y_val), n_trials=self.n_trials, show_progress_bar=False)
+        study.optimize(lambda trial: self.tune_hps_classifier(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
-        df.to_csv(OPTUNA_DIR / f"df_optuna_hps_CL_{self.scope}_buckets_{self.n_buckets}.csv", index=False)
+        # df.to_csv(OPTUNA_DIR / f"df_optuna_hps_CL_{self.scope}_buckets_{self.n_buckets}.csv", index=False)
 
         # save the study so that we can plot the results
         # joblib.dump(study, OPTUNA_DIR / f"optuna_hps_CL_{self.scope}_{self.n_buckets}_buckets.pkl")
 
-        return study.best_params
+        return study.best_params, df
 
     def tune_hps_classifier(self, trial, X_train, y_train, X_val, y_val):
 
-        # TODO: add docstring here pls 
+        # TODO: add docstring here pls
 
         # cl_name = trial.suggest_categorical("classifier", ["RF", "XGB"])
         cl_name = "RF"
 
         if cl_name == "RF":
             # min_impurity_decrease,  max_leaf_nodes, min_weight_fraction_leaf, warm_start
-            param_space = {'n_estimators': trial.suggest_int("n_estimators", 100, 1000, 100), #100, 200, 300
-                        # 'max_depth': trial.suggest_int("max_depth", 5, 70, 5),
-                        'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
-                        'min_samples_leaf': trial.suggest_int("min_samples_leaf", 1, 5, 1),
-                        # 'max_leaf_nodes' : trial.suggest_int("max_leaf_nodes", 1, 40, 2),
-                        # 'bootstrap': trial.suggest_categorical("bootstrap", [True, False]),
-                        # 'max_features': trial.suggest_categorical("max_features", [None, "sqrt"]),
-                            # 'criterion': trial.suggest_categorical('criterion', ['mse', 'mae']),
-                            # Whether bootstrap samples are used when building trees
-                            'bootstrap': trial.suggest_categorical('bootstrap',['True','False']),
-                            # The maximum depth of the tree.
-                            'max_depth': trial.suggest_int('max_depth', 1, 20, 1),
-                            # The number of features to consider when looking for the best split
-                            # 'max_features': trial.suggest_categorical('max_features', ['auto', 'sqrt','log2']),
-                            # Grow trees with max_leaf_nodes in best-first fashion.
-                            # 'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 1, 20, 1),
-                        'n_jobs': -1}
+            param_space = {
+                'n_estimators': trial.suggest_int("n_estimators", 100, 1000, 100),  #100, 200, 300
+                # 'max_depth': trial.suggest_int("max_depth", 5, 70, 5),
+                'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
+                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 1, 5, 1),
+                # 'max_leaf_nodes' : trial.suggest_int("max_leaf_nodes", 1, 40, 2),
+                # 'bootstrap': trial.suggest_categorical("bootstrap", [True, False]),
+                # 'max_features': trial.suggest_categorical("max_features", [None, "sqrt"]),
+                # 'criterion': trial.suggest_categorical('criterion', ['mse', 'mae']),
+                # Whether bootstrap samples are used when building trees
+                'bootstrap': trial.suggest_categorical('bootstrap', ['True', 'False']),
+                # The maximum depth of the tree.
+                'max_depth': trial.suggest_int('max_depth', 1, 20, 1),
+                # The number of features to consider when looking for the best split
+                # 'max_features': trial.suggest_categorical('max_features', ['auto', 'sqrt','log2']),
+                # Grow trees with max_leaf_nodes in best-first fashion.
+                # 'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 1, 20, 1),
+                'n_jobs': -1
+            }
 
             cl = RandomForestClassifier(**param_space)
 
@@ -112,13 +130,14 @@ class ClassifierOptimizer(OxariOptimizer):
         else:
             # TODO: could be adding more hps
             param_space = {
-                            "max_depth": trial.suggest_int("max_depth", 3, 30, 3),
-                        "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.31, step=0.05),
-                        "subsample": trial.suggest_float("subsample", 0.5, 1, step=0.1),
-                        # "colsample_bytree" : trial.suggest_float("colsample_bytree",0.6, 1, step = 0.2),
-                        # "colsample_bylevel" : trial.suggest_float("colsample_bylevel", 0.6, 1, step  = 0.2),
-                        "n_estimators":  trial.suggest_int("n_estimators", 200, 1000, 200),
-                        "n_jobs": -1}
+                "max_depth": trial.suggest_int("max_depth", 3, 30, 3),
+                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.31, step=0.05),
+                "subsample": trial.suggest_float("subsample", 0.5, 1, step=0.1),
+                # "colsample_bytree" : trial.suggest_float("colsample_bytree",0.6, 1, step = 0.2),
+                # "colsample_bylevel" : trial.suggest_float("colsample_bylevel", 0.6, 1, step  = 0.2),
+                "n_estimators": trial.suggest_int("n_estimators", 200, 1000, 200),
+                "n_jobs": -1
+            }
 
             cl = xgb.XGBClassifier(**param_space)
 
@@ -215,7 +234,7 @@ class ClassifierEvaluator(OxariEvaluator):
 
 
 class BucketClassifier(OxariClassifier, OxariMixin):
-    def __init__(self, object_filename, scope, optimizer = None, evaluator = None ,use_hp=False, n_buckets=10):
+    def __init__(self, object_filename, scope, optimizer=None, evaluator=None, use_hp=False, n_buckets=10, **kwargs):
 
         self.object_filename = object_filename
 
@@ -225,16 +244,20 @@ class BucketClassifier(OxariClassifier, OxariMixin):
 
         self.columns = None
 
+        
         self.optimizer = optimizer or ClassifierOptimizer()
 
-        self.evaluator = evaluator or ClassifierEvaluator(scope = self.scope, n_buckets = self.n_buckets)
-
+        self.evaluator = evaluator or ClassifierEvaluator(scope=self.scope, n_buckets=self.n_buckets)
+        
+        self.cl = RandomForestClassifier(**kwargs)
         # self.verbose = verbose
 
+        self.list_of_skipped_columns = ['scope_1', 'scope_2', "scope_3", 'isin', "year"]
 
-        self.cl = RandomForestClassifier()
-
-        self.list_of_skipped_columns = ['scope_1', 'scope_2', "scope_3", 'isin', "year", f"group_label_{self.scope}"]
+    def optimize(self,X_train, y_train, X_val, y_val):
+        # y_train_binned = self.discretizer.transform(y_train)
+        # y_val_binned = self.discretizer.transform(y_val)
+        best_params, info = self.optimizer.optimize(X_train, y_train, X_val, y_val)
 
     def fit(self, X, y, **kwargs) -> "OxariClassifier":
         """
@@ -245,20 +268,16 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         Parameters:
         data (pandas.DataFrame): pre-processed dataset
         """
-        
 
         # data = add_bucket_label(data, self.scope, self.n_buckets)
 
         # X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val = self.train_test_val_split(data, split_size_test=0.2, split_size_val=0.4)
 
         # best_hps = self.optimize(X_train, y_train, X_val, y_val, num_startup_trials=self.n_startup_trials, n_trials=self.n_trials)
-        self.cl = RandomForestClassifier(**kwargs) 
+        
 
         self.cl.fit(X, y)
-        
         return self
-
-        
 
     def predict(self, X):
         """
@@ -275,8 +294,7 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         data (pandas.DataFrame): original dataframe with attached columns for the 3 computed scopes
         """
 
-        # X[f"group_label_{self.scope}"] = 
+        # X[f"group_label_{self.scope}"] =
 
         # data[f"group_label_{self.scope}"] = self.cl.predict(deepcopy_data[deepcopy_data.columns.difference(self.list_of_skipped_columns[:-1])])
         return self.cl.predict(X)
-

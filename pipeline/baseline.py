@@ -3,9 +3,10 @@ from base.dataset_loader import OxariDataLoader
 from base import OxariScopeEstimator
 from base import OxariPostprocessor
 from base import OxariPreprocessor
-from base.common import OxariImputer
+from base.common import OxariImputer, OxariFeatureSelector
 from dataset_loader.csv_loader import CSVDataLoader
 from imputers.baseline import DummyImputer
+from feature_selectors.baseline import DummyFeatureSelector
 from preprocessors.baseline import BaselinePreprocessor
 from scope_estimators.baseline import DefaultScopeEstimator
 
@@ -15,6 +16,7 @@ class DefaultPipeline(pipeline.OxariPipeline):
         self,
         dataset: OxariDataLoader = None,
         preprocessor: OxariPreprocessor = None,
+        feature_selector: OxariFeatureSelector = None,
         imputer: OxariImputer = None,
         scope_estimator: OxariScopeEstimator = None,
         postprocessor: OxariPostprocessor = None,
@@ -23,6 +25,7 @@ class DefaultPipeline(pipeline.OxariPipeline):
         self.dataset = dataset or CSVDataLoader()  ### None os CSVLoader OK
         self.preprocessor = preprocessor or BaselinePreprocessor()
         self.preprocessor = self.preprocessor.set_imputer(imputer or DummyImputer())
+        self.preprocessor = self.preprocessor.set_feature_selector(feature_selector or DummyFeatureSelector())
         self.scope_estimator = scope_estimator or DefaultScopeEstimator()
         # postprocessor = DummyPostprocessor()
         super().__init__(dataset=self.dataset, preprocessor=self.preprocessor, scope_estimator=self.scope_estimator, postprocessor=None, database_deployer=None)

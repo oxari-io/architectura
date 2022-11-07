@@ -61,15 +61,20 @@ class BaselinePreprocessor(OxariPreprocessor):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
         data = X
+         
+        
         # log scaling the scopes
         self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical
         self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
         # encode categorical
         self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=data[self.scope_columns[0]])
-        # imputer
+        # fill missing values
         self.imputer = self.imputer.fit(data[self.financial_columns])
-
+        # reduce dimensionality/feature count
+        # self.feature_selector = self.feature_selector.fit(data.drop(columns=self.scope_columns + ["year", "isin"]))
+        
+        
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -82,4 +87,6 @@ class BaselinePreprocessor(OxariPreprocessor):
         data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
         # encode categorical
         data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=data[self.scope_columns[0]])
+        # reduce dimensionality/feature count
+        # data = self.feature_selector.transform(data)
         return data

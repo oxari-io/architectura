@@ -24,10 +24,15 @@ class PCAFeatureSelector(OxariFeatureSelector):
 
     def fit(self, X, y=None, **kwargs) -> "PCAFeatureSelector":
         self._dimensionality_reducer.fit(X, y)
+        self._features = list(X.columns)
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        return pd.DataFrame(self._dimensionality_reducer.transform(X))
+        new_X = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        new_X = new_X.drop(columns=self._features)
+        new_X = new_X.merge(reduced_features)
+        return new_X
 
 
 class PresetFeatureSelector(OxariFeatureSelector):
@@ -36,11 +41,11 @@ class PresetFeatureSelector(OxariFeatureSelector):
     In other words, if the feature elimination algorithm cannot run during preprocessing.
     """
     def __init__(self, features=[], **kwargs):
-        self.features = features
+        self._features = features
 
     def fit(self, X, y=None, **kwargs) -> "PresetFeatureSelector":
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        new_X = X[self.features]
+        new_X = X[self._features]
         return new_X

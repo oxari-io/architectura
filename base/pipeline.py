@@ -37,6 +37,10 @@ class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         self.imputer = imputer
         return self
 
+    def set_feature_selector(self, feature_selector: common.OxariFeatureSelector) -> "OxariPreprocessor":
+        self.feature_selector = feature_selector
+        return self
+
 class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixin, common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.

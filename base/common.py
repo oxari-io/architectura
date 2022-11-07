@@ -80,10 +80,10 @@ class OxariMixin(abc.ABC):
     #     """
     #     return self
 
-    def optimize(self):
+    def optimize(self, **kwargs):
         pass
     
-    def evaluate(self):
+    def evaluate(self, **kwargs):
         pass
 
     def set_logger(self, logger: OxariLogger) -> "OxariMixin":

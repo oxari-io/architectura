@@ -16,8 +16,9 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         y_binned = self.discretizer.transform(y)
-        self.bucket_cl = self.bucket_cl.fit(X, y_binned, **kwargs.get("cls"))
-        self.bucket_rg = self.bucket_rg.fit(X, y, **kwargs.get("rgs"))
+        self.bucket_cl:BucketClassifier = self.bucket_cl.fit(X, y_binned, **kwargs.get("cls"))
+        groups = self.bucket_cl.predict(X)
+        self.bucket_rg = self.bucket_rg.fit(X, y, groups=groups, **kwargs.get("rgs"))
         return self
 
     def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -26,7 +27,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         return y_pred
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        self.discretizer = self.discretizer.fit(y_train[...])
+        self.discretizer = self.discretizer.fit(y_train)
         y_train_binned = self.discretizer.transform(y_train)
         y_val_binned = self.discretizer.transform(y_val)
         best_params_cls, info_cls = self.bucket_cl.optimize(X_train, y_train_binned, X_val, y_val_binned, **kwargs)

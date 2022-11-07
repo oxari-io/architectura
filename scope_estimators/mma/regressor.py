@@ -12,7 +12,7 @@ import warnings
 import optuna
 import joblib
 import matplotlib.pyplot as plt
-
+from collections import defaultdict
 from sklearn.ensemble import GradientBoostingRegressor, AdaBoostRegressor, RandomForestRegressor, VotingRegressor
 from sklearn.model_selection import train_test_split, cross_val_score
 
@@ -55,7 +55,7 @@ class RegressorOptimizer(OxariOptimizer):
         self.scope = None
         self.bucket_specific = None
 
-    def optimize(self, name, X_train, y_train, X_val, y_val, num_startup_trials, n_trials, **kwargs):
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
         Explores the hyperparameter search space with optuna.
         Creates csv and pickle files with the saved hyperparameters for regression
@@ -73,18 +73,24 @@ class RegressorOptimizer(OxariOptimizer):
         study.best_params (data structure): contains the best found hyperparameters within the given space
         """
         # selecting the models that will be trained to build the voting regressor --> tuple(name, model)
-        models = [("GBR", GradientBoostingRegressor), ("RFR", RandomForestRegressor), ("XGB", xgb.XGBRegressor)]
+        models = [
+            # ("GBR", GradientBoostingRegressor), # Is fundamentally the same as XGBOOST but XGBoost is better - https://stats.stackexchange.com/a/282814/361976
+            ("RFR", RandomForestRegressor),
+            ("XGB", xgb.XGBRegressor),
+        ]
         # scores will be used to compute weights for voting mechanism
-        info = {}
+        info = defaultdict(lambda: defaultdict(dict))
         # candidates will be given to VotingRegressor
-        candidates = {}
+        candidates = defaultdict(lambda: defaultdict(dict))
         grp_train = kwargs.get('grp_train')
         grp_val = kwargs.get('grp_val')
-        for n in np.unique(grp_train):
-            selector_train = grp_train == n
-            selector_val = grp_val == n
-            
-            
+        for n in np.unique(grp_train).astype(np.int):
+            selector_train = (grp_train == n)[:, 0]
+            selector_val = (grp_val == n)[:, 0]
+            # candidates[n] = defaultdict(dict)
+            # info[n] = defaultdict(dict)
+            # bucket_name = f"bucket_{n}"
+            bucket_name = n
             for name, Model in models:
 
                 # print(f"Training {name} ... ")
@@ -92,29 +98,99 @@ class RegressorOptimizer(OxariOptimizer):
                 study = optuna.create_study(
                     study_name=f"{name}_hp_tuning_{self.scope}_bucket{self.bucket_specific}",
                     direction="minimize",
-                    sampler=optuna.samplers.TPESampler(n_startup_trials=num_startup_trials, warn_independent_sampling=False),
+                    sampler=optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False),
                 )
-                study.optimize(lambda trial: self.tune_hps_regressors(trial, name, X_train[selector_train], y_train[selector_train], X_val[selector_val], y_val[selector_val]), n_trials=n_trials, show_progress_bar=False)
+                study.optimize(
+                    lambda trial: self.tune_hps_regressors(trial, name, X_train[selector_train], y_train[selector_train].values, X_val[selector_val], y_val[selector_val].values),
+                    n_trials=self.n_trials,
+                    show_progress_bar=False)
 
-                candidates[n] = {}
-                info[n] = {}
-                candidates[n][name]["best_params"] = study.best_params 
-                candidates[n][name]["Model"] = Model 
-                info[n][name] = study.trials_dataframe(attrs=("number", "value", "params", "state"))
+                candidates[bucket_name][name]["best_params"] = study.best_params
+                candidates[bucket_name][name]["Model"] = Model
+                info[bucket_name][name] = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
-        # create optuna study
-        # num_startup_trials is the number of random iterations at the beginiing
+        return {"candidates":candidates}, info
 
+    def tune_hps_regressors(self, trial, regr_name, X_train, y_train, X_val, y_val):
+        # TODO: add docstring here
 
-        # df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
-        # df.to_csv(OPTUNA_DIR / f"csvs/df_optuna_{name}_hps_{self.scope}_buckets_{self.bucket_specific}.csv", index=False)
+        if regr_name == "GBR":
 
-        # save the study so that we can plot the results
-        # joblib.dump(study, OPTUNA_DIR /
-        #             f"pkls/optuna_{name}_hps_tuning_{self.scope}_{self.bucket_specific}_buckets.pkl")
+            param_space = {
+                # The number of boosting stages to perform
+                "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
+                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
+                "max_depth": trial.suggest_int("max_depth", 3, 21, 3),
+                # The fraction of samples to be used for fitting the individual base learners
+                "subsample": trial.suggest_float("subsample", 0.5, 0.9, step=0.1),
+                # The number of features to consider when looking for the best split
+                "max_features": trial.suggest_categorical("max_features", [None, "sqrt"]),
+            }
 
-        
-        return candidates, info
+            model = GradientBoostingRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "RFR":
+            #  definin search space of RandomForest
+            param_space = {
+                # this parameter means using the GPU when training our model to speedup the training process
+                'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
+                # 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'mae']),
+                # Whether bootstrap samples are used when building trees
+                'bootstrap': trial.suggest_categorical('bootstrap', ['True', 'False']),
+                # The maximum depth of the tree.
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                # The number of features to consider when looking for the best split
+                'max_features': trial.suggest_categorical('max_features', [None, 'sqrt']),
+                'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
+                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 1, 5, 1),
+                # Grow trees with max_leaf_nodes in best-first fashion.
+                # 'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 1, 100),
+                "n_jobs": -1
+            }
+
+            model = RandomForestRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "XGB":
+
+            param_space = {
+                # L2 regularization term on weights.
+                # 'lambda': trial.suggest_loguniform('lambda', 1e-3, 10.0),
+                # # L1 regularization term on weights.
+                # 'alpha': trial.suggest_loguniform('alpha', 1e-3, 10.0),
+                # Subsample ratio of columns when constructing each tree.
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.4, 0.7, step=0.1),
+                # Subsample ratio of the training instances.
+                'subsample': trial.suggest_float('subsample', 0.4, 0.7, step=0.1),
+                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
+
+                # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+
+                # 'random_state': trial.suggest_categorical('random_state', [2020]),
+                # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning.
+                'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, 1),
+            }
+
+            model = xgb.XGBRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        # if regr_name == "ADB":
+        #     param_space = {
+        #         "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
+        #         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
+        #         'splitter': trial.suggest_categorical('max_depth', ["best", "random"]),
+        #         'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+        #     }
+
+        #     model = AdaBoostRegressor(**param_space)
+        #     model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_val)
+
+        return smape(y_val, y_pred)
 
     # def build_voting_regressor(self, X_train, y_train, X_val, y_val):
     #     """
@@ -165,87 +241,6 @@ class RegressorOptimizer(OxariOptimizer):
 
     #     return VotingRegressor(estimators=candidates, weights=scores, n_jobs=-1)
 
-    def tune_hps_regressors(self, trial, regr_name, X_train, y_train, X_val, y_val):
-        # TODO: add docstring here
-
-        if regr_name == "GBR":
-
-            param_space = {
-                # The number of boosting stages to perform
-                "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
-                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
-                "max_depth": trial.suggest_int("max_depth", 3, 21, 3),
-                # The fraction of samples to be used for fitting the individual base learners
-                "subsample": trial.suggest_float("subsample", 0.5, 0.9, step=0.1),
-                # The number of features to consider when looking for the best split
-                "max_features": trial.suggest_categorical("max_features", ["auto", "sqrt"]),
-            }
-
-            model = GradientBoostingRegressor(**param_space)
-            model.fit(X_train, y_train)
-
-        if regr_name == "RFR":
-            #  definin search space of RandomForest
-            param_space = {
-                # this parameter means using the GPU when training our model to speedup the training process
-                'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
-                # 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'mae']),
-                # Whether bootstrap samples are used when building trees
-                'bootstrap': trial.suggest_categorical('bootstrap', ['True', 'False']),
-                # The maximum depth of the tree.
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
-                # The number of features to consider when looking for the best split
-                'max_features': trial.suggest_categorical('max_features', ['auto', 'sqrt']),
-                'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
-                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 1, 5, 1),
-                # Grow trees with max_leaf_nodes in best-first fashion.
-                # 'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 1, 100),
-                "n_jobs": -1
-            }
-
-            model = RandomForestRegressor(**param_space)
-            model.fit(X_train, y_train)
-
-        if regr_name == "XGB":
-
-            param_space = {
-                # L2 regularization term on weights.
-                # 'lambda': trial.suggest_loguniform('lambda', 1e-3, 10.0),
-                # # L1 regularization term on weights.
-                # 'alpha': trial.suggest_loguniform('alpha', 1e-3, 10.0),
-                # Subsample ratio of columns when constructing each tree.
-                'colsample_bytree': trial.suggest_float('colsample_bytree', (0.4, 0.7, 0.1)),
-                # Subsample ratio of the training instances.
-                'subsample': trial.suggest_float('subsample', (0.4, 0.7, 0.1)),
-                'learning_rate': trial.suggest_float('learning_rate', (0.01, 0.3)),
-                'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
-
-                # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
-
-                # 'random_state': trial.suggest_categorical('random_state', [2020]),
-                # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning.
-                'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, 1),
-            }
-
-            model = xgb.XGBRegressor(**param_space)
-            model.fit(X_train, y_train)
-
-        # if regr_name == "ADB":
-        #     param_space = {
-        #         "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
-        #         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
-        #         'splitter': trial.suggest_categorical('max_depth', ["best", "random"]),
-        #         'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
-        #     }
-
-        #     model = AdaBoostRegressor(**param_space)
-        #     model.fit(X_train, y_train)
-
-        y_pred = model.predict(X_val)
-
-        return smape(y_val, y_pred)
-
 
 class RegressorEvaluator(OxariEvaluator):
     def __init__(self, scope, n_buckets, **kwargs) -> None:
@@ -292,6 +287,67 @@ class BucketRegressor(OxariMixin, OxariRegressor):
         self.voting_regressors = {}
         self.list_of_skipped_columns = ['scope_1', 'scope_2', "scope_3", 'isin', "year", f"group_label_{self.scope}"]
 
+    def fit(self, X, y, **kwargs):
+        """
+        The main training loop that calls all the other functions
+        Subsets data, splits in training, test and validation, builds and trains voting regressor, computes error metrics
+
+        """
+        groups = kwargs.get('groups')
+        # add buckets label that are needed to subset the data
+        # X["group"] = groups
+
+        regressor_kwargs = kwargs.get("candidates")
+        trained_candidates = {}
+        for bucket, candidates_data in regressor_kwargs.items():
+            selector = groups == bucket
+            X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3)
+            for name, candidate_data in candidates_data.items():
+                best_params = candidate_data.get("best_params")
+                ModelConstructor = candidate_data.get("Model")
+                model = ModelConstructor(**best_params).fit(X_train, y_train)
+
+                # calculate the score of each individual model to weight voting mechanism
+                y_pred = model.predict(X_val)
+
+                model_score = smape(y_val, y_pred)
+
+                # the lower the smape the better
+                candidate_data["score"] = 100 - model_score
+                candidate_data["model"] = model
+                trained_candidates[name] = candidate_data
+
+            weights = [v["score"] for _, v in trained_candidates.items()]
+            models = [(name, v["model"]) for name, v in trained_candidates.items()]
+            self.voting_regressors[bucket] = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector], y[selector])
+
+        return self
+
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
+        best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        return best_params, info
+
+    def predict(self, X, **kwargs):
+        """
+        Voting regressor computes prediction
+
+        Parameters:
+        data (pandas.DataFrame): pre-processed dataset
+
+        Return:
+        predictions (numpy array): the predicted values
+        """
+        groups = kwargs.get('groups')
+        X = X.drop(columns=self.list_of_skipped_columns, errors='ignore')
+
+        y_pred = np.zeros(X.shape[0])
+
+        for bucket, voting_regressor in self.voting_regressors.items():
+            selector = bucket == groups
+            y_pred[selector] = voting_regressor.predict(X[selector])
+
+        return y_pred
+
     # def subset_data(self, data):
     #     """
     #     It subsets the data based on the bucket label
@@ -309,7 +365,7 @@ class BucketRegressor(OxariMixin, OxariRegressor):
 
     # def train_test_val_split(self, data, split_size_test=None, split_size_val=None):
     #     """
-    #     Splitting the data in trianing, testing, and validation sets 
+    #     Splitting the data in trianing, testing, and validation sets
     #     with a splitting threshold of split_size_test, and split_size_val respectively
 
     #     Parameters:
@@ -319,13 +375,13 @@ class BucketRegressor(OxariMixin, OxariRegressor):
 
     #      Return:
     #     X_train (numpy array): training data
-    #     y_train (numpy array): training data 
-    #     X_train_full (numpy array): not splitted training data 
-    #     y_train_full (numpy array): not splitted training data 
-    #     X_test (numpy array): testing data 
-    #     y_test (numpy array): testing data 
+    #     y_train (numpy array): training data
+    #     X_train_full (numpy array): not splitted training data
+    #     y_train_full (numpy array): not splitted training data
+    #     X_test (numpy array): testing data
+    #     y_test (numpy array): testing data
     #     X_val (numpy array): validation data
-    #     y_val (numpy array): validation data 
+    #     y_val (numpy array): validation data
 
     #     """
 
@@ -343,8 +399,6 @@ class BucketRegressor(OxariMixin, OxariRegressor):
     #     X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full, test_size=split_size_val, random_state=42)
 
     #     return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
-
-
 
     # def run_shap_analysis(self, X_test):
 
@@ -367,66 +421,6 @@ class BucketRegressor(OxariMixin, OxariRegressor):
     #     shap.summary_plot(shap_values, X_test, feature_names=feature_names, plot_type="violin")
     #     # print("finished plotting shapyy")
     #     f.savefig("./model/misc/XGB_summary_plot_scope1.png")
-
-    def fit(self, X, y, **kwargs):
-        """
-        The main training loop that calls all the other functions
-        Subsets data, splits in training, test and validation, builds and trains voting regressor, computes error metrics
-
-        """
-        groups = kwargs.get('groups')
-        # add buckets label that are needed to subset the data
-        X["group"] = groups
-
-        regressor_kwargs = kwargs.get("rgs")
-        
-        for bucket, candidates_data in regressor_kwargs.items():
-            selector = groups==bucket
-            X_train, y_train, X_val, y_val = train_test_split(X[selector], y[selector], split_size_test=0.3, split_size_val=0.3)
-            for name, candidate_data in candidates_data.items():
-                best_params = candidate_data.get("best_params")
-                ModelConstructor = candidate_data.get("Model")
-                model = ModelConstructor(**best_params)
-                model.fit(X_train, y_train)
-
-                # calculate the score of each individual model to weight voting mechanism
-                y_pred = model.predict(X_val)
-
-                model_score = smape(y_val, y_pred)
-
-                # the lower the smape the better
-                candidate_data["score"] = 100 - model_score            
-                candidate_data["model"] = model            
-        
-            weights = [v["score"] for _, v in regressor_kwargs.items()]
-            models = [(name, v["model"]) for name, v in regressor_kwargs.items()]
-            self.voting_regressors[bucket] =  VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector], y[selector])
-                    
-        return self
-
-
-
-    def predict(self, X, **kwargs):
-        """
-        Voting regressor computes prediction
-
-        Parameters:
-        data (pandas.DataFrame): pre-processed dataset
-
-        Return:
-        predictions (numpy array): the predicted values
-        """
-        groups = kwargs.get('groups')
-        X = X.drop(columns=self.list_of_skipped_columns)
-
-        y_pred = np.zeros(X.shape[0])
-        
-        for bucket, voting_regressor in self.voting_regressors.items():
-            selector = bucket == groups
-            y_pred[selector] = voting_regressor.predict(X[selector])
-            
-
-        return np.exp(y_pred)
 
     # @staticmethod
     # def get_params(models):

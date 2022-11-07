@@ -40,7 +40,7 @@ class ClassfierScopeDiscretizer(OxariTransformer):
         return self.discretizer.transform(X.values[:, None], **kwargs)
 
 class ClassifierOptimizer(OxariOptimizer):
-    def __init__(self, num_trials=1, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.num_trials = num_trials
         self.num_startup_trials = num_startup_trials
@@ -245,7 +245,7 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         self.columns = None
 
         
-        self.optimizer = optimizer or ClassifierOptimizer()
+        self._optimizer = optimizer or ClassifierOptimizer()
 
         self.evaluator = evaluator or ClassifierEvaluator(scope=self.scope, n_buckets=self.n_buckets)
         
@@ -254,10 +254,9 @@ class BucketClassifier(OxariClassifier, OxariMixin):
 
         self.list_of_skipped_columns = ['scope_1', 'scope_2', "scope_3", 'isin', "year"]
 
-    def optimize(self,X_train, y_train, X_val, y_val):
-        # y_train_binned = self.discretizer.transform(y_train)
-        # y_val_binned = self.discretizer.transform(y_val)
-        best_params, info = self.optimizer.optimize(X_train, y_train, X_val, y_val)
+    def optimize(self,X_train, y_train, X_val, y_val, **kwargs):
+        best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        return best_params, info
 
     def fit(self, X, y, **kwargs) -> "OxariClassifier":
         """
@@ -276,10 +275,10 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         # best_hps = self.optimize(X_train, y_train, X_val, y_val, num_startup_trials=self.n_startup_trials, n_trials=self.n_trials)
         
 
-        self.cl.fit(X, y)
+        self.cl.set_params(**kwargs).fit(X, y.ravel())
         return self
 
-    def predict(self, X):
+    def predict(self, X, **kwargs):
         """
         # TODO: rewrite this
 

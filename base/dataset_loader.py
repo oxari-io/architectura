@@ -117,6 +117,7 @@ class OxariDataLoader(OxariMixin, abc.ABC):
         self.other_loaders = other_loaders
         # self.object_filename = object_filename
         self.verbose = verbose
+        self._dataset_stack = []
         self._df_original: pd.DataFrame = None
         self._df_preprocessed: pd.DataFrame = None
         self._df_filled: pd.DataFrame = None
@@ -128,41 +129,56 @@ class OxariDataLoader(OxariMixin, abc.ABC):
         self.financial_loader = self.financial_loader.run()
         self.categorical_loader = self.categorical_loader.run()
         # TODO: Think whether this should be called via @property
-        self._df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
-        self._df_original = self._df_original.merge(self.categorical_loader.data, on="isin", how="left")
+        _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
+        _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
+        self.add_data("original", _df_original, "Dataset without changes.")
         return self
 
-    def set_original_data(self, df: pd.DataFrame) -> "OxariDataLoader":
-        self._df_original = df
-        return self
+    # def set_original_data(self, df: pd.DataFrame) -> "OxariDataLoader":
+    #     self._df_original = df
+    #     return self
 
-    def set_preprocessed_data(self, df: pd.DataFrame) -> "OxariDataLoader":
-        self._df_preprocessed = df
-        return self
+    # def set_preprocessed_data(self, df: pd.DataFrame) -> "OxariDataLoader":
+    #     self._df_preprocessed = df
+    #     return self
 
-    def set_filled_data(self, df: pd.DataFrame) -> "OxariDataLoader":
-        self._df_filled = df
-        return self
+    # def set_filled_data(self, df: pd.DataFrame) -> "OxariDataLoader":
+    #     self._df_filled = df
+    #     return self
 
-    def set_estimated(self, df: pd.DataFrame) -> "OxariDataLoader":
-        self._df_estimated = df
+    def add_data(self, name:str, df: pd.DataFrame, descr:str="") -> "OxariDataLoader":
+        self._dataset_stack.append((name, df, descr))
         return self
 
     @property
-    def original_data(self):
-        return self._df_original.copy()
+    def data(self) -> pd.DataFrame:
+        return self._dataset_stack[-1][1].copy()
+    
+    def get_data_by_name(self, name:str)->pd.DataFrame:
+        for nm, df, descr in self._dataset_stack:
+            if name == nm:
+               return df.copy() 
 
-    @property
-    def preprocessed_data(self):
-        return self._df_preprocessed.copy()
+    def get_data_by_index(self, index:int)->pd.DataFrame:
+        return self._dataset_stack[index][1].copy() 
+    
+    
 
-    @property
-    def filled_data(self):
-        return self._df_filled.copy()
+    # @property
+    # def original_data(self):
+    #     return self._df_original.copy()
 
-    @property
-    def estimated_data(self):
-        return self._df_estimated.copy()
+    # @property
+    # def preprocessed_data(self):
+    #     return self._df_preprocessed.copy()
+
+    # @property
+    # def filled_data(self):
+    #     return self._df_filled.copy()
+
+    # @property
+    # def estimated_data(self):
+    #     return self._df_estimated.copy()
 
     # # @abc.abstractmethod
     # def train_test_val_split(self, split_size_test: float, split_size_val: float) -> "OxariDataLoader":
@@ -204,7 +220,7 @@ class OxariDataLoader(OxariMixin, abc.ABC):
         # data = data.loc[data[self.scope] != -1]
 
         # split in features and targets
-        X, y = self._df_preprocessed.drop(columns = list_of_skipped_columns),  self._df_preprocessed[f"scope_{scope}"]
+        X, y = self.data.drop(columns = list_of_skipped_columns),  self.data[f"scope_{scope}"]
         selector = ~np.isnan(y) 
 
         # verbose

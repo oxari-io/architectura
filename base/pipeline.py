@@ -32,14 +32,14 @@ class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
 
-
     def set_imputer(self, imputer: common.OxariImputer) -> "OxariPreprocessor":
         self.imputer = imputer
         return self
 
-    def set_feature_selector(self, feature_selector: common.OxariFeatureSelector) -> "OxariPreprocessor":
-        self.feature_selector = feature_selector
-        return self
+    # def set_feature_selector(self, feature_selector: common.OxariFeatureSelector) -> "OxariPreprocessor":
+    #     self.feature_selector = feature_selector
+    #     return self
+
 
 class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixin, common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
@@ -110,18 +110,45 @@ class OxariPostprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         pass
 
 
+class OxariFeatureSelector(sklearn.base.TransformerMixin, common.OxariMixin, abc.ABC):
+    """
+    Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
+    """
+    def __init__(self, missing_values=np.nan, verbose: int = 0, copy: bool = False, add_indicator: bool = False, **kwargs):
+        super().__init__(missing_values=missing_values, add_indicator=add_indicator)
+        self.verbose = verbose
+        self.copy = copy
+
+    @abc.abstractmethod
+    def fit(self, X, y=None, **kwargs) -> "OxariFeatureSelector":
+        # Takes X and y and trains regressor.
+        # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
+        # Set self.n_features_in_ = X.shape[1]
+        # Avoid setting X and y as attributes. Only increases the model size.
+        # When fit is called, any previous call to fit should be ignored.
+        # Attributes that have been estimated from the data must always have a name ending with trailing underscore. (e.g.: self.coef_)
+        # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
+        return self
+
+    @abc.abstractmethod
+    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        pass
+
+
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
 class OxariPipeline(abc.ABC):
     def __init__(
         self,
         dataset: OxariDataLoader = None,
         preprocessor: OxariPreprocessor = None,
+        feature_selector: OxariFeatureSelector = None,
         scope_estimator: OxariScopeEstimator = None,
         postprocessor: OxariPostprocessor = None,
         database_deployer=None,
     ):
         self.dataset = dataset
         self.preprocessor = preprocessor
+        self.feature_selector = feature_selector
         self.scope_estimator = scope_estimator
         self.postprocessor = postprocessor
         self._start_time = None
@@ -133,4 +160,3 @@ class OxariPipeline(abc.ABC):
         # load dataset and hold in class
         #  dataset
         pass
-

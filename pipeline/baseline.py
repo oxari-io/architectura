@@ -1,17 +1,14 @@
-from base import pipeline
 from base.dataset_loader import OxariDataLoader
-from base import OxariScopeEstimator
-from base import OxariPostprocessor
-from base import OxariPreprocessor
-from base.common import OxariImputer, OxariFeatureSelector
+from base import OxariScopeEstimator, OxariFeatureSelector, OxariPostprocessor, OxariPreprocessor, OxariPipeline
+from base.common import OxariImputer
 from dataset_loader.csv_loader import CSVDataLoader
 from imputers.baseline import DummyImputer
 from feature_selectors.baseline import DummyFeatureSelector
 from preprocessors.baseline import BaselinePreprocessor
 from scope_estimators.baseline import DefaultScopeEstimator
+import numpy as np
 
-
-class DefaultPipeline(pipeline.OxariPipeline):
+class DefaultPipeline(OxariPipeline):
     def __init__(
         self,
         dataset: OxariDataLoader = None,
@@ -22,20 +19,23 @@ class DefaultPipeline(pipeline.OxariPipeline):
         postprocessor: OxariPostprocessor = None,
         database_deployer=None,
     ):
-        self.dataset = dataset or CSVDataLoader()  ### None os CSVLoader OK
-        self.preprocessor = preprocessor or BaselinePreprocessor()
-        self.preprocessor = self.preprocessor.set_imputer(imputer or DummyImputer())
-        self.preprocessor = self.preprocessor.set_feature_selector(feature_selector or DummyFeatureSelector())
-        self.scope_estimator = scope_estimator or DefaultScopeEstimator()
-        # postprocessor = DummyPostprocessor()
-        super().__init__(dataset=self.dataset, preprocessor=self.preprocessor, scope_estimator=self.scope_estimator, postprocessor=None, database_deployer=None)
+        super().__init__(
+            dataset=dataset or CSVDataLoader(),
+            preprocessor=(preprocessor or BaselinePreprocessor()).set_imputer(imputer or DummyImputer()),
+            feature_selector=feature_selector or DummyFeatureSelector(),
+            scope_estimator=scope_estimator or DefaultScopeEstimator(),
+            postprocessor=None,
+            database_deployer=None,
+        )
 
     def run_pipeline(self, **kwargs):
         # kwargs.pop("")
+        list_of_skipped_columns = ["scope_1", "scope_2", "scope_3", "isin", "year"]
         self.dataset = self.dataset.run()
-        df_processed = self.preprocessor.fit_transform(self.dataset._df_original)
-        self.dataset = self.dataset.set_preprocessed_data(df_processed)
-        # self.dataset = self.dataset.set_filled_data(df_filled)
+        df_processed = self.preprocessor.fit_transform(self.dataset.data)
+        self.dataset = self.dataset.add_data("processed", df_processed, "Dataset after preprocessing.")
+        df_reduced = self.feature_selector.fit_transform(self.dataset.data, features=set(self.dataset.data.columns)-set(list_of_skipped_columns))
+        self.dataset = self.dataset.add_data("reduced", df_reduced, "Dataset after feature selection.")
 
         # TODO: Implement the train test split params as method parameters of run_pipeline
         # TODO: Run pipeline needs a parameter for which scope to run on
@@ -43,7 +43,7 @@ class DefaultPipeline(pipeline.OxariPipeline):
             scope=1,
             split_size_test=0.2,
             split_size_val=0.2,
-            list_of_skipped_columns=["scope_1", "scope_2", "scope_3", "isin", "year"],
+            list_of_skipped_columns=list_of_skipped_columns,
         )
 
         best_parameters, info = self.scope_estimator.optimize(X_train, y_train, X_val, y_val)

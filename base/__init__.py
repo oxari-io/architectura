@@ -1,2 +1,2 @@
-from .pipeline import OxariScopeEstimator, OxariPostprocessor, OxariPreprocessor
+from .pipeline import OxariScopeEstimator, OxariPostprocessor, OxariPreprocessor, OxariFeatureSelector, OxariPipeline
 

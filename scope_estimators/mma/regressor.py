@@ -95,7 +95,7 @@ class RegressorOptimizer(OxariOptimizer):
                 # print(f"Training {name} ... ")
 
                 study = optuna.create_study(
-                    study_name=f"{name}_hp_tuning_{self.scope}_bucket{self.bucket_specific}",
+                    study_name=f"regressor_{name}_hp_tuning",
                     direction="minimize",
                     sampler=optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False),
                 )

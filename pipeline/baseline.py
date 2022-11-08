@@ -50,7 +50,6 @@ class DefaultPipeline(OxariPipeline):
 
         self.scope_estimator = self.scope_estimator.fit(X_rem, y_rem, **best_parameters)
         y_pred = self.scope_estimator.predict(X_test)
-        self.scope_estimator.evaluate(y_test, y_pred, X_test=X_test)
-
-        # self.postprocessor.fit()
+        evaluation_results = self.scope_estimator.evaluate(y_test, y_pred, X_test=X_test)
+        print(evaluation_results)
         return self

@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import joblib
 import optuna
-
+import xgboost as xgb
 from sklearn.metrics import accuracy_score, r2_score, roc_auc_score, f1_score, balanced_accuracy_score, precision_recall_fscore_support, classification_report
 from tqdm import tqdm
 from sklearn.ensemble import RandomForestClassifier

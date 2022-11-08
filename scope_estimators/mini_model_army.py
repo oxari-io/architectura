@@ -7,13 +7,14 @@ from scope_estimators.mma.classifier import BucketClassifier, ClassfierScopeDisc
 from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer
 from scope_estimators.mma.evaluators import ClassifierEvaluator, RegressorEvaluator
 
+N_TRIALS = 1
 
 class MiniModelArmyEstimator(OxariScopeEstimator):
     def __init__(self, n_buckets=5, **kwargs):
         super().__init__(**kwargs)
         self.discretizer = ClassfierScopeDiscretizer(n_buckets)
-        self.bucket_cl: BucketClassifier = BucketClassifier(object_filename="CL_scope_1", scope="scope_1").set_optimizer(ClassifierOptimizer()).set_evaluator(ClassifierEvaluator())
-        self.bucket_rg: BucketRegressor = BucketRegressor(object_filename="CR_scope_1", scope="scope_1").set_optimizer(RegressorOptimizer()).set_evaluator(RegressorEvaluator())
+        self.bucket_cl: BucketClassifier = BucketClassifier(object_filename="CL_scope_1", scope="scope_1").set_optimizer(ClassifierOptimizer(n_trials=N_TRIALS)).set_evaluator(ClassifierEvaluator())
+        self.bucket_rg: BucketRegressor = BucketRegressor(object_filename="CR_scope_1", scope="scope_1").set_optimizer(RegressorOptimizer(n_trials=N_TRIALS)).set_evaluator(RegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         y_binned = self.discretizer.transform(y)
@@ -42,7 +43,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         y_pred_bins = self.bucket_cl.predict(X_test)
         
         results_cl = self.bucket_cl.evaluate(y_true_bins, y_pred_bins)
-        results_rg = self.bucket_rg.evaluate(y_true, y_pred, groups=y_pred_bins)
+        results_rg = self.bucket_rg.evaluate(y_true, y_pred)
         combined_results = {**results_cl, **results_rg}
         return combined_results
 

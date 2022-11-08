@@ -162,75 +162,7 @@ class ClassifierOptimizer(OxariOptimizer):
         return f1
 
 
-class ClassifierEvaluator(OxariEvaluator):
-    def __init__(self, scope, n_buckets, **kwargs) -> None:
-        super().__init__()
-        self.scope = scope
-        self.n_buckets = n_buckets
 
-    def evaluate(self, y_test, y_pred, **kwargs):
-        """
-
-        Computes 3 flavors of accuracy: Vanilla, AdjacentLenient, AdjacentStrict
-
-        Each accuracy computation is scope and buckets specific
-
-        Appends and saves the results to model/metrics/error_metrics_class.csv
-
-        """
-
-        # print(
-        #     f"VANILLA Accuracy for tuned model {balanced_accuracy_score(y_test, y_pred)}", "\n")
-
-        # print(
-        #     f"LENIENT Adj Accuracy for tuned model {self.lenient_adjacent_accuracy_score(y_test, y_pred)}", "\n")
-
-        # print(
-        #     f"STRICT Adj Accuracy for tuned model {self.strict_adjacent_accuracy_score(y_test, y_pred)}", "\n")
-
-        return {
-            "scope": self.scope,
-            "n_buckets": self.n_buckets,
-            "vanilla_acc": balanced_accuracy_score(y_test, y_pred),
-            "adj_lenient_acc": self.lenient_adjacent_accuracy_score(y_test, y_pred),
-            "adj_strict_acc": self.strict_adjacent_accuracy_score(y_test, y_pred)
-        }
-
-    def lenient_adjacent_accuracy_score(self, y_true, y_pred):
-        # if true == 0 and pred == 1 --> CORRECT!
-        # if true == 9 and pred == 8 --> CORRECT!
-        y_true = np.array(y_true)
-        y_pred = np.array(y_pred)
-        return np.sum(np.abs(y_pred - y_true) <= 1) / len(y_pred)
-
-    def being_strict(self, y_true, y_pred):
-        """
-        # strict with top and bottom bucket
-        # we want extreme buckets to always be correctly predicted
-        # if true == 0 and pred == 1 --> WRONG!
-        # if true == 9 and pred == 8 --> WRONG!
-
-         5 buckets 0 to 4
-         y_true = [0, 2, 4, 3, 1]
-         y_pred = [1, 1, 3, 4, 0]
-         FALSE, TRUE, FALSE, FALSE, FALSE
-
-        """
-        if y_true in [self.n_buckets - 1, 0]:
-            return np.abs(y_true - y_pred) == 0
-        elif y_pred in [self.n_buckets - 1, 0] and y_true in [self.n_buckets - 2, 1]:
-            return np.abs(y_true - y_pred) == 0
-        else:
-            return np.abs(y_true - y_pred) <= 1
-
-    def strict_adjacent_accuracy_score(self, y_true, y_pred):
-
-        y_true = np.array(y_true)
-        y_pred = np.array(y_pred)
-
-        vfunc = np.vectorize(self.being_strict)
-
-        return np.sum(vfunc(y_true, y_pred)) / len(y_pred)
 
 
 class BucketClassifier(OxariClassifier, OxariMixin):
@@ -243,11 +175,6 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         self.n_buckets = n_buckets
 
         self.columns = None
-
-        
-        self._optimizer = optimizer or ClassifierOptimizer()
-
-        self.evaluator = evaluator or ClassifierEvaluator(scope=self.scope, n_buckets=self.n_buckets)
         
         self.cl = RandomForestClassifier(**kwargs)
         # self.verbose = verbose
@@ -257,6 +184,9 @@ class BucketClassifier(OxariClassifier, OxariMixin):
     def optimize(self,X_train, y_train, X_val, y_val, **kwargs):
         best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
         return best_params, info
+    
+    def evaluate(self, y_true, y_pred, **kwargs):
+        return self._evaluator.evaluate(y_true, y_pred)
 
     def fit(self, X, y, **kwargs) -> "OxariClassifier":
         """

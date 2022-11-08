@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 
-
+# https://datascience.stackexchange.com/questions/29572/is-it-possible-to-do-feature-selection-for-unsupervised-machine-learning-problem
 class DummyFeatureSelector(OxariFeatureSelector):
     """ This Feature Selector does not select any feature. Use this if no feature selection is used."""
     def __init__(self, **kwargs):

@@ -3,7 +3,7 @@ from base import OxariScopeEstimator, OxariFeatureSelector, OxariPostprocessor, 
 from base.common import OxariImputer
 from dataset_loader.csv_loader import CSVDataLoader
 from imputers.baseline import DummyImputer
-from feature_selectors.baseline import DummyFeatureSelector
+from feature_reducers.baseline import DummyFeatureSelector
 from preprocessors.baseline import BaselinePreprocessor
 from scope_estimators.baseline import DefaultScopeEstimator
 import numpy as np
@@ -50,7 +50,7 @@ class DefaultPipeline(OxariPipeline):
 
         self.scope_estimator = self.scope_estimator.fit(X_rem, y_rem, **best_parameters)
         y_pred = self.scope_estimator.predict(X_test)
-        self.scope_estimator._evaluator.evaluate(y_pred, y_test)
+        self.scope_estimator.evaluate(y_test, y_pred, X_test=X_test)
 
         # self.postprocessor.fit()
         return self

@@ -16,7 +16,6 @@ from collections import defaultdict
 from sklearn.ensemble import GradientBoostingRegressor, AdaBoostRegressor, RandomForestRegressor, VotingRegressor
 from sklearn.model_selection import train_test_split, cross_val_score
 
-from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score, r2_score, mean_squared_log_error
 from base.common import OxariEvaluator, OxariMixin, OxariOptimizer, OxariRegressor
 # from sklearn.metrics import root_mean_squared_error as rmse
 # from sklearn.metrics import mean_absolute_percentage_error as mape
@@ -242,38 +241,7 @@ class RegressorOptimizer(OxariOptimizer):
     #     return VotingRegressor(estimators=candidates, weights=scores, n_jobs=-1)
 
 
-class RegressorEvaluator(OxariEvaluator):
-    def __init__(self, scope, n_buckets, **kwargs) -> None:
-        super().__init__()
-        self.scope = scope
-        self.n_buckets = n_buckets
 
-    def evaluate(self, y_true, y_pred, table_name):
-
-        # TODO: add docstring here
-
-        print(f"Computing error metrics RGR {self.scope}, bucket - {self.bucket_specific}")
-
-        # compute metrics of interest
-        error_metrics = {
-            "scope": self.scope,
-            "bucket": self.bucket_specific,
-            "sMAPE": smape(y_true, y_pred),
-            "R2": r2_score(y_true, y_pred),
-            "MAE": mean_absolute_error(y_true, y_pred),
-            "RMSE": mean_squared_error(y_true, y_pred, squared=False),
-            "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
-            "MAPE": mape(y_true, y_pred)
-        }
-
-        # read error metrics table
-        error_metrics_regressors = pd.read_csv(METRICS_DIR / table_name)
-
-        # append to table
-        error_metrics_regressors = error_metrics_regressors.append(error_metrics, ignore_index=True)
-
-        # save table
-        error_metrics_regressors.to_csv(METRICS_DIR / table_name, index=False)
 
 
 class BucketRegressor(OxariMixin, OxariRegressor):
@@ -326,7 +294,10 @@ class BucketRegressor(OxariMixin, OxariRegressor):
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
         return best_params, info
-
+    
+    def evaluate(self, y_true, y_pred, **kwargs):
+        return self._evaluator.evaluate(y_true, y_pred)
+    
     def predict(self, X, **kwargs):
         """
         Voting regressor computes prediction

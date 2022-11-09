@@ -6,7 +6,7 @@ from imputers.revenue_bucket import RevenueBucketImputer
 from imputers.baseline import DummyImputer
 from feature_reducers.baseline import DummyFeatureSelector, PCAFeatureSelector, DropFeatureSelector
 from scope_estimators.mma.classifier import ClassifierOptimizer
-
+from base import OxariModel
 if __name__ == "__main__":
 
     dp = DefaultPipeline(
@@ -20,4 +20,6 @@ if __name__ == "__main__":
         scope_estimator=MiniModelArmyEstimator(),
     )
 
-    dp.run_pipeline()
+    OxariModel().add_pipeline(1, dp.run_pipeline(scope=1))
+    
+    

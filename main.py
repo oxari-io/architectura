@@ -22,4 +22,4 @@ if __name__ == "__main__":
 
     OxariModel().add_pipeline(1, dp.run_pipeline(scope=1))
     
-    
+     

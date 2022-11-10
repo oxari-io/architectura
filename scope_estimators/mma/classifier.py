@@ -166,20 +166,9 @@ class ClassifierOptimizer(OxariOptimizer):
 
 
 class BucketClassifier(OxariClassifier, OxariMixin):
-    def __init__(self, object_filename, scope, optimizer=None, evaluator=None, use_hp=False, n_buckets=10, **kwargs):
-
-        self.object_filename = object_filename
-
-        # self.scope = check_scope(scope)
-        self.scope = scope
+    def __init__(self, n_buckets=10, **kwargs):
         self.n_buckets = n_buckets
-
-        self.columns = None
-        
-        self.cl = RandomForestClassifier(**kwargs)
-        # self.verbose = verbose
-
-        self.list_of_skipped_columns = ['scope_1', 'scope_2', "scope_3", 'isin', "year"]
+        self._estimator = RandomForestClassifier(**kwargs)
 
     def optimize(self,X_train, y_train, X_val, y_val, **kwargs):
         best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
@@ -197,15 +186,7 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         Parameters:
         data (pandas.DataFrame): pre-processed dataset
         """
-
-        # data = add_bucket_label(data, self.scope, self.n_buckets)
-
-        # X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val = self.train_test_val_split(data, split_size_test=0.2, split_size_val=0.4)
-
-        # best_hps = self.optimize(X_train, y_train, X_val, y_val, num_startup_trials=self.n_startup_trials, n_trials=self.n_trials)
-        
-
-        self.cl.set_params(**kwargs).fit(X, y.ravel())
+        self._estimator.set_params(**kwargs).fit(X, y.ravel())
         return self
 
     def predict(self, X, **kwargs):
@@ -222,8 +203,4 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         Return:
         data (pandas.DataFrame): original dataframe with attached columns for the 3 computed scopes
         """
-
-        # X[f"group_label_{self.scope}"] =
-
-        # data[f"group_label_{self.scope}"] = self.cl.predict(deepcopy_data[deepcopy_data.columns.difference(self.list_of_skipped_columns[:-1])])
-        return self.cl.predict(X)
+        return self._estimator.predict(X)

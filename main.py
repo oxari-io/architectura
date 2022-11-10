@@ -5,21 +5,32 @@ from preprocessors.baseline import BaselinePreprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
 from imputers.baseline import DummyImputer
 from feature_reducers.baseline import DummyFeatureSelector, PCAFeatureSelector, DropFeatureSelector
-from scope_estimators.mma.classifier import ClassifierOptimizer
 from base import OxariModel
 if __name__ == "__main__":
 
-    dp = DefaultPipeline(
-        dataset=CSVDataLoader(),
+    dataset=CSVDataLoader().run()
+    dp1 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
         # feature_selector= DummyFeatureSelector(),
-        feature_selector= PCAFeatureSelector(),
+        feature_selector=PCAFeatureSelector(),
         # feature_selector= DropFeatureSelector(),
         imputer=RevenueBucketImputer(),
         # imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
-
-    OxariModel().add_pipeline(1, dp.run_pipeline(scope=1))
-    
-     
+    dp2 = DefaultPipeline(
+        preprocessor=BaselinePreprocessor(),
+        feature_selector=DummyFeatureSelector(),
+        imputer=DummyImputer(),
+        scope_estimator=MiniModelArmyEstimator(),
+    )
+    dp3 = DefaultPipeline(
+        preprocessor=BaselinePreprocessor(),
+        feature_selector=PCAFeatureSelector(),
+        imputer=RevenueBucketImputer(),
+        scope_estimator=MiniModelArmyEstimator(),
+    )
+    model = OxariModel()
+    model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset, scope=1))
+    model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset, scope=2))
+    model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset, scope=3))

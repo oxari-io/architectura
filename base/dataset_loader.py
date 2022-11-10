@@ -194,7 +194,8 @@ class OxariDataLoader(OxariMixin, abc.ABC):
     #     """
     #     return self
     
-    def train_test_val_split(self, split_size_test, split_size_val, list_of_skipped_columns, scope):
+    @staticmethod
+    def train_test_val_split(X, y, split_size_test, split_size_val):
         """
         Splitting the data in trianing, testing, and validation sets
         with a splitting threshold of split_size_test, and split_size_val respectively
@@ -220,16 +221,16 @@ class OxariDataLoader(OxariMixin, abc.ABC):
         # data = data.loc[data[self.scope] != -1]
 
         # split in features and targets
-        X, y = self.data.drop(columns = list_of_skipped_columns),  self.data[f"scope_{scope}"]
+        
         selector = ~np.isnan(y) 
 
         # verbose
         print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
 
-        X_remaining, X_test, y_remaining, y_test = train_test_split(X[selector], y[selector], test_size=split_size_test)
+        X_rem, X_test, y_rem, y_test = train_test_split(X[selector], y[selector], test_size=split_size_test)
 
         # splitting further - train and validation sets will be used for optimization; test set will be used for performance assesment
-        X_train, X_val, y_train, y_val = train_test_split(X_remaining, y_remaining, test_size=split_size_val)
+        X_train, X_val, y_train, y_val = train_test_split(X_rem, y_rem, test_size=split_size_val)
 
         # return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
-        return X_train, y_train, X_remaining, y_remaining, X_test, y_test, X_val, y_val
+        return X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test

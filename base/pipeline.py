@@ -140,14 +140,14 @@ class OxariFeatureSelector(sklearn.base.TransformerMixin, common.OxariMixin, abc
 class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
     def __init__(
         self,
-        dataset: OxariDataLoader = None,
+        # dataset: OxariDataLoader = None,
         preprocessor: OxariPreprocessor = None,
         feature_selector: OxariFeatureSelector = None,
         scope_estimator: OxariScopeEstimator = None,
         postprocessor: OxariPostprocessor = None,
         database_deployer=None,
     ):
-        self.dataset = dataset
+        # self.dataset = dataset
         self.preprocessor = preprocessor
         self.feature_selector = feature_selector
         self.scope_estimator = scope_estimator

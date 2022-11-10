@@ -40,11 +40,15 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
     def evaluate(self, y_true, y_pred, **kwargs):
         X_test = kwargs.get("X_test")
         y_true_bins = self.discretizer.transform(y_true)
-        y_pred_bins = self.bucket_cl.predict(X_test)
         
-        results_cl = self.bucket_cl.evaluate(y_true_bins, y_pred_bins)
-        results_rg = self.bucket_rg.evaluate(y_true, y_pred)
-        combined_results = {**results_cl, **results_rg}
+        y_pred_cl = self.bucket_cl.predict(X_test)
+        results_cl = self.bucket_cl.evaluate(y_true_bins, y_pred_cl)
+        
+        y_pred_rg = self.bucket_rg.predict(X_test, groups=y_true_bins)
+        results_rg = self.bucket_rg.evaluate(y_true, y_pred_rg)
+        
+        results_end_to_end = self._evaluator.evaluate(y_true, y_pred)
+        combined_results = {"classifier":results_cl, "regressor":results_rg, **results_end_to_end}
         return combined_results
 
     def check_conformance(self):

@@ -47,9 +47,9 @@ class DefaultPipeline(OxariPipeline):
         )
 
         best_parameters, info = self.scope_estimator.optimize(X_train, y_train, X_val, y_val)
-
+        # info.to_csv('optimization_results.csv')
         self.scope_estimator = self.scope_estimator.fit(X_rem, y_rem, **best_parameters)
         y_pred = self.scope_estimator.predict(X_test)
-        evaluation_results = self.scope_estimator.evaluate(y_test, y_pred, X_test=X_test)
-        print(evaluation_results)
+        self.evaluation_results = self.scope_estimator.evaluate(y_test, y_pred, X_test=X_test)
+        # print(evaluation_results)
         return self

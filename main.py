@@ -7,6 +7,7 @@ from imputers.baseline import DummyImputer
 from feature_reducers.baseline import DummyFeatureSelector, PCAFeatureSelector, DropFeatureSelector
 from scope_estimators.mma.classifier import ClassifierOptimizer
 from scope_estimators.gaussian_process import GaussianProcessEstimator
+import base
 
 if __name__ == "__main__":
 
@@ -18,8 +19,8 @@ if __name__ == "__main__":
         # feature_selector= DropFeatureSelector(),
         imputer=RevenueBucketImputer(),
         # imputer=DummyImputer(),
-        # scope_estimator=MiniModelArmyEstimator(),
-        scope_estimator=GaussianProcessEstimator(),
+        # scope_estimator=MiniModelArmyEstimator().set_evaluator(base.DefaultRegressorEvaluator()),
+        scope_estimator=GaussianProcessEstimator().set_evaluator(base.DefaultRegressorEvaluator()),
     )
 
     dp.run_pipeline()

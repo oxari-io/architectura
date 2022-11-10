@@ -12,7 +12,10 @@ import sklearn
 import logging
 import csv
 from sklearn.impute import SimpleImputer, _base
-
+import optuna
+from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score, r2_score, mean_squared_log_error
+from pmdarima.metrics import smape
+from sklearn.metrics import mean_absolute_percentage_error as mape
 
 class OxariLogger:
     """
@@ -42,14 +45,42 @@ class OxariEvaluator(abc.ABC):
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
         pass
+    
+class DefaultRegressorEvaluator(OxariEvaluator):
+    def evaluate(self, y_true, y_pred, **kwargs):
+
+        # TODO: add docstring here
+
+        # compute metrics of interest
+        error_metrics = {
+            "sMAPE": smape(y_true, y_pred)/100,
+            "R2": r2_score(y_true, y_pred),
+            "MAE": mean_absolute_error(y_true, y_pred),
+            "RMSE": mean_squared_error(y_true, y_pred, squared=False),
+            "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
+            "MAPE": mape(y_true, y_pred)
+        }
+
+        return error_metrics        
 
 class OxariOptimizer(abc.ABC):
     
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__()
+        self.num_trials = num_trials
+        self.num_startup_trials = num_startup_trials
+        self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
+        
     
     @abc.abstractmethod
-    def optimize(self, **kwargs):
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
+        """
+        Evaluates multiple metrics and returns a dict with all computed scores.
+        """
+        pass
+
+    @abc.abstractmethod
+    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         """
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
@@ -80,7 +111,7 @@ class OxariMixin(abc.ABC):
     #     """
     #     return self
 
-    def optimize(self, **kwargs):
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         pass
     
     def evaluate(self, **kwargs):

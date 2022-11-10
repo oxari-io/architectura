@@ -49,6 +49,8 @@ class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixi
         # Reference: https://scikit-learn.org/stable/developers/develop.html#instantiation
         evaluator = kwargs.pop('evaluator', common.DefaultRegressorEvaluator())
         self.set_evaluator(evaluator)
+        optimizer = kwargs.pop('optimizer', common.DefaultOptimizer())
+        self.set_optimizer(optimizer)
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":

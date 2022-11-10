@@ -4,7 +4,7 @@
 # import pandas as pd
 # from sklearn.utils.estimator_checks import check_estimator
 import abc
-from typing import Union
+from typing import Union, Tuple, Any
 import pickle
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ import optuna
 from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score, r2_score, mean_squared_log_error
 from pmdarima.metrics import smape
 from sklearn.metrics import mean_absolute_percentage_error as mape
-
+from numbers import Number
 
 class OxariLogger:
     """
@@ -81,28 +81,29 @@ class OxariOptimizer(abc.ABC):
         self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
 
     @abc.abstractmethod
-    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
         """
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
-        pass
+        return {}, pd.DataFrame()
 
     @abc.abstractmethod
-    def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
+    def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs) -> Number:
         """
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
-        pass
+        return 0
 
-    # def compute_error_metrics(self, y_true, y_pred):
-    #     """
-    #     Testing the performance of the ML model
-    #     Write the results in model/metrics
-    #     Parameters:
-    #     y_true (np.array): true value to compare predicted value
-    #     y_pred (np.array): predicted value output by the model
-    #     """
-    #     raise NotImplementedError
+class DefaultOptimizer(OxariOptimizer):
+    """
+    This optimzer does absolutely nothing. 
+    """
+    
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
+        return super().optimize(X_train, y_train, X_val, y_val, **kwargs)
+
+    def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs) -> Number:
+        return super().score_trial(trial, X_train, y_train, X_val, y_val, **kwargs)
 
 
 class OxariMixin(abc.ABC):

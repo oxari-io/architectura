@@ -1,4 +1,4 @@
-from typing import Union, Dict
+from typing import Union, Dict, List
 import sklearn
 import numpy as np
 import pandas as pd
@@ -151,8 +151,9 @@ class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
         # self.dataset = dataset
         self.preprocessor = preprocessor
         self.feature_selector = feature_selector
-        self.scope_estimator = scope_estimator
+        self.estimator = scope_estimator
         self.postprocessor = postprocessor
+        self.evaluation_results = {}
         self._start_time = None
         self._end_time = None
         # self.resources_postprocessor = database_deployer
@@ -199,3 +200,11 @@ class OxariModel(common.OxariRegressor, common.OxariMixin, sklearn.base.MultiOut
             all_predictions.append(y_pred)
         result = np.hstack(all_predictions)
         return result
+    
+    def collect_eval_results(self)-> List[dict]:
+        results = []
+        
+        for scope, pipeline in self.pipelines.items():
+            results.append(pipeline.evaluation_results)
+        
+        return results

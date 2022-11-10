@@ -112,7 +112,7 @@ class GaussianProcessEstimator(OxariScopeEstimator):
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
 
     def evaluate(self, y_true, y_pred, **kwargs):
-        pass
+        return self._evaluator.evaluate(y_true, y_pred, **kwargs)
         
          
 

@@ -9,7 +9,7 @@ from scope_estimators.mma.classifier import ClassifierOptimizer
 from scope_estimators.gaussian_process import GaussianProcessEstimator
 import base
 from base import OxariModel
-
+import pandas as pd
 if __name__ == "__main__":
 
     dataset=CSVDataLoader().run()
@@ -39,3 +39,5 @@ if __name__ == "__main__":
     model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset, scope=1))
     model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset, scope=2))
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset, scope=3))
+    
+    print(pd.json_normalize(model.collect_eval_results()))

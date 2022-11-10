@@ -17,6 +17,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_sc
 from pmdarima.metrics import smape
 from sklearn.metrics import mean_absolute_percentage_error as mape
 
+
 class OxariLogger:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
@@ -35,32 +36,33 @@ class OxariLogger:
 
 
 class OxariEvaluator(abc.ABC):
-    
     def __init__(self, **kwargs) -> None:
         super().__init__()
-    
+
     @abc.abstractmethod
     def evaluate(self, y_true, y_pred, **kwargs):
         """
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
-        pass
-    
+        return {"name": self.name, **kwargs}
+
     @property
     def name(self) -> str:
         return self.__class__.__name__
-    
+
     def _add_name(self, eval_dict):
-        return {"name":self.name, **eval_dict}
-    
+        return {"name": self.name, **eval_dict}
+
+
 class DefaultRegressorEvaluator(OxariEvaluator):
     def evaluate(self, y_true, y_pred, **kwargs):
 
         # TODO: add docstring here
 
         # compute metrics of interest
+
         error_metrics = {
-            "sMAPE": smape(y_true, y_pred)/100,
+            "sMAPE": smape(y_true, y_pred) / 100,
             "R2": r2_score(y_true, y_pred),
             "MAE": mean_absolute_error(y_true, y_pred),
             "RMSE": mean_squared_error(y_true, y_pred, squared=False),
@@ -68,17 +70,16 @@ class DefaultRegressorEvaluator(OxariEvaluator):
             "MAPE": mape(y_true, y_pred)
         }
 
-        return self._add_name(error_metrics)        
+        return super().evaluate(y_true, y_pred, **error_metrics)
+
 
 class OxariOptimizer(abc.ABC):
-    
     def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__()
         self.num_trials = num_trials
         self.num_startup_trials = num_startup_trials
         self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
-        
-    
+
     @abc.abstractmethod
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
@@ -87,7 +88,7 @@ class OxariOptimizer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
+    def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         """
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
@@ -109,18 +110,17 @@ class OxariMixin(abc.ABC):
         self.object_filename = object_filename or self.__class__.__name__
         self.start_time = None
         self.end_time = None
-    
 
     # @abc.abstractmethod
     # def run(self, **kwargs) -> "OxariMixin":
     #     """
-    #     Every component needs to call initialize and finish inside the run function. 
+    #     Every component needs to call initialize and finish inside the run function.
     #     """
     #     return self
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         pass
-    
+
     def evaluate(self, **kwargs):
         pass
 
@@ -167,6 +167,7 @@ class OxariClassifier(sklearn.base.ClassifierMixin, sklearn.base.BaseEstimator, 
     def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
 
+
 class OxariRegressor(sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
     @abc.abstractmethod
@@ -178,7 +179,7 @@ class OxariRegressor(sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, ab
         pass
 
 
-class OxariImputer(_base._BaseImputer, OxariMixin ,abc.ABC):
+class OxariImputer(_base._BaseImputer, OxariMixin, abc.ABC):
     """
     Handles imputation of missing values for values that are zero. Fit and Transform have to be implemented accordingly.
     """
@@ -201,5 +202,3 @@ class OxariImputer(_base._BaseImputer, OxariMixin ,abc.ABC):
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
-
-

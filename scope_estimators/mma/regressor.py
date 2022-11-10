@@ -100,7 +100,7 @@ class RegressorOptimizer(OxariOptimizer):
                     sampler=optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False),
                 )
                 study.optimize(
-                    lambda trial: self.tune_hps_regressors(trial, name, X_train[selector_train], y_train[selector_train].values, X_val[selector_val], y_val[selector_val].values),
+                    lambda trial: self.score_trial(trial, name, X_train[selector_train], y_train[selector_train].values, X_val[selector_val], y_val[selector_val].values),
                     n_trials=self.n_trials,
                     show_progress_bar=False)
 
@@ -110,7 +110,7 @@ class RegressorOptimizer(OxariOptimizer):
 
         return {"candidates":candidates}, info
 
-    def tune_hps_regressors(self, trial:optuna.Trial, regr_name:str, X_train, y_train, X_val, y_val):
+    def score_trial(self, trial:optuna.Trial, regr_name:str, X_train, y_train, X_val, y_val):
         # TODO: add docstring here
 
         if regr_name == "GBR":
@@ -305,7 +305,7 @@ class BucketRegressor(OxariMixin, OxariRegressor):
         y_pred = np.zeros(X.shape[0])
 
         for bucket, voting_regressor in self.voting_regressors.items():
-            selector = bucket == groups
+            selector = (bucket == groups).flatten()
             y_pred[selector] = voting_regressor.predict(X[selector])
 
         return y_pred

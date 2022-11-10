@@ -73,7 +73,7 @@ class ClassifierOptimizer(OxariOptimizer):
 
         # running optimization
         # trials is the full number of iterations
-        study.optimize(lambda trial: self.tune_hps_classifier(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
         # df.to_csv(OPTUNA_DIR / f"df_optuna_hps_CL_{self.scope}_buckets_{self.n_buckets}.csv", index=False)
@@ -83,7 +83,7 @@ class ClassifierOptimizer(OxariOptimizer):
 
         return study.best_params, df
 
-    def tune_hps_classifier(self, trial, X_train, y_train, X_val, y_val):
+    def score_trial(self, trial, X_train, y_train, X_val, y_val):
 
         # TODO: add docstring here pls
 

@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from sklearn.ensemble import GradientBoostingRegressor, AdaBoostRegressor, RandomForestRegressor, VotingRegressor
 from sklearn.model_selection import train_test_split, cross_val_score
-
+from typing import Dict
 from base.common import OxariEvaluator, OxariMixin, OxariOptimizer, OxariRegressor
 # from sklearn.metrics import root_mean_squared_error as rmse
 # from sklearn.metrics import mean_absolute_percentage_error as mape
@@ -110,7 +110,7 @@ class RegressorOptimizer(OxariOptimizer):
 
         return {"candidates":candidates}, info
 
-    def tune_hps_regressors(self, trial, regr_name, X_train, y_train, X_val, y_val):
+    def tune_hps_regressors(self, trial:optuna.Trial, regr_name:str, X_train, y_train, X_val, y_val):
         # TODO: add docstring here
 
         if regr_name == "GBR":
@@ -246,14 +246,10 @@ class RegressorOptimizer(OxariOptimizer):
 
 class BucketRegressor(OxariMixin, OxariRegressor):
     # TODO: add docstring
-    def __init__(self, object_filename, scope, use_hp=False, n_buckets=10):
-        self.object_filename = object_filename
-
+    def __init__(self, n_buckets=10):
         # self.scope = check_scope(scope)
-        self.scope = scope
         self.n_buckets = n_buckets
-        self.voting_regressors = {}
-        self.list_of_skipped_columns = ['scope_1', 'scope_2', "scope_3", 'isin', "year", f"group_label_{self.scope}"]
+        self.voting_regressors: Dict[int, VotingRegressor] = {}
 
     def fit(self, X, y, **kwargs):
         """
@@ -262,9 +258,6 @@ class BucketRegressor(OxariMixin, OxariRegressor):
 
         """
         groups = kwargs.get('groups')
-        # add buckets label that are needed to subset the data
-        # X["group"] = groups
-
         regressor_kwargs = kwargs.get("candidates")
         trained_candidates = {}
         for bucket, candidates_data in regressor_kwargs.items():
@@ -298,7 +291,7 @@ class BucketRegressor(OxariMixin, OxariRegressor):
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred)
     
-    def predict(self, X, **kwargs):
+    def predict(self, X:pd.DataFrame, **kwargs):
         """
         Voting regressor computes prediction
 
@@ -309,8 +302,6 @@ class BucketRegressor(OxariMixin, OxariRegressor):
         predictions (numpy array): the predicted values
         """
         groups = kwargs.get('groups')
-        X = X.drop(columns=self.list_of_skipped_columns, errors='ignore')
-
         y_pred = np.zeros(X.shape[0])
 
         for bucket, voting_regressor in self.voting_regressors.items():

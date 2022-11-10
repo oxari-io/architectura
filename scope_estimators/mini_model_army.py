@@ -13,8 +13,8 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
     def __init__(self, n_buckets=5, **kwargs):
         super().__init__(**kwargs)
         self.discretizer = ClassfierScopeDiscretizer(n_buckets)
-        self.bucket_cl: BucketClassifier = BucketClassifier(object_filename="CL_scope_1", scope="scope_1").set_optimizer(ClassifierOptimizer(n_trials=N_TRIALS)).set_evaluator(ClassifierEvaluator())
-        self.bucket_rg: BucketRegressor = BucketRegressor(object_filename="CR_scope_1", scope="scope_1").set_optimizer(RegressorOptimizer(n_trials=N_TRIALS)).set_evaluator(RegressorEvaluator())
+        self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=N_TRIALS)).set_evaluator(ClassifierEvaluator())
+        self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=N_TRIALS)).set_evaluator(RegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         y_binned = self.discretizer.transform(y)

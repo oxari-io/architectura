@@ -98,8 +98,8 @@ class OxariOptimizer(abc.ABC):
 
 
 class OxariMixin(abc.ABC):
-    def __init__(self, object_filename, **kwargs) -> None:
-        self.object_filename = object_filename
+    def __init__(self, object_filename=None, **kwargs) -> None:
+        self.object_filename = object_filename or self.__class__.__name__
         self.start_time = None
         self.end_time = None
     

@@ -27,7 +27,7 @@ class PCAFeatureSelector(OxariFeatureReducer):
         self._dimensionality_reducer.fit(X[self._features], y)
         return self
 
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         new_X = X.copy()
         reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
         reduced_features.columns = [f"pc_{i}" for i in reduced_features.columns] 
@@ -47,6 +47,6 @@ class DropFeatureReducer(OxariFeatureReducer):
     def fit(self, X, y=None, **kwargs) -> "DropFeatureReducer":
         return self
 
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         new_X = X.drop(columns = self._features)
         return new_X

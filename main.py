@@ -1,26 +1,21 @@
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataLoader
-from scope_estimators.mini_model_army import MiniModelArmyEstimator
 from preprocessors.core import BaselinePreprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
 from imputers.core import BaselineImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
-from scope_estimators.mma.classifier import ClassifierOptimizer
-from scope_estimators.gaussian_process import GaussianProcessEstimator
+from scope_estimators import BaselineEstimator, GaussianProcessEstimator, MiniModelArmyEstimator
 import base
 from base import OxariModel
 import pandas as pd
+
 if __name__ == "__main__":
 
     dataset=CSVDataLoader().run()
-    dp1 = DefaultPipeline(
+    dp3 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
-        # feature_selector= DummyFeatureSelector(),
         feature_selector=PCAFeatureSelector(),
-        # feature_selector= DropFeatureSelector(),
         imputer=RevenueBucketImputer(),
-        # imputer=DummyImputer(),
-        # scope_estimator=MiniModelArmyEstimator(),
         scope_estimator=GaussianProcessEstimator(),
     )
     dp2 = DefaultPipeline(
@@ -29,11 +24,11 @@ if __name__ == "__main__":
         imputer=BaselineImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
-    dp3 = DefaultPipeline(
+    dp1 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
-        feature_selector=PCAFeatureSelector(),
-        imputer=RevenueBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        feature_selector=DummyFeatureReducer(),
+        imputer=BaselineImputer(),
+        scope_estimator=BaselineEstimator(),
     )
     model = OxariModel()
     model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset, scope=1))

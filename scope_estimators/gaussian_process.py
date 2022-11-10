@@ -56,11 +56,11 @@ class GPOptimizer(OxariOptimizer):
     # TODO: Find better optimization ranges
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         outer_alpha = trial.suggest_float("outer_alpha", 0.01, 0.31)
-        length_scale = trial.suggest_float("length_scale", 0.01, 1.01, step=0.1)
-        alpha=trial.suggest_float("alpha", 0.01, 1.01, step=0.1)
-        sigma = trial.suggest_float("sigma", 0.01, 1.01, step=0.1)
+        length_scale = trial.suggest_float("length_scale", 0.01, 1.01)
+        alpha=trial.suggest_float("alpha", 0.01, 1.01)
+        sigma = trial.suggest_float("sigma", 0.01, 1.01)
         nu = trial.suggest_categorical("nu", [0.5, 1.5, 2.5, np.inf])
-        noise = trial.suggest_float("noise", 0.01, 1.01, step=0.1)
+        noise = trial.suggest_float("noise", 0.01, 1.0)
         main_kernel = trial.suggest_categorical("main_kernel", ["rbf", "rq", "dot", "matern"])
         
         

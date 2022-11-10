@@ -51,6 +51,7 @@ class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixi
         self.set_evaluator(evaluator)
         optimizer = kwargs.pop('optimizer', common.DefaultOptimizer())
         self.set_optimizer(optimizer)
+        self._name=self.__class__.__name__ 
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
@@ -88,6 +89,9 @@ class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixi
         # keep it inside the current backend directly which would require more RAM
         pass
 
+    @property
+    def name(self):
+        return self._name
 
 
 class OxariPostprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
@@ -155,7 +159,7 @@ class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
         self.feature_selector = feature_selector
         self.estimator = scope_estimator
         self.postprocessor = postprocessor
-        self.evaluation_results = {}
+        self._evaluation_results = {}
         self._start_time = None
         self._end_time = None
         # self.resources_postprocessor = database_deployer
@@ -169,6 +173,11 @@ class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
     @abc.abstractmethod
     def predict(self, **kwargs):
         pass
+
+    @property
+    def evaluation_results(self):
+        return {"model":self.estimator.name, **self._evaluation_results}
+    
 
 
 class OxariModel(common.OxariRegressor, common.OxariMixin, sklearn.base.MultiOutputMixin, abc.ABC):

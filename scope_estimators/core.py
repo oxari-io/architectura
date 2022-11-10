@@ -14,9 +14,6 @@ class DummyEstimator(OxariScopeEstimator):
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
         return np.ones(len(X)) * 42
 
-    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
-
     def check_conformance(self):
         pass
 
@@ -35,8 +32,8 @@ class BaselineEstimator(OxariScopeEstimator):
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
         return np.ones(len(X)) * self.median_value 
     
-    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        return super().optimize(X_train, y_train, X_val, y_val, **kwargs)
+    def check_conformance(self):
+        pass
 
-    def evaluate(self, y_true, y_pred, **kwargs):
-        return super().evaluate(y_true, y_pred, **kwargs)
+    def deploy(self):
+        pass

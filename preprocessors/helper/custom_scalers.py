@@ -12,3 +12,11 @@ class LogarithmScaler(OxariTransformer):
         return np.log1p(X)
     
     
+class DummyScaler(OxariTransformer):
+    def fit(self, X, y=None, **kwargs) -> "LogarithmScaler":
+        return self
+
+    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        return X
+    
+    

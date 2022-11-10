@@ -9,15 +9,15 @@ from base.dataset_loader import OxariDataLoader
 import numpy as np
 import pandas as pd
 from base.mappings import CatMapping, NumMapping
-from .helper.custom_scalers import LogarithmScaler
+from .helper.custom_scalers import LogarithmScaler, DummyScaler
 
 
 class DummyPreprocessor(OxariPreprocessor):
     def __init__(self, scope_transformer=None, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(**kwargs)
-        self.fin_transformer = fin_transformer or prep.StandardScaler()
-        self.cat_transformer = cat_transformer or ce.TargetEncoder()
-        self.scope_transformer = scope_transformer or LogarithmScaler()
+        self.fin_transformer = fin_transformer or DummyScaler()
+        self.cat_transformer = cat_transformer or ce.OrdinalEncoder()
+        self.scope_transformer = scope_transformer or DummyScaler()
         self.scope_columns = NumMapping.get_targets()
         self.financial_columns = NumMapping.get_features()
         self.categorical_columns = CatMapping.get_features()

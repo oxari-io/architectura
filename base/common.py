@@ -44,14 +44,13 @@ class OxariEvaluator(abc.ABC):
         """
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
-        return {"name": self.name, **kwargs}
+        #  TODO: Solve this by using property attribute instead. Implicitly add name when getting evaluation results
+        return {"evaluator": self.name, **kwargs}
 
     @property
     def name(self) -> str:
         return self.__class__.__name__
 
-    def _add_name(self, eval_dict):
-        return {"name": self.name, **eval_dict}
 
 
 class DefaultRegressorEvaluator(OxariEvaluator):
@@ -120,10 +119,10 @@ class OxariMixin(abc.ABC):
     #     return self
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        return self._optimizer.optimize(self, X_train, y_train, X_val, y_val, **kwargs)
+        return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
 
     def evaluate(self, y_true, y_pred, **kwargs):
-        return self._evaluator.evaluate(self, y_true, y_pred, **kwargs)
+        return self._evaluator.evaluate(y_true, y_pred, **kwargs)
 
     def set_logger(self, logger: OxariLogger) -> "OxariMixin":
         self._logger = logger

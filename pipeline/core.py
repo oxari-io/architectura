@@ -2,10 +2,10 @@ from base.dataset_loader import OxariDataLoader
 from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, OxariPreprocessor, OxariPipeline
 from base.common import OxariImputer
 from dataset_loader.csv_loader import CSVDataLoader
-from imputers.baseline import BaselineImputer
-from feature_reducers.baseline import DummyFeatureReducer
-from preprocessors.baseline import BaselinePreprocessor
-from scope_estimators.baseline import DummyEstimator
+from imputers.core import BaselineImputer
+from feature_reducers.core import DummyFeatureReducer
+from preprocessors.core import BaselinePreprocessor
+from scope_estimators.core import DummyEstimator
 import numpy as np
 import pandas as pd
 

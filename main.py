@@ -1,10 +1,10 @@
-from pipeline.baseline import DefaultPipeline
+from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataLoader
 from scope_estimators.mini_model_army import MiniModelArmyEstimator
-from preprocessors.baseline import BaselinePreprocessor
+from preprocessors.core import BaselinePreprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
-from imputers.baseline import BaselineImputer
-from feature_reducers.baseline import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
+from imputers.core import BaselineImputer
+from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
 from scope_estimators.mma.classifier import ClassifierOptimizer
 from scope_estimators.gaussian_process import GaussianProcessEstimator
 import base

@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, r2_score, roc_auc_score, f1_score, b
 from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score, r2_score, mean_squared_log_error
 from pmdarima.metrics import smape
 from sklearn.metrics import mean_absolute_percentage_error as mape
-
+import base.common as common
 
 class ClassifierEvaluator(OxariEvaluator):
     def __init__(self, **kwargs) -> None:
@@ -27,7 +27,7 @@ class ClassifierEvaluator(OxariEvaluator):
             "adj_lenient_acc": self.lenient_adjacent_accuracy_score(y_test, y_pred),
             "adj_strict_acc": self.strict_adjacent_accuracy_score(y_test, y_pred, n_buckets),
         }
-        return error_metrics
+        return self._add_name(error_metrics)
 
     def lenient_adjacent_accuracy_score(self, y_true, y_pred):
         # if true == 0 and pred == 1 --> CORRECT!
@@ -80,22 +80,7 @@ class ClassifierEvaluator(OxariEvaluator):
     #     return np.sum(vfunc(y_true, y_pred)) / len(y_pred)
 
 
-class RegressorEvaluator(OxariEvaluator):
-    def __init__(self, **kwargs) -> None:
-        super().__init__()
+class RegressorEvaluator(common.DefaultRegressorEvaluator):
+    pass
 
-    def evaluate(self, y_true, y_pred, **kwargs):
 
-        # TODO: add docstring here
-
-        # compute metrics of interest
-        error_metrics = {
-            "sMAPE": smape(y_true, y_pred)/100,
-            "R2": r2_score(y_true, y_pred),
-            "MAE": mean_absolute_error(y_true, y_pred),
-            "RMSE": mean_squared_error(y_true, y_pred, squared=False),
-            "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
-            "MAPE": mape(y_true, y_pred)
-        }
-
-        return error_metrics

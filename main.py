@@ -20,8 +20,8 @@ if __name__ == "__main__":
         # feature_selector= DropFeatureSelector(),
         imputer=RevenueBucketImputer(),
         # imputer=DummyImputer(),
-        # scope_estimator=MiniModelArmyEstimator().set_evaluator(base.DefaultRegressorEvaluator()),
-        scope_estimator=GaussianProcessEstimator().set_evaluator(base.DefaultRegressorEvaluator()),
+        # scope_estimator=MiniModelArmyEstimator(),
+        scope_estimator=GaussianProcessEstimator(),
     )
     dp2 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),

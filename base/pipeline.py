@@ -47,7 +47,8 @@ class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixi
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
         # Reference: https://scikit-learn.org/stable/developers/develop.html#instantiation
-        pass
+        evaluator = kwargs.pop('evaluator', common.DefaultRegressorEvaluator())
+        self.set_evaluator(evaluator)
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":

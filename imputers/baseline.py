@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 
 
-class DummyImputer(OxariImputer):
+class BaselineImputer(OxariImputer):
     def __init__(self, strategy="median", missing_values=np.nan, verbose=0, copy=True, add_indicator=False, **kwargs):
         self._imputer = SimpleImputer(
             missing_values=missing_values,

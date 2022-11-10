@@ -1,23 +1,23 @@
 from typing import Union
-from base import OxariFeatureSelector
+from base import OxariFeatureReducer
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 
 # https://datascience.stackexchange.com/questions/29572/is-it-possible-to-do-feature-selection-for-unsupervised-machine-learning-problem
-class DummyFeatureSelector(OxariFeatureSelector):
+class DummyFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector does not select any feature. Use this if no feature selection is used."""
     def __init__(self, **kwargs):
         pass
 
-    def fit(self, X, y=None, **kwargs) -> "OxariFeatureSelector":
+    def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         return X
 
 
-class PCAFeatureSelector(OxariFeatureSelector):
+class PCAFeatureSelector(OxariFeatureReducer):
     """ This Feature Selector uses PCA to reduce the dimensionality of the features first"""
     def __init__(self, n_components=5, **kwargs):
         self._dimensionality_reducer = PCA(n_components=n_components)
@@ -36,7 +36,7 @@ class PCAFeatureSelector(OxariFeatureSelector):
         return new_X
 
 
-class DropFeatureSelector(OxariFeatureSelector):
+class DropFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector selects features according to a list of predefined features. 
     This is useful if a supervised feature elimination algorithm was used. 
     In other words, if the feature elimination algorithm cannot run during preprocessing.
@@ -44,7 +44,7 @@ class DropFeatureSelector(OxariFeatureSelector):
     def __init__(self, features=[], **kwargs):
         self._features = features
 
-    def fit(self, X, y=None, **kwargs) -> "DropFeatureSelector":
+    def fit(self, X, y=None, **kwargs) -> "DropFeatureReducer":
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:

@@ -3,8 +3,8 @@ from dataset_loader.csv_loader import CSVDataLoader
 from scope_estimators.mini_model_army import MiniModelArmyEstimator
 from preprocessors.baseline import BaselinePreprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
-from imputers.baseline import DummyImputer
-from feature_reducers.baseline import DummyFeatureSelector, PCAFeatureSelector, DropFeatureSelector
+from imputers.baseline import BaselineImputer
+from feature_reducers.baseline import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
 from scope_estimators.mma.classifier import ClassifierOptimizer
 from scope_estimators.gaussian_process import GaussianProcessEstimator
 import base
@@ -25,8 +25,8 @@ if __name__ == "__main__":
     )
     dp2 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
-        feature_selector=DummyFeatureSelector(),
-        imputer=DummyImputer(),
+        feature_selector=DummyFeatureReducer(),
+        imputer=BaselineImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
     dp3 = DefaultPipeline(

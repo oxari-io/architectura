@@ -114,7 +114,7 @@ class OxariPostprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         pass
 
 
-class OxariFeatureSelector(sklearn.base.TransformerMixin, common.OxariMixin, abc.ABC):
+class OxariFeatureReducer(sklearn.base.TransformerMixin, common.OxariMixin, abc.ABC):
     """
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
     """
@@ -124,7 +124,7 @@ class OxariFeatureSelector(sklearn.base.TransformerMixin, common.OxariMixin, abc
         self.copy = copy
 
     @abc.abstractmethod
-    def fit(self, X, y=None, **kwargs) -> "OxariFeatureSelector":
+    def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
         # Set self.n_features_in_ = X.shape[1]
@@ -145,7 +145,7 @@ class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
         self,
         # dataset: OxariDataLoader = None,
         preprocessor: OxariPreprocessor = None,
-        feature_selector: OxariFeatureSelector = None,
+        feature_selector: OxariFeatureReducer = None,
         scope_estimator: OxariScopeEstimator = None,
         postprocessor: OxariPostprocessor = None,
         database_deployer=None,

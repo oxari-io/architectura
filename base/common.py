@@ -46,6 +46,13 @@ class OxariEvaluator(abc.ABC):
         """
         pass
     
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__
+    
+    def _add_name(self, eval_dict):
+        return {"name":self.name, **eval_dict}
+    
 class DefaultRegressorEvaluator(OxariEvaluator):
     def evaluate(self, y_true, y_pred, **kwargs):
 
@@ -61,7 +68,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
             "MAPE": mape(y_true, y_pred)
         }
 
-        return error_metrics        
+        return self._add_name(error_metrics)        
 
 class OxariOptimizer(abc.ABC):
     

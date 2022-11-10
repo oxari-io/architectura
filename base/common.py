@@ -120,10 +120,10 @@ class OxariMixin(abc.ABC):
     #     return self
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        pass
+        return self._optimizer.optimize(self, X_train, y_train, X_val, y_val, **kwargs)
 
-    def evaluate(self, **kwargs):
-        pass
+    def evaluate(self, y_true, y_pred, **kwargs):
+        return self._evaluator.evaluate(self, y_true, y_pred, **kwargs)
 
     def set_logger(self, logger: OxariLogger) -> "OxariMixin":
         self._logger = logger

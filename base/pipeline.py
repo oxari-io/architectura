@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 from sklearn.utils.estimator_checks import check_estimator
 import abc
-
+import io
+import joblib as pkl
 from base.dataset_loader import OxariDataManager
 from base import common
 
@@ -51,7 +52,7 @@ class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixi
         self.set_evaluator(evaluator)
         optimizer = kwargs.pop('optimizer', common.DefaultOptimizer())
         self.set_optimizer(optimizer)
-        self._name=self.__class__.__name__ 
+        self._name = self.__class__.__name__
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
@@ -94,7 +95,7 @@ class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixi
         return self._name
 
 
-class OxariPostprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
+class OxariPostprocessor(common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
@@ -103,7 +104,7 @@ class OxariPostprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "OxariPostprocessor":
+    def run(self, X, y=None, **kwargs) -> "OxariPostprocessor":
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
         # Set self.n_features_in_ = X.shape[1]
@@ -113,9 +114,11 @@ class OxariPostprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
         return self
 
-    @abc.abstractmethod
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        pass
+
+class DefaultPostprocessor(OxariPostprocessor):
+    def run(self, X, y=None, **kwargs) -> "OxariPostprocessor":
+        return X
+
 
 
 class OxariFeatureReducer(sklearn.base.TransformerMixin, common.OxariMixin, abc.ABC):
@@ -151,14 +154,11 @@ class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
         preprocessor: OxariPreprocessor = None,
         feature_selector: OxariFeatureReducer = None,
         scope_estimator: OxariScopeEstimator = None,
-        postprocessor: OxariPostprocessor = None,
-        database_deployer=None,
     ):
         # self.dataset = dataset
         self.preprocessor = preprocessor
         self.feature_selector = feature_selector
         self.estimator = scope_estimator
-        self.postprocessor = postprocessor
         self._evaluation_results = {}
         self._start_time = None
         self._end_time = None
@@ -169,54 +169,57 @@ class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
         # load dataset and hold in class
         #  dataset
         pass
-    
+
     @abc.abstractmethod
     def predict(self, **kwargs):
         pass
 
     @property
     def evaluation_results(self):
-        return {"model":self.estimator.name, **self._evaluation_results}
-    
+        return {"model": self.estimator.name, **self._evaluation_results}
 
 
 class OxariModel(common.OxariRegressor, common.OxariMixin, sklearn.base.MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.pipelines:Dict[str, OxariPipeline] = {}
-    
-    def add_pipeline(self, scope:int, pipeline:OxariPipeline) -> "OxariModel":
-        # TODO: Implement failsafe to not exceed the limit of three scopes
+        self.created = None # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
+        self.pipelines: Dict[str, OxariPipeline] = {}
+
+    def add_pipeline(self, scope: int, pipeline: OxariPipeline) -> "OxariModel":
         if not isinstance(scope, int):
-            raise Exception("scope is not an int")     
-        if not ((scope>0) and (scope<4)):
-            raise Exception("scope is not an int")     
+            raise Exception(f"'scope' is not an int: {scope}")
+        if not ((scope > 0) and (scope < 4)):
+            raise Exception(f"'scope' is not between either 1, 2 or 3: {scope}")
         self.pipelines[f"scope_{scope}"] = pipeline
         return self
-    
-    def get_pipeline(self, scope:int) -> OxariPipeline:
+
+    def get_pipeline(self, scope: int) -> OxariPipeline:
         return self.pipelines[f"scope_{scope}"]
-    
+
     def fit(self, X, y=None, **kwargs):
         pass
-    
+
     def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         scope = kwargs.pop("scope", "all")
         if scope == "all":
             return self._predict_all(X, **kwargs)
-        return self.get_pipeline(scope).predict(X, **kwargs) 
-    
+        return self.get_pipeline(scope).predict(X, **kwargs)
+
     def _predict_all(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         result = pd.DataFrame()
         for scope_str, estimator in self.pipelines.items():
             y_pred = estimator.predict(X, **kwargs)
             result[scope_str] = y_pred
         return result
-    
-    def collect_eval_results(self)-> List[dict]:
+
+    def collect_eval_results(self) -> List[dict]:
         results = []
-        
+
         for scope, pipeline in self.pipelines.items():
             results.append(pipeline.evaluation_results)
-        
+
         return results
+    
+    def save(self):
+        res = pkl.dump(self, io.open(f'model.pkl', 'wb'))
+        return res

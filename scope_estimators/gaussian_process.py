@@ -53,7 +53,7 @@ class GPOptimizer(OxariOptimizer):
 
         return study.best_params, df
 
-    # TODO: Find better optimization ranges
+    # TODO: Find better optimization ranges for the GaussianProcessEstimator
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         outer_alpha = trial.suggest_float("outer_alpha", 0.01, 0.31)
         length_scale = trial.suggest_float("length_scale", 0.01, 1.01)
@@ -74,7 +74,7 @@ class GPOptimizer(OxariOptimizer):
 
         return smape(y_true=y_val, y_pred=y_pred)
 
-    # TODO: Explore kernel setups that have a better fit with the data
+    # TODO: Explore kernel setups for the GP that have a better fit with the data. https://www.cs.toronto.edu/~duvenaud/cookbook/ 
     def compose_kernel(self, length_scale, alpha, sigma, nu, noise, main_kernel):
         kernel_noise = kernels.WhiteKernel(noise_level=noise)
         kernel = kernel_noise
@@ -90,11 +90,10 @@ class GPOptimizer(OxariOptimizer):
 
 
 class GaussianProcessEstimator(OxariScopeEstimator):
-    def __init__(self, kernel=STANDARD_KERNEL, **kwargs):
+    def __init__(self, kernel=STANDARD_KERNEL, optimizer=None, **kwargs):
         super().__init__(**kwargs)
         self._gpr = GaussianProcessRegressor(kernel=kernel)
-        # TODO: Allow setting any optimizer. Maybe create a default optimizer.
-        self._optimizer = GPOptimizer()
+        self._optimizer = optimizer or GPOptimizer()
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         outer_alpha = kwargs.pop('outer_alpha')

@@ -17,7 +17,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_sc
 from pmdarima.metrics import smape
 from sklearn.metrics import mean_absolute_percentage_error as mape
 from numbers import Number
-
+import oxari_types
 class OxariLogger:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
@@ -44,7 +44,7 @@ class OxariEvaluator(abc.ABC):
         """
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
-        #  TODO: Solve this by using property attribute instead. Implicitly add name when getting evaluation results
+        #  TODO: Solve the addition of meta data to the evaluate output by using property attribute instead. Implicitly add name when getting evaluation results
         return {"evaluator": self.name, **kwargs}
 
     @property
@@ -77,6 +77,7 @@ class OxariOptimizer(abc.ABC):
         super().__init__()
         self.num_trials = num_trials
         self.num_startup_trials = num_startup_trials
+        # TODO: Use a more approproiate optimization-sampler because it is not recommended for categorical data
         self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
 
     @abc.abstractmethod
@@ -153,7 +154,7 @@ class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator
         return self
 
     @abc.abstractmethod
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def transform(self, X, **kwargs) -> oxari_types.ArrayLike:
         pass
 
 

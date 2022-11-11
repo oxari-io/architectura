@@ -9,7 +9,7 @@ class DummyEstimator(OxariScopeEstimator):
         super().__init__(**kwargs)
         
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        pass
+        return self
     
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
         return np.ones(len(X)) * 42
@@ -26,11 +26,48 @@ class BaselineEstimator(OxariScopeEstimator):
         super().__init__(**kwargs)
         
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        self.low = np.min(y)
+        self.high = np.max(y)
+        return self
+    
+    def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
+        return np.random.uniform(self.low, self.high, len(X))
+    
+    def check_conformance(self):
+        pass
+
+    def deploy(self):
+        pass
+
+
+class PredictMedianEstimator(OxariScopeEstimator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         self.median_value = np.median(y)
         return self
     
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
         return np.ones(len(X)) * self.median_value 
+    
+    def check_conformance(self):
+        pass
+
+    def deploy(self):
+        pass
+
+
+class PredictMeanEstimator(OxariScopeEstimator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        self.mean_value = np.mean(y)
+        return self
+    
+    def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
+        return np.ones(len(X)) * self.mean_value 
     
     def check_conformance(self):
         pass

@@ -62,7 +62,6 @@ class ScopeLoader(PartialLoader, abc.ABC):
 
     def _clean_up_targets(self, **kwargs):
         # before logging some scopes have very small values so we discard them
-        # TODO: find a more efficient way to do the following
 
         data = kwargs.get("data", self.data)
         num_inititial = data.shape[0]
@@ -73,8 +72,6 @@ class ScopeLoader(PartialLoader, abc.ABC):
         data[self.columns] = np.where((data[self.columns] < threshold),np.nan,data[self.columns])
         # dropping datapoints that have no scopes
         data = data.dropna(how="all", subset=self.columns)
-        # for s in NumMapping.get_targets():
-        #     data.loc[data[s] < threshold, [s]] = np.nan
 
         if self.verbose:
             num_remaining = data.shape[0]
@@ -101,6 +98,9 @@ class OxariDataManager(OxariMixin, abc.ABC):
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
     Should be capable of reading the data from csv-file or from database
     """
+    ORIGINAL = 'original'
+    IMPUTED = 'imputed_scopes'
+    
     def __init__(
         self,
         # object_filename,
@@ -128,24 +128,12 @@ class OxariDataManager(OxariMixin, abc.ABC):
         self.scope_loader = self.scope_loader.run()
         self.financial_loader = self.financial_loader.run()
         self.categorical_loader = self.categorical_loader.run()
-        # TODO: Think whether this should be called via @property
         _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
         _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
-        # TODO: Introduce this as a class constant
-        self.add_data("original", _df_original, "Dataset without changes.")
+        # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
+        self.add_data(OxariDataManager.ORIGINAL, _df_original, "Dataset without changes.")
         return self
 
-    # def set_original_data(self, df: pd.DataFrame) -> "OxariDataLoader":
-    #     self._df_original = df
-    #     return self
-
-    # def set_preprocessed_data(self, df: pd.DataFrame) -> "OxariDataLoader":
-    #     self._df_preprocessed = df
-    #     return self
-
-    # def set_filled_data(self, df: pd.DataFrame) -> "OxariDataLoader":
-    #     self._df_filled = df
-    #     return self
 
     def add_data(self, name:str, df: pd.DataFrame, descr:str="") -> "OxariDataManager":
         self._dataset_stack.append((name, df, descr))
@@ -165,35 +153,6 @@ class OxariDataManager(OxariMixin, abc.ABC):
     
     
 
-    # @property
-    # def original_data(self):
-    #     return self._df_original.copy()
-
-    # @property
-    # def preprocessed_data(self):
-    #     return self._df_preprocessed.copy()
-
-    # @property
-    # def filled_data(self):
-    #     return self._df_filled.copy()
-
-    # @property
-    # def estimated_data(self):
-    #     return self._df_estimated.copy()
-
-    # # @abc.abstractmethod
-    # def train_test_val_split(self, split_size_test: float, split_size_val: float) -> "OxariDataLoader":
-    #     """
-    #     Creating targets(y) and features(X) from pandas.DataFrame
-    #     Split the data with sklearn train_test_split() and returns 3 subsets: training, testing, and validation;
-    #     Parameters:
-    #     data (pandas.DataFrame): pre-processed dataset in pandas format from data pipeline
-    #     split_size_test (float): ratio (from 0 to 1) of the splitting training-testing dataset
-    #     split_size_val (float): ratio (from 0 to 1) of the splitting training-val dataset
-    #     Returns:
-    #     numpy array: arrays for X (train, test, val) and 3 for y (train, test, val)
-    #     """
-    #     return self
     
     @staticmethod
     def train_test_val_split(X, y, split_size_test, split_size_val):

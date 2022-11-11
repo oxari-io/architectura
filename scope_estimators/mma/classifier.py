@@ -83,7 +83,7 @@ class ClassifierOptimizer(OxariOptimizer):
 
         return study.best_params, df
 
-    def score_trial(self, trial, X_train, y_train, X_val, y_val):
+    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val):
 
         # TODO: add docstring here pls
 
@@ -178,29 +178,8 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         return self._evaluator.evaluate(y_true, y_pred)
 
     def fit(self, X, y, **kwargs) -> "OxariClassifier":
-        """
-        Splits the data into different buckets. Finds the best hyperparameters for the classifier 
-        and trains the classifier given the best hyperparameters on the full training dataset (no validation).
-        Computes the error metrics at the end on a test set.
-
-        Parameters:
-        data (pandas.DataFrame): pre-processed dataset
-        """
         self._estimator.set_params(**kwargs).fit(X, y.ravel())
         return self
 
     def predict(self, X, **kwargs):
-        """
-        # TODO: rewrite this
-
-        Classfies the companies in one of the 3 scopes using only a subset of columns, given a deepcopy of the dataframe
-        Adds new columns in the dataframe with the scope label and its corresponding row with the predicted value
-
-        Parameters:
-        data (pandas.DataFrame): pre-processed dataset in pandas format from data pipeline, transformed after each prediction
-        deepcopy_data (pandas.DataFrame): the dataframe that will be transformed during the prediction
-
-        Return:
-        data (pandas.DataFrame): original dataframe with attached columns for the 3 computed scopes
-        """
         return self._estimator.predict(X)

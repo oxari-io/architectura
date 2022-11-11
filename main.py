@@ -36,7 +36,7 @@ if __name__ == "__main__":
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=BaselineImputer(),
-        scope_estimator=PredictMedianEstimator(),
+        scope_estimator=MiniModelArmyEstimator(),
     )
     model = OxariModel()
     postprocessor = ScopeImputerPostprocessor(model)

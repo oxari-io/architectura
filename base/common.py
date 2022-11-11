@@ -17,7 +17,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_sc
 from pmdarima.metrics import smape
 from sklearn.metrics import mean_absolute_percentage_error as mape
 from numbers import Number
-import oxari_types
+import base.oxari_types as oxari_types
 class OxariLogger:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.

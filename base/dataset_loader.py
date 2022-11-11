@@ -131,6 +131,7 @@ class OxariDataLoader(OxariMixin, abc.ABC):
         # TODO: Think whether this should be called via @property
         _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
         _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
+        # TODO: Introduce this as a class constant
         self.add_data("original", _df_original, "Dataset without changes.")
         return self
 

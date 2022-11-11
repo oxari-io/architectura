@@ -189,27 +189,28 @@ class OxariModel(common.OxariRegressor, common.OxariMixin, sklearn.base.MultiOut
         # TODO: Implement failsafe to not exceed the limit of three scopes
         if not isinstance(scope, int):
             raise Exception("scope is not an int")     
+        if not ((scope>0) and (scope<4)):
+            raise Exception("scope is not an int")     
         self.pipelines[f"scope_{scope}"] = pipeline
         return self
     
-    def get_estimator(self, scope:int) -> OxariPipeline:
+    def get_pipeline(self, scope:int) -> OxariPipeline:
         return self.pipelines[f"scope_{scope}"]
     
     def fit(self, X, y=None, **kwargs):
         pass
     
     def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        scope = kwargs.get("scope", "all")
+        scope = kwargs.pop("scope", "all")
         if scope == "all":
             return self._predict_all(X, **kwargs)
-        return self.get_estimator(scope).predict(X, **kwargs) 
+        return self.get_pipeline(scope).predict(X, **kwargs) 
     
     def _predict_all(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        all_predictions = []
-        for _, estimator in self.pipelines.items():
+        result = pd.DataFrame()
+        for scope_str, estimator in self.pipelines.items():
             y_pred = estimator.predict(X, **kwargs)
-            all_predictions.append(y_pred)
-        result = np.hstack(all_predictions)
+            result[scope_str] = y_pred
         return result
     
     def collect_eval_results(self)-> List[dict]:

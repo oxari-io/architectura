@@ -59,6 +59,8 @@ class DefaultPipeline(OxariPipeline):
         return self
 
     def predict(self, X, **kwargs):
+        X = self.preprocessor.transform(X, **kwargs)
+        X = self.feature_selector.transform(X, **kwargs)
         return self.estimator.predict(X, **kwargs)
     
 

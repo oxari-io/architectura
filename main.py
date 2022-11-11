@@ -34,5 +34,15 @@ if __name__ == "__main__":
     model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset, scope=1))
     model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset, scope=2))
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset, scope=3))
+    X = dataset.get_data_by_name("original")
     
+    print("Eval results")
     print(pd.json_normalize(model.collect_eval_results()))
+    print("Predict with Pipeline")
+    print(dp1.predict(X))
+    print("Predict with Model")
+    print(model.predict(X, scope=1))
+    print("Predict ALL with Model")
+    print(model.predict(X))
+    
+    

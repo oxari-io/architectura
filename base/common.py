@@ -65,7 +65,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
             "R2": r2_score(y_true, y_pred),
             "MAE": mean_absolute_error(y_true, y_pred),
             "RMSE": mean_squared_error(y_true, y_pred, squared=False),
-            "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
+            # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
             "MAPE": mape(y_true, y_pred)
         }
 

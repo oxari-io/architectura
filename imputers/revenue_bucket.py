@@ -1,7 +1,7 @@
 import itertools
 from typing import Union
 from base.common import OxariImputer
-from base.dataset_loader import OxariDataLoader
+from base.dataset_loader import OxariDataManager
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer

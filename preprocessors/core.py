@@ -5,7 +5,7 @@ import sklearn.preprocessing as prep
 import category_encoders as ce
 import sklearn
 from base.common import OxariMixin, OxariTransformer
-from base.dataset_loader import OxariDataLoader
+from base.dataset_loader import OxariDataManager
 import numpy as np
 import pandas as pd
 from base.mappings import CatMapping, NumMapping

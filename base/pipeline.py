@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.utils.estimator_checks import check_estimator
 import abc
 
-from base.dataset_loader import OxariDataLoader
+from base.dataset_loader import OxariDataManager
 from base import common
 
 

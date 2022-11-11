@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Dict
-from base.dataset_loader import CategoricalLoader, LocalDatasourceMixin, OxariDataLoader, PartialLoader, ScopeLoader, FinancialLoader
+from base.dataset_loader import CategoricalLoader, LocalDatasourceMixin, OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader
 from base.mappings import CatMapping, NumMapping
 import pandas as pd
 import numpy as np
@@ -48,7 +48,7 @@ class CSVCategoricalLoader(CategoricalLoader, LocalDatasourceMixin):
         return self
 
 
-class CSVDataLoader(OxariDataLoader):
+class CSVDataLoader(OxariDataManager):
     def __init__(self,
                 #  object_filename,
                  scope_loader: ScopeLoader = CSVScopeLoader(path  = DATA_DIR / "scopes.csv"),

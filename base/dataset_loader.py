@@ -96,7 +96,7 @@ class CategoricalLoader(PartialLoader, abc.ABC):
         self.columns = CatMapping.get_features()
 
 
-class OxariDataLoader(OxariMixin, abc.ABC):
+class OxariDataManager(OxariMixin, abc.ABC):
     """
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
     Should be capable of reading the data from csv-file or from database
@@ -124,7 +124,7 @@ class OxariDataLoader(OxariMixin, abc.ABC):
         self._df_estimated: pd.DataFrame = None
         self.threshold = kwargs.pop("threshold", 5)
 
-    def run(self, **kwargs) -> "OxariDataLoader":
+    def run(self, **kwargs) -> "OxariDataManager":
         self.scope_loader = self.scope_loader.run()
         self.financial_loader = self.financial_loader.run()
         self.categorical_loader = self.categorical_loader.run()
@@ -147,7 +147,7 @@ class OxariDataLoader(OxariMixin, abc.ABC):
     #     self._df_filled = df
     #     return self
 
-    def add_data(self, name:str, df: pd.DataFrame, descr:str="") -> "OxariDataLoader":
+    def add_data(self, name:str, df: pd.DataFrame, descr:str="") -> "OxariDataManager":
         self._dataset_stack.append((name, df, descr))
         return self
 

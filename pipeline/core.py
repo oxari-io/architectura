@@ -1,4 +1,4 @@
-from base.dataset_loader import OxariDataLoader
+from base.dataset_loader import OxariDataManager
 from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, OxariPreprocessor, OxariPipeline
 from base.common import OxariImputer
 from dataset_loader.csv_loader import CSVDataLoader
@@ -30,7 +30,7 @@ class DefaultPipeline(OxariPipeline):
             database_deployer=None,
         )
 
-    def run_pipeline(self, dataset: OxariDataLoader, scope:int, **kwargs):
+    def run_pipeline(self, dataset: OxariDataManager, scope:int, **kwargs):
         # kwargs.pop("")
         list_of_skipped_columns = ["scope_1", "scope_2", "scope_3", "isin", "year"]
         df_original = dataset.get_data_by_name('original')
@@ -42,7 +42,7 @@ class DefaultPipeline(OxariPipeline):
 
         # TODO: Implement the train test split params as method parameters of run_pipeline
         # TODO: Run pipeline needs a parameter for which scope to run on
-        X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test = OxariDataLoader.train_test_val_split(
+        X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test = OxariDataManager.train_test_val_split(
             X=X,
             y=y,
             split_size_test=0.2,

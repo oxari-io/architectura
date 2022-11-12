@@ -56,7 +56,7 @@ class LROptimizer(PolynomialFeaturesMixin, OxariOptimizer):
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         alpha = trial.suggest_float("alpha", 0.01, 10.0)
         l1_ratio = trial.suggest_float("l1_ratio", 0.01, 1.0)
-        degree = trial.suggest_int("degree", 1,5)
+        degree = trial.suggest_categorical("degree", list(range(1,5)))
         X_train = self.polynomializer.set_params(degree=degree).fit_transform(X_train)
         X_val = self.polynomializer.set_params(degree=degree).fit_transform(X_val)
         

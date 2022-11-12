@@ -12,7 +12,7 @@ STANDARD_KERNEL = kernels.DotProduct() + kernels.WhiteKernel()
 
 
 class GPOptimizer(OxariOptimizer):
-    def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, num_trials=10, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
             num_trials=num_trials,
             num_startup_trials=num_startup_trials,

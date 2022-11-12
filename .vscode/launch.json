@@ -5,10 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python-Modul",
+            "name": "Run Training Pipeline",
             "type": "python",
             "request": "launch",
             "module": "main",
+            "justMyCode": true
+        },
+        {
+            "name": "Run Comparison Pipeline",
+            "type": "python",
+            "request": "launch",
+            "module": "main_test_estimators",
             "justMyCode": true
         }
     ]

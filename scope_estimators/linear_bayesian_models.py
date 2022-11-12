@@ -10,7 +10,8 @@ from pmdarima.metrics import smape
 from sklearn import linear_model
 from .linear.helper import PolynomialFeaturesMixin
 
-class LROptimizer(PolynomialFeaturesMixin, OxariOptimizer):
+
+class BayesianRegressorOptimizer(PolynomialFeaturesMixin, OxariOptimizer):
     def __init__(self, num_trials=50, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
             num_trials=num_trials,
@@ -39,14 +40,13 @@ class LROptimizer(PolynomialFeaturesMixin, OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"{self.__class__.__name__}_process_hp_tuning",
+            study_name=f"gaussian_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
         )
 
         # running optimization
         # trials is the full number of iterations
-        
         study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
@@ -54,25 +54,27 @@ class LROptimizer(PolynomialFeaturesMixin, OxariOptimizer):
         return study.best_params, df
 
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        alpha = trial.suggest_float("alpha", 0.01, 10.0)
-        l1_ratio = trial.suggest_float("l1_ratio", 0.01, 1.0)
-        degree = trial.suggest_int("degree", 1,5)
+        alpha_1 = trial.suggest_float("alpha_1", 1e-6, 1.0, log=True)
+        alpha_2 = trial.suggest_float("alpha_2", 1e-6, 1.0, log=True)
+        lambda_1 = trial.suggest_float("lambda_1", 1e-6, 1.0, log=True)
+        lambda_2 = trial.suggest_float("lambda_2", 1e-6, 1.0, log=True)
+        n_iter = trial.suggest_int("n_iter", 100, 500, step=100)
+        degree = trial.suggest_int("degree", 1, 5)
         X_train = self.polynomializer.set_params(degree=degree).fit_transform(X_train)
         X_val = self.polynomializer.set_params(degree=degree).fit_transform(X_val)
-        
-        model = linear_model.ElasticNet(alpha=alpha, l1_ratio=l1_ratio).fit(X_train, y_train)
+        model = linear_model.ARDRegression(n_iter=n_iter, alpha_1=alpha_1, alpha_2=alpha_2, lambda_1=lambda_1, lambda_2=lambda_2).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
         return smape(y_true=y_val, y_pred=y_pred)
 
 
-class LinearRegressionEstimator(PolynomialFeaturesMixin, OxariScopeEstimator):
+class BayesianRegressionEstimator(PolynomialFeaturesMixin, OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = linear_model.ElasticNet()
+        self._estimator = linear_model.ARDRegression()
         # TODO: Add polynomializer to estimation and optimization - Degreese 1-3
         # self._polynomializer = PolynomialFeatures()
-        self._optimizer = optimizer or LROptimizer()
+        self._optimizer = optimizer or BayesianRegressorOptimizer()
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         degree = kwargs.pop("degree", 1)

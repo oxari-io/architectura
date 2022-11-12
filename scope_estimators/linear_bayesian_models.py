@@ -40,7 +40,7 @@ class BayesianRegressorOptimizer(PolynomialFeaturesMixin, OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"gaussian_process_hp_tuning",
+            study_name=f"{self.__class__.__name__}_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
         )

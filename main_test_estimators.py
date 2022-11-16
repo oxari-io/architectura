@@ -14,6 +14,9 @@ import pandas as pd
 import joblib as pkl
 import io
 
+# import multiprocessing as mp
+from concurrent import futures
+
 if __name__ == "__main__":
 
     dataset = CSVDataLoader().run()
@@ -25,6 +28,7 @@ if __name__ == "__main__":
             imputer=BaselineImputer(),
             scope_estimator=Model(),
         ) for Model in [
+            # REVIEWME: which sampler do the optimizer for the following estimator use?
             LinearRegressionEstimator,
             BayesianRegressionEstimator,
             DummyEstimator,
@@ -37,12 +41,16 @@ if __name__ == "__main__":
     ]
 
     all_models_trained = []
-    for model in all_models:
-        all_models_trained.append(model.run_pipeline(dataset))
+    with futures.ProcessPoolExecutor() as pool:
+        for model in all_models:
+            for results in pool.map(model.run_pipeline(dataset)):
+                all_models_trained.append(results)
 
+
+    # Multiprocessing also for evaluation?
     all_evaluations = []
     for model in all_models_trained:
         all_evaluations.append(model.evaluation_results)
 
     eval_results = pd.DataFrame(all_evaluations)
-    print(eval_results.to_csv('junk/results.csv'))
+    print(eval_results.to_csv('local/eval_results/junk/results.csv'))

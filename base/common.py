@@ -77,8 +77,7 @@ class OxariOptimizer(abc.ABC):
         super().__init__()
         self.num_trials = num_trials
         self.num_startup_trials = num_startup_trials
-        # TODO: Use a more approproiate optimization-sampler because it is not recommended for categorical data
-        self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
 
     @abc.abstractmethod
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:

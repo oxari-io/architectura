@@ -1,5 +1,6 @@
 from typing import Union, Dict, List
-import sklearn
+# import sklearn
+from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin, MetaEstimatorMixin, MultiOutputMixin
 import numpy as np
 import pandas as pd
 from sklearn.utils.estimator_checks import check_estimator
@@ -42,7 +43,7 @@ class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
     #     return self
 
 
-class OxariScopeEstimator(sklearn.base.BaseEstimator, sklearn.base.RegressorMixin, common.OxariMixin, abc.ABC):
+class OxariScopeEstimator(BaseEstimator, RegressorMixin, common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
@@ -121,7 +122,7 @@ class DefaultPostprocessor(OxariPostprocessor):
 
 
 
-class OxariFeatureReducer(sklearn.base.TransformerMixin, common.OxariMixin, abc.ABC):
+class OxariFeatureReducer(TransformerMixin, common.OxariMixin, abc.ABC):
     """
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
     """
@@ -147,7 +148,7 @@ class OxariFeatureReducer(sklearn.base.TransformerMixin, common.OxariMixin, abc.
 
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
-class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
+class OxariPipeline(MetaEstimatorMixin, abc.ABC):
     def __init__(
         self,
         # dataset: OxariDataLoader = None,
@@ -179,7 +180,7 @@ class OxariPipeline(sklearn.base.MetaEstimatorMixin, abc.ABC):
         return {"model": self.estimator.name, **self._evaluation_results}
 
 
-class OxariModel(common.OxariRegressor, common.OxariMixin, sklearn.base.MultiOutputMixin, abc.ABC):
+class OxariModel(common.OxariRegressor, common.OxariMixin, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.created = None # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
@@ -201,6 +202,7 @@ class OxariModel(common.OxariRegressor, common.OxariMixin, sklearn.base.MultiOut
 
     def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         scope = kwargs.pop("scope", "all")
+        X = X.drop(columns = ["isin", "year"])
         if scope == "all":
             return self._predict_all(X, **kwargs)
         return self.get_pipeline(scope).predict(X, **kwargs)

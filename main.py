@@ -1,6 +1,8 @@
+import time
+from datetime import date 
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataLoader
-from base import OxariDataManager
+from base import OxariDataManager, OxariSavingManager
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
@@ -39,25 +41,34 @@ if __name__ == "__main__":
         scope_estimator=MiniModelArmyEstimator(),
     )
     model = OxariModel()
-    postprocessor = ScopeImputerPostprocessor(model)
+    postprocessor = ScopeImputerPostprocessor(estimator = model)
     model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset))
     model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
+
+
     X = dataset.get_data_by_name("original")
 
+    ### EVALUATION RESULTS ###
     print("Eval results")
     print(pd.json_normalize(model.collect_eval_results()))
-    print("Predict with Pipeline")
-    print(dp1.predict(X))
-    print("Predict with Model")
-    print(model.predict(X, scope=1))
+
+
+    # print("Predict with Pipeline")
+    # print(dp1.predict(X))
+    # print("Predict with Model")
+    # print(model.predict(X, scope=1))
 
     scope_inputed_data = postprocessor.run(X=X)
-    #  TODO: Add timestamp to the description of imputed scopes.
-    dataset.add_data(OxariDataManager.IMPUTED, scope_inputed_data, "This data has all scopes imputed by the model.")
-    print("Predict ALL with Model")
+    today = time.strftime('%d-%m-%Y')
+    dataset.add_data(OxariDataManager.IMPUTED, scope_inputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+
+    print("\n", "Predict ALL with Model")
     print(model.predict(X))
-    pkl.dump(model, io.open('model.pkl', 'wb'))
-    pkl.dump(dataset, io.open('dataset.pkl', 'wb'))
-    
+
+
+    ### SAVE OBJECTS ###
+    SavingManager = OxariSavingManager(local_path = "local/objects", meta_model = model, dataset = dataset)
+    SavingManager.save_model_locally(today)
+
     

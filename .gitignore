@@ -11,6 +11,9 @@ __pycache__/
 # data
 local/data*
 
+# objects
+local/objects*
+
 # Distribution / packaging
 .Python
 build/

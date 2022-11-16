@@ -48,9 +48,9 @@ OPTUNA_DIR = Path("model/optuna")
 class RegressorOptimizer(OxariOptimizer):
     def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.n_trials = n_trials
-        self.n_startup_trials = n_startup_trials
-        self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False)
+        self.num_trials = n_trials
+        self.num_startup_trials = n_startup_trials
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
         self.scope = None
         self.bucket_specific = None
 
@@ -97,11 +97,11 @@ class RegressorOptimizer(OxariOptimizer):
                 study = optuna.create_study(
                     study_name=f"regressor_{name}_hp_tuning",
                     direction="minimize",
-                    sampler=optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False),
+                    sampler=optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False),
                 )
                 study.optimize(
                     lambda trial: self.score_trial(trial, name, X_train[selector_train], y_train[selector_train].values, X_val[selector_val], y_val[selector_val].values),
-                    n_trials=self.n_trials,
+                    n_trials=self.num_trials,
                     show_progress_bar=False)
 
                 candidates[bucket_name][name]["best_params"] = study.best_params

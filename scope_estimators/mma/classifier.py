@@ -44,7 +44,7 @@ class ClassifierOptimizer(OxariOptimizer):
         super().__init__(**kwargs)
         self.num_trials = num_trials
         self.num_startup_trials = num_startup_trials
-        self.sampler = sampler or optuna.samplers.CmaEsSampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
@@ -182,4 +182,5 @@ class BucketClassifier(OxariClassifier, OxariMixin):
         return self
 
     def predict(self, X, **kwargs):
+        # X = X.drop(columns = ["scope_1", "scope_2", "scope_3"])
         return self._estimator.predict(X)

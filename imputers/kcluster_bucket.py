@@ -43,3 +43,11 @@ class KMeansBucketImputer(OxariImputer):
         new_X = pd.DataFrame(np.where(np.isnan(X), impute_values, X) , X.index,X.columns)           
         return new_X
 
+class KMedianBucketImputer(KMeansBucketImputer):
+    def __init__(self, buckets_number=3, **kwargs):
+        super().__init__(buckets_number, **kwargs)
+        # self._estimator = cluster.KM
+        
+# TODO:
+# Try these https://scikit-learn.org/stable/modules/clustering.html#overview-of-clustering-methods
+# Especially, Spectral, DBSCAN, Agglomerative, BisectingKMeans 

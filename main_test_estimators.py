@@ -29,7 +29,7 @@ if __name__ == "__main__":
             PredictMeanEstimator,
             PredictMedianEstimator,
             MiniModelArmyEstimator,
-            GaussianProcessEstimator,
+            # GaussianProcessEstimator,
         ]
     all_models = [
         DefaultPipeline(

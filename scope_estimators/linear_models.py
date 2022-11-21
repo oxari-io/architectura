@@ -10,8 +10,11 @@ from pmdarima.metrics import smape
 from sklearn import linear_model
 from .linear.helper import PolynomialFeaturesMixin
 
+DEBUG_NUM_TRIALS = True
+NUM_TRIALS = 50 if not DEBUG_NUM_TRIALS else 10
+
 class LROptimizer(PolynomialFeaturesMixin, OxariOptimizer):
-    def __init__(self, num_trials=50, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, num_trials=NUM_TRIALS, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
             num_trials=num_trials,
             num_startup_trials=num_startup_trials,

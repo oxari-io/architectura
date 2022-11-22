@@ -8,6 +8,7 @@ from sklearn.impute import SimpleImputer
 from base.mappings import NumMapping
 from base.metrics import mape
 from sklearn import cluster
+import kmedoids
 
 
 class KMeansBucketImputer(OxariImputer):
@@ -46,7 +47,7 @@ class KMeansBucketImputer(OxariImputer):
 class KMedianBucketImputer(KMeansBucketImputer):
     def __init__(self, buckets_number=3, **kwargs):
         super().__init__(buckets_number, **kwargs)
-        # self._estimator = cluster.KM
+        self._estimator = kmedoids.KMedoids(buckets_number, metric="euclidean")
         
 # TODO:
 # Try these https://scikit-learn.org/stable/modules/clustering.html#overview-of-clustering-methods

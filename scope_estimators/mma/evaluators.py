@@ -1,4 +1,4 @@
-from base.common import OxariEvaluator
+from base.common import OxariEvaluator, DefaultClassificationEvaluator
 import numpy as np
 from sklearn.metrics import accuracy_score, r2_score, roc_auc_score, f1_score, balanced_accuracy_score, precision_recall_fscore_support, classification_report
 from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score, r2_score, mean_squared_log_error
@@ -6,7 +6,8 @@ from pmdarima.metrics import smape
 from sklearn.metrics import mean_absolute_percentage_error as mape
 import base.common as common
 
-class ClassifierEvaluator(OxariEvaluator):
+#  TODO: Call it BucketClassifierEvauator
+class ClassifierEvaluator(DefaultClassificationEvaluator):
     def __init__(self, **kwargs) -> None:
         super().__init__()
 
@@ -22,11 +23,12 @@ class ClassifierEvaluator(OxariEvaluator):
         """
         n_buckets = kwargs.get('n_buckets', len(np.unique(y_test)))
         error_metrics = {
-            "vanilla_acc": balanced_accuracy_score(y_test, y_pred),
+            # "vanilla_acc": balanced_accuracy_score(y_test, y_pred),
             "adj_lenient_acc": self.lenient_adjacent_accuracy_score(y_test, y_pred),
             "adj_strict_acc": self.strict_adjacent_accuracy_score(y_test, y_pred, n_buckets),
         }
-        return super().evaluate(y_test, y_pred, **error_metrics)
+        # TODO: This is the better way to propagate the information. Not trickle-down but bottom up
+        return {**super().evaluate(y_test, y_pred), **error_metrics}
 
     def lenient_adjacent_accuracy_score(self, y_true, y_pred):
         # if true == 0 and pred == 1 --> CORRECT!

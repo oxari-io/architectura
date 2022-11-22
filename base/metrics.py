@@ -1,28 +1,26 @@
 import pandas as pd
 import numpy as np
+from scipy import spatial
+
 
 def calculate_smape(actual, predicted) -> float:
-  
+
     # Convert actual and predicted to numpy
     # array data type if not already
-    if not all([isinstance(actual, np.ndarray), 
-                isinstance(predicted, np.ndarray)]):
+    if not all([isinstance(actual, np.ndarray), isinstance(predicted, np.ndarray)]):
         actual, predicted = np.array(actual),
         np.array(predicted)
-  
-    return round(
-        np.mean(
-            np.abs(predicted - actual) / 
-            ((np.abs(predicted) + np.abs(actual))/2)
-        )*100, 2
-    )
+
+    return round(np.mean(np.abs(predicted - actual) / ((np.abs(predicted) + np.abs(actual)) / 2)) * 100, 2)
+
 
 def smape(a, f):
     """
     a --> actual (y_true)
     f --> forecast (y_pred)
     """
-    return 1/len(a) * np.sum(2 * np.abs(f-a) / (np.abs(a) + np.abs(f))*100)  
+    return 1 / len(a) * np.sum(2 * np.abs(f - a) / (np.abs(a) + np.abs(f)) * 100)
+
 
 def mape(A, F):
     tmp = np.abs(A - F) / np.abs(A)
@@ -50,3 +48,31 @@ def adjusted_r_squared(X, Y, r2):
     adj_r = 1 - ((1 - r2) * (n - 1)) / (n - p - 1)
 
     return adj_r
+
+
+# https://stackoverflow.com/a/60666838
+# compute the diameter based on convex hull
+def _diameter(pts):
+    # need at least 3 points to construct the convex hull
+    if pts.shape[0] <= 1:
+        return 0
+    if pts.shape[0] == 2:
+        return ((pts[0] - pts[1])**2).sum()
+    # two points which are fruthest apart will occur as vertices of the convex hull
+    hull = spatial.ConvexHull(pts)
+    #   candidates = pts[spatial.ConvexHull(pts).vertices]
+    candidates = pts[hull.vertices]
+    return spatial.distance_matrix(candidates, candidates).max()
+
+
+def dunn_index(pts, labels):
+    # O(k n log(n)) with k clusters and n points; better performance with more even clusters
+    max_intracluster_dist = pd.DataFrame(pts).groupby(labels).agg(_diameter)[0].max()
+    centroids = pd.DataFrame(pts).groupby(labels).mean()
+    # O(k^2) with k clusters; can be reduced to O(k log(k))
+    # get pairwise distances between centroids
+    cluster_dmat = spatial.distance_matrix(centroids, centroids)
+    # fill diagonal with +inf: ignore zero distance to self in "min" computation
+    cluster_dmat_mod = cluster_dmat + (np.eye(cluster_dmat.shape[0]) * np.inf)
+    min_intercluster_dist = cluster_dmat_mod.min()
+    return min_intercluster_dist / max_intracluster_dist

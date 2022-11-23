@@ -182,15 +182,6 @@ class OxariMixin(abc.ABC):
         self._optimizer = optimizer
         return self
 
-    def save_state(self):
-        with open(self.object_filename, "wb") as f:
-            pickle.dump(self, f)
-
-    @classmethod
-    def load_state(cls, filename):
-        with open(filename, 'rb') as f:
-            return pickle.load(f)
-
 
 class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""

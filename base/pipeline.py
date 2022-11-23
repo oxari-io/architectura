@@ -32,7 +32,7 @@ class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
         return self
 
     @abc.abstractmethod
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
     def set_imputer(self, imputer: common.OxariImputer) -> "OxariPreprocessor":
@@ -68,7 +68,7 @@ class OxariScopeEstimator(BaseEstimator, RegressorMixin, common.OxariMixin, abc.
         return self
 
     @abc.abstractmethod
-    def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X) -> ArrayLike:
         # Takes X and computes predictions
         # Returns prediction results
         pass
@@ -134,7 +134,7 @@ class OxariFeatureReducer(TransformerMixin, common.OxariMixin, abc.ABC):
         return self
 
     @abc.abstractmethod
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
 
@@ -197,14 +197,14 @@ class OxariMetaModel(common.OxariRegressor, common.OxariMixin, MultiOutputMixin,
     def fit(self, X, y=None, **kwargs):
         pass
 
-    def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
         X = X.drop(columns = ["isin", "year"])
         if scope == "all":
             return self._predict_all(X, **kwargs)
         return self.get_pipeline(scope).predict(X, **kwargs)
 
-    def _predict_all(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def _predict_all(self, X, **kwargs) -> ArrayLike:
         result = pd.DataFrame()
         for scope_str, estimator in self.pipelines.items():
             y_pred = estimator.predict(X, **kwargs)

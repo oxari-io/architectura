@@ -1,8 +1,8 @@
 from typing import Union
-from base.pipeline import OxariScopeEstimator
+from base import OxariScopeEstimator
 import numpy as np
 import pandas as pd
-
+from base.oxari_types import ArrayLike
 
 class DummyEstimator(OxariScopeEstimator):
     def __init__(self, **kwargs):
@@ -11,7 +11,7 @@ class DummyEstimator(OxariScopeEstimator):
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         return self
     
-    def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X) -> ArrayLike:
         return np.ones(len(X)) * 42
 
     def check_conformance(self):
@@ -28,7 +28,7 @@ class BaselineEstimator(OxariScopeEstimator):
         self.high = np.max(y)
         return self
     
-    def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X) -> ArrayLike:
         return np.random.uniform(self.low, self.high, len(X))
     
     def check_conformance(self):
@@ -45,7 +45,7 @@ class PredictMedianEstimator(OxariScopeEstimator):
         self.median_value = np.median(y)
         return self
     
-    def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X) -> ArrayLike:
         return np.ones(len(X)) * self.median_value 
     
     def check_conformance(self):
@@ -62,7 +62,7 @@ class PredictMeanEstimator(OxariScopeEstimator):
         self.mean_value = np.mean(y)
         return self
     
-    def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X) -> ArrayLike:
         return np.ones(len(X)) * self.mean_value 
     
     def check_conformance(self):

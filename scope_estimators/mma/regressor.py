@@ -306,6 +306,8 @@ class BucketRegressor(OxariMixin, OxariRegressor):
 
         for bucket, voting_regressor in self.voting_regressors.items():
             selector = (bucket == groups).flatten()
+            if not np.any(selector):
+                continue
             y_pred[selector] = voting_regressor.predict(X[selector])
 
         return y_pred

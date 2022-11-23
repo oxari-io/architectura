@@ -82,7 +82,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         # impute all the missing columns
         data[self.financial_columns] = self.imputer.transform(data[self.financial_columns])
         # log scaling the scopes -> NOTE: NOT NECESSARY DURING INFERENCE
-        data[self.scope_columns] = self.scope_transformer.transform(data[self.scope_columns])
+        # data[self.scope_columns] = self.scope_transformer.transform(data[self.scope_columns])
         # transform numerical
         data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
         # encode categorical

@@ -93,7 +93,7 @@ class CategoricalLoader(PartialLoader, abc.ABC):
         self.columns = CatMapping.get_features()
 
 
-class OxariDataManager(OxariMixin, abc.ABC):
+class OxariDataManager(OxariMixin):
     """
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
     Should be capable of reading the data from csv-file or from database

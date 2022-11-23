@@ -1,5 +1,22 @@
 import io
-import joblib as pkl
+import cloudpickle as pkl
+import base
+import pipeline
+import preprocessors
+import scope_estimators
+import postprocessors
+import imputers
+import feature_reducers
+
+MODULES_TO_PICKLE = [
+    base,
+    pipeline,
+    preprocessors,
+    scope_estimators,
+    postprocessors,
+    imputers,
+    feature_reducers,
+]
 
 from os import PathLike
 
@@ -8,11 +25,8 @@ from typing import Dict, List, Union
 import pandas as pd
 import numpy as np
 import abc
-from base.common import OxariMixin
-from base.mappings import CatMapping, NumMapping
 from sklearn.model_selection import train_test_split
 from base import OxariModel, OxariDataManager
-
 
 
 class DestinationMixin(abc.ABC):
@@ -50,15 +64,28 @@ class PartialSaver(abc.ABC):
     #     return self
 
 
+class ModelSaver(abc.ABC):
+    def __init__(self, model: OxariModel):
+        self.model = model
+
+
+class LocalModelSaver(ModelSaver, LocalDestinationMixin):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def run(self) -> "LocalModelSaver":
+        super()._check_if_data_exists()
+        return self
+
+
 class OxariSavingManager(LocalDestinationMixin):
     """
     Saves the files into the appropriate location
     """
- 
     def __init__(
         self,
         # object_filename,
-        meta_model: OxariModel = None,
+        meta_model: OxariModel = None,  # TODO: Needs to be ModelSaver!
         dataset: OxariDataManager = None,
         # lar_model: CategoricalLoader = None,
         other_savers: Dict[str, PartialSaver] = None,
@@ -83,5 +110,7 @@ class OxariSavingManager(LocalDestinationMixin):
 
     def save_model_locally(self, today):
         self._check_if_destination_accessible()
+        for md in MODULES_TO_PICKLE:
+            pkl.register_pickle_by_value(md)
+        # obj = OxariModel.dillable(self.meta_model)
         pkl.dump(self.meta_model, io.open(self.local_path / f"MetaModel_{today}_.pkl", 'wb'))
-

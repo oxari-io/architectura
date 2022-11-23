@@ -222,6 +222,24 @@ class OxariModel(common.OxariRegressor, common.OxariMixin, MultiOutputMixin, abc
 
         return results
     
-    def save(self):
-        res = pkl.dump(self, io.open(f'model.pkl', 'wb'))
-        return res
+    # def save(self):
+    #     res = pkl.dump(self, io.open(f'model.pkl', 'wb'))
+    #     return res
+    
+    # @classmethod
+    # def dillable(cls, ):
+    #     import __main__
+    #     cls._mainify(cls)
+    #     cls = getattr(__main__, cls.__name__)
+    #     return cls(greetings)
+
+    # @staticmethod
+    # def _mainify(obj):
+    #     """If obj is not defined in __main__ then redefine it in 
+    #     main so that dill will serialize the definition along with the object"""
+    #     if obj.__module__ != "__main__":
+    #         import __main__
+    #         import inspect
+    #         s = inspect.getsource(obj)
+    #         co = compile(s, '<string>', 'exec')
+    #         exec(co, __main__.__dict__)

@@ -1,5 +1,5 @@
 import time
-from datetime import date 
+from datetime import date
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataLoader
 from base import OxariDataManager, OxariSavingManager
@@ -10,12 +10,16 @@ from imputers.core import BaselineImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator
 import base
+from base import helper
 from base import OxariModel
 import pandas as pd
-# import cPickle as 
+# import cPickle as
 import joblib as pkl
 import io
+from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
+import pathlib
 
+DATA_DIR = pathlib.Path('local/data')
 if __name__ == "__main__":
 
     dataset = CSVDataLoader().run()
@@ -41,18 +45,16 @@ if __name__ == "__main__":
         scope_estimator=MiniModelArmyEstimator(),
     )
     model = OxariModel()
-    postprocessor = ScopeImputerPostprocessor(estimator = model)
+    postprocessor = ScopeImputerPostprocessor(estimator=model)
     model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset))
     model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
-
 
     X = dataset.get_data_by_name("original")
 
     ### EVALUATION RESULTS ###
     print("Eval results")
     print(pd.json_normalize(model.collect_eval_results()))
-
 
     # print("Predict with Pipeline")
     # print(dp1.predict(X))
@@ -65,10 +67,9 @@ if __name__ == "__main__":
 
     print("\n", "Predict ALL with Model")
     print(model.predict(X))
-
+    
+    print(model.predict(helper.mock_data()))
 
     ### SAVE OBJECTS ###
-    SavingManager = OxariSavingManager(local_path = "local/objects", meta_model = model, dataset = dataset)
+    SavingManager = OxariSavingManager(local_path="local/objects", meta_model=model, dataset=dataset)
     SavingManager.save_model_locally(today)
-
-    

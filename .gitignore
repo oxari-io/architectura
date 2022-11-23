@@ -1,5 +1,4 @@
 junk
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -9,10 +8,11 @@ __pycache__/
 *.so
 
 # data
-local/data*
+local/data/*
 
 # objects
-local/objects*
+local/objects/*
+!/**/.gitkeep
 
 # Distribution / packaging
 .Python

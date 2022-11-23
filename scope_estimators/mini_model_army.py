@@ -1,8 +1,7 @@
 from typing import Union
-from base import OxariScopeEstimator
+from base import OxariScopeEstimator, DefaultRegressorEvaluator
 import numpy as np
 import pandas as pd
-import base.common as common
 from scope_estimators.mma.classifier import BucketClassifier, ClassfierScopeDiscretizer, ClassifierOptimizer
 from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer
 from scope_estimators.mma.evaluators import ClassifierEvaluator
@@ -15,7 +14,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         super().__init__(**kwargs)
         self.discretizer = ClassfierScopeDiscretizer(n_buckets)
         self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=N_TRIALS, num_startup_trials=N_STARTUP_TRIALS)).set_evaluator(ClassifierEvaluator())
-        self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS)).set_evaluator(common.DefaultRegressorEvaluator())
+        self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS)).set_evaluator(DefaultRegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         y_binned = self.discretizer.transform(y)

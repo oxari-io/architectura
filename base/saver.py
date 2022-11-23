@@ -123,5 +123,7 @@ class OxariSavingManager():
         self.saver_meta_model.save(**kwargs)
 
     def _register_all_modules_to_pickle(self):
+        # https://oegedijk.github.io/blog/pickle/dill/python/2020/11/10/serializing-dill-references.html
+        # https://github.com/cloudpipe/cloudpickle#overriding-pickles-serialization-mechanism-for-importable-constructs
         for md in MODULES_TO_PICKLE:
             pkl.register_pickle_by_value(md)

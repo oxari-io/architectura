@@ -32,7 +32,7 @@ if __name__ == "__main__":
         scope=3,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=RevenueBucketImputer(),
+        imputer=BaselineImputer(),
         scope_estimator=PredictMedianEstimator(),
     )
     dp2 = DefaultPipeline(
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         scope=1,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=KMeansBucketImputer(),
+        imputer=BaselineImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
     model = OxariMetaModel()

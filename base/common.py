@@ -1,14 +1,10 @@
 from __future__ import annotations
 import abc
 import csv
-import joblib as pkl
-import logging
 import numpy as np
 import optuna
 import pandas as pd
 import sklearn
-from base import common, oxari_types
-from base.metrics import dunn_index, mape
 from numbers import Number
 from pmdarima.metrics import smape
 from sklearn.base import (
@@ -31,6 +27,7 @@ from sklearn.metrics import (
 from sklearn.utils.estimator_checks import check_estimator
 from typing import Any, Dict, List, Tuple
 
+from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
 
 
@@ -221,7 +218,7 @@ class OxariClassifier(sklearn.base.ClassifierMixin, sklearn.base.BaseEstimator, 
         return self
 
     @abc.abstractmethod
-    def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X, **kwargs) -> ArrayLike:
         pass
 
 
@@ -232,7 +229,7 @@ class OxariRegressor(sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, ab
         return self
 
     @abc.abstractmethod
-    def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X, **kwargs) -> ArrayLike:
         pass
 
 
@@ -257,11 +254,11 @@ class OxariImputer(_base._BaseImputer, OxariMixin, abc.ABC):
         return self
 
     @abc.abstractmethod
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
-class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
-    def __init__(self, imputer: common.OxariImputer = None, **kwargs):
+class OxariPreprocessor(OxariTransformer, OxariMixin, abc.ABC):
+    def __init__(self, imputer: OxariImputer = None, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
@@ -283,24 +280,24 @@ class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
-    def set_imputer(self, imputer: common.OxariImputer) -> "OxariPreprocessor":
+    def set_imputer(self, imputer: OxariImputer) -> "OxariPreprocessor":
         self.imputer = imputer
         return self
 
-    # def set_feature_selector(self, feature_selector: common.OxariFeatureSelector) -> "OxariPreprocessor":
+    # def set_feature_selector(self, feature_selector: OxariFeatureSelector) -> "OxariPreprocessor":
     #     self.feature_selector = feature_selector
     #     return self
 
 
-class OxariScopeEstimator(BaseEstimator, RegressorMixin, common.OxariMixin, abc.ABC):
+class OxariScopeEstimator(BaseEstimator, RegressorMixin, OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
         # Reference: https://scikit-learn.org/stable/developers/develop.html#instantiation
-        evaluator = kwargs.pop('evaluator', common.DefaultRegressorEvaluator())
+        evaluator = kwargs.pop('evaluator', DefaultRegressorEvaluator())
         self.set_evaluator(evaluator)
-        optimizer = kwargs.pop('optimizer', common.DefaultOptimizer())
+        optimizer = kwargs.pop('optimizer', DefaultOptimizer())
         self.set_optimizer(optimizer)
         self._name = self.__class__.__name__
 
@@ -335,7 +332,7 @@ class OxariScopeEstimator(BaseEstimator, RegressorMixin, common.OxariMixin, abc.
         return self._name
 
 
-class OxariPostprocessor(common.OxariMixin, abc.ABC):
+class OxariPostprocessor(OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
@@ -361,7 +358,7 @@ class DefaultPostprocessor(OxariPostprocessor):
 
 
 
-class OxariFeatureReducer(TransformerMixin, common.OxariMixin, abc.ABC):
+class OxariFeatureReducer(TransformerMixin, OxariMixin, abc.ABC):
     """
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
     """
@@ -387,7 +384,7 @@ class OxariFeatureReducer(TransformerMixin, common.OxariMixin, abc.ABC):
 
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
-class OxariPipeline(common.OxariRegressor, abc.ABC):
+class OxariPipeline(OxariRegressor, abc.ABC):
     def __init__(
         self,
         # dataset: OxariDataLoader = None,
@@ -410,7 +407,6 @@ class OxariPipeline(common.OxariRegressor, abc.ABC):
         #  dataset
         pass
 
-    @abc.abstractmethod
     def predict(self, X, **kwargs) -> ArrayLike:
         X = self.preprocessor.transform(X, **kwargs)
         X = self.feature_selector.transform(X, **kwargs)
@@ -425,7 +421,7 @@ class OxariPipeline(common.OxariRegressor, abc.ABC):
         return {"model": self.estimator.name, **self._evaluation_results}
 
 
-class OxariMetaModel(common.OxariRegressor, common.OxariMixin, MultiOutputMixin, abc.ABC):
+class OxariMetaModel(OxariRegressor, OxariMixin, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.created = None # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.

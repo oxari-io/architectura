@@ -29,16 +29,9 @@ from sklearn.model_selection import train_test_split
 from base import OxariModel, OxariDataManager
 
 
-class DestinationMixin(abc.ABC):
-    @abc.abstractmethod
-    def _check_if_destination_accessible(self) -> bool:
-        """
-        Implementation should check if self.path is set and then check the specifics for it.
-        """
-        return None
 
 
-class LocalDestinationMixin(DestinationMixin):
+class LocalDestinationMixin():
     def __init__(self, local_path: str = "", **kwargs) -> None:
         super().__init__(**kwargs)
         self.local_path = Path(local_path)
@@ -53,23 +46,36 @@ class PartialSaver(abc.ABC):
     def __init__(self, verbose=False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.verbose = verbose
-        self.data: pd.DataFrame = None
-        self.columns: List[str] = None
+        self._store = None
 
-    # @abc.abstractmethod
-    # def run(self) -> "PartialSaver":
-    #     """
-    #     Reads the files and combines them to one single file.
-    #     """
-    #     return self
+    @abc.abstractmethod
+    def save(self, **kwargs) -> "PartialSaver":
+        return self
+    
+    @abc.abstractmethod
+    def _check_if_destination_accessible(self) -> bool:
+        """
+        Implementation should check if self.path is set and then check the specifics for it.
+        """
+        return True    
 
 
-class ModelSaver(abc.ABC):
+
+
+class MetaModelSaver(PartialSaver, abc.ABC):
     def __init__(self, model: OxariModel):
-        self.model = model
+        self._store = model
+
+class DataSaver(PartialSaver, abc.ABC):
+    def __init__(self, data: OxariModel):
+        self._store = data
+
+class LARModelSaver(PartialSaver, abc.ABC):
+    def __init__(self, model: OxariModel):
+        self._store = model
 
 
-class LocalModelSaver(ModelSaver, LocalDestinationMixin):
+class LocalModelSaver(MetaModelSaver, LocalDestinationMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -77,40 +83,37 @@ class LocalModelSaver(ModelSaver, LocalDestinationMixin):
         super()._check_if_data_exists()
         return self
 
+    def save(self, today, name="", **kwargs):
+        self._check_if_destination_accessible()
+        name = "noname" if name == "" else name
+        pkl.dump(self._store, io.open(self.local_path / f"MetaModel_{today}_{name}.pkl", 'wb'))
 
-class OxariSavingManager(LocalDestinationMixin):
+
+class OxariSavingManager():
     """
     Saves the files into the appropriate location
     """
     def __init__(
         self,
         # object_filename,
-        meta_model: OxariModel = None,  # TODO: Needs to be ModelSaver!
-        dataset: OxariDataManager = None,
-        # lar_model: CategoricalLoader = None,
+        meta_model: MetaModelSaver = None,  
+        dataset: DataSaver = None,
+        lar_model: LARModelSaver = None,
         other_savers: Dict[str, PartialSaver] = None,
         verbose=False,
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.meta_model = meta_model
-        self.dataset = dataset
+        self.saver_meta_model = meta_model
+        self.saver_dataset = dataset
+        self.saver_lar_model = lar_model
         # self.other_savers = categorical_loader
-        # self.object_filename = object_filename
         self.verbose = verbose
-        # self._dataset_stack = []
-        # self._df_original: pd.DataFrame = None
-        # self._df_preprocessed: pd.DataFrame = None
-        # self._df_filled: pd.DataFrame = None
-        # self._df_estimated: pd.DataFrame = None
-        # self.threshold = kwargs.pop("threshold", 5)
+        self._register_all_modules_to_pickle()
 
     def run(self, **kwargs) -> "OxariDataManager":
-        pass
+        self.saver_meta_model.save(**kwargs)
 
-    def save_model_locally(self, today):
-        self._check_if_destination_accessible()
+    def _register_all_modules_to_pickle(self):
         for md in MODULES_TO_PICKLE:
             pkl.register_pickle_by_value(md)
-        # obj = OxariModel.dillable(self.meta_model)
-        pkl.dump(self.meta_model, io.open(self.local_path / f"MetaModel_{today}_.pkl", 'wb'))

@@ -2,7 +2,7 @@ import time
 from datetime import date
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataLoader
-from base import OxariDataManager, OxariSavingManager
+from base import OxariDataManager, OxariSavingManager, LocalModelSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
@@ -27,21 +27,21 @@ if __name__ == "__main__":
         scope=3,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
-        scope_estimator=DummyEstimator(),
+        imputer=RevenueBucketImputer(),
+        scope_estimator=MiniModelArmyEstimator(),
     )
     dp2 = DefaultPipeline(
         scope=2,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=BaselineImputer(),
-        scope_estimator=PredictMeanEstimator(),
+        scope_estimator=MiniModelArmyEstimator(),
     )
     dp1 = DefaultPipeline(
         scope=1,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
+        imputer=KMeansBucketImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
     model = OxariModel()
@@ -71,5 +71,7 @@ if __name__ == "__main__":
     print(model.predict(helper.mock_data()))
 
     ### SAVE OBJECTS ###
-    SavingManager = OxariSavingManager(local_path="local/objects", meta_model=model, dataset=dataset)
-    SavingManager.save_model_locally(today)
+    
+    local_model_saver = LocalModelSaver(model)
+    SavingManager = OxariSavingManager(meta_model=local_model_saver)
+    SavingManager.run(today=today)

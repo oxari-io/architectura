@@ -80,7 +80,7 @@ class BaselinePreprocessor(OxariPreprocessor):
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         data = X.copy()
         # impute all the missing columns
-        data[self.financial_columns] = self.imputer.transform(data[self.financial_columns])
+        data[self.financial_columns] = self.imputer.transform(data[self.financial_columns].astype(float))
         # log scaling the scopes -> NOTE: NOT NECESSARY DURING INFERENCE
         # data[self.scope_columns] = self.scope_transformer.transform(data[self.scope_columns])
         # transform numerical

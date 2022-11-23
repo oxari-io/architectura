@@ -18,6 +18,11 @@ import joblib as pkl
 import io
 from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import pathlib
+import platform
+
+if "intel" in platform.processor().lower():
+    from sklearnex import patch_sklearn
+    patch_sklearn()    
 
 DATA_DIR = pathlib.Path('local/data')
 if __name__ == "__main__":
@@ -28,14 +33,14 @@ if __name__ == "__main__":
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        scope_estimator=PredictMedianEstimator(),
     )
     dp2 = DefaultPipeline(
         scope=2,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=BaselineImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        scope_estimator=PredictMeanEstimator(),
     )
     dp1 = DefaultPipeline(
         scope=1,
@@ -72,6 +77,6 @@ if __name__ == "__main__":
 
     ### SAVE OBJECTS ###
     
-    local_model_saver = LocalModelSaver(model)
+    local_model_saver = LocalModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=model)
     SavingManager = OxariSavingManager(meta_model=local_model_saver)
-    SavingManager.run(today=today)
+    SavingManager.run()

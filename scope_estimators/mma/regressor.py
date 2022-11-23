@@ -244,7 +244,7 @@ class RegressorOptimizer(OxariOptimizer):
 
 
 
-class BucketRegressor(OxariMixin, OxariRegressor):
+class BucketRegressor(OxariRegressor):
     # TODO: add docstring
     def __init__(self, n_buckets=10):
         # self.scope = check_scope(scope)

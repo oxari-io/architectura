@@ -205,7 +205,7 @@ class ClassifierOptimizer(OxariOptimizer):
         return f1
 
 
-class BucketClassifier(OxariClassifier, OxariMixin):
+class BucketClassifier(OxariClassifier):
     def __init__(self, n_buckets=10, **kwargs):
         self.n_buckets = n_buckets
         self._estimator = RandomForestClassifier(**kwargs)

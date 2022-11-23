@@ -200,18 +200,18 @@ class OxariMixin(abc.ABC):
         return self
 
 
-class OxariTransformer(sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
+class OxariTransformer(OxariMixin, sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariTransformer":
         return self
 
     @abc.abstractmethod
-    def transform(self, X, **kwargs) -> oxari_types.ArrayLike:
+    def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
 
-class OxariClassifier(sklearn.base.ClassifierMixin, sklearn.base.BaseEstimator, abc.ABC):
+class OxariClassifier(OxariMixin, sklearn.base.ClassifierMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariClassifier":
@@ -222,7 +222,7 @@ class OxariClassifier(sklearn.base.ClassifierMixin, sklearn.base.BaseEstimator, 
         pass
 
 
-class OxariRegressor(sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, abc.ABC):
+class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
@@ -233,7 +233,7 @@ class OxariRegressor(sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, ab
         pass
 
 
-class OxariImputer(_base._BaseImputer, OxariMixin, abc.ABC):
+class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     """
     Handles imputation of missing values for values that are zero. Fit and Transform have to be implemented accordingly.
     """
@@ -257,7 +257,7 @@ class OxariImputer(_base._BaseImputer, OxariMixin, abc.ABC):
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
-class OxariPreprocessor(OxariTransformer, OxariMixin, abc.ABC):
+class OxariPreprocessor(OxariTransformer, abc.ABC):
     def __init__(self, imputer: OxariImputer = None, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
@@ -289,7 +289,7 @@ class OxariPreprocessor(OxariTransformer, OxariMixin, abc.ABC):
     #     return self
 
 
-class OxariScopeEstimator(BaseEstimator, RegressorMixin, OxariMixin, abc.ABC):
+class OxariScopeEstimator(OxariRegressor, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
@@ -358,7 +358,7 @@ class DefaultPostprocessor(OxariPostprocessor):
 
 
 
-class OxariFeatureReducer(TransformerMixin, OxariMixin, abc.ABC):
+class OxariFeatureReducer(OxariTransformer, abc.ABC):
     """
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
     """
@@ -384,7 +384,7 @@ class OxariFeatureReducer(TransformerMixin, OxariMixin, abc.ABC):
 
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
-class OxariPipeline(OxariRegressor, abc.ABC):
+class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def __init__(
         self,
         # dataset: OxariDataLoader = None,
@@ -421,7 +421,7 @@ class OxariPipeline(OxariRegressor, abc.ABC):
         return {"model": self.estimator.name, **self._evaluation_results}
 
 
-class OxariMetaModel(OxariRegressor, OxariMixin, MultiOutputMixin, abc.ABC):
+class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.created = None # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.

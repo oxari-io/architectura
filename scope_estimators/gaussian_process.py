@@ -1,5 +1,5 @@
 from typing import Union
-from base.pipeline import OxariScopeEstimator
+from base import OxariScopeEstimator
 from base.common import OxariOptimizer
 import numpy as np
 import pandas as pd

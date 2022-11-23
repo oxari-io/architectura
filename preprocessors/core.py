@@ -1,6 +1,6 @@
 import abc
 from typing import Any, Union
-from base.pipeline import OxariPreprocessor
+from base import OxariPreprocessor
 import sklearn.preprocessing as prep
 import category_encoders as ce
 import sklearn

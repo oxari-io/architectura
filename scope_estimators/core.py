@@ -17,8 +17,6 @@ class DummyEstimator(OxariScopeEstimator):
     def check_conformance(self):
         pass
 
-    def deploy(self):
-        pass
 
 
 class BaselineEstimator(OxariScopeEstimator):
@@ -36,8 +34,7 @@ class BaselineEstimator(OxariScopeEstimator):
     def check_conformance(self):
         pass
 
-    def deploy(self):
-        pass
+
 
 
 class PredictMedianEstimator(OxariScopeEstimator):
@@ -54,8 +51,7 @@ class PredictMedianEstimator(OxariScopeEstimator):
     def check_conformance(self):
         pass
 
-    def deploy(self):
-        pass
+
 
 
 class PredictMeanEstimator(OxariScopeEstimator):
@@ -72,5 +68,3 @@ class PredictMeanEstimator(OxariScopeEstimator):
     def check_conformance(self):
         pass
 
-    def deploy(self):
-        pass

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Union, Dict, List
 # import sklearn
 from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin, MetaEstimatorMixin, MultiOutputMixin
@@ -9,7 +10,7 @@ import io
 import joblib as pkl
 from base.dataset_loader import OxariDataManager
 from base import common
-
+from .oxari_types import ArrayLike
 
 class OxariPreprocessor(common.OxariTransformer, common.OxariMixin, abc.ABC):
     def __init__(self, imputer: common.OxariImputer = None, **kwargs):
@@ -81,16 +82,6 @@ class OxariScopeEstimator(BaseEstimator, RegressorMixin, common.OxariMixin, abc.
         # Reference
         pass
 
-    @abc.abstractmethod
-    def deploy(self, ) -> bool:
-        # pickles and deploys the new models; multiple options are
-        # possible here:
-        # upload them in DigitalOcean Spaces
-        # dockerize and deploy to scalable DigitalOcean droplet
-        # extract the code to a new repository and add it to the current DigitalOcean App as a new component
-        # keep it inside the current backend directly which would require more RAM
-        pass
-
     @property
     def name(self):
         return self._name
@@ -148,7 +139,7 @@ class OxariFeatureReducer(TransformerMixin, common.OxariMixin, abc.ABC):
 
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
-class OxariPipeline(MetaEstimatorMixin, abc.ABC):
+class OxariPipeline(common.OxariRegressor, abc.ABC):
     def __init__(
         self,
         # dataset: OxariDataLoader = None,
@@ -172,8 +163,14 @@ class OxariPipeline(MetaEstimatorMixin, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def predict(self, **kwargs):
-        pass
+    def predict(self, X, **kwargs) -> ArrayLike:
+        X = self.preprocessor.transform(X, **kwargs)
+        X = self.feature_selector.transform(X, **kwargs)
+        return self.estimator.predict(X.drop(columns = ["scope_1", "scope_2", "scope_3"], axis=1), **kwargs)
+    
+    def fit(self, X, y, **kwargs) -> "OxariPipeline":
+        self.estimator = self.estimator.fit(X, y, **kwargs)
+        return self
 
     @property
     def evaluation_results(self):

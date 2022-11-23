@@ -95,5 +95,3 @@ class LinearRegressionEstimator(PolynomialFeaturesMixin, OxariScopeEstimator):
     def check_conformance(self):
         pass
 
-    def deploy(self):
-        pass

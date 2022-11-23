@@ -13,11 +13,13 @@ import logging
 import csv
 from sklearn.impute import SimpleImputer, _base
 import optuna
-from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score, r2_score, mean_squared_log_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, accuracy_score, r2_score, balanced_accuracy_score, silhouette_score, precision_recall_fscore_support
 from pmdarima.metrics import smape
 from sklearn.metrics import mean_absolute_percentage_error as mape
 from numbers import Number
 import base.oxari_types as oxari_types
+from base.metrics import mape, dunn_index
+
 class OxariLogger:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
@@ -71,6 +73,50 @@ class DefaultRegressorEvaluator(OxariEvaluator):
 
         return super().evaluate(y_true, y_pred, **error_metrics)
 
+
+class DefaultClusterEvaluator(OxariEvaluator):
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+
+    def evaluate(self, X, labels, **kwargs):
+        """
+
+        Computes 3 flavors of accuracy: Vanilla, AdjacentLenient, AdjacentStrict
+
+        Each accuracy computation is scope and buckets specific
+
+        Appends and saves the results to model/metrics/error_metrics_class.csv
+
+        """
+        error_metrics = {
+            "sillhouette_coefficient": silhouette_score(X, labels),
+            "dunns_index": dunn_index(X, labels),
+        }
+        return super().evaluate(X, labels, **error_metrics)
+
+class DefaultClassificationEvaluator(OxariEvaluator):
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+
+    def evaluate(self, y_true, y_pred, **kwargs):
+        """
+
+        Computes 3 flavors of accuracy: Vanilla, AdjacentLenient, AdjacentStrict
+
+        Each accuracy computation is scope and buckets specific
+
+        Appends and saves the results to model/metrics/error_metrics_class.csv
+
+        """
+        precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average="weighted")
+        acc = balanced_accuracy_score(y_true,y_pred)
+        error_metrics = {
+            "balanced_accuracy": acc,
+            "balanced_precision": precision,
+            "balanced_recall": recall,
+            "balanced_f1": f1,
+        }
+        return super().evaluate(y_true, y_pred, **error_metrics)
 
 class OxariOptimizer(abc.ABC):
     def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:

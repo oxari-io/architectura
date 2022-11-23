@@ -6,9 +6,12 @@ import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from base.mappings import NumMapping
-from base.metrics import mape
+from base.metrics import mape, dunn_index
+from sklearn import metrics
 from sklearn import cluster
 import kmedoids
+from base.common import OxariEvaluator, DefaultClusterEvaluator
+
 
 
 class KMeansBucketImputer(OxariImputer):
@@ -20,6 +23,7 @@ class KMeansBucketImputer(OxariImputer):
         self.fallback_fallback_value = 0
         self._estimator = cluster.KMeans(self.bucket_number)
         self._helper_imputer = SimpleImputer(strategy="median")
+        self._evaluator = DefaultClusterEvaluator()
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "OxariImputer":
         """
@@ -31,7 +35,10 @@ class KMeansBucketImputer(OxariImputer):
         
 
         self.centroids = self._estimator.cluster_centers_ 
-            
+        
+        #TODO: Remove this line
+        test = self.evaluate(X_copy, self._estimator.predict(X_copy))
+        
         return self
 
 
@@ -43,6 +50,10 @@ class KMeansBucketImputer(OxariImputer):
         
         new_X = pd.DataFrame(np.where(np.isnan(X), impute_values, X) , X.index,X.columns)           
         return new_X
+    
+    def evaluate(self, X, labels, **kwargs):
+        return super().evaluate(X, labels, **kwargs)
+    
 
 class KMedianBucketImputer(KMeansBucketImputer):
     def __init__(self, buckets_number=3, **kwargs):

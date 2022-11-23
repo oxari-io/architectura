@@ -66,7 +66,7 @@ class BucketClassifierEvauator(DefaultClassificationEvaluator):
         return (correct_bottom.sum() + correct_top.sum() + correct_adjacency.sum()) / len(y_pred)
 
 
-class ClassfierScopeDiscretizer(OxariTransformer):
+class BucketScopeDiscretizer(OxariTransformer):
     def __init__(self, n_buckets, prefix="bucket_", **kwargs) -> None:
         super().__init__()
         self.n_buckets = n_buckets

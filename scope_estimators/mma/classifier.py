@@ -16,12 +16,54 @@ from sklearn.preprocessing import KBinsDiscretizer
 
 from pathlib import Path
 
-from base.common import OxariClassifier, OxariEvaluator, OxariMixin, OxariOptimizer, OxariTransformer
+from base import OxariClassifier, OxariEvaluator, OxariMixin, OxariOptimizer, OxariTransformer, DefaultClassificationEvaluator
 
-OBJECT_DIR = Path("model/objects")
-DATA_DIR = Path("model/data")
-METRICS_DIR = Path("model/metrics")
-OPTUNA_DIR = Path("model/optuna")
+
+class BucketClassifierEvauator(DefaultClassificationEvaluator):
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+
+    def evaluate(self, y_test, y_pred, **kwargs):
+        """
+
+        Computes 3 flavors of accuracy: Vanilla, AdjacentLenient, AdjacentStrict
+
+        Each accuracy computation is scope and buckets specific
+
+        Appends and saves the results to model/metrics/error_metrics_class.csv
+
+        """
+        n_buckets = kwargs.get('n_buckets', len(np.unique(y_test)))
+        error_metrics = {
+            # "vanilla_acc": balanced_accuracy_score(y_test, y_pred),
+            "adj_lenient_acc": self.lenient_adjacent_accuracy_score(y_test, y_pred),
+            "adj_strict_acc": self.strict_adjacent_accuracy_score(y_test, y_pred, n_buckets),
+        }
+        # TODO: This is the better way to propagate the information. Not trickle-down but bottom up
+        return {**super().evaluate(y_test, y_pred), **error_metrics}
+
+    def lenient_adjacent_accuracy_score(self, y_true, y_pred):
+        # if true == 0 and pred == 1 --> CORRECT!
+        # if true == 9 and pred == 8 --> CORRECT!
+        y_true = np.array(y_true).flatten()
+        y_pred = np.array(y_pred).flatten()
+        return np.sum(np.abs(y_pred - y_true) <= 1) / len(y_pred)
+
+    def strict_adjacent_accuracy_score(self, y_true, y_pred, n_buckets):
+        y_true = np.array(y_true).flatten()
+        y_pred = np.array(y_pred).flatten()
+        # True = 0 and Pred = 1  ====> FALSE
+        # True = 1 and Pred = 0  ====> FALSE
+        # True = 9 and Pred = 8  ====> FALSE
+        # True = 8 and Pred = 9  ====> FALSE
+        selector_bottom = ((y_true == 0) & (y_pred == 1)) | ((y_true == 1) & (y_pred == 0))
+        selector_top = ((y_true == n_buckets - 1) & (y_pred == n_buckets - 2)) | ((y_true == n_buckets - 2) & (y_pred == n_buckets - 1))
+        selector_inbetween = ~(selector_bottom | selector_top)
+
+        correct_bottom = y_true[selector_bottom] == y_pred[selector_bottom]
+        correct_top = y_true[selector_top] == y_pred[selector_top]
+        correct_adjacency = np.abs(y_true[selector_inbetween] - y_pred[selector_inbetween]) <= 1
+        return (correct_bottom.sum() + correct_top.sum() + correct_adjacency.sum()) / len(y_pred)
 
 
 class ClassfierScopeDiscretizer(OxariTransformer):
@@ -33,11 +75,12 @@ class ClassfierScopeDiscretizer(OxariTransformer):
         self.discretizer = KBinsDiscretizer(n_buckets, encode=encode, **kwargs)
 
     def fit(self, X, y=None):
-        self.discretizer.fit(X.values[:,None])
+        self.discretizer.fit(X.values[:, None])
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         return self.discretizer.transform(X.values[:, None], **kwargs)
+
 
 class ClassifierOptimizer(OxariOptimizer):
     def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
@@ -83,7 +126,7 @@ class ClassifierOptimizer(OxariOptimizer):
 
         return study.best_params, df
 
-    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val):
+    def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val):
 
         # TODO: add docstring here pls
 
@@ -162,18 +205,15 @@ class ClassifierOptimizer(OxariOptimizer):
         return f1
 
 
-
-
-
 class BucketClassifier(OxariClassifier, OxariMixin):
     def __init__(self, n_buckets=10, **kwargs):
         self.n_buckets = n_buckets
         self._estimator = RandomForestClassifier(**kwargs)
 
-    def optimize(self,X_train, y_train, X_val, y_val, **kwargs):
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
         return best_params, info
-    
+
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred)
 

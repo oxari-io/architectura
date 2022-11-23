@@ -26,7 +26,7 @@ import pandas as pd
 import numpy as np
 import abc
 from sklearn.model_selection import train_test_split
-from base import OxariModel, OxariDataManager
+from base import OxariMetaModel, OxariDataManager
 
 
 class LocalDestinationMixin():
@@ -65,7 +65,7 @@ class PartialSaver(abc.ABC):
 
 
 class MetaModelSaver(PartialSaver, abc.ABC):
-    def set(self, model: OxariModel) -> "MetaModelSaver":
+    def set(self, model: OxariMetaModel) -> "MetaModelSaver":
         self._store = model
         return self
 
@@ -77,7 +77,7 @@ class DataSaver(PartialSaver, abc.ABC):
 
 
 class LARModelSaver(PartialSaver, abc.ABC):
-    def set(self, model: OxariModel) -> "LARModelSaver":
+    def set(self, model: OxariMetaModel) -> "LARModelSaver":
         self._store = model
         return self
 

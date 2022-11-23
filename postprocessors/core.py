@@ -1,4 +1,4 @@
-from base import OxariPostprocessor, OxariScopeEstimator, OxariDataManager, OxariModel
+from base import OxariPostprocessor, OxariScopeEstimator, OxariDataManager, OxariMetaModel
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
@@ -6,7 +6,7 @@ from typing import Union
 
 
 class ScopeImputerPostprocessor(OxariPostprocessor):
-    def __init__(self, estimator: OxariModel, **kwargs):
+    def __init__(self, estimator: OxariMetaModel, **kwargs):
         super().__init__(**kwargs)
         self.estimator = estimator
         self.imputed = {"scope_1": "N/A", "scope_2": "N/A", "scope_3": "N/A"}

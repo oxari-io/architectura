@@ -11,7 +11,7 @@ from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropF
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator
 import base
 from base import helper
-from base import OxariModel
+from base import OxariMetaModel
 import pandas as pd
 # import cPickle as
 import joblib as pkl
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         imputer=KMeansBucketImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
-    model = OxariModel()
+    model = OxariMetaModel()
     postprocessor = ScopeImputerPostprocessor(estimator=model)
     model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset))
     model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))

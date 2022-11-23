@@ -8,7 +8,7 @@ from imputers import BaselineImputer, KMeansBucketImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator
 import base
-from base import OxariModel
+from base import OxariMetaModel
 import pandas as pd
 # import cPickle as
 import joblib as pkl

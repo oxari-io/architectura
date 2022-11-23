@@ -180,13 +180,13 @@ class OxariPipeline(MetaEstimatorMixin, abc.ABC):
         return {"model": self.estimator.name, **self._evaluation_results}
 
 
-class OxariModel(common.OxariRegressor, common.OxariMixin, MultiOutputMixin, abc.ABC):
+class OxariMetaModel(common.OxariRegressor, common.OxariMixin, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.created = None # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
         self.pipelines: Dict[str, OxariPipeline] = {}
 
-    def add_pipeline(self, scope: int, pipeline: OxariPipeline) -> "OxariModel":
+    def add_pipeline(self, scope: int, pipeline: OxariPipeline) -> "OxariMetaModel":
         if not isinstance(scope, int):
             raise Exception(f"'scope' is not an int: {scope}")
         if not ((scope > 0) and (scope < 4)):

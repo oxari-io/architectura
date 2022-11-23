@@ -52,11 +52,6 @@ class DefaultPipeline(OxariPipeline):
         y_pred = self.estimator.predict(X_test)
         self._evaluation_results = self.estimator.evaluate(y_test, y_pred, X_test=X_test)
         return self
-
-    def predict(self, X, **kwargs):
-        X = self.preprocessor.transform(X, **kwargs)
-        X = self.feature_selector.transform(X, **kwargs)
-        return self.estimator.predict(X.drop(columns = ["scope_1", "scope_2", "scope_3"], axis=1), **kwargs)
     
     @property
     def evaluation_results(self):

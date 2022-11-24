@@ -6,8 +6,8 @@ from base import OxariDataManager, OxariSavingManager, LocalModelSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import BaselineImputer, KMeansBucketImputer
-from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
+from imputers import BaselineImputer
+from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator
 import base
 from base import helper
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         scope=1,
         preprocessor=BaselinePreprocessor(),
-        feature_selector=PCAFeatureSelector(),
+        feature_selector=MDSSelector(),
         imputer=BaselineImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
@@ -56,12 +56,12 @@ if __name__ == "__main__":
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
 
     X = dataset.get_data_by_name("original")
+    X = X.drop(columns=["isin"])
 
     ### EVALUATION RESULTS ###
     print("Eval results")
     print(pd.json_normalize(model.collect_eval_results()))
-
-    # print("Predict with Pipeline")
+    print("Predict with Pipeline")
     # print(dp1.predict(X))
     # print("Predict with Model")
     # print(model.predict(X, scope=1))

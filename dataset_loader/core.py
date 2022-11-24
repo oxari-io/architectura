@@ -1,7 +1,4 @@
-from pathlib import Path
-from typing import Dict
-from base.dataset_loader import CategoricalLoader, LocalDatasourceMixin, OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader
-from base.mappings import CatMapping, NumMapping
+from base.dataset_loader import  OxariDataManager
 import pandas as pd
 import numpy as np
 
@@ -39,7 +36,7 @@ def mock_entry():
     return pd.Series({**num_data, **cat_data}).to_frame().T
 
 
-class MockDataLoader(OxariDataManager):
+class MockDataManager(OxariDataManager):
     FULL_ENTRY = "Single entry without holes"
     SPARSE_ENTRY = "Single entry with holes"
     MULTI_ENTRY = "Multi entry"
@@ -58,6 +55,6 @@ class MockDataLoader(OxariDataManager):
         del_pos = np.random.randint(0, len(_df_original.columns), del_num)
         _df_original_copy.iloc[:, del_pos] = None
         
-        self.add_data(MockDataLoader.FULL_ENTRY, _df_original, "Mock-Data Entry without changes.")
-        self.add_data(MockDataLoader.SPARSE_ENTRY, _df_original, "Mock-Data Entry with changes.")
+        self.add_data(MockDataManager.FULL_ENTRY, _df_original, "Mock-Data Entry without changes.")
+        self.add_data(MockDataManager.SPARSE_ENTRY, _df_original, "Mock-Data Entry with changes.")
         return self

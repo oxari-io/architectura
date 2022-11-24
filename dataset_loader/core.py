@@ -1,0 +1,63 @@
+from pathlib import Path
+from typing import Dict
+from base.dataset_loader import CategoricalLoader, LocalDatasourceMixin, OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader
+from base.mappings import CatMapping, NumMapping
+import pandas as pd
+import numpy as np
+
+
+def mock_entry():
+    num_data = {
+        "stock_return": -0.03294267654418,
+        "total_assets": 0.0,
+        "ppe": 1446082.0,
+        "year": 2019.0,
+        "roa": 0.0145850556922605,
+        "roe": 0.34,
+        "total_liab": 1421.287,
+        "equity": 1124.699,
+        "revenue": 503.999999604178,
+        "market_cap": 635.348579719647,
+        "inventories": 13991.0,
+        "net_income": 34.9999999725123,
+        "cash": 231.043,
+        "employees": 1000,
+        "rd_expenses": 500,
+        "isin": "FR0000051070",
+        "scope_1": None,
+        "scope_2": None,
+        "scope_3": None,
+    }
+
+    cat_data = {
+        "industry_name": "Industrial Conglomerates",
+        # "company_name": "Aboitiz Equity Ventures Inc",
+        "country_name": "Philippines",
+        "sector_name": "Industrials",
+    }
+
+    return pd.Series({**num_data, **cat_data}).to_frame().T
+
+
+class MockDataLoader(OxariDataManager):
+    FULL_ENTRY = "Single entry without holes"
+    SPARSE_ENTRY = "Single entry with holes"
+    MULTI_ENTRY = "Multi entry"
+
+    def __init__(self, verbose=False, **kwargs):
+        super().__init__(
+            verbose=verbose,
+            **kwargs,
+        )
+
+    def run(self, **kwargs) -> "OxariDataManager":
+        _df_original = mock_entry()
+        _df_original_copy = _df_original.copy()
+        
+        del_num = np.random.randint(1, 5)
+        del_pos = np.random.randint(0, len(_df_original.columns), del_num)
+        _df_original_copy.iloc[:, del_pos] = None
+        
+        self.add_data(MockDataLoader.FULL_ENTRY, _df_original, "Mock-Data Entry without changes.")
+        self.add_data(MockDataLoader.SPARSE_ENTRY, _df_original, "Mock-Data Entry with changes.")
+        return self

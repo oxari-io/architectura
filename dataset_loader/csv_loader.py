@@ -4,9 +4,8 @@ from base.dataset_loader import CategoricalLoader, LocalDatasourceMixin, OxariDa
 from base.mappings import CatMapping, NumMapping
 import pandas as pd
 import numpy as np
+from base.constants import DATA_DIR
 
-OBJECT_DIR = Path("local/objects")
-DATA_DIR = Path("local/data")
 COLS_CATEGORICALS = CatMapping.get_features()
 COLS_FINANCIALS = NumMapping.get_features()
 

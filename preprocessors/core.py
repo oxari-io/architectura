@@ -62,7 +62,6 @@ class BaselinePreprocessor(OxariPreprocessor):
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
         data = X
          
-        
         # log scaling the scopes
         self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical

@@ -96,6 +96,18 @@ class OxariScopeEstimator(BaseEstimator, RegressorMixin, common.OxariMixin, abc.
         return self._name
 
 
+
+
+class OxariLinearAnnualReduction(common.OxariMixin, abc.ABC):
+    def __init__(self, dataset: OxariDataManager):
+        self.dataset = dataset
+
+    @abc.abstractmethod
+    def calculate_LARs(self):
+        pass
+
+
+
 class OxariPostprocessor(common.OxariMixin, abc.ABC):
     def __init__(self, **kwargs):
         # Only data independant hyperparams.

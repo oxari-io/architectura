@@ -56,12 +56,14 @@ if __name__ == "__main__":
 
     # print("Predict with Pipeline")
     # print(dp1.predict(X))
-    # print("Predict with Model")
-    # print(model.predict(X, scope=1))
+    print("Predict with Model only SCOPE1")
+    print(model.predict(X, scope=1))
 
     scope_inputed_data = postprocessor.run(X=X)
     today = time.strftime('%d-%m-%Y')
     dataset.add_data(OxariDataManager.IMPUTED, scope_inputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+
+    
 
     print("\n", "Predict ALL with Model")
     print(model.predict(X))

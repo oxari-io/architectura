@@ -41,6 +41,8 @@ if __name__ == "__main__":
     ]
 
     all_models_trained = []
+
+    # TODO: how many threads? all the models in oneppol? look into this!
     with futures.ProcessPoolExecutor() as pool:
         for model in all_models:
             for results in pool.map(model.run_pipeline(dataset)):

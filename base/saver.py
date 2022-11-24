@@ -1,5 +1,6 @@
 import io
-import joblib as pkl
+import dill as pkl
+import cloudpickle
 
 from os import PathLike
 
@@ -83,5 +84,9 @@ class OxariSavingManager(LocalDestinationMixin):
 
     def save_model_locally(self, today):
         self._check_if_destination_accessible()
-        pkl.dump(self.meta_model, io.open(self.local_path / f"MetaModel_{today}_.pkl", 'wb'))
+
+        with open(self.local_path / f"MetaModel_{today}.p", "wb") as handle:
+            cloudpickle.dump(self.meta_model, handle)
+
+        # pkl.dump(self.meta_model, io.open(self.local_path / f"MetaModel_{today}.pkl", 'wb'))
 

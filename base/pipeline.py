@@ -132,13 +132,23 @@ class OxariFeatureReducer(sklearn.base.TransformerMixin, common.OxariMixin, abc.
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
-        # Takes X and y and trains regressor.
-        # Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
-        # Set self.n_features_in_ = X.shape[1]
-        # Avoid setting X and y as attributes. Only increases the model size.
-        # When fit is called, any previous call to fit should be ignored.
-        # Attributes that have been estimated from the data must always have a name ending with trailing underscore. (e.g.: self.coef_)
-        # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
+        """
+        Trains regressor
+        Include If X.shape[0] == y.shape[0]: raise ValueError(f“X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})”).
+        Set self.n_features_in_ = X.shape[1]
+        Avoid setting X and y as attributes. Only increases the model size.
+        When fit is called, any previous call to fit should be ignored.
+        Attributes that have been estimated from the data must always have a name ending with trailing underscore. (e.g.: self.coef_)
+        
+        Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
+
+        Args:
+            X (_type_): _description_
+            y (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            OxariFeatureReducer: _description_
+        """
         return self
 
     @abc.abstractmethod

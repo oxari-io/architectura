@@ -26,7 +26,9 @@ from sklearn.metrics import (
 )
 from sklearn.utils.estimator_checks import check_estimator
 from typing import Any, Dict, List, Tuple
-
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+import seaborn as sns
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
 
@@ -392,6 +394,18 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
+
+    def visualize(self, X, **kwargs):
+        figsize = kwargs.pop('figsize',(20,20))
+        fig = plt.figure(figsize=figsize)
+        reduced_X = self.transform(X, **kwargs)
+        x,y,z = reduced_X[:, :3]
+        ax = fig.axes(projection='3d')
+        ax.scatter3D(x,y,z)
+        plt.show()
+
+        
+        
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
 class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):

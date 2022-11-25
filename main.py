@@ -75,6 +75,8 @@ if __name__ == "__main__":
     
     print(model.predict(helper.mock_data()))
 
+
+    model.get_pipeline(1).feature_selector.visualize(X)
     ### SAVE OBJECTS ###
     
     local_model_saver = LocalModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=model)

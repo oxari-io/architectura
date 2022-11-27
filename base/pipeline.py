@@ -98,13 +98,13 @@ class OxariScopeEstimator(BaseEstimator, RegressorMixin, common.OxariMixin, abc.
 
 
 
-class OxariLinearAnnualReduction(common.OxariMixin, abc.ABC):
-    def __init__(self, dataset: OxariDataManager):
-        self.dataset = dataset
+class OxariLinearAnnualReduction(common.OxariRegressor, common.OxariTransformer, common.OxariMixin, abc.ABC):
+    def __init__(self):
+        pass
 
     @abc.abstractmethod
-    def calculate_LARs(self):
-        pass
+    def fit(self, X, y=None) -> "OxariLinearAnnualReduction":
+        return self
 
 
 

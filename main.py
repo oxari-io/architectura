@@ -8,14 +8,14 @@ from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
 from imputers.core import BaselineImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
 import base
 from base import OxariModel
 import pandas as pd
 # import cPickle as 
 import joblib as pkl
 import io
-
+from lar_calculator.model_lar import OxariLARCalculator
 if __name__ == "__main__":
 
     dataset = CSVDataLoader().run()
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=BaselineImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        scope_estimator=BaselineEstimator(),
     )
     model = OxariModel()
     postprocessor = ScopeImputerPostprocessor(estimator = model)
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
 
 
-    X = dataset.get_data_by_name("original")
+    X = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
     ### EVALUATION RESULTS ###
     print("Eval results")
@@ -68,6 +68,10 @@ if __name__ == "__main__":
     print("\n", "Predict ALL with Model")
     print(model.predict(X))
 
+    lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED))
+    all_lars = lar_model.transform(X)
+
+    print(all_lars)
 
     ### SAVE OBJECTS ###
     SavingManager = OxariSavingManager(local_path = "local/objects", meta_model = model, dataset = dataset)

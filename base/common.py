@@ -202,3 +202,11 @@ class OxariImputer(_base._BaseImputer, OxariMixin, abc.ABC):
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         pass
+
+class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, abc.ABC):
+    def __init__(self):
+        pass
+
+    @abc.abstractmethod
+    def fit(self, X, y=None) -> "OxariLinearAnnualReduction":
+        return self

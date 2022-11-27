@@ -55,7 +55,10 @@ class IsomapFeatureSelector(OxariFeatureReducer):
         return reduced_features
 
 class MDSSelector(OxariFeatureReducer):
-    """ This Feature Selector uses """
+    """ This Feature Selector uses Multidimensional Scaling
+    
+    You can find an explanation here: https://www.statisticshowto.com/multidimensional-scaling/ 
+    """
     def __init__(self, n_components=5, **kwargs):
         self._dimensionality_reducer = MDS(n_components=n_components)
     
@@ -67,6 +70,7 @@ class MDSSelector(OxariFeatureReducer):
         pass
 
     def fit_transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        # TODO: JULIA -> Remove the overriding of fit_transform and implement fit and transform instead.
         self._features = list(kwargs.get('features'))
         new_X = X.copy()
         reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)

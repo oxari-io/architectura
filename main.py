@@ -8,7 +8,7 @@ from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import BaselineImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
 import base
 from base import helper
 from base import OxariMetaModel
@@ -25,6 +25,7 @@ if "intel" in platform.processor().lower():
     patch_sklearn()    
 
 DATA_DIR = pathlib.Path('local/data')
+from lar_calculator.model_lar import OxariLARCalculator
 if __name__ == "__main__":
 
     dataset = CSVDataLoader().run()
@@ -47,7 +48,7 @@ if __name__ == "__main__":
         preprocessor=BaselinePreprocessor(),
         feature_selector=MDSSelector(),
         imputer=BaselineImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        scope_estimator=BaselineEstimator(),
     )
     model = OxariMetaModel()
     postprocessor = ScopeImputerPostprocessor(estimator=model)
@@ -55,26 +56,32 @@ if __name__ == "__main__":
     model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
 
-    X = dataset.get_data_by_name("original")
-    X = X.drop(columns=["isin"])
+
+    X = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
     ### EVALUATION RESULTS ###
     print("Eval results")
     print(pd.json_normalize(model.collect_eval_results()))
     print("Predict with Pipeline")
     # print(dp1.predict(X))
-    # print("Predict with Model")
-    # print(model.predict(X, scope=1))
+    print("Predict with Model only SCOPE1")
+    print(model.predict(X, scope=1))
 
     scope_inputed_data = postprocessor.run(X=X)
     today = time.strftime('%d-%m-%Y')
     dataset.add_data(OxariDataManager.IMPUTED, scope_inputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+
+    
 
     print("\n", "Predict ALL with Model")
     print(model.predict(X))
     
     print(model.predict(helper.mock_data()))
 
+    lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED))
+    all_lars = lar_model.transform(X)
+
+    print(all_lars)
 
     model.get_pipeline(1).feature_selector.visualize(X)
     ### SAVE OBJECTS ###

@@ -487,3 +487,10 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
         return results
     
+class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, abc.ABC):
+    def __init__(self):
+        pass
+
+    @abc.abstractmethod
+    def fit(self, X, y=None) -> "OxariLinearAnnualReduction":
+        return self

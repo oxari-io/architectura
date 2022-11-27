@@ -5,7 +5,6 @@ That is because DataLoader does not need methods as set_optimizer or load_state,
 Also, object_filename has been removed from DataLoader objects because what's the use of assigning a name to a class which won't be saved as a file.
 """
 
-
 from os import PathLike
 from pathlib import Path
 from typing import Dict, List, Union
@@ -16,7 +15,6 @@ from base.common import OxariMixin
 # from base.common import OxariMixin
 from base.mappings import CatMapping, NumMapping
 from sklearn.model_selection import train_test_split
-
 
 
 class DatasourceMixin(abc.ABC):
@@ -69,7 +67,7 @@ class ScopeLoader(PartialLoader, abc.ABC):
         threshold = kwargs.get("threshold", self.threshold)
 
         # dropping data entries where unlogged scopes are lower than threshold
-        data[self.columns] = np.where((data[self.columns] < threshold),np.nan,data[self.columns])
+        data[self.columns] = np.where((data[self.columns] < threshold), np.nan, data[self.columns])
         # dropping datapoints that have no scopes
         data = data.dropna(how="all", subset=self.columns)
 
@@ -134,26 +132,25 @@ class OxariDataManager(OxariMixin):
         self.add_data(OxariDataManager.ORIGINAL, _df_original, "Dataset without changes.")
         return self
 
-
-    def add_data(self, name:str, df: pd.DataFrame, descr:str="") -> "OxariDataManager":
+    def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> "OxariDataManager":
         self._dataset_stack.append((name, df, descr))
         return self
 
     @property
     def data(self) -> pd.DataFrame:
         return self._dataset_stack[-1][1].copy()
-    
-    def get_data_by_name(self, name:str)->pd.DataFrame:
+
+    def get_data_by_name(self, name: str) -> pd.DataFrame:
         for nm, df, descr in self._dataset_stack:
             if name == nm:
-               return df.copy() 
+                return df.copy()
 
-    def get_data_by_index(self, index:int)->pd.DataFrame:
-        return self._dataset_stack[index][1].copy() 
-    
-    
+    def get_data_by_index(self, index: int) -> pd.DataFrame:
+        return self._dataset_stack[index][1].copy()
 
-    
+    def get_scopes(self, name: str):
+        return self.get_data_by_name(name)[["isin", "year", "scope_1", "scope_2", "scope_3"]]
+
     @staticmethod
     def train_test_val_split(X, y, split_size_test, split_size_val):
         """
@@ -181,8 +178,8 @@ class OxariDataManager(OxariMixin):
         # data = data.loc[data[self.scope] != -1]
 
         # split in features and targets
-        
-        selector = ~np.isnan(y) 
+
+        selector = ~np.isnan(y)
 
         # verbose
         print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")

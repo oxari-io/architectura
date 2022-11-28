@@ -140,18 +140,15 @@ class MDSSelector(OxariFeatureReducer):
     
     "Compute the embedding vectors for data X."
     def fit(self, X, y=None, **kwargs) -> "MDSSelector":
-        pass
+        return self
 
-    def transform(self, X, y=None):
-        pass
-
-    def fit_transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        # TODO: JULIA -> Remove the overriding of fit_transform and implement fit and transform instead.
+    def transform(self, X, y=None, **kwargs):
         self._features = list(kwargs.get('features'))
         new_X = X.copy()
         reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
         # TODO see if returning this directly makes sense
         return reduced_features
+
 
 
 

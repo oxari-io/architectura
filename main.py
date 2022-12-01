@@ -83,7 +83,8 @@ if __name__ == "__main__":
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_LARS))
+    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
     print(lar_imputed_data)
 
     tmp_pipeline = model.get_pipeline(1)

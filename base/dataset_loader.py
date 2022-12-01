@@ -97,7 +97,8 @@ class OxariDataManager(OxariMixin):
     Should be capable of reading the data from csv-file or from database
     """
     ORIGINAL = 'original'
-    IMPUTED = 'imputed_scopes'
+    IMPUTED_SCOPES = 'imputed_scopes'
+    IMPUTED_LARS = 'imputed_lars'
     
     def __init__(
         self,

@@ -49,8 +49,8 @@ class PartialSaver(abc.ABC):
         self.name = name
 
     @abc.abstractmethod
-    def save(self, **kwargs) -> "PartialSaver":
-        return self
+    def save(self, **kwargs) -> bool:
+        return False
 
     @abc.abstractmethod
     def _check_if_destination_accessible(self) -> bool:
@@ -71,7 +71,7 @@ class MetaModelSaver(PartialSaver, abc.ABC):
 
 
 class DataSaver(PartialSaver, abc.ABC):
-    def set(self, dataset) -> "DataSaver":
+    def set(self, dataset: OxariDataManager) -> "DataSaver":
         self._store = dataset
         return self
 
@@ -82,19 +82,54 @@ class LARModelSaver(PartialSaver, abc.ABC):
         return self
 
 
-class LocalModelSaver(LocalDestinationMixin, MetaModelSaver):
+class LocalMetaModelSaver(LocalDestinationMixin, MetaModelSaver):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def run(self) -> "LocalModelSaver":
-        super()._check_if_destination_accessible()
-        return self
+    def save(self, **kwargs) -> bool:
+        try:
+            self._check_if_destination_accessible()
+            name = "noname" if self.name == "" else self.name
+            pkl.dump(self._store, io.open(self.local_path / f"MetaModel_{self.time}_{name}.pkl", 'wb'))
+            return True
+        except Exception as e:
+            print(f"ERROR: Something went horribly wrong while saving {self.name}: {e}")
+            return False
 
-    def save(self, **kwargs):
-        self._check_if_destination_accessible()
-        
-        name = "noname" if self.name == "" else self.name
-        pkl.dump(self._store, io.open(self.local_path / f"MetaModel_{self.time}_{name}.pkl", 'wb'))
+
+class LocalLARModelSaver(LocalDestinationMixin, LARModelSaver):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def save(self, **kwargs) -> bool:
+        try:
+            self._check_if_destination_accessible()
+            name = "noname" if self.name == "" else self.name
+            pkl.dump(self._store, io.open(self.local_path / f"LARModel_{self.time}_{name}.pkl", 'wb'))
+            return True
+        except Exception as e:
+            print(f"ERROR: Something went horribly wrong while saving {self.name}: {e}")
+            return False
+
+
+class LocalDataSaver(LocalDestinationMixin, DataSaver):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def save(self, **kwargs) -> bool:
+        try:
+            self._check_if_destination_accessible()
+            name = "noname" if self.name == "" else self.name
+            csv_name_1 = self.local_path / f"scope_imputed_{self.time}_{name}.csv"
+            csv_name_2 = self.local_path / f"lar_imputed_{self.time}_{name}.csv"
+            scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
+            lar_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_LARS)
+            scope_imputed.to_csv(csv_name_1, index=False)
+            lar_imputed.to_csv(csv_name_2, index=False)
+            return True
+        except Exception as e:
+            print(f"ERROR: Something went horribly wrong while saving {self.name}: {e}")
+            return False
 
 
 class OxariSavingManager():
@@ -121,6 +156,7 @@ class OxariSavingManager():
 
     def run(self, **kwargs) -> "OxariDataManager":
         self.saver_meta_model.save(**kwargs)
+        self.saver_lar_model.save(**kwargs)
 
     def _register_all_modules_to_pickle(self):
         # https://oegedijk.github.io/blog/pickle/dill/python/2020/11/10/serializing-dill-references.html

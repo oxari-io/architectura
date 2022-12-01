@@ -2,7 +2,7 @@ import time
 from datetime import date
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataLoader
-from base import OxariDataManager, OxariSavingManager, LocalModelSaver
+from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
@@ -67,25 +67,28 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(X, scope=1))
 
-    scope_inputed_data = postprocessor.run(X=X)
+    scope_imputed_data = postprocessor.run(X=X)
     today = time.strftime('%d-%m-%Y')
-    dataset.add_data(OxariDataManager.IMPUTED, scope_inputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
 
     
 
     print("\n", "Predict ALL with Model")
     print(model.predict(X))
-    
+
+    print("\n", "Predict ALL on Mock data")
     print(model.predict(helper.mock_data()))
 
-    lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED))
-    all_lars = lar_model.transform(X)
 
-    print(all_lars)
+    print("\n", "Predict LARs on Mock data")
+    lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+
+    print(lar_imputed_data)
 
     model.get_pipeline(1).feature_selector.visualize(X)
     ### SAVE OBJECTS ###
     
-    local_model_saver = LocalModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=model)
+    local_model_saver = LocalMetaModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=model)
     SavingManager = OxariSavingManager(meta_model=local_model_saver)
     SavingManager.run()

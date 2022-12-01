@@ -369,6 +369,7 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         self.verbose = verbose
         self.copy = copy
 
+
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         """
@@ -396,15 +397,17 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
 
 
     def visualize(self, X, **kwargs):
-        figsize = kwargs.pop('figsize',(20,20))
-        fig = plt.figure(figsize=figsize)
-        reduced_X = self.transform(X, **kwargs)
-        x,y,z = reduced_X[:, :3]
-        ax = fig.axes(projection='3d')
+        figsize = kwargs.pop('figsize',(15,15))
+        fig = plt.subplots(figsize=figsize)
+        reduced_X = X[self.reduced_feature_columns].values
+        x,y,z = reduced_X[:, :3].T
+        ax = plt.axes(projection='3d')
         ax.scatter3D(x,y,z)
         plt.show()
 
-        
+    def merge(self, old_data:pd.DataFrame, reduced_feature_data:pd.DataFrame, feature_columns:List[str]):
+        reduced_feature_data.columns = self.reduced_feature_columns
+        return old_data.merge(reduced_feature_data, left_index=True, right_index=True).drop(feature_columns, axis=1)        
         
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
@@ -431,9 +434,13 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         #  dataset
         pass
 
-    def predict(self, X, **kwargs) -> ArrayLike:
+    def _preprocess(self, X, **kwargs) -> ArrayLike:
         X = self.preprocessor.transform(X, **kwargs)
         X = self.feature_selector.transform(X, **kwargs)
+        return X
+
+    def predict(self, X, **kwargs) -> ArrayLike:
+        X = self._preprocess(X, **kwargs)
         return self.estimator.predict(X.drop(columns = ["scope_1", "scope_2", "scope_3"], axis=1), **kwargs)
     
     def fit(self, X, y, **kwargs) -> "OxariPipeline":

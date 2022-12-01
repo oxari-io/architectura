@@ -17,13 +17,13 @@ def _helper(name, isins, years, emissions):
     intercept = lr.intercept_
 
     value = pd.Series({
-        "scope_type": name,
         "isin": group_name,
+        "scope_type": name,
+        "lar": _compute_lar(base_year, target_year, slope, intercept),
         "slope": slope,
         "intercept": intercept,
         "base_year": base_year,
         "target_year": target_year,
-        "lar": _compute_lar(base_year, target_year, slope, intercept)
     })
     return value
 

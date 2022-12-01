@@ -128,6 +128,7 @@ class LocalDataSaver(LocalDestinationMixin, DataSaver):
             lar_imputed.to_csv(csv_name_2, index=False)
             return True
         except Exception as e:
+            
             print(f"ERROR: Something went horribly wrong while saving {self.name}: {e}")
             return False
 
@@ -157,6 +158,7 @@ class OxariSavingManager():
     def run(self, **kwargs) -> "OxariDataManager":
         self.saver_meta_model.save(**kwargs)
         self.saver_lar_model.save(**kwargs)
+        self.saver_dataset.save(**kwargs)
 
     def _register_all_modules_to_pickle(self):
         # https://oegedijk.github.io/blog/pickle/dill/python/2020/11/10/serializing-dill-references.html

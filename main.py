@@ -2,7 +2,7 @@ import time
 from datetime import date
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataLoader
-from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver
+from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         scope=1,
         preprocessor=BaselinePreprocessor(),
-        feature_selector=MDSSelector(),
+        feature_selector=PCAFeatureSelector(),
         imputer=BaselineImputer(),
         scope_estimator=BaselineEstimator(),
     )
@@ -70,6 +70,7 @@ if __name__ == "__main__":
     scope_imputed_data = postprocessor.run(X=X)
     today = time.strftime('%d-%m-%Y')
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    print(scope_imputed_data)
 
     
 
@@ -82,13 +83,16 @@ if __name__ == "__main__":
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-
+    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_LARS))
     print(lar_imputed_data)
 
-    model.get_pipeline(1).feature_selector.visualize(X)
+    tmp_pipeline = model.get_pipeline(1)
+    
+    # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
     
     local_model_saver = LocalMetaModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=model)
-    SavingManager = OxariSavingManager(meta_model=local_model_saver)
+    local_lar_saver = LocalLARModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
+    local_data_saver = LocalDataSaver(today=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)
+    SavingManager = OxariSavingManager(meta_model=local_model_saver, lar_model=local_lar_saver, dataset=local_data_saver)
     SavingManager.run()

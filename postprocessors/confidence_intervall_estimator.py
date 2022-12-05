@@ -4,8 +4,9 @@ from tqdm import tqdm
 import numpy as np
 from typing import Union
 from base.oxari_types import ArrayLike
+from sklearn.base import MultiOutputMixin
 
-class BaselineConfidenceEstimator(OxariRegressor):
+class BaselineConfidenceEstimator(OxariRegressor, MultiOutputMixin):
     """
     From here: https://towardsdatascience.com/generating-confidence-intervals-for-regression-models-2dd60026fbce
     The naive method may be the first thing that comes to mind when we are trying to generate confidence intervals. The idea is to use the residuals of our model to estimate how much deviation we can expect from new predictions.

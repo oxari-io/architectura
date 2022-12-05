@@ -7,6 +7,7 @@ from sklearn.impute import SimpleImputer
 
 class BaselineImputer(OxariImputer):
     def __init__(self, strategy="median", missing_values=np.nan, verbose=0, copy=True, add_indicator=False, **kwargs):
+        super().__init__(**kwargs)
         self._imputer = SimpleImputer(
             missing_values=missing_values,
             strategy=strategy,

@@ -4,16 +4,23 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.manifold import Isomap, MDS, SpectralEmbedding, LocallyLinearEmbedding
-
+from sklearn.base import BaseEstimator
 # from factor_analyzer import FactorAnalyzer
 # from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity, calculate_kmo
-
+class SKlearnFeatureReducerWrapperMixin():
+    # def __init__(self,**kwargs):
+    #     super().__init__(**kwargs)
+    #     self._dimensionality_reducer:BaseEstimator = None
+         
+    def get_params(self, deep=False):
+        return {**self._dimensionality_reducer.get_params(deep)}
 
 # https://datascience.stackexchange.com/questions/29572/is-it-possible-to-do-feature-selection-for-unsupervised-machine-learning-problem
 class DummyFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector does not select any feature. Use this if no feature selection is used."""
     def __init__(self, **kwargs):
-        pass
+        super().__init__(**kwargs)        
+        
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         return self
@@ -22,9 +29,10 @@ class DummyFeatureReducer(OxariFeatureReducer):
         return X
 
 
-class PCAFeatureSelector(OxariFeatureReducer):
+class PCAFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """ This Feature Selector uses PCA to reduce the dimensionality of the features first"""
     def __init__(self, n_components=5, **kwargs):
+        super().__init__(**kwargs)
         self._dimensionality_reducer = PCA(n_components=n_components)
 
     def fit(self, X, y=None, **kwargs) -> "PCAFeatureSelector":
@@ -40,11 +48,12 @@ class PCAFeatureSelector(OxariFeatureReducer):
         return new_X_reduced
 
 
-class ModifiedLocallyLinearEmbedding(OxariFeatureReducer):
+class ModifiedLocallyLinearEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """This Feature Selector results in a lower-dimensional projection of the data 
     which preserves distances within local neighborhoods. It additionally uses multiple 
     weight vectors in each neighborhood to solve the LLE regularisation problem"""
     def __init__(self, n_neighbors=5, n_components=5, method="modified", **kwargs):  #are kwargs the parameters of this estimator?
+        super().__init__(**kwargs)
         self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -60,10 +69,11 @@ class ModifiedLocallyLinearEmbedding(OxariFeatureReducer):
         return new_X_reduced
 
 
-class SpectralEmbedding(OxariFeatureReducer):
+class SpectralEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """This Feature Selector finds a low dimensional representation of the data using 
     a spectral decomposition of the graph Laplacian"""
     def __init__(self, n_components=5, **kwargs):
+        super().__init__(**kwargs)        
         self._dimensionality_reducer = SpectralEmbedding(n_components=n_components)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -108,10 +118,11 @@ class SpectralEmbedding(OxariFeatureReducer):
 #     fa.analyze(df, NUM_OF_FACTORS, rotation="varimax")
 
 
-class IsomapFeatureSelector(OxariFeatureReducer):
+class IsomapFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """ This Feature Selector uses Isomap manifold learning to reduce the dimensionality of the features"""
     def __init__(self, n_components=10, **kwargs):
         #TODO think about arguments of isomap
+        super().__init__(**kwargs)        
         self._dimensionality_reducer = Isomap(n_components=n_components)
 
     # "Compute the embedding vectors for data X."
@@ -128,12 +139,13 @@ class IsomapFeatureSelector(OxariFeatureReducer):
         return new_X_reduced
 
 
-class MDSSelector(OxariFeatureReducer):
+class MDSSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """ This Feature Selector uses Multidimensional Scaling
     
     You can find an explanation here: https://www.statisticshowto.com/multidimensional-scaling/ 
     """
     def __init__(self, n_components=10, **kwargs):
+        super().__init__(**kwargs)        
         self._dimensionality_reducer = MDS(n_components=n_components)
 
     "Compute the embedding vectors for data X."
@@ -156,6 +168,7 @@ class DropFeatureReducer(OxariFeatureReducer):
     In other words, if the feature elimination algorithm cannot run during preprocessing.
     """
     def __init__(self, features=[], **kwargs):
+        super().__init__(**kwargs)        
         self._features = features
 
     def fit(self, X, y=None, **kwargs) -> "DropFeatureReducer":

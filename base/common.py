@@ -171,10 +171,11 @@ class DefaultOptimizer(OxariOptimizer):
 
 
 class OxariMixin(abc.ABC):
-    def __init__(self, object_filename=None, **kwargs) -> None:
-        self.object_filename = object_filename or self.__class__.__name__
+    def __init__(self, name=None, **kwargs) -> None:
+        self.name = name or self.__class__.__name__
         self.start_time = None
         self.end_time = None
+        self.params = {}
 
     # @abc.abstractmethod
     # def run(self, **kwargs) -> "OxariMixin":
@@ -201,6 +202,12 @@ class OxariMixin(abc.ABC):
         self._optimizer = optimizer
         return self
 
+    def set_params(self, **params):
+        self.params = params
+        return self
+    
+    def get_params(self, deep=True):
+        return {"name":self.name, **self.params}
 
 class OxariTransformer(OxariMixin, sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
@@ -226,6 +233,10 @@ class OxariClassifier(OxariMixin, sklearn.base.ClassifierMixin, sklearn.base.Bas
 
 class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
+    def __init__(self, object_filename=None, **kwargs) -> None:
+        super().__init__(object_filename, **kwargs)
+        
+    
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
         return self
@@ -233,6 +244,7 @@ class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseE
     @abc.abstractmethod
     def predict(self, X, **kwargs) -> ArrayLike:
         pass
+
 
 
 class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
@@ -265,6 +277,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
         # Reference:  https://scikit-learn.org/stable/developers/develop.html#instantiation
+        super().__init__(**kwargs)
         self.imputer = imputer
 
     @abc.abstractmethod
@@ -418,8 +431,10 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         preprocessor: OxariPreprocessor = None,
         feature_selector: OxariFeatureReducer = None,
         scope_estimator: OxariScopeEstimator = None,
+        **kwargs,
     ):
         # self.dataset = dataset
+        super().__init__(**kwargs)
         self.preprocessor = preprocessor
         self.feature_selector = feature_selector
         self.estimator = scope_estimator
@@ -444,6 +459,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return self.estimator.predict(X.drop(columns = ["scope_1", "scope_2", "scope_3"], axis=1), **kwargs)
     
     def fit(self, X, y, **kwargs) -> "OxariPipeline":
+        X = self._preprocess(X, **kwargs)
         self.estimator = self.estimator.fit(X, y, **kwargs)
         return self
 

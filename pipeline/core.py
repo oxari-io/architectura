@@ -8,13 +8,13 @@ from preprocessors import BaselinePreprocessor
 from scope_estimators import DummyEstimator
 import numpy as np
 import pandas as pd
+from sklearn.base import MetaEstimatorMixin
 
-
-class DefaultPipeline(OxariPipeline):
+class DefaultPipeline(OxariPipeline, MetaEstimatorMixin):
     def __init__(
         self,
         # dataset: OxariDataLoader = None,
-        scope:int,
+        scope: int,
         preprocessor: OxariPreprocessor = None,
         feature_selector: OxariFeatureReducer = None,
         imputer: OxariImputer = None,
@@ -46,20 +46,28 @@ class DefaultPipeline(OxariPipeline):
             split_size_val=0.2,
         )
 
-        best_parameters, info = self.estimator.optimize(X_train, y_train, X_val, y_val)
+        self.best_parameters, self.info = self.estimator.optimize(X_train, y_train, X_val, y_val)
         # info.to_csv('optimization_results.csv')
-        self.estimator = self.estimator.fit(X_rem, y_rem, **best_parameters)
+
+        self.estimator = self.estimator.set_params(**self.best_parameters).fit(X_rem, y_rem)
         y_pred = self.estimator.predict(X_test)
         self._evaluation_results = self.estimator.evaluate(y_test, y_pred, X_test=X_test)
         return self
-    
+
     @property
     def evaluation_results(self):
-        return {**super().evaluation_results, "scope":self.scope}
+        return {**super().evaluation_results, "scope": self.scope}
+
+    def get_params(self, deep=True):
+        return {
+            "preprocessor": self.preprocessor.get_params(deep),
+            "feature_selector": self.feature_selector.get_params(deep),
+            "scope_estimator": self.estimator.get_params(deep),
+            **super().get_params(deep),
+        }
 
 
 class CVPipeline(DefaultPipeline):
     # TODO: Implement a version of the default pipeline which makes sure that a proper crossvalidation is run to evaluate the models. Might need to be handled on the Evaluator level.
     def run_pipeline(self, dataset: OxariDataManager, scope: int, **kwargs):
-        raise NotImplementedError()    
-    
+        raise NotImplementedError()

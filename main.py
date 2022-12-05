@@ -19,6 +19,7 @@ import io
 from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import pathlib
 import platform
+from pprint import pprint
 
 if "intel" in platform.processor().lower():
     from sklearnex import patch_sklearn
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=BaselineImputer(),
-        scope_estimator=BaselineEstimator(),
+        scope_estimator=MiniModelArmyEstimator(),
     )
     model = OxariMetaModel()
     postprocessor = ScopeImputerPostprocessor(estimator=model)
@@ -56,6 +57,8 @@ if __name__ == "__main__":
     model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
 
+    print("Parameter Configuration")
+    pprint(dp1.get_params(deep=True))
 
     X = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 

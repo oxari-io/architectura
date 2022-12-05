@@ -8,9 +8,8 @@ from preprocessors import BaselinePreprocessor
 from scope_estimators import DummyEstimator
 import numpy as np
 import pandas as pd
-from sklearn.base import MetaEstimatorMixin
 
-class DefaultPipeline(OxariPipeline, MetaEstimatorMixin):
+class DefaultPipeline(OxariPipeline):
     def __init__(
         self,
         # dataset: OxariDataLoader = None,
@@ -67,7 +66,12 @@ class DefaultPipeline(OxariPipeline, MetaEstimatorMixin):
         }
 
 
+
+
 class CVPipeline(DefaultPipeline):
     # TODO: Implement a version of the default pipeline which makes sure that a proper crossvalidation is run to evaluate the models. Might need to be handled on the Evaluator level.
     def run_pipeline(self, dataset: OxariDataManager, scope: int, **kwargs):
+        # Basically all similar as above. 
+        # However, after optimize and setting the parameters not just a test but a proper CV run
+        
         raise NotImplementedError()

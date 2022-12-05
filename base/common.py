@@ -459,6 +459,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return self.estimator.predict(X.drop(columns = ["scope_1", "scope_2", "scope_3"], axis=1), **kwargs)
     
     def fit(self, X, y, **kwargs) -> "OxariPipeline":
+        X = self._preprocess(X, **kwargs)
         self.estimator = self.estimator.fit(X, y, **kwargs)
         return self
 

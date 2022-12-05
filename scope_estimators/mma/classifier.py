@@ -230,4 +230,4 @@ class BucketClassifier(OxariClassifier):
         return self
     
     def get_params(self, deep=True):
-        return {**self.params, **self._estimator.get_params(deep)}
+        return {**self.params}

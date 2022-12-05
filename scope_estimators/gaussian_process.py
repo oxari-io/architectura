@@ -111,10 +111,10 @@ class GaussianProcessEstimator(OxariScopeEstimator):
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
 
     def evaluate(self, y_true, y_pred, **kwargs):
-        return self._evaluator.evaluate(y_true, y_pred, **kwargs)
-        
-         
+        return self._evaluator.evaluate(y_true, y_pred, **kwargs)     
 
     def check_conformance(self):
         pass
 
+    def get_params(self, deep=True):
+        return {**self._gpr.get_params(), **super().get_params(deep)}

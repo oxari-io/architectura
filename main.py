@@ -5,10 +5,9 @@ from dataset_loader.csv_loader import CSVDataLoader
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
-from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import BaselineImputer
+from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator
 import base
 from base import helper
 from base import OxariMetaModel
@@ -41,24 +40,26 @@ if __name__ == "__main__":
         scope=2,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
-        scope_estimator=PredictMeanEstimator(),
+        imputer=KMeansBucketImputer(),
+        scope_estimator=LinearRegressionEstimator(),
     )
     dp1 = DefaultPipeline(
         scope=1,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
+        imputer=RevenueBucketImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
     model = OxariMetaModel()
-    postprocessor = ScopeImputerPostprocessor(estimator=model)
+    scope_imputer = ScopeImputerPostprocessor(estimator=model)
     model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset))
     model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))
     model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
 
     print("Parameter Configuration")
     pprint(dp1.get_params(deep=True))
+    print(dp2.get_params(deep=True))
+    print(dp3.get_params(deep=True))
 
     X = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(X, scope=1))
 
-    scope_imputed_data = postprocessor.run(X=X)
+    scope_imputed_data = scope_imputer.run(X=X)
     today = time.strftime('%d-%m-%Y')
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     print(scope_imputed_data)

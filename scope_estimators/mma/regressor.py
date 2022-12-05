@@ -209,7 +209,8 @@ class BucketRegressor(OxariRegressor):
         trained_candidates = {}
         for bucket, candidates_data in regressor_kwargs.items():
             selector = groups == bucket
-            X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3)
+            
+            X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3) if np.any(selector) else train_test_split(X, y, test_size=0.3)
             for name, candidate_data in candidates_data.items():
                 best_params = candidate_data.get("best_params")
                 ModelConstructor = candidate_data.get("Model")

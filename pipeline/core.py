@@ -36,7 +36,7 @@ class DefaultPipeline(OxariPipeline):
         dataset.add_data(f"scope_{self.scope}_processed", df_processed, "Dataset after preprocessing.")
         df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_original.columns.difference(list_of_skipped_columns))
         dataset.add_data(f"scope_{self.scope}_reduced", df_reduced, "Dataset after feature selection.")
-        X, y = df_reduced.drop(columns=list_of_skipped_columns), df_reduced[f"scope_{self.scope}"]
+        X, y = df_reduced.drop(columns=list_of_skipped_columns, errors="ignore"), df_reduced[f"scope_{self.scope}"]
 
         # TODO: Implement the train test split params as method parameters of run_pipeline
         X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test = OxariDataManager.train_test_val_split(

@@ -32,12 +32,12 @@ import seaborn as sns
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
 
-
 # from typing import Union
 # import sklearn
 # import numpy as np
 # import pandas as pd
 # from sklearn.utils.estimator_checks import check_estimator
+
 
 class OxariLogger:
     """
@@ -71,7 +71,6 @@ class OxariEvaluator(abc.ABC):
     @property
     def name(self) -> str:
         return self.__class__.__name__
-
 
 
 class DefaultRegressorEvaluator(OxariEvaluator):
@@ -113,6 +112,7 @@ class DefaultClusterEvaluator(OxariEvaluator):
         }
         return super().evaluate(X, labels, **error_metrics)
 
+
 class DefaultClassificationEvaluator(OxariEvaluator):
     def __init__(self, **kwargs) -> None:
         super().__init__()
@@ -128,7 +128,7 @@ class DefaultClassificationEvaluator(OxariEvaluator):
 
         """
         precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average="weighted")
-        acc = balanced_accuracy_score(y_true,y_pred)
+        acc = balanced_accuracy_score(y_true, y_pred)
         error_metrics = {
             "balanced_accuracy": acc,
             "balanced_precision": precision,
@@ -136,6 +136,7 @@ class DefaultClassificationEvaluator(OxariEvaluator):
             "balanced_f1": f1,
         }
         return super().evaluate(y_true, y_pred, **error_metrics)
+
 
 class OxariOptimizer(abc.ABC):
     def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
@@ -158,11 +159,11 @@ class OxariOptimizer(abc.ABC):
         """
         return 0
 
+
 class DefaultOptimizer(OxariOptimizer):
     """
     This optimzer does absolutely nothing. 
     """
-    
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
         return super().optimize(X_train, y_train, X_val, y_val, **kwargs)
 
@@ -205,9 +206,10 @@ class OxariMixin(abc.ABC):
     def set_params(self, **params):
         self.params = params
         return self
-    
+
     def get_params(self, deep=True):
-        return {"name":self.name, **self.params}
+        return {"name": self.name, **self.params}
+
 
 class OxariTransformer(OxariMixin, sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
@@ -235,8 +237,7 @@ class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseE
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
     def __init__(self, object_filename=None, **kwargs) -> None:
         super().__init__(object_filename, **kwargs)
-        
-    
+
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
         return self
@@ -244,7 +245,6 @@ class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseE
     @abc.abstractmethod
     def predict(self, X, **kwargs) -> ArrayLike:
         pass
-
 
 
 class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
@@ -270,6 +270,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
+
 
 class OxariPreprocessor(OxariTransformer, abc.ABC):
     def __init__(self, imputer: OxariImputer = None, **kwargs):
@@ -372,7 +373,6 @@ class DefaultPostprocessor(OxariPostprocessor):
         return X
 
 
-
 class OxariFeatureReducer(OxariTransformer, abc.ABC):
     """
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
@@ -381,7 +381,6 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         super().__init__(missing_values=missing_values, add_indicator=add_indicator)
         self.verbose = verbose
         self.copy = copy
-
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -408,20 +407,19 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
-
     def visualize(self, X, **kwargs):
-        figsize = kwargs.pop('figsize',(15,15))
+        figsize = kwargs.pop('figsize', (15, 15))
         fig = plt.subplots(figsize=figsize)
         reduced_X = X[self.reduced_feature_columns].values
-        x,y,z = reduced_X[:, :3].T
+        x, y, z = reduced_X[:, :3].T
         ax = plt.axes(projection='3d')
-        ax.scatter3D(x,y,z)
+        ax.scatter3D(x, y, z)
         plt.show()
 
-    def merge(self, old_data:pd.DataFrame, reduced_feature_data:pd.DataFrame, feature_columns:List[str]):
+    def merge(self, old_data: pd.DataFrame, reduced_feature_data: pd.DataFrame, feature_columns: List[str]):
         reduced_feature_data.columns = self.reduced_feature_columns
-        return old_data.merge(reduced_feature_data, left_index=True, right_index=True).drop(feature_columns, axis=1)        
-        
+        return old_data.merge(reduced_feature_data, left_index=True, right_index=True).drop(feature_columns, axis=1)
+
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
 class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
@@ -456,8 +454,8 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         X = self._preprocess(X, **kwargs)
-        return self.estimator.predict(X.drop(columns = ["scope_1", "scope_2", "scope_3"], axis=1), **kwargs)
-    
+        return self.estimator.predict(X.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore'), **kwargs)
+
     def fit(self, X, y, **kwargs) -> "OxariPipeline":
         X = self._preprocess(X, **kwargs)
         self.estimator = self.estimator.fit(X, y, **kwargs)
@@ -471,7 +469,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.created = None # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
+        self.created = None  # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
         self.pipelines: Dict[str, OxariPipeline] = {}
 
     def add_pipeline(self, scope: int, pipeline: OxariPipeline) -> "OxariMetaModel":
@@ -490,7 +488,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
-        X = X.drop(columns = ["isin", "year"])
+        X = X.drop(columns=["isin", "year"])
         if scope == "all":
             return self._predict_all(X, **kwargs)
         return self.get_pipeline(scope).predict(X, **kwargs)
@@ -509,7 +507,8 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
             results.append(pipeline.evaluation_results)
 
         return results
-    
+
+
 class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, abc.ABC):
     def __init__(self):
         pass

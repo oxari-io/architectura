@@ -152,6 +152,11 @@ class OxariDataManager(OxariMixin):
     def get_scopes(self, name: str):
         return self.get_data_by_name(name)[["isin", "year", "scope_1", "scope_2", "scope_3"]]
 
+    def get_features(self, name: str):
+        data = self.get_data_by_name(name)
+        columns 
+        return self.get_data_by_name(name)[["isin", "year", "scope_1", "scope_2", "scope_3"]]
+
     @staticmethod
     def train_test_val_split(X, y, split_size_test, split_size_val):
         """

@@ -5,6 +5,7 @@ from dataset_loader.csv_loader import CSVDataLoader
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
+from postprocessors import BaselineConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator
@@ -41,7 +42,7 @@ if __name__ == "__main__":
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=KMeansBucketImputer(),
-        scope_estimator=LinearRegressionEstimator(),
+        scope_estimator=BayesianRegressionEstimator(),
     )
     dp1 = DefaultPipeline(
         scope=1,
@@ -61,7 +62,9 @@ if __name__ == "__main__":
     print(dp2.get_params(deep=True))
     print(dp3.get_params(deep=True))
 
-    X = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    X = dataset.get_features(OxariDataManager.ORIGINAL)
+    Ys = dataset.get_scopes(OxariDataManager.ORIGINAL)
 
     ### EVALUATION RESULTS ###
     print("Eval results")
@@ -71,7 +74,7 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(X, scope=1))
 
-    scope_imputed_data = scope_imputer.run(X=X)
+    scope_imputed_data = scope_imputer.run(X=DATA)
     today = time.strftime('%d-%m-%Y')
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     print(scope_imputed_data)
@@ -84,6 +87,10 @@ if __name__ == "__main__":
     print("\n", "Predict ALL on Mock data")
     print(model.predict(helper.mock_data()))
 
+    print("\n", "Compute Confidences")
+    confidence_intervall_estimator = BaselineConfidenceEstimator(estimator=dp1)
+    confidence_intervall_estimator = confidence_intervall_estimator.fit(X, Ys["scope_1"])
+    print(confidence_intervall_estimator.predict(X))
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))

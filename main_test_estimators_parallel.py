@@ -54,4 +54,4 @@ if __name__ == "__main__":
         all_evaluations.append(model.evaluation_results)
 
     eval_results = pd.DataFrame(all_evaluations)
-    print(eval_results.to_csv('local/eval_results/junk/results_1.csv'))
+    print(eval_results.to_csv('local/eval_results/results_parallel.csv'))

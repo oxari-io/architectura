@@ -1,6 +1,7 @@
 from __future__ import annotations
 import abc
 import csv
+import os
 import numpy as np
 import optuna
 import pandas as pd
@@ -29,6 +30,7 @@ from typing import Any, Dict, List, Tuple
 
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
+import logging
 
 
 # from typing import Union
@@ -37,21 +39,34 @@ from .oxari_types import ArrayLike
 # import pandas as pd
 # from sklearn.utils.estimator_checks import check_estimator
 
-class OxariLogger:
+os.environ["LOGLEVEL"] = "INFO"
+LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
+WRITE_TO = "./logger.log"
+# WRITE_TO = None
+
+class OxariLoggerMixin:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
     The logger writes it's outputs to STDOUT or to a FILE if a LOG_FILE environment variable was set.   
     
     Task: 
     - Logger shall use a standardized prefix which provides information about the module and pipeline step
+        - append some string to the message? 
     - Logger should use an env var to determine whether to output the logging into a file or stdout
     - Avoid patterns like here https://docs.python.org/3/howto/logging-cookbook.html#patterns-to-avoid
     - In case of production env, the logger should upload the log file of the full pipeline run to digital ocean spaces
     
     """
-    def __init__():
-        # https://docs.python.org/3/howto/logging-cookbook.html
-        pass
+    logger: logging.Logger
+
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger_name = self.__class__.__name__
+    
+    def debug(self, message):
+        self.logger.debug(self.logger_name + "says: " + message)
+
+    # info, error, warning, etc..... 
 
 
 class OxariEvaluator(abc.ABC):
@@ -170,6 +185,7 @@ class DefaultOptimizer(OxariOptimizer):
 
 class OxariMixin(abc.ABC):
     def __init__(self, object_filename=None, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.object_filename = object_filename or self.__class__.__name__
         self.start_time = None
         self.end_time = None
@@ -186,10 +202,6 @@ class OxariMixin(abc.ABC):
 
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred, **kwargs)
-
-    def set_logger(self, logger: OxariLogger) -> "OxariMixin":
-        self._logger = logger
-        return self
 
     def set_evaluator(self, evaluator: OxariEvaluator) -> "OxariMixin":
         self._evaluator = evaluator
@@ -257,8 +269,9 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
-class OxariPreprocessor(OxariTransformer, abc.ABC):
+class OxariPreprocessor(OxariTransformer, OxariLoggerMixin, abc.ABC):
     def __init__(self, imputer: OxariImputer = None, **kwargs):
+        super().__init__(**kwargs)
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
@@ -283,6 +296,11 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
     def set_imputer(self, imputer: OxariImputer) -> "OxariPreprocessor":
         self.imputer = imputer
         return self
+    
+    def debug(self, message):
+        return super().debug(message)
+
+
 
     # def set_feature_selector(self, feature_selector: OxariFeatureSelector) -> "OxariPreprocessor":
     #     self.feature_selector = feature_selector

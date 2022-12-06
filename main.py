@@ -19,6 +19,7 @@ import io
 from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import pathlib
 import platform
+import logging
 
 if "intel" in platform.processor().lower():
     from sklearnex import patch_sklearn
@@ -26,6 +27,7 @@ if "intel" in platform.processor().lower():
 
 DATA_DIR = pathlib.Path('local/data')
 if __name__ == "__main__":
+    
 
     dataset = CSVDataLoader().run()
     dp3 = DefaultPipeline(
@@ -45,15 +47,15 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         scope=1,
         preprocessor=BaselinePreprocessor(),
-        feature_selector=MDSSelector(),
+        feature_selector=PCAFeatureSelector(),
         imputer=BaselineImputer(),
         scope_estimator=MiniModelArmyEstimator(),
     )
     model = OxariMetaModel()
     postprocessor = ScopeImputerPostprocessor(estimator=model)
     model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset))
-    model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))
-    model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
+    # model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))
+    # model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
 
     X = dataset.get_data_by_name("original")
     X = X.drop(columns=["isin"])

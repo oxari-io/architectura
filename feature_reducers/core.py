@@ -2,7 +2,9 @@ from typing import Union
 from base import OxariFeatureReducer
 import numpy as np
 import pandas as pd
+from sklearn import cluster
 from sklearn.decomposition import PCA
+from sklearn.random_projection import GaussianRandomProjection, SparseRandomProjection
 from sklearn.manifold import Isomap, MDS, SpectralEmbedding, LocallyLinearEmbedding
 
 # from factor_analyzer import FactorAnalyzer
@@ -111,7 +113,6 @@ class SpectralEmbedding(OxariFeatureReducer):
 class IsomapFeatureSelector(OxariFeatureReducer):
     """ This Feature Selector uses Isomap manifold learning to reduce the dimensionality of the features"""
     def __init__(self, n_components=10, **kwargs):
-        #TODO think about arguments of isomap
         self._dimensionality_reducer = Isomap(n_components=n_components)
 
     # "Compute the embedding vectors for data X."
@@ -164,3 +165,55 @@ class DropFeatureReducer(OxariFeatureReducer):
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         new_X = X.drop(columns=self._features)
         return new_X
+
+
+class FeatureAgglomeration(OxariFeatureReducer):
+    def __init__(self, features=[], **kwargs):
+        self._dimensionality_reducer = cluster.FeatureAgglomeration(n_clusters=17)
+
+    def fit(self, X, y=None, **kwargs) -> "FeatureAgglomeration":
+        self._features = list(kwargs.get('features'))
+        self._dimensionality_reducer.fit(X[self._features], y)
+        # self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+        return self
+
+    def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        new_X = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        # new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        # return new_X_reduced
+        return reduced_features
+
+class GausRandProjection(OxariFeatureReducer):
+    def __init__(self, n_components=10, **kwargs):
+        self._dimensionality_reducer = GaussianRandomProjection(n_components=n_components)
+
+    def fit(self, X, y=None, **kwargs) -> "GausRandProjection":
+        self._features = list(kwargs.get('features'))
+        self._dimensionality_reducer.fit(X[self._features], y)
+        # self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+        return self
+
+    def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        new_X = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        # new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        # return new_X_reduced
+        return reduced_features
+
+class SparseRandProjection(OxariFeatureReducer):
+    def __init__(self, n_components=10, **kwargs):
+        self._dimensionality_reducer = SparseRandomProjection(n_components=n_components)
+
+    def fit(self, X, y=None, **kwargs) -> "SparseRandProjection":
+        self._features = list(kwargs.get('features'))
+        self._dimensionality_reducer.fit(X[self._features], y)
+        # self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+        return self
+
+    def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        new_X = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        # new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        # return new_X_reduced
+        return reduced_features

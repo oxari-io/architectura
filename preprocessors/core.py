@@ -55,7 +55,6 @@ class BaselinePreprocessor(OxariPreprocessor):
         self.scope_columns = NumMapping.get_targets()
         self.financial_columns = NumMapping.get_features()
         self.categorical_columns = CatMapping.get_features()
-        self.logger.debug("Baseline processor initialized!")
 
     def run(self, **kwargs) -> "BaselinePreprocessor":
         return super().run(**kwargs)
@@ -74,7 +73,6 @@ class BaselinePreprocessor(OxariPreprocessor):
         # reduce dimensionality/feature count
         # self.feature_selector = self.feature_selector.fit(data.drop(columns=self.scope_columns + ["year", "isin"]))
         
-        OxariPreprocessor.debug("Baseline processor is fitted!")
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -89,5 +87,4 @@ class BaselinePreprocessor(OxariPreprocessor):
         data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=data[self.scope_columns[0]])
         # reduce dimensionality/feature count
         # data = self.feature_selector.transform(data)
-        OxariPreprocessor.debug("Baseline processor is transformed!")
         return data

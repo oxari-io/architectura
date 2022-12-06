@@ -7,7 +7,7 @@ from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import BaselineImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
+from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GausRandProjection, SparseRandProjection
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
 import base
 from base import helper
@@ -19,7 +19,6 @@ import io
 from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import pathlib
 import platform
-import logging
 
 if "intel" in platform.processor().lower():
     from sklearnex import patch_sklearn
@@ -34,7 +33,7 @@ if __name__ == "__main__":
     dp3 = DefaultPipeline(
         scope=3,
         preprocessor=BaselinePreprocessor(),
-        feature_selector=PCAFeatureSelector(),
+        feature_selector=FeatureAgglomeration(),
         imputer=BaselineImputer(),
         scope_estimator=PredictMedianEstimator(),
     )
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         scope=1,
         preprocessor=BaselinePreprocessor(),
-        feature_selector=PCAFeatureSelector(),
+        feature_selector=SparseRandProjection(),
         imputer=BaselineImputer(),
         scope_estimator=BaselineEstimator(),
     )

@@ -61,10 +61,6 @@ class DefaultPipeline(OxariPipeline):
     def evaluation_results(self):
         return {**super().evaluation_results, "scope": self.scope}
 
-    def clone(self):
-        Model = type(self.estimator)
-        model = Model()
-
     def get_params(self, deep=True):
         return {
             "preprocessor": self.preprocessor.get_params(deep),

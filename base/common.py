@@ -14,6 +14,7 @@ from sklearn.base import (
     RegressorMixin,
     TransformerMixin,
 )
+import copy
 from sklearn.impute import SimpleImputer, _base
 from sklearn.metrics import (
     balanced_accuracy_score,
@@ -461,6 +462,10 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         X = self._preprocess(X, **kwargs)
         self.estimator = self.estimator.fit(X[~is_na], y[~is_na], **kwargs)
         return self
+
+    def clone(self):
+        # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
+        return copy.deepcopy(self, {})
 
     @property
     def evaluation_results(self):

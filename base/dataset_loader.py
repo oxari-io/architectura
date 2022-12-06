@@ -99,6 +99,8 @@ class OxariDataManager(OxariMixin):
     ORIGINAL = 'original'
     IMPUTED_SCOPES = 'imputed_scopes'
     IMPUTED_LARS = 'imputed_lars'
+
+    NON_FEATURES = ["isin", "year", "scope_1", "scope_2", "scope_3"]
     
     def __init__(
         self,
@@ -141,21 +143,28 @@ class OxariDataManager(OxariMixin):
     def data(self) -> pd.DataFrame:
         return self._dataset_stack[-1][1].copy()
 
-    def get_data_by_name(self, name: str) -> pd.DataFrame:
+    def get_data_by_name(self, name: str, scope=None) -> pd.DataFrame:
         for nm, df, descr in self._dataset_stack:
             if name == nm:
-                return df.copy()
+                df:pd.DataFrame = df
+                return df.copy() if not scope else df.dropna(subset=scope, how="all").copy()
 
     def get_data_by_index(self, index: int) -> pd.DataFrame:
         return self._dataset_stack[index][1].copy()
 
+    def get_data(self, name: str, scope=None):
+        data = self.get_data_by_name(name, scope)
+        features = data.columns.difference(self.NON_FEATURES)
+        X, Y = data[features].copy(), data[scope].copy()
+        return X, Y
+
     def get_scopes(self, name: str):
-        return self.get_data_by_name(name)[["isin", "year", "scope_1", "scope_2", "scope_3"]]
+        return self.get_data_by_name(name)[self.NON_FEATURES].copy()
 
     def get_features(self, name: str):
         data = self.get_data_by_name(name)
-        columns 
-        return self.get_data_by_name(name)[["isin", "year", "scope_1", "scope_2", "scope_3"]]
+        features = data.columns.difference(self.NON_FEATURES)
+        return data[features].copy()
 
     @staticmethod
     def train_test_val_split(X, y, split_size_test, split_size_val):

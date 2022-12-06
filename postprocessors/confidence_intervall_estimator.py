@@ -9,8 +9,10 @@ from sklearn.model_selection import KFold
 
 
 class OxariConfidenceEstimator(OxariRegressor, MultiOutputMixin):
-    def __init__(self, object_filename=None, **kwargs) -> None:
+    def __init__(self, object_filename=None, estimator: OxariPipeline = None, alpha=0.05, **kwargs) -> None:
         super().__init__(object_filename, **kwargs)
+        self.alpha = alpha
+        self.estimator = estimator
 
 
 # TODO: Implement evaluator that computes the coverage. https://towardsdatascience.com/prediction-intervals-in-python-64b992317b1a
@@ -29,22 +31,20 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     However, this naive solution is problematic because our model may overfit and even if it doesn’t, most of the time the error on the training set will be smaller than the error on the test set, after all, those points are known by the model.
     This may lead to over-optimistic confidence intervals. Therefore, this method should never be used.
     """
-    def __init__(self, object_filename=None, estimator: OxariPipeline = None, **kwargs) -> None:
+    def __init__(self, object_filename=None,  **kwargs) -> None:
         super().__init__(object_filename, **kwargs)
-        self.estimator = estimator
 
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
         y_hat = self.estimator.predict(X, **kwargs)
-        residuals = np.abs(y_hat - y)
-        self.error_range = np.quantile(residuals, q=95)
+        residuals = pd.DataFrame(np.abs(y_hat - y)).dropna()
+        self.error_range = np.quantile(residuals, q=1-self.alpha)
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
         df['pred'] = self.estimator.predict(X, **kwargs)
         df['upper'] = df['pred'] + self.error_range
-        df['lower'] = df['pred'] - self.error_range
-
+        df['lower'] = np.maximum(df['pred'] - self.error_range, 0)
         return df
 
 
@@ -59,25 +59,26 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
     The paper simulations show that this method is a little worse than the Jackknife+, however, it is way faster. 
     In practical terms, this will probably be the method being used in most cases.
     """
-    def __init__(self, object_filename=None, model: OxariScopeEstimator = None, **kwargs) -> None:
+    def __init__(self, object_filename=None, n_splits=10, **kwargs) -> None:
         super().__init__(object_filename, **kwargs)
-        self.estimator = model
-        self._estimators: List[OxariScopeEstimator] = []
+        self._all_estimators: List[OxariScopeEstimator] = []
         self.res = []
-        self.alpha = 0.95
+        self.n_splits = n_splits
 
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
-        kf = KFold(n_splits=10, shuffle=True, random_state=42)
-        for train_index, test_index in kf.split(X):
-            X_train_, X_test_ = X[train_index], X[test_index]
-            y_train_, y_test_ = y[train_index], y[test_index]
+        kf = KFold(n_splits=self.n_splits, shuffle=True, random_state=42)
+        for idx, (train_index, test_index) in enumerate(kf.split(X)):
+            print(f"Start Kfold fit number {idx}")
+            X_train_, X_test_ = X.iloc[train_index], X.iloc[test_index]
+            y_train_, y_test_ = y.iloc[train_index], y.iloc[test_index]
 
             self.estimator.fit(X_train_, y_train_)
-            self._estimators.append(self.estimator)
+            self._all_estimators.append(self.estimator.clone())
             self.res.extend(list(y_test_ - self.estimator.predict(X_test_)))
+        return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
-        y_pred_multi = np.column_stack([e.predict(X) for e in self._estimators])
+        y_pred_multi = np.column_stack([e.predict(X) for e in self._all_estimators])
         ci = np.quantile(self.res, 1 - self.alpha)
         top = []
         bottom = []

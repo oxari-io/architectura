@@ -5,7 +5,7 @@ from dataset_loader.csv_loader import CSVDataLoader
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
-from postprocessors import BaselineConfidenceEstimator
+from postprocessors import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
-    Ys = dataset.get_scopes(OxariDataManager.ORIGINAL)
+    X_, Y_ = dataset.get_data(OxariDataManager.ORIGINAL, scope="scope_1")
 
     ### EVALUATION RESULTS ###
     print("Eval results")
@@ -88,8 +88,8 @@ if __name__ == "__main__":
     print(model.predict(helper.mock_data()))
 
     print("\n", "Compute Confidences")
-    confidence_intervall_estimator = BaselineConfidenceEstimator(estimator=dp1)
-    confidence_intervall_estimator = confidence_intervall_estimator.fit(X, Ys["scope_1"])
+    confidence_intervall_estimator = JacknifeConfidenceEstimator(estimator=dp1, n_splits=3)
+    confidence_intervall_estimator = confidence_intervall_estimator.fit(X_, Y_)
     print(confidence_intervall_estimator.predict(X))
 
     print("\n", "Predict LARs on Mock data")

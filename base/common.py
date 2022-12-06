@@ -457,8 +457,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return self.estimator.predict(X.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore'), **kwargs)
 
     def fit(self, X, y, **kwargs) -> "OxariPipeline":
+        is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
-        self.estimator = self.estimator.fit(X, y, **kwargs)
+        self.estimator = self.estimator.fit(X[~is_na], y[~is_na], **kwargs)
         return self
 
     @property
@@ -488,7 +489,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
-        X = X.drop(columns=["isin", "year"])
+        X = X.drop(columns=["isin", "year"], errors='ignore')
         if scope == "all":
             return self._predict_all(X, **kwargs)
         return self.get_pipeline(scope).predict(X, **kwargs)

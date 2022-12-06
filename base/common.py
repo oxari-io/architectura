@@ -471,6 +471,14 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def evaluation_results(self):
         return {"model": self.estimator.name, **self._evaluation_results}
 
+class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
+    def __init__(self, object_filename=None, pipeline: OxariPipeline = None, alpha=0.05, **kwargs) -> None:
+        super().__init__(object_filename, **kwargs)
+        self.alpha = alpha
+        self.estimator = pipeline
+
+    def set_pipeline(self, pipeline:OxariPipeline):
+        self.estimator = pipeline
 
 class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
@@ -478,13 +486,16 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         self.created = None  # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
         self.pipelines: Dict[str, OxariPipeline] = {}
 
-    def add_pipeline(self, scope: int, pipeline: OxariPipeline) -> "OxariMetaModel":
+    def add_pipeline(self, scope: int, pipeline: OxariPipeline, **kwargs) -> "OxariMetaModel":
+        self.check_scope(scope)
+        self.pipelines[f"scope_{scope}"] = pipeline
+        return self
+
+    def check_scope(self, scope):
         if not isinstance(scope, int):
             raise Exception(f"'scope' is not an int: {scope}")
         if not ((scope > 0) and (scope < 4)):
             raise Exception(f"'scope' is not between either 1, 2 or 3: {scope}")
-        self.pipelines[f"scope_{scope}"] = pipeline
-        return self
 
     def get_pipeline(self, scope: int) -> OxariPipeline:
         return self.pipelines[f"scope_{scope}"]
@@ -514,6 +525,19 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
         return results
 
+
+class DefaultMetaModel(OxariMetaModel):
+    """
+    A subclass of the Meta model. However this model will also provide confidence intervalls.
+    """
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def add_pipeline(self, scope: int, pipeline: OxariPipeline, ci_strategy:OxariConfidenceEstimator, **kwargs) -> "OxariMetaModel":
+        self.check_scope(scope)
+        pipeline = ci_strategy.set_pipeline(pipeline)
+        self.pipelines[f"scope_{scope}"] = pipeline
+        return self
 
 class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, abc.ABC):
     def __init__(self):

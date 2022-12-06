@@ -6,14 +6,7 @@ from typing import Union, List
 from base.oxari_types import ArrayLike
 from sklearn.base import MultiOutputMixin
 from sklearn.model_selection import KFold
-
-
-class OxariConfidenceEstimator(OxariRegressor, MultiOutputMixin):
-    def __init__(self, object_filename=None, estimator: OxariPipeline = None, alpha=0.05, **kwargs) -> None:
-        super().__init__(object_filename, **kwargs)
-        self.alpha = alpha
-        self.estimator = estimator
-
+from base import OxariConfidenceEstimator
 
 # TODO: Implement evaluator that computes the coverage. https://towardsdatascience.com/prediction-intervals-in-python-64b992317b1a
 class BaselineConfidenceEstimator(OxariConfidenceEstimator):

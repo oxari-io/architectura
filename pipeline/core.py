@@ -8,6 +8,7 @@ from preprocessors import BaselinePreprocessor
 from scope_estimators import DummyEstimator
 import numpy as np
 import pandas as pd
+from sklearn import model_selection as ms
 
 class DefaultPipeline(OxariPipeline):
     def __init__(
@@ -47,11 +48,14 @@ class DefaultPipeline(OxariPipeline):
 
         self.best_parameters, self.info = self.estimator.optimize(X_train, y_train, X_val, y_val)
         # info.to_csv('optimization_results.csv')
+        self.estimator = self.estimator.set_params(**self.best_parameters)
+        self._validate_results(X_rem, y_rem, X_test, y_test)
+        return self
 
-        self.estimator = self.estimator.set_params(**self.best_parameters).fit(X_rem, y_rem)
+    def _validate_results(self, X_rem, y_rem, X_test, y_test):
+        self.estimator = self.estimator.fit(X_rem, y_rem)
         y_pred = self.estimator.predict(X_test)
         self._evaluation_results = self.estimator.evaluate(y_test, y_pred, X_test=X_test)
-        return self
 
     @property
     def evaluation_results(self):
@@ -70,8 +74,15 @@ class DefaultPipeline(OxariPipeline):
 
 class CVPipeline(DefaultPipeline):
     # TODO: Implement a version of the default pipeline which makes sure that a proper crossvalidation is run to evaluate the models. Might need to be handled on the Evaluator level.
-    def run_pipeline(self, dataset: OxariDataManager, scope: int, **kwargs):
-        # Basically all similar as above. 
-        # However, after optimize and setting the parameters not just a test but a proper CV run
+    # def run_pipeline(self, dataset: OxariDataManager, scope: int, **kwargs):
+    #     # Basically all similar as above. 
+    #     # However, after optimize and setting the parameters not just a test but a proper CV run
         
-        raise NotImplementedError()
+    #     raise NotImplementedError()
+
+    def _validate_results(self, X_rem, y_rem, X_test, y_test, *kwargs):
+        # TODO: This is just a start and not completed. It should use smape and R2. Also a postprocessor is probably more appropriate
+        scores = ms.cross_val_score(estimator=self.estimator, X=X_rem, y=y_rem, cv=10, scoring="mape")
+        self.estimator = self.estimator.fit(X_rem, y_rem)
+        y_pred = self.estimator.predict(X_test)
+        self._evaluation_results = {"crossval":{"mape": np.mean(scores)},**self.estimator.evaluate(y_test, y_pred, X_test=X_test)}        

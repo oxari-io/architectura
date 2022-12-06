@@ -84,7 +84,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         # transform numerical
         data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
         # encode categorical
-        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=data[self.scope_columns[0]])
+        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns])
         # reduce dimensionality/feature count
         # data = self.feature_selector.transform(data)
         return data

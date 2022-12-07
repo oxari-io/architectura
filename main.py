@@ -3,7 +3,7 @@ from datetime import date
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
-from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor
+from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
@@ -39,22 +39,22 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
 
     dp1 = DefaultPipeline(
-        preprocessor=ImprovedBaselinePreprocessor(),
+        preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=BayesianRegressionEstimator(),
     )
     dp2 = DefaultPipeline(
-        preprocessor=ImprovedBaselinePreprocessor(),
+        preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=BayesianRegressionEstimator(),
     )
     dp3 = DefaultPipeline(
-        preprocessor=ImprovedBaselinePreprocessor(),
+        preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=PredictMedianEstimator(),
+        scope_estimator=BayesianRegressionEstimator(),
     )
     model = OxariMetaModel()
     scope_imputer = ScopeImputerPostprocessor(estimator=model)

@@ -116,3 +116,24 @@ class ImprovedBaselinePreprocessor(BaselinePreprocessor):
         X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
         X_new = pd.DataFrame(self.fin_transformer.transform(X_new), index=X_new.index, columns=X_new.columns)
         return X_new
+    
+class IIDPreprocessor(BaselinePreprocessor):
+    """
+    This preprocessor works well with the bayesian regressor. And probably neural networks.
+    """
+    
+    def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
+        super().__init__(fin_transformer, cat_transformer, **kwargs)
+        self.overall_scaler = prep.StandardScaler()
+
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
+        # NOTE: Using fit_transform here leads to recursion.
+        super().fit(X, y, **kwargs)
+        X_new = super().transform(X, **kwargs)
+        self.overall_scaler.fit(X_new)
+        return self
+    
+    def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        X_new = super().transform(X, **kwargs)
+        X_new = pd.DataFrame(self.overall_scaler.transform(X_new, **kwargs), index=X_new.index, columns=X_new.columns)
+        return X_new

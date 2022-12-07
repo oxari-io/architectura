@@ -65,3 +65,5 @@ class CSVDataLoader(OxariDataManager):
             verbose,
             **kwargs,
         )
+
+#inherit form this 

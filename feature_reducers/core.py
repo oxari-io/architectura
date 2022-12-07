@@ -82,7 +82,7 @@ class SpectralEmbedding(OxariFeatureReducer):
         return new_X_reduced
 
 
-class FactorAnalysis(OxariFeatureReducer):
+class Factor_Analysis(OxariFeatureReducer):
     """This Feature Selector creates factors from the observed variables to represent the common variance 
     i.e. variance due to correlation among the observed variables."""
     # Number of components can (and maybe should) change

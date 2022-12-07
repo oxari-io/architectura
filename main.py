@@ -7,7 +7,7 @@ from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import BaselineImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GausRandProjection, SparseRandProjection
+from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GausRandProjection, SparseRandProjection, Factor_Analysis
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
 import base
 from base import helper
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         scope=1,
         preprocessor=BaselinePreprocessor(),
-        feature_selector=SparseRandProjection(),
+        feature_selector=Factor_Analysis(),
         imputer=BaselineImputer(),
         scope_estimator=BaselineEstimator(),
     )

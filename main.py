@@ -3,10 +3,10 @@ from datetime import date
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
-from preprocessors import BaselinePreprocessor
+from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
-from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer
+from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator
 import base
@@ -39,21 +39,21 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
 
     dp1 = DefaultPipeline(
-        preprocessor=BaselinePreprocessor(),
+        preprocessor=ImprovedBaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=RevenueBucketImputer(),
+        imputer=RevenueQuantileBucketImputer(),
         scope_estimator=BayesianRegressionEstimator(),
     )
     dp2 = DefaultPipeline(
-        preprocessor=BaselinePreprocessor(),
+        preprocessor=ImprovedBaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=KMeansBucketImputer(),
+        imputer=RevenueQuantileBucketImputer(),
         scope_estimator=BayesianRegressionEstimator(),
     )
     dp3 = DefaultPipeline(
-        preprocessor=BaselinePreprocessor(),
+        preprocessor=ImprovedBaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
+        imputer=RevenueQuantileBucketImputer(),
         scope_estimator=PredictMedianEstimator(),
     )
     model = OxariMetaModel()
@@ -97,8 +97,8 @@ if __name__ == "__main__":
 
     print("\n", "Compute Confidences")
     confidence_intervall_estimator = JacknifeConfidenceEstimator(pipeline=dp1, n_splits=3)
-    confidence_intervall_estimator = confidence_intervall_estimator.fit(X_1, Y_1)
-    print(confidence_intervall_estimator.predict(X))
+    confidence_intervall_estimator = confidence_intervall_estimator.fit(SPLIT_1.train.X, SPLIT_1.train.y)
+    print(confidence_intervall_estimator.predict(SPLIT_1.val.X))
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))

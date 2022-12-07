@@ -452,13 +452,13 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         pass
 
     def _preprocess(self, X, **kwargs) -> ArrayLike:
-        X = self.preprocessor.transform(X, **kwargs)
-        X = self.feature_selector.transform(X, **kwargs)
-        return X
+        X_new = self.preprocessor.transform(X, **kwargs)
+        X_new = self.feature_selector.transform(X_new, **kwargs)
+        return X_new
 
     def predict(self, X, **kwargs) -> ArrayLike:
-        X = self._preprocess(X, **kwargs)
-        return self.estimator.predict(X.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore'), **kwargs)
+        X_new = self._preprocess(X, **kwargs)
+        return self.estimator.predict(X_new.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore'), **kwargs)
 
     def fit(self, X, y, **kwargs) -> "OxariPipeline":
         is_na = np.isnan(y)
@@ -508,7 +508,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
-        X = X.drop(columns=["isin", "year"], errors='ignore')
+        X = X.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], errors='ignore')
         if scope == "all":
             return self._predict_all(X, **kwargs)
         return self.get_pipeline(scope).predict(X, **kwargs)

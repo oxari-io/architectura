@@ -75,18 +75,18 @@ class BaselinePreprocessor(OxariPreprocessor):
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        data = X.copy()
+        X_new = X.copy()
         # impute all the missing columns
-        data[self.financial_columns] = self.imputer.transform(data[self.financial_columns].astype(float))
+        X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
         # log scaling the scopes -> NOTE: NOT NECESSARY DURING INFERENCE
         # data[self.scope_columns] = self.scope_transformer.transform(data[self.scope_columns])
         # transform numerical
-        data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
+        X_new[self.financial_columns] = self.fin_transformer.transform(X_new[self.financial_columns])
         # encode categorical
-        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns])
+        X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
         # reduce dimensionality/feature count
         # data = self.feature_selector.transform(data)
-        return data
+        return X_new
 
     def get_config(self, deep=True):
         return {
@@ -96,3 +96,23 @@ class BaselinePreprocessor(OxariPreprocessor):
             **self.imputer.get_config(deep),
             **super().get_config(deep)
         }
+
+class ImprovedBaselinePreprocessor(BaselinePreprocessor):
+
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
+        X_new = X.copy()
+        self.cat_transformer = self.cat_transformer.fit(X=X_new[self.categorical_columns], y=y)
+        # TODO: Create an ABC for feature transformers. To allow adding full data and maintain a memory of which feature was transformed. 
+        # Similar to feature reducers.
+        # Also allows to transform to a dataframe.
+        X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns]) 
+        self.imputer = self.imputer.fit(X_new[self.financial_columns])
+        self.fin_transformer = self.fin_transformer.fit(X_new)
+        return self
+    
+    def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        X_new = X.copy()
+        X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
+        X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
+        X_new = pd.DataFrame(self.fin_transformer.transform(X_new), index=X_new.index, columns=X_new.columns)
+        return X_new

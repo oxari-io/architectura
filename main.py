@@ -1,7 +1,7 @@
 import time
 from datetime import date
 from pipeline.core import DefaultPipeline
-from dataset_loader.csv_loader import CSVDataLoader
+from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
@@ -30,7 +30,7 @@ from lar_calculator.model_lar import OxariLARCalculator
 if __name__ == "__main__":
 
     # TODO: Rename dataset
-    dataset = CSVDataLoader().run()
+    dataset = CSVDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

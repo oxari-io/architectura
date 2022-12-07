@@ -47,7 +47,7 @@ class CSVCategoricalLoader(CategoricalLoader, LocalDatasourceMixin):
         return self
 
 
-class CSVDataLoader(OxariDataManager):
+class CSVDataManager(OxariDataManager):
     def __init__(self,
                 #  object_filename,
                  scope_loader: ScopeLoader = CSVScopeLoader(path  = DATA_DIR / "scopes.csv"),                 

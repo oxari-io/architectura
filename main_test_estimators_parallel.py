@@ -1,5 +1,5 @@
 from pipeline.core import DefaultPipeline
-from dataset_loader.csv_loader import CSVDataLoader
+from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
@@ -19,7 +19,7 @@ from concurrent import futures
 
 if __name__ == "__main__":
 
-    dataset = CSVDataLoader().run()
+    dataset = CSVDataManager().run()
     model_list = [
             # REVIEWME: which sampler do the optimizer for the following estimator use?
             LinearRegressionEstimator,

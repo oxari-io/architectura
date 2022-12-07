@@ -2,7 +2,7 @@ from base.dataset_loader import OxariDataManager
 from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, OxariPreprocessor, OxariPipeline
 from base import OxariImputer, JacknifeConfidenceEstimator
 
-from dataset_loader.csv_loader import CSVDataLoader
+from dataset_loader.csv_loader import CSVDataManager
 from imputers import BaselineImputer
 from feature_reducers import DummyFeatureReducer
 from preprocessors import BaselinePreprocessor

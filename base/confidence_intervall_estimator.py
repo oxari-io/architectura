@@ -24,8 +24,8 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     However, this naive solution is problematic because our model may overfit and even if it doesn’t, most of the time the error on the training set will be smaller than the error on the test set, after all, those points are known by the model.
     This may lead to over-optimistic confidence intervals. Therefore, this method should never be used.
     """
-    def __init__(self, object_filename=None,  **kwargs) -> None:
-        super().__init__(object_filename, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
         y_hat = self.estimator.predict(X, **kwargs)
@@ -52,8 +52,8 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
     The paper simulations show that this method is a little worse than the Jackknife+, however, it is way faster. 
     In practical terms, this will probably be the method being used in most cases.
     """
-    def __init__(self, object_filename=None, n_splits=10, **kwargs) -> None:
-        super().__init__(object_filename, **kwargs)
+    def __init__(self, n_splits=10, **kwargs) -> None:
+        super().__init__(**kwargs)
         self._all_estimators: List[OxariScopeEstimator] = []
         self.res = []
         self.n_splits = n_splits

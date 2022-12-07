@@ -174,7 +174,7 @@ class DefaultOptimizer(OxariOptimizer):
 
 class OxariMixin(abc.ABC):
     def __init__(self, name=None, **kwargs) -> None:
-        self.name = name or self.__class__.__name__
+        self._name = name or self.__class__.__name__
         self.start_time = None
         self.end_time = None
         self.params = {}
@@ -210,9 +210,12 @@ class OxariMixin(abc.ABC):
 
     # TODO: Needs get_params and get_config
     def get_config(self, deep=True):
-        return {"name": self.name, **self.params}
+        return {"name": self._name, **self.params}
 
-
+    @property
+    def name(self):
+        return self._name
+    
 class OxariTransformer(OxariMixin, sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
     @abc.abstractmethod
@@ -237,8 +240,8 @@ class OxariClassifier(OxariMixin, sklearn.base.ClassifierMixin, sklearn.base.Bas
 
 class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
-    def __init__(self, object_filename=None, **kwargs) -> None:
-        super().__init__(object_filename, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
@@ -309,6 +312,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
 
 class OxariScopeEstimator(OxariRegressor, abc.ABC):
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
@@ -317,7 +321,6 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         self.set_evaluator(evaluator)
         optimizer = kwargs.pop('optimizer', DefaultOptimizer())
         self.set_optimizer(optimizer)
-        self._name = self.__class__.__name__
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
@@ -346,9 +349,7 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         # Reference
         pass
 
-    @property
-    def name(self):
-        return self._name
+
 
 
 class OxariPostprocessor(OxariMixin, abc.ABC):
@@ -474,8 +475,8 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return {"model": self.estimator.name, **self._evaluation_results}
 
 class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
-    def __init__(self, object_filename=None, pipeline: OxariPipeline = None, alpha=0.05, **kwargs) -> None:
-        super().__init__(object_filename, **kwargs)
+    def __init__(self, pipeline: OxariPipeline = None, alpha=0.05, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.alpha = alpha
         self.estimator = pipeline
 

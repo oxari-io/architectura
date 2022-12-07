@@ -168,7 +168,6 @@ class OxariDataManager(OxariMixin):
 
     def __init__(
         self,
-        # object_filename,
         scope_loader: ScopeLoader = None,
         financial_loader: FinancialLoader = None,
         categorical_loader: CategoricalLoader = None,
@@ -182,7 +181,6 @@ class OxariDataManager(OxariMixin):
         self.financial_loader = financial_loader
         self.categorical_loader = categorical_loader
         self.other_loaders = other_loaders
-        # self.object_filename = object_filename
         self.verbose = verbose
         self._dataset_stack = []
         self.threshold = kwargs.pop("threshold", 5)

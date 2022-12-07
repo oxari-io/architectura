@@ -1,10 +1,10 @@
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataManager
-from base import OxariDataManager
-from preprocessors import BaselinePreprocessor
+from base import OxariDataManager, OxariPipeline
+from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import BaselineImputer, KMeansBucketImputer
+from imputers import BaselineImputer, KMeansBucketImputer, RevenueQuantileBucketImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator
 import base
@@ -17,41 +17,79 @@ import io
 # import multiprocessing as mp
 from concurrent import futures
 
+
+def run_model(optimize_data, fit_data, eval_data, model):
+    return model.optimise(*optimize_data).fit(*fit_data).evaluate(*eval_data)
+
+
+class Runner(object):
+    def __init__(self, optimize_data, fit_data, eval_data) -> None:
+        self.optimize_data = optimize_data
+        self.fit_data = fit_data
+        self.eval_data = eval_data
+
+    def run(self, model: OxariPipeline):
+        return model.optimise(*self.optimize_data).fit(*self.fit_data).evaluate(*self.eval_data)
+
+
 if __name__ == "__main__":
 
     dataset = CSVDataManager().run()
+    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    X = dataset.get_features(OxariDataManager.ORIGINAL)
+    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+    SPLIT_1 = bag.scope_1
+    SPLIT_2 = bag.scope_2
+    SPLIT_3 = bag.scope_3
     model_list = [
-            # REVIEWME: which sampler do the optimizer for the following estimator use?
-            LinearRegressionEstimator,
-            BayesianRegressionEstimator,
-            DummyEstimator,
-            BaselineEstimator,
-            PredictMeanEstimator,
-            PredictMedianEstimator,
-            MiniModelArmyEstimator,
-            # GaussianProcessEstimator,
-        ]
+        # REVIEWME: which sampler do the optimizer for the following estimator use?
+        LinearRegressionEstimator,
+        BayesianRegressionEstimator,
+        DummyEstimator,
+        BaselineEstimator,
+        PredictMeanEstimator,
+        PredictMedianEstimator,
+        # MiniModelArmyEstimator,
+        # GaussianProcessEstimator,
+    ]
+    all_imputers = [
+        RevenueQuantileBucketImputer,
+        RevenueBucketImputer,
+        KMeansBucketImputer,
+    ]
+    all_feature_reducers = [
+        PCAFeatureSelector,
+        DummyFeatureReducer,
+    ]
+    all_preprocessors = [
+        IIDPreprocessor,
+        BaselinePreprocessor,
+    ]
     all_models = [
         DefaultPipeline(
-            scope=1,
-            preprocessor=BaselinePreprocessor(),
-            feature_selector=PCAFeatureSelector(),
-            imputer=KMeansBucketImputer(buckets_number=5),
+            preprocessor=Preprocessor(),
+            feature_selector=FtReducer(),
+            imputer=Imputer(buckets_number=5),
             scope_estimator=Model(),
-        ) for Model in model_list
-    ] 
+        ) for Model in model_list for Preprocessor in all_preprocessors for FtReducer in all_feature_reducers for Imputer in all_imputers
+    ]
 
+    all_evaluations = []
     all_models_trained = []
     # TODO: how many threads? all the models in oneppol? look into this!
+    optimize_data = SPLIT_1.train.X, SPLIT_1.train.y
+    fit_data = SPLIT_1.train.X, SPLIT_1.train.y
+    eval_data = SPLIT_1.rem.X, SPLIT_1.rem.y, SPLIT_1.val.X, SPLIT_1.val.y
+
+    runner = Runner(optimize_data, fit_data, eval_data)
+
     with futures.ProcessPoolExecutor() as pool:
-        for model in all_models:
-            for results in pool.map(model.optimise(dataset)):
-                all_models_trained.append(results)
+        for model in pool.map(runner.run, all_models):
+            all_models_trained.append(model.evaluation_results)
 
     # Multiprocessing also for evaluation?
-    all_evaluations = []
-    for model in all_models_trained:
-        all_evaluations.append(model.evaluation_results)
+    # for model in all_models_trained:
+    #     all_evaluations.append(model.evaluation_results)
 
-    eval_results = pd.DataFrame(all_evaluations)
+    eval_results = pd.DataFrame(all_models_trained)
     print(eval_results.to_csv('local/eval_results/results_parallel.csv'))

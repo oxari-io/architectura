@@ -1,1 +1,5 @@
-""
+,preprocessor,feature_selector,scope_estimator,model,evaluator,sMAPE,R2,MAE,RMSE,MAPE
+0,IIDPreprocessor,PCAFeatureSelector,DummyEstimator,DummyEstimator,DefaultRegressorEvaluator,1.1606679250954057,-91.91269963576343,30.65493471341994,30.82124472707943,307.9158118568553
+1,IIDPreprocessor,PCAFeatureSelector,BaselineEstimator,BaselineEstimator,DefaultRegressorEvaluator,0.5037257872863691,-2.7640174081922986,5.167139116483343,6.203523704466462,50.5262328605259
+2,IIDPreprocessor,PCAFeatureSelector,PredictMeanEstimator,PredictMeanEstimator,DefaultRegressorEvaluator,0.2375977728403958,-0.00033213188539216176,2.6145803257899796,3.1980462775734053,27.518520673494617
+3,IIDPreprocessor,PCAFeatureSelector,PredictMedianEstimator,PredictMedianEstimator,DefaultRegressorEvaluator,0.23716048474287046,-0.0003518231243613279,2.608598785925702,3.1980777537109693,27.180770313533046

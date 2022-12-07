@@ -54,7 +54,14 @@ class DefaultPipeline(OxariPipeline):
 
     @property
     def evaluation_results(self):
-        return {**super().evaluation_results}
+        # return {**super().evaluation_results}
+        return {
+            "imputer": self.preprocessor.imputer.name,
+            "preprocessor": self.preprocessor.name,
+            "feature_selector": self.feature_selector.name,
+            "scope_estimator": self.estimator.name,
+            **super().evaluation_results,
+        }
 
     # TODO: Should be get_config
     def get_config(self, deep=True):

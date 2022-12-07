@@ -49,7 +49,7 @@ if __name__ == "__main__":
         BaselineEstimator,
         PredictMeanEstimator,
         PredictMedianEstimator,
-        # MiniModelArmyEstimator,
+        MiniModelArmyEstimator,
         # GaussianProcessEstimator,
     ]
     all_imputers = [
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     eval_data = SPLIT_1.rem.X, SPLIT_1.rem.y, SPLIT_1.val.X, SPLIT_1.val.y
 
     runner = Runner(optimize_data, fit_data, eval_data)
-
+    # TODO: Implement failsafe with try-except and interative csv writing
     with futures.ProcessPoolExecutor() as pool:
         for model in pool.map(runner.run, all_models):
             all_models_trained.append(model.evaluation_results)

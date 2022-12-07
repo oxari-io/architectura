@@ -42,9 +42,9 @@ class PCAFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin)
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
-        new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        X_new = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(X_new[self._features]), index=X_new.index)
+        new_X_reduced = self.merge(X_new, reduced_features, self._features)
         return new_X_reduced
 
 

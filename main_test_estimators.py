@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     all_models_trained = []
     for model in all_models:
-        results = model.run_pipeline(dataset)
+        results = model.optimise(dataset)
         all_models_trained.append(results)
 
     # Multiprocessing also for evaluation?
@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     all_models_trained = []
     for model in all_models:
-        results = model.run_pipeline(dataset)
+        results = model.optimise(dataset)
         all_models_trained.append(results)
 
     # Multiprocessing also for evaluation?
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     all_models_trained = []
     for model in all_models:
-        results = model.run_pipeline(dataset)
+        results = model.optimise(dataset)
         all_models_trained.append(results)
 
     # Multiprocessing also for evaluation?
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
     all_models_trained = []
     for model in all_models:
-        results = model.run_pipeline(dataset)
+        results = model.optimise(dataset)
         all_models_trained.append(results)
 
     # Multiprocessing also for evaluation?
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     all_models_trained = []
     for model in all_models:
-        results = model.run_pipeline(dataset)
+        results = model.optimise(dataset)
         all_models_trained.append(results)
 
     # Multiprocessing also for evaluation?
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
     all_models_trained = []
     for model in all_models:
-        results = model.run_pipeline(dataset)
+        results = model.optimise(dataset)
         all_models_trained.append(results)
 
     # Multiprocessing also for evaluation?
@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     all_models_trained = []
     for model in all_models:
-        results = model.run_pipeline(dataset)
+        results = model.optimise(dataset)
         all_models_trained.append(results)
 
     # Multiprocessing also for evaluation?

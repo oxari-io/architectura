@@ -208,7 +208,8 @@ class OxariMixin(abc.ABC):
         self.params = params
         return self
 
-    def get_params(self, deep=True):
+    # TODO: Needs get_params and get_config
+    def get_config(self, deep=True):
         return {"name": self.name, **self.params}
 
 
@@ -335,8 +336,9 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         # Returns prediction results
         pass
 
-    @abc.abstractmethod
+    # @abc.abstractmethod
     def check_conformance(self, ) -> bool:
+        # TODO: Implement
         # Returns a boolean
         # Uses sklearn utils function check_estimator(self)
         # If this test passes, then deployment shall be allowed
@@ -443,7 +445,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # self.resources_postprocessor = database_deployer
 
     @abc.abstractmethod
-    def run_pipeline(self, **kwargs):
+    def optimise(self, **kwargs):
         # load dataset and hold in class
         #  dataset
         pass
@@ -460,7 +462,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def fit(self, X, y, **kwargs) -> "OxariPipeline":
         is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
-        self.estimator = self.estimator.fit(X[~is_na], y[~is_na], **kwargs)
+        self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
         return self
 
     def clone(self):
@@ -526,18 +528,18 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         return results
 
 
-class DefaultMetaModel(OxariMetaModel):
-    """
-    A subclass of the Meta model. However this model will also provide confidence intervalls.
-    """
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+# class DefaultMetaModel(OxariMetaModel):
+#     """
+#     A subclass of the Meta model. However this model will also provide confidence intervalls.
+#     """
+#     def __init__(self, **kwargs) -> None:
+#         super().__init__(**kwargs)
 
-    def add_pipeline(self, scope: int, pipeline: OxariPipeline, ci_strategy:OxariConfidenceEstimator, **kwargs) -> "OxariMetaModel":
-        self.check_scope(scope)
-        pipeline = ci_strategy.set_pipeline(pipeline)
-        self.pipelines[f"scope_{scope}"] = pipeline
-        return self
+#     def add_pipeline(self, scope: int, pipeline: OxariPipeline, ci_strategy:OxariConfidenceEstimator, **kwargs) -> "OxariMetaModel":
+#         self.check_scope(scope)
+#         pipeline = ci_strategy.set_pipeline(pipeline)
+#         self.pipelines[f"scope_{scope}"] = pipeline
+#         return self
 
 class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, abc.ABC):
     def __init__(self):

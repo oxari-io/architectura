@@ -23,48 +23,58 @@ from pprint import pprint
 
 if "intel" in platform.processor().lower():
     from sklearnex import patch_sklearn
-    patch_sklearn()    
+    patch_sklearn()
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
 if __name__ == "__main__":
 
+    # TODO: Rename dataset
     dataset = CSVDataLoader().run()
-    dp3 = DefaultPipeline(
-        scope=3,
+    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    X = dataset.get_features(OxariDataManager.ORIGINAL)
+    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+    SPLIT_1 = bag.scope_1
+    SPLIT_2 = bag.scope_2
+    SPLIT_3 = bag.scope_3
+
+    dp1 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
-        scope_estimator=PredictMedianEstimator(),
+        imputer=RevenueBucketImputer(),
+        scope_estimator=BayesianRegressionEstimator(),
     )
     dp2 = DefaultPipeline(
-        scope=2,
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=KMeansBucketImputer(),
         scope_estimator=BayesianRegressionEstimator(),
     )
-    dp1 = DefaultPipeline(
-        scope=1,
+    dp3 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=RevenueBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        imputer=BaselineImputer(),
+        scope_estimator=PredictMedianEstimator(),
     )
     model = OxariMetaModel()
     scope_imputer = ScopeImputerPostprocessor(estimator=model)
-    model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset), ci_strategy=JacknifeConfidenceEstimator(pipeline=dp1, n_splits=3))
-    model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset), ci_strategy=JacknifeConfidenceEstimator(pipeline=dp1, n_splits=3))
-    model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset), ci_strategy=JacknifeConfidenceEstimator(pipeline=dp1, n_splits=3))
+    model.add_pipeline(
+        scope=1,
+        pipeline=dp1.optimise(SPLIT_1.train.X, SPLIT_1.train.y).fit(SPLIT_1.train.X, SPLIT_1.train.y).evaluate(SPLIT_1.rem.X, SPLIT_1.rem.y, SPLIT_1.val.X, SPLIT_1.val.y),
+    )
+    model.add_pipeline(
+        scope=2,
+        pipeline=dp2.optimise(SPLIT_2.train.X, SPLIT_2.train.y).fit(SPLIT_2.train.X, SPLIT_2.train.y).evaluate(SPLIT_2.rem.X, SPLIT_2.rem.y, SPLIT_2.val.X, SPLIT_2.val.y),
+    )
+    model.add_pipeline(
+        scope=3,
+        pipeline=dp3.optimise(SPLIT_3.train.X, SPLIT_3.train.y).fit(SPLIT_3.train.X, SPLIT_3.train.y).evaluate(SPLIT_3.rem.X, SPLIT_3.rem.y, SPLIT_3.val.X, SPLIT_3.val.y),
+    )
 
     print("Parameter Configuration")
-    pprint(dp1.get_params(deep=True))
-    print(dp2.get_params(deep=True))
-    print(dp3.get_params(deep=True))
-
-    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    X = dataset.get_features(OxariDataManager.ORIGINAL)
-    X_, Y_ = dataset.get_data(OxariDataManager.ORIGINAL, scope="scope_1")
+    pprint(dp1.get_config(deep=True))
+    print(dp2.get_config(deep=True))
+    print(dp3.get_config(deep=True))
 
     ### EVALUATION RESULTS ###
     print("Eval results")
@@ -79,18 +89,16 @@ if __name__ == "__main__":
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     print(scope_imputed_data)
 
-    
-
     print("\n", "Predict ALL with Model")
     print(model.predict(X))
 
     print("\n", "Predict ALL on Mock data")
     print(model.predict(helper.mock_data()))
 
-    # print("\n", "Compute Confidences")
-    # confidence_intervall_estimator = JacknifeConfidenceEstimator(pipeline=dp1, n_splits=3)
-    # confidence_intervall_estimator = confidence_intervall_estimator.fit(X_, Y_)
-    # print(confidence_intervall_estimator.predict(X))
+    print("\n", "Compute Confidences")
+    confidence_intervall_estimator = JacknifeConfidenceEstimator(pipeline=dp1, n_splits=3)
+    confidence_intervall_estimator = confidence_intervall_estimator.fit(X_1, Y_1)
+    print(confidence_intervall_estimator.predict(X))
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
@@ -99,10 +107,10 @@ if __name__ == "__main__":
     print(lar_imputed_data)
 
     tmp_pipeline = model.get_pipeline(1)
-    
+
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
-    
+
     local_model_saver = LocalMetaModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=model)
     local_lar_saver = LocalLARModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
     local_data_saver = LocalDataSaver(today=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)

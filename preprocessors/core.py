@@ -9,15 +9,14 @@ from base.dataset_loader import OxariDataManager
 import numpy as np
 import pandas as pd
 from base.mappings import CatMapping, NumMapping
-from .helper.custom_scalers import LogarithmScaler, DummyScaler
+from base.helper import DummyScaler
 
 
 class DummyPreprocessor(OxariPreprocessor):
-    def __init__(self, scope_transformer=None, fin_transformer=None, cat_transformer=None, **kwargs):
+    def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(**kwargs)
-        self.fin_transformer = fin_transformer or DummyScaler()
         self.cat_transformer = cat_transformer or ce.OrdinalEncoder()
-        self.scope_transformer = scope_transformer or DummyScaler()
+        self.fin_transformer = fin_transformer or DummyScaler()
         self.scope_columns = NumMapping.get_targets()
         self.financial_columns = NumMapping.get_features()
         self.categorical_columns = CatMapping.get_features()
@@ -27,8 +26,8 @@ class DummyPreprocessor(OxariPreprocessor):
 
     def fit(self, X: pd.DataFrame, y, **kwargs) -> "DummyPreprocessor":
         data = X
-        # log scaling the scopes
-        self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
+        # # log scaling the scopes
+        # self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical
         self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
         # encode categorical
@@ -47,12 +46,12 @@ class DummyPreprocessor(OxariPreprocessor):
 
 
 class BaselinePreprocessor(OxariPreprocessor):
-    def __init__(self, scope_transformer=None, fin_transformer=None, cat_transformer=None, **kwargs):
+    def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(**kwargs)
         self.fin_transformer = fin_transformer or prep.RobustScaler()
         self.cat_transformer = cat_transformer or ce.TargetEncoder()
-        self.scope_transformer = scope_transformer or LogarithmScaler()
-        self.scope_columns = NumMapping.get_targets()
+        # self.scope_transformer = scope_transformer or LogarithmScaler()
+        # self.scope_columns = NumMapping.get_targets()
         self.financial_columns = NumMapping.get_features()
         self.categorical_columns = CatMapping.get_features()
 
@@ -62,12 +61,12 @@ class BaselinePreprocessor(OxariPreprocessor):
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
         data = X
 
-        # log scaling the scopes
-        self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
+        # # log scaling the scopes
+        # self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical
         self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
         # encode categorical
-        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=data[self.scope_columns[0]])
+        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=y)
         # fill missing values
         self.imputer = self.imputer.fit(data[self.financial_columns])
         # reduce dimensionality/feature count
@@ -89,11 +88,11 @@ class BaselinePreprocessor(OxariPreprocessor):
         # data = self.feature_selector.transform(data)
         return data
 
-    def get_params(self, deep=True):
+    def get_config(self, deep=True):
         return {
             **self.fin_transformer.get_params(deep),
-            **self.scope_transformer.get_params(deep),
+            # **self.scope_transformer.get_params(deep),
             **self.cat_transformer.get_params(deep),
-            **self.imputer.get_params(deep),
-            **super().get_params(deep)
+            **self.imputer.get_config(deep),
+            **super().get_config(deep)
         }

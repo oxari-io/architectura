@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # TODO: how many threads? all the models in oneppol? look into this!
     with futures.ProcessPoolExecutor() as pool:
         for model in all_models:
-            for results in pool.map(model.run_pipeline(dataset)):
+            for results in pool.map(model.optimise(dataset)):
                 all_models_trained.append(results)
 
     # Multiprocessing also for evaluation?

@@ -64,36 +64,34 @@ class RevenueBucketImputer(OxariImputer):
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        
-        X.loc[np.isnan(X["revenue"]),["revenue"]] = self.fallback_fallback_value
+        X_new = X.copy()
+        X_new.loc[np.isnan(X_new["revenue"]),["revenue"]] = self.fallback_fallback_value
         for bucket in self.lookup_table_.keys():
             if bucket == "default":
                 continue # Skip the default values
             interval = self.lookup_table_[bucket]["interval"]
 
-            try:
-                # check if the data to impute has revenue that falls between the intervals
-                filter_ = (X["revenue"].between(interval[0], interval[1], inclusive="both"))
+            # check if the data to impute has revenue that falls between the intervals
+            filter_ = (X_new["revenue"].between(interval[0], interval[1], inclusive="both"))
 
-                for column in self.columns_to_fit:
+            for column in self.columns_to_fit:
+                
+                mean_of_column = self.lookup_table_[bucket]["values"][column]
+                default_mean_of_column = self.lookup_table_["default"]["values"][column]
+                is_na = np.isnan(X_new[column])
+                if not np.isnan(mean_of_column):
                     
-                    mean_of_column = self.lookup_table_[bucket]["values"][column]
-                    default_mean_of_column = self.lookup_table_["default"]["values"][column]
-                    is_na = np.isnan(X[column])
-                    if not np.isnan(mean_of_column):
-                        
-                        # TODO: Log how many values are imputed by default or by bucket
-                        X.loc[filter_ & is_na, column] = mean_of_column
-                    else:
-                        X.loc[filter_ & is_na, column] = default_mean_of_column
-                        
+                    # TODO: Log how many values are imputed by default or by bucket
+                    X_new.loc[filter_ & is_na, column] = mean_of_column
+                else:
+                    X_new.loc[filter_ & is_na, column] = default_mean_of_column
+                if X_new.loc[filter_ & is_na, column].isna().sum().sum() > 0:
+                    print("Shit")
+                    raise Exception('Not all values are imputed!')   
 
-            except Exception as e:
-                # in case the data to impute does not have a revenue value that falls between the interval then go to the next iteration
-                print(e)
-                print("Something went massively wrong in REVENUE_IMPUTER")
 
-        return X
+
+        return X_new
 
     @staticmethod
     def _split_in_buckets_per_revenue(data, buckets_number=3):
@@ -117,8 +115,10 @@ class RevenueBucketImputer(OxariImputer):
         split_points = (multiplier * offset) + min_  # (0+20, 326+20, 652+20)
 
         # NOTE: Needs to be fully numpyified
-        split_points = list(split_points)
+        split_points = [-np.inf]
+        split_points.extend(list(split_points))
         split_points.append(max_)
+        split_points.append(np.inf)
 
         lookup_table = {i + 1: {"interval": (split_points[i], split_points[i + 1])} for i in range(buckets_number)}
         lookup_table["default"] = {"interval": (split_points[0], split_points[-1])}

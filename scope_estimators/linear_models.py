@@ -95,6 +95,6 @@ class LinearRegressionEstimator(PolynomialFeaturesMixin, OxariScopeEstimator):
     def check_conformance(self):
         pass
     
-    def get_params(self, deep=True):
-        return {**self._estimator.get_params(), **super().get_params(deep)}
+    def get_config(self, deep=True):
+        return {**self._estimator.get_params(), **super().get_config(deep)}
 

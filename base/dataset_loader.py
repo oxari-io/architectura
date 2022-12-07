@@ -11,10 +11,13 @@ from typing import Dict, List, Union
 import pandas as pd
 import numpy as np
 import abc
-from base.common import OxariMixin
+from base import OxariMixin, OxariTransformer
 # from base.common import OxariMixin
 from base.mappings import CatMapping, NumMapping
 from sklearn.model_selection import train_test_split
+from base.helper import LogarithmScaler, DummyScaler
+from base.oxari_types import ArrayLike
+from collections import namedtuple
 
 
 class DatasourceMixin(abc.ABC):
@@ -91,6 +94,66 @@ class CategoricalLoader(PartialLoader, abc.ABC):
         self.columns = CatMapping.get_features()
 
 
+class SplitBag():
+    class Pair:
+        def __init__(self, X, y) -> None:
+            self.X = X
+            self.y = y
+            self._iter = [self.X, self.y]
+
+        def __len__(self):
+            return 2
+
+        def __iter__(self):
+            return (i for i in self._iter)
+
+        def __getitem__(self, key):
+            return self._iter[key]
+
+    def __init__(self, X: ArrayLike, y: ArrayLike, split_size_val=0.2, split_size_test=0.2, **kwargs) -> None:
+        X_rem, X_test, y_rem, y_test = train_test_split(X, y, test_size=split_size_test)
+        X_train, X_val, y_train, y_val = train_test_split(X_rem, y_rem, test_size=split_size_val)
+        self.rem = SplitBag.Pair(X_rem, y_rem)
+        self.train = SplitBag.Pair(X_train, y_train)
+        self.val = SplitBag.Pair(X_val, y_val)
+        self.test = SplitBag.Pair(X_test, y_test)
+
+
+class SplitScopeDataset():
+    def __init__(
+        self,
+        data: ArrayLike,
+        scope_features=["scope_1", "scope_2", "scope_3"],
+        split_size_val=0.2,
+        split_size_test=0.2,
+    ) -> None:
+        self.data = data
+        self.scope_features = scope_features
+        self.split_size_val = split_size_val
+        self.split_size_test = split_size_test
+        # self.core = self._helper(scope_features)
+
+    @property
+    def scope_1(self):
+        scope_col = "scope_1"
+        return self._helper(scope_col)
+
+    @property
+    def scope_2(self):
+        scope_col = "scope_2"
+        return self._helper(scope_col)
+
+    @property
+    def scope_3(self):
+        scope_col = "scope_3"
+        return self._helper(scope_col)
+
+    def _helper(self, scope_col):
+        columns = self.data.columns.difference(self.scope_features)
+        X = self.data.dropna(how="all", subset=scope_col).copy()
+        return SplitBag(X[columns], X[scope_col], self.split_size_test, self.split_size_test)
+
+
 class OxariDataManager(OxariMixin):
     """
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
@@ -101,7 +164,8 @@ class OxariDataManager(OxariMixin):
     IMPUTED_LARS = 'imputed_lars'
 
     NON_FEATURES = ["isin", "year", "scope_1", "scope_2", "scope_3"]
-    
+    DEPENDENT_FEATURES = ["scope_1", "scope_2", "scope_3"]
+
     def __init__(
         self,
         # object_filename,
@@ -110,26 +174,25 @@ class OxariDataManager(OxariMixin):
         categorical_loader: CategoricalLoader = None,
         other_loaders: Dict[str, PartialLoader] = None,
         verbose=False,
+        scope_transformer: OxariTransformer = None,
         **kwargs,
     ):
         self.scope_loader = scope_loader
+        self.scope_transformer = scope_transformer or LogarithmScaler(scope_features=self.DEPENDENT_FEATURES)
         self.financial_loader = financial_loader
         self.categorical_loader = categorical_loader
         self.other_loaders = other_loaders
         # self.object_filename = object_filename
         self.verbose = verbose
         self._dataset_stack = []
-        self._df_original: pd.DataFrame = None
-        self._df_preprocessed: pd.DataFrame = None
-        self._df_filled: pd.DataFrame = None
-        self._df_estimated: pd.DataFrame = None
         self.threshold = kwargs.pop("threshold", 5)
 
     def run(self, **kwargs) -> "OxariDataManager":
         self.scope_loader = self.scope_loader.run()
         self.financial_loader = self.financial_loader.run()
         self.categorical_loader = self.categorical_loader.run()
-        _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
+        scope_data = self.scope_transformer.fit_transform(self.scope_loader.data)
+        _df_original = scope_data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
         _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
         # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
         self.add_data(OxariDataManager.ORIGINAL, _df_original, "Dataset without changes.")
@@ -146,7 +209,7 @@ class OxariDataManager(OxariMixin):
     def get_data_by_name(self, name: str, scope=None) -> pd.DataFrame:
         for nm, df, descr in self._dataset_stack:
             if name == nm:
-                df:pd.DataFrame = df
+                df: pd.DataFrame = df
                 return df.copy() if not scope else df.dropna(subset=scope, how="all").copy()
 
     def get_data_by_index(self, index: int) -> pd.DataFrame:
@@ -165,6 +228,10 @@ class OxariDataManager(OxariMixin):
         data = self.get_data_by_name(name)
         features = data.columns.difference(self.NON_FEATURES)
         return data[features].copy()
+
+    def get_split_data(self, name: str, non_features=NON_FEATURES, split_size_val=0.2, split_size_test=0.2):
+        data = self.get_data_by_name(name)
+        return SplitScopeDataset(data, non_features, split_size_val, split_size_test)
 
     @staticmethod
     def train_test_val_split(X, y, split_size_test, split_size_val):

@@ -50,7 +50,7 @@ class CSVCategoricalLoader(CategoricalLoader, LocalDatasourceMixin):
 class CSVDataLoader(OxariDataManager):
     def __init__(self,
                 #  object_filename,
-                 scope_loader: ScopeLoader = CSVScopeLoader(path  = DATA_DIR / "scopes.csv"),
+                 scope_loader: ScopeLoader = CSVScopeLoader(path  = DATA_DIR / "scopes.csv"),                 
                  financial_loader: FinancialLoader = CSVFinancialLoader(path = DATA_DIR / "financials.csv"),
                  categorical_loader: CategoricalLoader = CSVCategoricalLoader(path =  DATA_DIR / "categoricals.csv"),
                  other_loaders: Dict[str, PartialLoader] = {},

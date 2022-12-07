@@ -218,7 +218,7 @@ class BucketClassifier(OxariClassifier):
         return self._evaluator.evaluate(y_true, y_pred)
 
     def fit(self, X, y, **kwargs) -> "OxariClassifier":
-        self._estimator.set_params(**self.get_params()).fit(X, y.ravel())
+        self._estimator.set_params(**self.params).fit(X, y.ravel())
         return self
 
     def predict(self, X, **kwargs):
@@ -229,5 +229,5 @@ class BucketClassifier(OxariClassifier):
         self.params = params
         return self
     
-    def get_params(self, deep=True):
+    def get_config(self, deep=True):
         return {**self.params}

@@ -205,7 +205,7 @@ class BucketRegressor(OxariRegressor):
 
         """
         groups = kwargs.get('groups')
-        regressor_kwargs = self.get_params().get("candidates")
+        regressor_kwargs = self.get_config().get("candidates")
         trained_candidates = {}
         for bucket, candidates_data in regressor_kwargs.items():
             selector = groups == bucket
@@ -264,7 +264,7 @@ class BucketRegressor(OxariRegressor):
         self.params = params
         return self
     
-    def get_params(self, deep=True):
+    def get_config(self, deep=True):
         return self.params
 
   

@@ -44,19 +44,19 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=BayesianRegressionEstimator(),
+        scope_estimator=BaselineEstimator(),
     )
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=BayesianRegressionEstimator(),
+        scope_estimator=BaselineEstimator(),
     )
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=BayesianRegressionEstimator(),
+        scope_estimator=BaselineEstimator(),
     )
     model = OxariMetaModel()
     scope_imputer = ScopeImputerPostprocessor(estimator=model)

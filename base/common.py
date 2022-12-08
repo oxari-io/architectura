@@ -175,11 +175,12 @@ class DefaultOptimizer(OxariOptimizer):
 
 class OxariMixin(abc.ABC):
     def __init__(self, name=None, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.object_filename = name or self.__class__.__name__
+        super().__init__()
+        self._name = name or self.__class__.__name__
         self.start_time = None
         self.end_time = None
         self.params = {}
+        
 
     # @abc.abstractmethod
     # def run(self, **kwargs) -> "OxariMixin":

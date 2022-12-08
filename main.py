@@ -27,7 +27,9 @@ if "intel" in platform.processor().lower():
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
+
 if __name__ == "__main__":
+    
 
     # TODO: Rename dataset
     dataset = CSVDataManager().run()

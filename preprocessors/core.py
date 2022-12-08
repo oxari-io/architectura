@@ -71,7 +71,6 @@ class BaselinePreprocessor(OxariPreprocessor):
         self.imputer = self.imputer.fit(data[self.financial_columns])
         # reduce dimensionality/feature count
         # self.feature_selector = self.feature_selector.fit(data.drop(columns=self.scope_columns + ["year", "isin"]))
-
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:

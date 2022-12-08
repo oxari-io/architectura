@@ -1,6 +1,7 @@
 from __future__ import annotations
 import abc
 import csv
+import os
 import numpy as np
 import optuna
 import pandas as pd
@@ -33,11 +34,11 @@ import seaborn as sns
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
 
-# from typing import Union
-# import sklearn
-# import numpy as np
-# import pandas as pd
-# from sklearn.utils.estimator_checks import check_estimator
+from typing import Union
+import sklearn
+import numpy as np
+import pandas as pd
+from sklearn.utils.estimator_checks import check_estimator
 
 
 class OxariLogger:
@@ -174,7 +175,8 @@ class DefaultOptimizer(OxariOptimizer):
 
 class OxariMixin(abc.ABC):
     def __init__(self, name=None, **kwargs) -> None:
-        self._name = name or self.__class__.__name__
+        super().__init__(**kwargs)
+        self.object_filename = name or self.__class__.__name__
         self.start_time = None
         self.end_time = None
         self.params = {}
@@ -191,10 +193,6 @@ class OxariMixin(abc.ABC):
 
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred, **kwargs)
-
-    def set_logger(self, logger: OxariLogger) -> "OxariMixin":
-        self._logger = logger
-        return self
 
     def set_evaluator(self, evaluator: OxariEvaluator) -> "OxariMixin":
         self._evaluator = evaluator
@@ -279,6 +277,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
 
 class OxariPreprocessor(OxariTransformer, abc.ABC):
     def __init__(self, imputer: OxariImputer = None, **kwargs):
+        super().__init__(**kwargs)
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
@@ -304,6 +303,8 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
     def set_imputer(self, imputer: OxariImputer) -> "OxariPreprocessor":
         self.imputer = imputer
         return self
+
+
 
     # def set_feature_selector(self, feature_selector: OxariFeatureSelector) -> "OxariPreprocessor":
     #     self.feature_selector = feature_selector

@@ -42,6 +42,7 @@ class PCAFeatureSelector(OxariFeatureReducer):
         reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
         new_X_reduced = self.merge(new_X, reduced_features, self._features)
         return new_X_reduced
+        #print(new_X_reduced)
 
 
 class ModifiedLocallyLinearEmbedding(OxariFeatureReducer):

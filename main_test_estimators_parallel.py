@@ -29,8 +29,12 @@ class Runner(object):
         self.eval_data = eval_data
 
     def run(self, model: OxariPipeline):
-        return model.optimise(*self.optimize_data).fit(*self.fit_data).evaluate(*self.eval_data)
-
+        try:
+            return model.optimise(*self.optimize_data).fit(*self.fit_data).evaluate(*self.eval_data)
+        except Exception as e:
+            print("Something went wrong!")
+            print(e)
+            return model.evaluation_results
 
 if __name__ == "__main__":
 
@@ -43,13 +47,13 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
     model_list = [
         # REVIEWME: which sampler do the optimizer for the following estimator use?
-        LinearRegressionEstimator,
+        # LinearRegressionEstimator,
         BayesianRegressionEstimator,
         DummyEstimator,
         BaselineEstimator,
         PredictMeanEstimator,
         PredictMedianEstimator,
-        MiniModelArmyEstimator,
+        # MiniModelArmyEstimator,
         # GaussianProcessEstimator,
     ]
     all_imputers = [
@@ -83,7 +87,7 @@ if __name__ == "__main__":
 
     runner = Runner(optimize_data, fit_data, eval_data)
     # TODO: Implement failsafe with try-except and interative csv writing
-    with futures.ProcessPoolExecutor() as pool:
+    with futures.ProcessPoolExecutor(8) as pool:
         for model in pool.map(runner.run, all_models):
             all_models_trained.append(model.evaluation_results)
 

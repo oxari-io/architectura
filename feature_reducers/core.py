@@ -4,9 +4,13 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.manifold import Isomap, MDS, SpectralEmbedding, LocallyLinearEmbedding
+<<<<<<< HEAD
 
 # from factor_analyzer import FactorAnalyzer
 # from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity, calculate_kmo
+=======
+from sklearn.decomposition import FactorAnalysis, LatentDirichletAllocation
+>>>>>>> main
 
 
 # https://datascience.stackexchange.com/questions/29572/is-it-possible-to-do-feature-selection-for-unsupervised-machine-learning-problem
@@ -78,6 +82,7 @@ class SpectralEmbedding(OxariFeatureReducer):
         new_X_reduced = self.merge(new_X, reduced_features, self._features)
         return new_X_reduced
 
+<<<<<<< HEAD
     #DOING THIS BECAUSE THERE IS NO "TRANSFORM" METHOD; THERE IS A FIT METHOD BUT IF WE"RE USING
     #THE FIT_TRANSFORM METHOD THEN THE FIT METHOD MUST BE REDUNDANT
     # def fit_transform(self, X:pd.DataFrame, y=None, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -90,6 +95,47 @@ class SpectralEmbedding(OxariFeatureReducer):
     #     new_X = new_X.merge(reduced_features, left_index=True, right_index=True)
     #     return new_X
 
+=======
+
+class FactorAnalysis(OxariFeatureReducer):
+    """This Feature Selector creates factors from the observed variables to represent the common variance 
+    i.e. variance due to correlation among the observed variables."""
+    # Number of components can (and maybe should) change
+    # What's the effect of the rotation parameter? What if it's None?
+    def __init__(self, n_components=5, rotation="varimax", **kwargs):
+        self._dimensionality_reducer = FactorAnalysis(n_components=n_components, rotation=rotation)
+
+    def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
+        return self
+
+    def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        new_X = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        reduced_features.columns = [f"pc_{i}" for i in reduced_features.columns] 
+        new_X = new_X.drop(columns=self._features)
+        new_X = new_X.merge(reduced_features, left_index=True, right_index=True)
+        return new_X
+
+    
+class LatentDirichletAllocation(OxariFeatureReducer):
+    """This Feature Selector is a statistical technique that can extract underlying themes/topics 
+    from a corpus."""
+    # N_COMPONENTS DEFAULT IS 10
+    # If the data size is large, the "ONLINE" update will be much faster than the "BATCH" update
+    def __init__(self, n_components=5, learning_method="batch", **kwargs):
+        self._dimensionality_reducer = LatentDirichletAllocation(n_components=n_components, learning_method=learning_method)
+
+    def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
+        return self
+
+    def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        new_X = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        reduced_features.columns = [f"pc_{i}" for i in reduced_features.columns] 
+        new_X = new_X.drop(columns=self._features)
+        new_X = new_X.merge(reduced_features, left_index=True, right_index=True)
+        return new_X
+>>>>>>> main
 
 # class FactorAnalysis(OxariFeatureReducer):
 #     """This Feature Selector creates factors from the observed variables to represent the common variance

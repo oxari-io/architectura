@@ -58,6 +58,12 @@ class OxariLogger:
         pass
 
 
+class ReducedDataMixin:
+    def get_sample_indices(self, X:ArrayLike) -> ArrayLike:
+        max_size = len(X)//10
+        indices = np.random.randint(0, len(X), max_size)
+        return indices
+
 class OxariEvaluator(abc.ABC):
     def __init__(self, **kwargs) -> None:
         super().__init__()
@@ -162,6 +168,7 @@ class OxariOptimizer(abc.ABC):
         return 0
 
 
+
 class DefaultOptimizer(OxariOptimizer):
     """
     This optimzer does absolutely nothing. 
@@ -189,17 +196,17 @@ class OxariMixin(abc.ABC):
     #     """
     #     return self
 
-    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> OxariMixin:
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
 
-    def evaluate(self, y_true, y_pred, **kwargs):
+    def evaluate(self, y_true, y_pred, **kwargs) -> OxariMixin:
         return self._evaluator.evaluate(y_true, y_pred, **kwargs)
 
-    def set_evaluator(self, evaluator: OxariEvaluator) -> "OxariMixin":
+    def set_evaluator(self, evaluator: OxariEvaluator) -> OxariMixin:
         self._evaluator = evaluator
         return self
 
-    def set_optimizer(self, optimizer: OxariOptimizer) -> "OxariMixin":
+    def set_optimizer(self, optimizer: OxariOptimizer) -> OxariMixin:
         self._optimizer = optimizer
         return self
 
@@ -323,6 +330,10 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         self.set_evaluator(evaluator)
         optimizer = kwargs.pop('optimizer', DefaultOptimizer())
         self.set_optimizer(optimizer)
+
+    # def reduce_sample(self, X:pd.DataFrame) -> ArrayLike:
+    #     X_new = X.sample(len(X)//10)
+    #     return X_new
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
@@ -448,7 +459,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # self.resources_postprocessor = database_deployer
 
     @abc.abstractmethod
-    def optimise(self, **kwargs):
+    def optimise(self, **kwargs) -> OxariPipeline:
         # load dataset and hold in class
         #  dataset
         pass
@@ -462,7 +473,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         X_new = self._preprocess(X, **kwargs)
         return self.estimator.predict(X_new.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore'), **kwargs)
 
-    def fit(self, X, y, **kwargs) -> "OxariPipeline":
+    def fit(self, X, y, **kwargs) -> OxariPipeline:
         is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)

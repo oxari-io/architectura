@@ -1,27 +1,22 @@
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariPipeline
-from preprocessors import BaselinePreprocessor, IIDPreprocessor
+from preprocessors import BaselinePreprocessor, IIDPreprocessor, ImprovedBaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
-from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import BaselineImputer, KMeansBucketImputer, RevenueQuantileBucketImputer
+from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueQuantileBucketImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator, SupportVectorEstimator
 import base
 from base import OxariMetaModel
 import pandas as pd
 # import cPickle as
 import joblib as pkl
 import io
-
+import sklearn
 # import multiprocessing as mp
 from concurrent import futures
-import csv
 
-def run_model(optimize_data, fit_data, eval_data, model):
-    return model.optimise(*optimize_data).fit(*fit_data).evaluate(*eval_data)
-
-
+# NOTE: IIDPreprocessor seems like a much better for most models
 class Runner(object):
     def __init__(self, optimize_data, fit_data, eval_data) -> None:
         self.optimize_data = optimize_data
@@ -36,6 +31,7 @@ class Runner(object):
             print(e)
             return model
 
+
 if __name__ == "__main__":
 
     dataset = CSVDataManager().run()
@@ -46,15 +42,15 @@ if __name__ == "__main__":
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
     model_list = [
-        # REVIEWME: which sampler do the optimizer for the following estimator use?
-        LinearRegressionEstimator,
         BayesianRegressionEstimator,
-        # DummyEstimator,
-        # BaselineEstimator,
-        # PredictMeanEstimator,
-        # PredictMedianEstimator,
-        # MiniModelArmyEstimator,
-        # GaussianProcessEstimator,
+        GaussianProcessEstimator,
+        SupportVectorEstimator,
+        LinearRegressionEstimator,
+        MiniModelArmyEstimator,
+        DummyEstimator,
+        BaselineEstimator,
+        PredictMeanEstimator,
+        PredictMedianEstimator,
     ]
     all_imputers = [
         RevenueQuantileBucketImputer,
@@ -63,7 +59,7 @@ if __name__ == "__main__":
     ]
     all_feature_reducers = [
         PCAFeatureSelector,
-        DummyFeatureReducer,
+        # DummyFeatureReducer,
     ]
     all_preprocessors = [
         IIDPreprocessor,
@@ -86,17 +82,13 @@ if __name__ == "__main__":
     eval_data = SPLIT_1.rem.X, SPLIT_1.rem.y, SPLIT_1.val.X, SPLIT_1.val.y
 
     runner = Runner(optimize_data, fit_data, eval_data)
-    # TODO: Implement failsafe with try-except and interative csv writing
-    
-    with futures.ProcessPoolExecutor(8) as pool:
-        for model in pool.map(runner.run, all_models):
-            print(f"SAVE MODEL {model.name}")
-            all_models_trained.append(model.evaluation_results)
-            eval_results = pd.DataFrame(all_models_trained)
-            eval_results.to_csv('local/eval_results/results_parallel.csv')
-
-    
-    # Multiprocessing also for evaluation?
-    # for model in all_models_trained:
-    #     all_evaluations.append(model.evaluation_results)
-
+    for model in all_models:
+        print(f"\n====================== MODEL: {model.name}")
+        model = runner.run(model)
+        all_models_trained.append(model.evaluation_results)
+        eval_results = pd.json_normalize(all_models_trained)
+        eval_results.to_csv('local/eval_results/results_sequential.csv')
+        try:
+            print(model.predict(SPLIT_1.test.X))
+        except sklearn.exceptions.NotFittedError as e:
+            continue

@@ -12,10 +12,17 @@
             "justMyCode": true
         },
         {
-            "name": "Run Comparison Pipeline",
+            "name": "Run Parallel Pipeline",
             "type": "python",
             "request": "launch",
             "module": "main_test_estimators_parallel",
+            "justMyCode": true
+        },
+        {
+            "name": "Run Sequential Pipeline",
+            "type": "python",
+            "request": "launch",
+            "module": "main_test_estimators_sequential",
             "justMyCode": true
         }
     ]

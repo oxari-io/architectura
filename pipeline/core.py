@@ -28,7 +28,7 @@ class DefaultPipeline(OxariPipeline):
             scope_estimator=scope_estimator or DummyEstimator(),
         )
 
-    def optimise(self, X, y, **kwargs):
+    def optimise(self, X, y, **kwargs) -> OxariPipeline:
         # kwargs.pop("")
         # df_original = dataset.get_data_by_name('original')
         df_processed: pd.DataFrame = self.preprocessor.fit_transform(X,y)
@@ -40,7 +40,7 @@ class DefaultPipeline(OxariPipeline):
         self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
         return self
 
-    def evaluate(self, X_train, y_train, X_val, y_val):
+    def evaluate(self, X_train, y_train, X_val, y_val) -> OxariPipeline:
         X_train = self._preprocess(X_train)
         X_val = self._preprocess(X_val)
         self.estimator = self.estimator.set_params(**self.params).fit(X_train, y_train)

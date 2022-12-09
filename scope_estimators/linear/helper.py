@@ -1,8 +1,9 @@
 from sklearn.preprocessing import PolynomialFeatures
 
 class PolynomialFeaturesMixin:
+    # TODO: Introduce a feature transformer that adds non-polynomial features
     def __init__(self, degree=3, **kwargs) -> None:
-        self.polynomializer = PolynomialFeatures(degree=degree)
+        self.polynomializer = PolynomialFeatures(degree=degree, include_bias=False)
         super().__init__(**kwargs)
         
     def prepare_features(self, X):

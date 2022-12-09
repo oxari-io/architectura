@@ -57,7 +57,7 @@ class LROptimizer(PolynomialFeaturesMixin, OxariOptimizer):
         return study.best_params, df
 
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        alpha = trial.suggest_float("alpha", 0.01, 10.0)
+        alpha = trial.suggest_float("alpha", 0.01, 5.0)
         l1_ratio = trial.suggest_float("l1_ratio", 0.01, 1.0)
         degree = trial.suggest_categorical("degree", list(range(1,5)))
         X_train = self.polynomializer.set_params(degree=degree).fit_transform(X_train)
@@ -78,7 +78,7 @@ class LinearRegressionEstimator(PolynomialFeaturesMixin, OxariScopeEstimator):
         self._optimizer = optimizer or LROptimizer()
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        degree = kwargs.pop("degree", 1)
+        degree = self.params.pop("degree", 1)
         self.polynomializer.set_params(degree=degree)
         self._estimator = self._estimator.set_params(**kwargs).fit(X, y)
         return self

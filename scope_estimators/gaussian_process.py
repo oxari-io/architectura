@@ -1,5 +1,5 @@
 from typing import Union
-from base import OxariScopeEstimator
+from base import OxariScopeEstimator, ReducedDataMixin
 from base.common import OxariOptimizer
 import numpy as np
 import pandas as pd
@@ -11,7 +11,7 @@ from pmdarima.metrics import smape
 STANDARD_KERNEL = kernels.DotProduct() + kernels.WhiteKernel()
 
 
-class GPOptimizer(OxariOptimizer):
+class GPOptimizer(ReducedDataMixin, OxariOptimizer):
     def __init__(self, num_trials=10, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
             num_trials=num_trials,
@@ -65,10 +65,8 @@ class GPOptimizer(OxariOptimizer):
         
         
         kernel = self.compose_kernel(length_scale, alpha, sigma, nu, noise, main_kernel)
-        
-        max_size = len(X_train)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)
+
+        indices = self.get_sample_indices(X_train)      
         model = GaussianProcessRegressor(kernel=kernel, alpha=outer_alpha, n_restarts_optimizer=10).fit(X_train.iloc[indices], y_train.iloc[indices])
         y_pred = model.predict(X_val)
 
@@ -89,18 +87,16 @@ class GPOptimizer(OxariOptimizer):
         return kernel
 
 
-class GaussianProcessEstimator(OxariScopeEstimator):
+class GaussianProcessEstimator(ReducedDataMixin, OxariScopeEstimator):
     def __init__(self, kernel=STANDARD_KERNEL, optimizer=None, **kwargs):
         super().__init__(**kwargs)
         self._gpr = GaussianProcessRegressor(kernel=kernel)
         self._optimizer = optimizer or GPOptimizer()
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        outer_alpha = kwargs.pop('outer_alpha')
-        kernel = self._optimizer.compose_kernel(**kwargs)
-        max_size = len(X)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)        
+        outer_alpha = self.params.pop('outer_alpha')
+        kernel = self._optimizer.compose_kernel(**self.params)
+        indices = self.get_sample_indices(X)      
         self._gpr = self._gpr.set_params(alpha=outer_alpha, kernel=kernel, n_restarts_optimizer=10).fit(X.iloc[indices], y.iloc[indices])
         return self
 

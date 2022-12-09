@@ -1,5 +1,5 @@
 from typing import Union
-from base import OxariScopeEstimator
+from base import OxariScopeEstimator, ReducedDataMixin
 from base.common import OxariOptimizer
 import numpy as np
 import pandas as pd
@@ -7,11 +7,12 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 import sklearn.gaussian_process.kernels as kernels
 import optuna
 from pmdarima.metrics import smape
+from sklearn.metrics import mean_tweedie_deviance, mean_absolute_error
 from sklearn import linear_model
 from .linear.helper import PolynomialFeaturesMixin
 
 
-class BayesianRegressorOptimizer(PolynomialFeaturesMixin, OxariOptimizer):
+class BayesianRegressorOptimizer(PolynomialFeaturesMixin, ReducedDataMixin, OxariOptimizer):
     def __init__(self, num_trials=50, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
             num_trials=num_trials,
@@ -53,33 +54,39 @@ class BayesianRegressorOptimizer(PolynomialFeaturesMixin, OxariOptimizer):
 
         return study.best_params, df
 
-    def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        alpha_1 = trial.suggest_float("alpha_1", 1e-6, 1.0, log=True)
-        alpha_2 = trial.suggest_float("alpha_2", 1e-6, 1.0, log=True)
-        lambda_1 = trial.suggest_float("lambda_1", 1e-6, 1.0, log=True)
-        lambda_2 = trial.suggest_float("lambda_2", 1e-6, 1.0, log=True)
+    def score_trial(self, trial: optuna.Trial, X_train:pd.DataFrame, y_train, X_val, y_val, **kwargs):
+        alpha_1 = trial.suggest_float("alpha_1", 1e-8, 1e-5, log=True)
+        alpha_2 = trial.suggest_float("alpha_2", 1e-8, 1e-5, log=True)
+        lambda_1 = trial.suggest_float("lambda_1", 1e-8, 0.5, log=True)
+        lambda_2 = trial.suggest_float("lambda_2", 1e-8, 0.5, log=True)
         n_iter = trial.suggest_int("n_iter", 100, 500, step=100)
-        degree = trial.suggest_int("degree", 1, 5)
-        X_train = self.polynomializer.set_params(degree=degree).fit_transform(X_train)
+        degree = trial.suggest_int("degree", 1, 10)
+        X_train, y_train = self.polynomializer.set_params(degree=degree).fit_transform(X_train), y_train.values
+        indices = self.get_sample_indices(X_train)      
         X_val = self.polynomializer.set_params(degree=degree).fit_transform(X_val)
-        model = linear_model.ARDRegression(n_iter=n_iter, alpha_1=alpha_1, alpha_2=alpha_2, lambda_1=lambda_1, lambda_2=lambda_2).fit(X_train, y_train)
+        model = linear_model.BayesianRidge(n_iter=n_iter, alpha_1=alpha_1, alpha_2=alpha_2, lambda_1=lambda_1, lambda_2=lambda_2).fit(X_train[indices], y_train[indices])
         y_pred = model.predict(X_val)
 
         return smape(y_true=y_val, y_pred=y_pred)
 
 
-class BayesianRegressionEstimator(PolynomialFeaturesMixin, OxariScopeEstimator):
+class BayesianRegressionEstimator(PolynomialFeaturesMixin, ReducedDataMixin, OxariScopeEstimator):
+    """
+    This estimator uses a bayesian version of linear regression. 
+    """
+    
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = linear_model.ARDRegression()
+        self._estimator = linear_model.BayesianRidge()
         # TODO: Add polynomializer to estimation and optimization - Degreese 1-3
         # self._polynomializer = PolynomialFeatures()
         self._optimizer = optimizer or BayesianRegressorOptimizer()
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        degree = kwargs.pop("degree", 1)
+        degree = self.params.pop("degree", 1)
         self.polynomializer.set_params(degree=degree)
-        self._estimator = self._estimator.set_params(**kwargs).fit(X, y)
+        indices = self.get_sample_indices(X)      
+        self._estimator = self._estimator.set_params(**kwargs).fit(X.iloc[indices], y.iloc[indices])
         return self
 
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:

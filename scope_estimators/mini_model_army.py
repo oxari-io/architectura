@@ -36,8 +36,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
     def get_config(self, deep=True):
         result = {"n_buckets":self.n_buckets, **super().get_config(deep)}
         if deep:
-            rgs_params_without_overhead = {k1:m.get('best_params') for k1,v in self.bucket_rg.get_config().get('candidates').items() for k2, m in v.items() if k2!="model"}
-            result = {**result, "cls":self.bucket_cl.get_config(), "rgs":rgs_params_without_overhead}
+            result = {**result, "cls":self.bucket_cl.get_config(), "rgs":self.bucket_rg.params}
         return {**result}
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):

@@ -60,7 +60,9 @@ class DefaultPipeline(OxariPipeline):
             "preprocessor": self.preprocessor.name,
             "feature_selector": self.feature_selector.name,
             "scope_estimator": self.estimator.name,
+            
             **super().evaluation_results,
+            "optimal_params":self.params,
         }
 
     # TODO: Should be get_config
@@ -74,6 +76,7 @@ class DefaultPipeline(OxariPipeline):
 
 
 class ConfidenceEstimatorPipeline(DefaultPipeline):
+    """deprecated"""
     def __init__(
         self,
         scope: int,

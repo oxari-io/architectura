@@ -495,6 +495,8 @@ class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
 
     def set_pipeline(self, pipeline:OxariPipeline):
         self.estimator = pipeline
+        
+    
 
 class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
@@ -517,7 +519,15 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         return self.pipelines[f"scope_{scope}"]
 
     def fit(self, X, y=None, **kwargs):
-        pass
+        scope = kwargs.pop("scope", "all")
+        if scope == "all":
+            return self._fit_all(X,y,**kwargs)
+        return self.get_pipeline(scope).fit(X, y[scope],**kwargs)
+    
+    def _fit_all(self, X, y=None, **kwargs) -> ArrayLike:
+        for scope_str, estimator in self.pipelines.items():
+            estimator.fit(X, y[scope_str], **kwargs)
+        return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
@@ -532,6 +542,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
             y_pred = estimator.predict(X, **kwargs)
             result[scope_str] = y_pred
         return result
+
 
     def collect_eval_results(self) -> List[dict]:
         results = []

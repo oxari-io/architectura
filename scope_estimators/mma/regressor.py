@@ -108,9 +108,9 @@ class RegressorOptimizer(OxariOptimizer):
                 candidates[bucket_name][name]["Model"] = Model
                 info[bucket_name][name] = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
-        return {"candidates":candidates}, info
+        return {"candidates": candidates}, info
 
-    def score_trial(self, trial:optuna.Trial, regr_name:str, X_train, y_train, X_val, y_val):
+    def score_trial(self, trial: optuna.Trial, regr_name: str, X_train, y_train, X_val, y_val):
         # TODO: add docstring here
 
         if regr_name == "GBR":
@@ -205,11 +205,11 @@ class BucketRegressor(OxariRegressor):
 
         """
         groups = kwargs.get('groups')
-        regressor_kwargs = self.get_config().get("candidates")
+        regressor_kwargs = dict(self.params.get("candidates"))
         trained_candidates = {}
         for bucket, candidates_data in regressor_kwargs.items():
             selector = groups == bucket
-            
+
             X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3) if np.any(selector) else train_test_split(X, y, test_size=0.3)
             for name, candidate_data in candidates_data.items():
                 best_params = candidate_data.get("best_params")
@@ -222,9 +222,9 @@ class BucketRegressor(OxariRegressor):
                 model_score = smape(y_val, y_pred)
 
                 # the lower the smape the better
-                candidate_data["score"] = 100 - model_score
-                candidate_data["model"] = model
-                trained_candidates[name] = candidate_data
+                # candidate_data["score"] =
+                # candidate_data["model"] = model
+                trained_candidates[name] = {"model": model, "score": 100 - model_score, **candidate_data}
 
             weights = [v["score"] for _, v in trained_candidates.items()]
             models = [(name, v["model"]) for name, v in trained_candidates.items()]
@@ -235,11 +235,11 @@ class BucketRegressor(OxariRegressor):
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
         return best_params, info
-    
+
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred)
-    
-    def predict(self, X:pd.DataFrame, **kwargs):
+
+    def predict(self, X: pd.DataFrame, **kwargs):
         """
         Voting regressor computes prediction
 
@@ -263,8 +263,6 @@ class BucketRegressor(OxariRegressor):
     def set_params(self, **params):
         self.params = params
         return self
-    
+
     def get_config(self, deep=True):
         return self.params
-
-  

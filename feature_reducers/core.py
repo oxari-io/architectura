@@ -90,12 +90,14 @@ class Factor_Analysis(OxariFeatureReducer):
     def __init__(self, n_components=5, rotation="varimax", **kwargs):
         self._dimensionality_reducer = FactorAnalysis(n_components=n_components, rotation=rotation)
 
-    def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
+    def fit(self, X, y=None, **kwargs) -> "Factor_Analysis":
+        self._features = list(kwargs.get('features'))
+        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
         return self
 
     def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
         reduced_features.columns = [f"pc_{i}" for i in reduced_features.columns] 
         new_X = new_X.drop(columns=self._features)
         new_X = new_X.merge(reduced_features, left_index=True, right_index=True)

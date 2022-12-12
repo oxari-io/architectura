@@ -40,6 +40,24 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
         df['lower'] = np.maximum(df['pred'] - self.error_range, 0)
         return df
 
+class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
+    """
+    For Probablistic models that already have a native way to predict the standard deviation.
+    """
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+        return super().fit(X, y, **kwargs)
+
+    def predict(self, X, **kwargs) -> ArrayLike:
+        df = pd.DataFrame()
+        mean_, std_= self.estimator.predict(X, std_return=True)
+        df['upper'] = mean_ + std_
+        df['lower'] = mean_ - std_
+        df['pred'] = mean_ 
+        return df
+
 
 class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
     """

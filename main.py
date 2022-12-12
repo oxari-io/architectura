@@ -9,6 +9,7 @@ from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator
+from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator, BaselineConfidenceEstimator
 import base
 from base import helper
 from base import OxariMetaModel
@@ -45,6 +46,7 @@ if __name__ == "__main__":
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=BayesianRegressionEstimator(),
+        ci_estimator = ProbablisticConfidenceEstimator(),
     )
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),

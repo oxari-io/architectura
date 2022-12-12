@@ -54,17 +54,15 @@ class BayesianRegressorOptimizer(PolynomialFeaturesMixin, ReducedDataMixin, Oxar
 
         return study.best_params, df
 
-    def score_trial(self, trial: optuna.Trial, X_train:pd.DataFrame, y_train, X_val, y_val, **kwargs):
-        alpha_1 = trial.suggest_float("alpha_1", 1e-8, 1e-5, log=True)
-        alpha_2 = trial.suggest_float("alpha_2", 1e-8, 1e-5, log=True)
-        lambda_1 = trial.suggest_float("lambda_1", 1e-8, 0.5, log=True)
-        lambda_2 = trial.suggest_float("lambda_2", 1e-8, 0.5, log=True)
+    def score_trial(self, trial: optuna.Trial, X_train: pd.DataFrame, y_train, X_val, y_val, **kwargs):
+        alpha_1 = trial.suggest_float("alpha_init", 1e-8, 1, log=True)
+        lambda_1 = trial.suggest_float("lambda_init", 1e-8, 1, log=True)
         n_iter = trial.suggest_int("n_iter", 100, 500, step=100)
         degree = trial.suggest_int("degree", 1, 10)
         X_train, y_train = self.polynomializer.set_params(degree=degree).fit_transform(X_train), y_train.values
-        indices = self.get_sample_indices(X_train)      
+        indices = self.get_sample_indices(X_train)
         X_val = self.polynomializer.set_params(degree=degree).fit_transform(X_val)
-        model = linear_model.BayesianRidge(n_iter=n_iter, alpha_1=alpha_1, alpha_2=alpha_2, lambda_1=lambda_1, lambda_2=lambda_2).fit(X_train[indices], y_train[indices])
+        model = linear_model.BayesianRidge(n_iter=n_iter, alpha_init=alpha_1, lambda_init=lambda_1).fit(X_train[indices], y_train[indices])
         y_pred = model.predict(X_val)
 
         return smape(y_true=y_val, y_pred=y_pred)
@@ -74,7 +72,6 @@ class BayesianRegressionEstimator(PolynomialFeaturesMixin, ReducedDataMixin, Oxa
     """
     This estimator uses a bayesian version of linear regression. 
     """
-    
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
         self._estimator = linear_model.BayesianRidge()
@@ -85,7 +82,7 @@ class BayesianRegressionEstimator(PolynomialFeaturesMixin, ReducedDataMixin, Oxa
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         degree = self.params.pop("degree", 1)
         self.polynomializer.set_params(degree=degree)
-        indices = self.get_sample_indices(X)      
+        indices = self.get_sample_indices(X)
         self._estimator = self._estimator.set_params(**kwargs).fit(X.iloc[indices], y.iloc[indices])
         return self
 

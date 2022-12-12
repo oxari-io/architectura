@@ -29,9 +29,8 @@ DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
 
 if __name__ == "__main__":
-    
-
-    # TODO: Rename dataset
+    today = time.strftime('%d-%m-%Y')
+        
     dataset = CSVDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
@@ -44,37 +43,61 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=GLMEstimator(),
+        scope_estimator=LinearRegressionEstimator(),
+    ).optimise(
+        SPLIT_1.train.X,
+        SPLIT_1.train.y,
+    ).fit(
+        SPLIT_1.train.X,
+        SPLIT_1.train.y,
+    ).evaluate(
+        SPLIT_1.rem.X,
+        SPLIT_1.rem.y,
+        SPLIT_1.val.X,
+        SPLIT_1.val.y,
     )
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=GLMEstimator(),
+    ).optimise(
+        SPLIT_2.train.X,
+        SPLIT_2.train.y,
+    ).fit(
+        SPLIT_2.train.X,
+        SPLIT_2.train.y,
+    ).evaluate(
+        SPLIT_2.rem.X,
+        SPLIT_2.rem.y,
+        SPLIT_2.val.X,
+        SPLIT_2.val.y,
     )
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=KMeansBucketImputer(),
         scope_estimator=GLMEstimator(),
+    ).optimise(
+        SPLIT_3.train.X,
+        SPLIT_3.train.y,
+    ).fit(
+        SPLIT_3.train.X,
+        SPLIT_3.train.y,
+    ).evaluate(
+        SPLIT_3.rem.X,
+        SPLIT_3.rem.y,
+        SPLIT_3.val.X,
+        SPLIT_3.val.y,
     )
     model = OxariMetaModel()
-    scope_imputer = ScopeImputerPostprocessor(estimator=model)
-    model.add_pipeline(
-        scope=1,
-        pipeline=dp1.optimise(SPLIT_1.train.X, SPLIT_1.train.y).fit(SPLIT_1.train.X, SPLIT_1.train.y).evaluate(SPLIT_1.rem.X, SPLIT_1.rem.y, SPLIT_1.val.X, SPLIT_1.val.y),
-    )
-    model.add_pipeline(
-        scope=2,
-        pipeline=dp2.optimise(SPLIT_2.train.X, SPLIT_2.train.y).fit(SPLIT_2.train.X, SPLIT_2.train.y).evaluate(SPLIT_2.rem.X, SPLIT_2.rem.y, SPLIT_2.val.X, SPLIT_2.val.y),
-    )
-    model.add_pipeline(
-        scope=3,
-        pipeline=dp3.optimise(SPLIT_3.train.X, SPLIT_3.train.y).fit(SPLIT_3.train.X, SPLIT_3.train.y).evaluate(SPLIT_3.rem.X, SPLIT_3.rem.y, SPLIT_3.val.X, SPLIT_3.val.y),
-    )
+    
+    model.add_pipeline(scope=1, pipeline=dp1)
+    model.add_pipeline(scope=2, pipeline=dp2)
+    model.add_pipeline(scope=3, pipeline=dp3)
 
     print("Parameter Configuration")
-    pprint(dp1.get_config(deep=True))
+    print(dp1.get_config(deep=True))
     print(dp2.get_config(deep=True))
     print(dp3.get_config(deep=True))
 
@@ -86,8 +109,9 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(X, scope=1))
 
+    print("Impute scopes with Model")
+    scope_imputer = ScopeImputerPostprocessor(estimator=model)
     scope_imputed_data = scope_imputer.run(X=DATA)
-    today = time.strftime('%d-%m-%Y')
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     print(scope_imputed_data)
 

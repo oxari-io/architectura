@@ -1,5 +1,5 @@
 from typing import Union
-from base import OxariScopeEstimator, ReducedDataMixin
+from base import OxariScopeEstimator, OxariTransformer, ReducedDataMixin
 from base.common import OxariOptimizer
 import numpy as np
 import pandas as pd
@@ -10,9 +10,10 @@ from pmdarima.metrics import smape
 from sklearn.metrics import mean_tweedie_deviance, mean_absolute_error
 from sklearn import linear_model
 from .linear.helper import PolynomialFeaturesMixin
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
 
-
-class BayesianRegressorOptimizer(PolynomialFeaturesMixin, ReducedDataMixin, OxariOptimizer):
+class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
     def __init__(self, num_trials=50, num_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
             num_trials=num_trials,
@@ -59,16 +60,17 @@ class BayesianRegressorOptimizer(PolynomialFeaturesMixin, ReducedDataMixin, Oxar
         lambda_1 = trial.suggest_float("lambda_init", 1e-8, 1, log=True)
         n_iter = trial.suggest_int("n_iter", 100, 500, step=100)
         degree = trial.suggest_int("degree", 1, 10)
-        X_train, y_train = self.polynomializer.set_params(degree=degree).fit_transform(X_train), y_train.values
+        preprocessor = BayesianRegressionEstimator._prepare_preprocessor(X_train, y_train, degree=degree)
+        X_train = preprocessor.transform(X_train)
+        X_val = preprocessor.transform(X_val)        
         indices = self.get_sample_indices(X_train)
-        X_val = self.polynomializer.set_params(degree=degree).fit_transform(X_val)
-        model = linear_model.BayesianRidge(n_iter=n_iter, alpha_init=alpha_1, lambda_init=lambda_1).fit(X_train[indices], y_train[indices])
+        model = linear_model.BayesianRidge(n_iter=n_iter, alpha_init=alpha_1, lambda_init=lambda_1).fit(X_train[indices], y_train.values[indices])
         y_pred = model.predict(X_val)
 
         return smape(y_true=y_val, y_pred=y_pred)
 
 
-class BayesianRegressionEstimator(PolynomialFeaturesMixin, ReducedDataMixin, OxariScopeEstimator):
+class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
     """
     This estimator uses a bayesian version of linear regression. 
     """
@@ -81,10 +83,18 @@ class BayesianRegressionEstimator(PolynomialFeaturesMixin, ReducedDataMixin, Oxa
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         degree = self.params.pop("degree", 1)
-        X_ = self.polynomializer.set_params(degree=degree).fit_transform(X, y)
+        self._sub_preprocessor = BayesianRegressionEstimator._prepare_preprocessor(X, y, degree=degree)
+        X_ = self._sub_preprocessor.transform(X)
         indices = self.get_sample_indices(X_)
-        self._estimator = self._estimator.set_params(**kwargs).fit(X_.iloc[indices], y.iloc[indices])
+        self._estimator = self._estimator.set_params(**kwargs).fit(X_.iloc[indices], y[indices])
         return self
+
+    @staticmethod
+    def _prepare_preprocessor(X, y, **kwargs) -> OxariTransformer:
+        return Pipeline([
+            ('polinomial', PolynomialFeatures(degree=kwargs.pop("degree"), include_bias=False)),
+        ]).fit(X, y, **kwargs)
+
 
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
         return self._estimator.predict(X)

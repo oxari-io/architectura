@@ -365,10 +365,9 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         self.set_evaluator(evaluator)
         optimizer = kwargs.pop('optimizer', DefaultOptimizer())
         self.set_optimizer(optimizer)
+        # This is a model specific preprocessor
+        self._sub_preprocessor:BaseEstimator = None 
 
-    # def reduce_sample(self, X:pd.DataFrame) -> ArrayLike:
-    #     X_new = X.sample(len(X)//10)
-    #     return X_new
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
@@ -386,6 +385,14 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         # Takes X and computes predictions
         # Returns prediction results
         pass
+
+    # def set_preprocessor(self, preprocessor:BaseEstimator):
+    #     self._sub_preprocessor = preprocessor
+        
+    @staticmethod
+    def _prepare_preprocessor(X, y, **kwargs) -> OxariTransformer:
+        return None
+
 
     # @abc.abstractmethod
     def check_conformance(self, ) -> bool:
@@ -498,6 +505,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # load dataset and hold in class
         #  dataset
         pass
+    
+    def evaluate(self, y_true, y_pred, **kwargs) -> OxariPipeline:
+        return super().evaluate(y_true, y_pred, **kwargs)
 
     def _preprocess(self, X, **kwargs) -> ArrayLike:
         X_new = self.preprocessor.transform(X, **kwargs)
@@ -514,7 +524,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
         return self
 
-    def clone(self):
+    def clone(self) -> OxariPipeline:
         # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
         return copy.deepcopy(self, {})
 

@@ -207,8 +207,8 @@ class OxariDataManager(OxariMixin):
     def get_data_by_name(self, name: str, scope=None) -> pd.DataFrame:
         for nm, df, descr in self._dataset_stack:
             if name == nm:
-                df: pd.DataFrame = df
-                return df.copy() if not scope else df.dropna(subset=scope, how="all").copy()
+                df: pd.DataFrame = df.copy().sort_index(axis=1)
+                return df if not scope else df.dropna(subset=scope, how="all")
 
     def get_data_by_index(self, index: int) -> pd.DataFrame:
         return self._dataset_stack[index][1].copy()

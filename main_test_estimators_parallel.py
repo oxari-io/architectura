@@ -1,12 +1,12 @@
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariPipeline
-from preprocessors import BaselinePreprocessor, IIDPreprocessor
+from preprocessors import BaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor, ImprovedBaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueQuantileBucketImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator, GLMEstimator
 import base
 from base import OxariMetaModel
 import pandas as pd
@@ -47,6 +47,7 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
     model_list = [
         # REVIEWME: which sampler do the optimizer for the following estimator use?
+        GLMEstimator,
         LinearRegressionEstimator,
         BayesianRegressionEstimator,
         # DummyEstimator,
@@ -67,6 +68,7 @@ if __name__ == "__main__":
     ]
     all_preprocessors = [
         IIDPreprocessor,
+        ImprovedBaselinePreprocessor,
         BaselinePreprocessor,
     ]
     all_models = [

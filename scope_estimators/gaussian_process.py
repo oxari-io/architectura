@@ -90,18 +90,18 @@ class GPOptimizer(ReducedDataMixin, OxariOptimizer):
 class GaussianProcessEstimator(ReducedDataMixin, OxariScopeEstimator):
     def __init__(self, kernel=STANDARD_KERNEL, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._gpr = GaussianProcessRegressor(kernel=kernel)
+        self._estimator = GaussianProcessRegressor(kernel=kernel)
         self._optimizer = optimizer or GPOptimizer()
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         outer_alpha = self.params.pop('outer_alpha')
         kernel = self._optimizer.compose_kernel(**self.params)
         indices = self.get_sample_indices(X)      
-        self._gpr = self._gpr.set_params(alpha=outer_alpha, kernel=kernel, n_restarts_optimizer=10).fit(X.iloc[indices], y.iloc[indices])
+        self._estimator = self._estimator.set_params(alpha=outer_alpha, kernel=kernel, n_restarts_optimizer=10).fit(X.iloc[indices], y.iloc[indices])
         return self
 
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
-        return self._gpr.predict(X)
+        return self._estimator.predict(X)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
@@ -113,4 +113,4 @@ class GaussianProcessEstimator(ReducedDataMixin, OxariScopeEstimator):
         pass
 
     def get_config(self, deep=True):
-        return {**self._gpr.get_params(), **super().get_config(deep)}
+        return {**self._estimator.get_params(), **super().get_config(deep)}

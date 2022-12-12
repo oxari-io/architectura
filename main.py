@@ -3,12 +3,12 @@ from datetime import date
 from pipeline.core import DefaultPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
-from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor
+from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator
 import base
 from base import helper
 from base import OxariMetaModel
@@ -44,19 +44,19 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=BayesianRegressionEstimator(),
+        scope_estimator=GLMEstimator(),
     )
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=LinearRegressionEstimator(),
+        scope_estimator=GLMEstimator(),
     )
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=GaussianProcessEstimator(),
+        imputer=KMeansBucketImputer(),
+        scope_estimator=GLMEstimator(),
     )
     model = OxariMetaModel()
     scope_imputer = ScopeImputerPostprocessor(estimator=model)

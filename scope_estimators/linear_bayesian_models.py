@@ -81,9 +81,9 @@ class BayesianRegressionEstimator(PolynomialFeaturesMixin, ReducedDataMixin, Oxa
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         degree = self.params.pop("degree", 1)
-        self.polynomializer.set_params(degree=degree)
-        indices = self.get_sample_indices(X)
-        self._estimator = self._estimator.set_params(**kwargs).fit(X.iloc[indices], y.iloc[indices])
+        X_ = self.polynomializer.set_params(degree=degree).fit_transform(X, y)
+        indices = self.get_sample_indices(X_)
+        self._estimator = self._estimator.set_params(**kwargs).fit(X_.iloc[indices], y.iloc[indices])
         return self
 
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:

@@ -60,7 +60,7 @@ class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
         lambda_1 = trial.suggest_float("lambda_init", 1e-8, 1, log=True)
         n_iter = trial.suggest_int("n_iter", 100, 500, step=100)
         degree = trial.suggest_int("degree", 1, 10)
-        preprocessor = BayesianRegressionEstimator._prepare_preprocessor(X_train, y_train, degree=degree)
+        preprocessor = BayesianRegressionEstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
         X_train = preprocessor.transform(X_train)
         X_val = preprocessor.transform(X_val)        
         indices = self.get_sample_indices(X_train)
@@ -83,14 +83,14 @@ class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         degree = self.params.pop("degree", 1)
-        self._sub_preprocessor = BayesianRegressionEstimator._prepare_preprocessor(X, y, degree=degree)
+        self._sub_preprocessor = BayesianRegressionEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)
         indices = self.get_sample_indices(X_)
         self._estimator = self._estimator.set_params(**kwargs).fit(X_.iloc[indices], y[indices])
         return self
 
     @staticmethod
-    def _prepare_preprocessor(X, y, **kwargs) -> OxariTransformer:
+    def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
         return Pipeline([
             ('polinomial', PolynomialFeatures(degree=kwargs.pop("degree"), include_bias=False)),
         ]).fit(X, y, **kwargs)

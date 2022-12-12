@@ -390,7 +390,7 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
     #     self._sub_preprocessor = preprocessor
         
     @staticmethod
-    def _prepare_preprocessor(X, y, **kwargs) -> OxariTransformer:
+    def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
         return None
 
 

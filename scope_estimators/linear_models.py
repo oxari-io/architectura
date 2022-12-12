@@ -66,7 +66,7 @@ class LROptimizer(OxariOptimizer):
         l1_ratio = trial.suggest_float("l1_ratio", 0.01, 1.0)
         degree = trial.suggest_categorical("degree", list(range(1, 5)))
 
-        preprocessor = LinearRegressionEstimator._prepare_preprocessor(X_train, y_train, degree=degree)
+        preprocessor = LinearRegressionEstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
         X_train = preprocessor.transform(X_train)
         X_val = preprocessor.transform(X_val)
 
@@ -84,13 +84,13 @@ class LinearRegressionEstimator(OxariScopeEstimator):
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         degree = self.params.pop("degree", 1)
-        self._sub_preprocessor = LinearRegressionEstimator._prepare_preprocessor(X, y, degree=degree)
+        self._sub_preprocessor = LinearRegressionEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)
         self._estimator = self._estimator.set_params(**self.params).fit(X_, y)
         return self
 
     @staticmethod
-    def _prepare_preprocessor(X, y, **kwargs) -> OxariTransformer:
+    def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
         return Pipeline([
             ('polinomial', PolynomialFeatures(degree=kwargs.pop("degree"), include_bias=False)),
         ]).fit(X, y, **kwargs)
@@ -129,7 +129,7 @@ class GLMOptimizer(OxariOptimizer):
         power = trial.suggest_categorical("power", (2, 3))
         degree = trial.suggest_categorical("degree", list(range(1, 5)))
 
-        preprocessor = GLMEstimator._prepare_preprocessor(X_train, y_train, degree=degree)
+        preprocessor = GLMEstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
         X_train = preprocessor.transform(X_train)
         X_val = preprocessor.transform(X_val)
 
@@ -151,7 +151,7 @@ class GLMEstimator(OxariScopeEstimator):
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         degree = self.params.pop("degree", 1)
-        self._sub_preprocessor = GLMEstimator._prepare_preprocessor(X, y, degree=degree)
+        self._sub_preprocessor = GLMEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)
         self._estimator = self._estimator.set_params(**kwargs).fit(X_, y)
         return self
@@ -161,7 +161,7 @@ class GLMEstimator(OxariScopeEstimator):
         return self._estimator.predict(X_)
 
     @staticmethod
-    def _prepare_preprocessor(X, y, **kwargs) -> OxariTransformer:
+    def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
         return Pipeline([
             ('polinomial', PolynomialFeatures(degree=kwargs.pop("degree"), include_bias=False)),
             ('minmax', MinMaxScaler()),

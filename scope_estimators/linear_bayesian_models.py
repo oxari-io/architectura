@@ -96,9 +96,9 @@ class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
         ]).fit(X, y, **kwargs)
 
 
-    def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         X_ = self._sub_preprocessor.transform(X)
-        return self._estimator.predict(X_)
+        return self._estimator.predict(X_, **kwargs)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)

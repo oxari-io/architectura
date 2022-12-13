@@ -496,7 +496,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.preprocessor = preprocessor
         self.feature_selector = feature_selector
         self.estimator = scope_estimator
-        self.ci_estimator = ci_estimator
+        self.ci_estimator = ci_estimator.set_pipeline(self)
         self._evaluation_results = {}
         self._start_time = None
         self._end_time = None
@@ -542,6 +542,7 @@ class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
 
     def set_pipeline(self, pipeline:OxariPipeline):
         self.estimator = pipeline
+        return self
         
     
 

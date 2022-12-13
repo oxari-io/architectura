@@ -134,7 +134,7 @@ class IIDPreprocessor(BaselinePreprocessor):
     
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         X_new = super().transform(X, **kwargs)
-        X_new = pd.DataFrame(self.overall_scaler.transform(X_new, **kwargs), index=X_new.index, columns=X_new.columns)
+        X_new = pd.DataFrame(self.overall_scaler.transform(X_new), index=X_new.index, columns=X_new.columns)
         return X_new
 
 

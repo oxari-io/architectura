@@ -52,7 +52,7 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
-        mean_, std_= self.estimator.predict(X, std_return=True)
+        mean_, std_= self.estimator.predict(X, return_std=True)
         df['upper'] = mean_ + std_
         df['lower'] = mean_ - std_
         df['pred'] = mean_ 

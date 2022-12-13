@@ -58,7 +58,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=GaussianProcessEstimator(),
+        scope_estimator=BayesianRegressionEstimator(),
         ci_estimator = BaselineConfidenceEstimator(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)
     
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     print(model.predict(helper.mock_data()))
 
     print("\n", "Compute Confidences")
-    confidence_intervall_estimator = JacknifeConfidenceEstimator(pipeline=dp1, n_splits=3)
+    confidence_intervall_estimator = dp1.ci_estimator
     confidence_intervall_estimator = confidence_intervall_estimator.fit(SPLIT_1.train.X, SPLIT_1.train.y)
     print(confidence_intervall_estimator.predict(SPLIT_1.val.X))
 

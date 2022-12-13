@@ -16,6 +16,7 @@ import sklearn
 # import multiprocessing as mp
 from concurrent import futures
 from itertools import product
+import random
 
 
 # NOTE: IIDPreprocessor seems like a much better for most models
@@ -44,13 +45,13 @@ if __name__ == "__main__":
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
     model_list = [
-        BayesianRegressionEstimator,
-        SupportVectorEstimator,
-        LinearRegressionEstimator,
         DummyEstimator,
         BaselineEstimator,
         PredictMeanEstimator,
         PredictMedianEstimator,
+        BayesianRegressionEstimator,
+        SupportVectorEstimator,
+        LinearRegressionEstimator,
         GLMEstimator,
         GaussianProcessEstimator,
         MiniModelArmyEstimator,
@@ -81,6 +82,8 @@ if __name__ == "__main__":
             scope_estimator=Model(),
         ) for Model, Preprocessor, Imputer, FtReducer, idx in all_combinations
     ]
+
+    random.shuffle(all_models)
 
     all_evaluations = []
     all_models_trained = []

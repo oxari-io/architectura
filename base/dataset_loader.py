@@ -177,7 +177,7 @@ class OxariDataManager(OxariMixin):
         **kwargs,
     ):
         self.scope_loader = scope_loader
-        self.scope_transformer = scope_transformer or DummyScaler(scope_features=self.DEPENDENT_FEATURES)
+        self.scope_transformer = scope_transformer or LogarithmScaler(scope_features=self.DEPENDENT_FEATURES)
         self.financial_loader = financial_loader
         self.categorical_loader = categorical_loader
         self.other_loaders = other_loaders

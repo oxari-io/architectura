@@ -21,6 +21,7 @@ class DefaultPipeline(OxariPipeline):
         imputer: OxariImputer = None,
         scope_estimator: OxariScopeEstimator = None,
         ci_estimator: OxariConfidenceEstimator = None,
+        **kwargs,
     ):
         super().__init__(
             # dataset=dataset or CSVDataLoader(),
@@ -28,6 +29,7 @@ class DefaultPipeline(OxariPipeline):
             feature_selector=feature_selector or DummyFeatureReducer(),
             scope_estimator=scope_estimator or DummyEstimator(),
             ci_estimator = ci_estimator,
+            **kwargs,
         )
 
     def optimise(self, X, y, **kwargs) -> OxariPipeline:

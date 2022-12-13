@@ -15,6 +15,8 @@ import io
 import sklearn
 # import multiprocessing as mp
 from concurrent import futures
+from itertools import product
+
 
 # NOTE: IIDPreprocessor seems like a much better for most models
 class Runner(object):
@@ -43,15 +45,15 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
     model_list = [
         BayesianRegressionEstimator,
-        GaussianProcessEstimator,
         SupportVectorEstimator,
         LinearRegressionEstimator,
-        MiniModelArmyEstimator,
         DummyEstimator,
         BaselineEstimator,
         PredictMeanEstimator,
         PredictMedianEstimator,
         GLMEstimator,
+        GaussianProcessEstimator,
+        MiniModelArmyEstimator,
     ]
     all_imputers = [
         RevenueQuantileBucketImputer,
@@ -67,13 +69,17 @@ if __name__ == "__main__":
         BaselinePreprocessor,
         ImprovedBaselinePreprocessor,
     ]
+
+    all_combinations = list(product(model_list, all_preprocessors, all_imputers, all_feature_reducers, range(5)))
+
     all_models = [
         DefaultPipeline(
+            name = f"{Model.__name__}-{idx}",
             preprocessor=Preprocessor(),
             feature_selector=FtReducer(),
             imputer=Imputer(buckets_number=5),
             scope_estimator=Model(),
-        ) for Model in model_list for Preprocessor in all_preprocessors for FtReducer in all_feature_reducers for Imputer in all_imputers
+        ) for Model, Preprocessor, Imputer, FtReducer, idx in all_combinations
     ]
 
     all_evaluations = []

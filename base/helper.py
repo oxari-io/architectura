@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pandas as pd
 
 from typing import Union
@@ -40,9 +41,9 @@ def mock_data():
 class LogarithmScaler(OxariTransformer):
     def __init__(self, name=None, **kwargs) -> None:
         super().__init__(name, **kwargs)
-        self.scope_features = kwargs.pop("scope_features")
+        self.scope_features = kwargs.pop("scope_features", [])
     
-    def fit(self, X, y=None, **kwargs) -> "LogarithmScaler":
+    def fit(self, X, y=None, **kwargs) -> LogarithmScaler:
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -55,7 +56,8 @@ class LogarithmScaler(OxariTransformer):
     
     
 class DummyScaler(OxariTransformer):
-    def fit(self, X, y=None, **kwargs) -> "LogarithmScaler":
+    def fit(self, X, y=None, **kwargs) -> DummyScaler:
+        self.scope_features = kwargs.pop("scope_features", [])
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:

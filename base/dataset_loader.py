@@ -177,7 +177,7 @@ class OxariDataManager(OxariMixin):
         **kwargs,
     ):
         self.scope_loader = scope_loader
-        self.scope_transformer = scope_transformer or LogarithmScaler(scope_features=self.DEPENDENT_FEATURES)
+        self.scope_transformer = scope_transformer or DummyScaler(scope_features=self.DEPENDENT_FEATURES)
         self.financial_loader = financial_loader
         self.categorical_loader = categorical_loader
         self.other_loaders = other_loaders
@@ -189,7 +189,7 @@ class OxariDataManager(OxariMixin):
         self.scope_loader = self.scope_loader.run()
         self.financial_loader = self.financial_loader.run()
         self.categorical_loader = self.categorical_loader.run()
-        scope_data = self.scope_transformer.fit_transform(self.scope_loader.data)
+        scope_data:ArrayLike = self.scope_transformer.fit_transform(self.scope_loader.data)
         _df_original = scope_data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
         _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
         # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data

@@ -532,7 +532,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     @property
     def evaluation_results(self):
-        return {"model": self.estimator.name, **self._evaluation_results}
+        return {"pipeline": self.name, **self._evaluation_results}
 
 class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
     def __init__(self, pipeline: OxariPipeline = None, alpha=0.05, **kwargs) -> None:

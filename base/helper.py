@@ -34,8 +34,8 @@ def mock_data():
             "country_name": "Philippines",
             "sector_name": "Industrials",
     }
-
-    return pd.Series({**num_data, **cat_data}).to_frame().T
+    df = pd.Series({**num_data, **cat_data}).to_frame().T.sort_index(axis=1)
+    return df
     
 class LogarithmScaler(OxariTransformer):
     def __init__(self, name=None, **kwargs) -> None:

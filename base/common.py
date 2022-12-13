@@ -153,12 +153,47 @@ class OxariOptimizer(abc.ABC):
         self.num_startup_trials = num_startup_trials
         self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
 
+    # def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
+    #     """
+    #     Evaluates multiple metrics and returns a dict with all computed scores.
+    #     """
+    #     return {}, pd.DataFrame()
+    
     @abc.abstractmethod
-    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, pd.DataFrame]:
         """
-        Evaluates multiple metrics and returns a dict with all computed scores.
+        Explore the hyperparameter tning space with optuna.
+        Creates csv and pickle files with the saved hyperparameters for classification
+
+        Parameters:
+        X_train (numpy array): training data (features)
+        y_train (numpy array): training data (targets)
+        X_val (numpy array): validation data (features)
+        y_val (numpy array): validation data (targets)
+        num_startup_trials (int): 
+        n_trials (int): 
+
+        Return:
+        study.best_params (data structure): contains the best found parameters within the given space
         """
-        return {}, pd.DataFrame()
+
+        # create optuna study
+        # num_startup_trials is the number of random iterations at the beginiing
+        study = optuna.create_study(
+            study_name=f"{self.__class__.__name__}_process_hp_tuning",
+            direction="minimize",
+            sampler=self.sampler,
+        )
+
+        # running optimization
+        # trials is the full number of iterations
+        
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
+
+        df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
+
+        return study.best_params, df    
+    
 
     @abc.abstractmethod
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs) -> Number:
@@ -330,10 +365,9 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         self.set_evaluator(evaluator)
         optimizer = kwargs.pop('optimizer', DefaultOptimizer())
         self.set_optimizer(optimizer)
+        # This is a model specific preprocessor
+        self._sub_preprocessor:OxariTransformer = None 
 
-    # def reduce_sample(self, X:pd.DataFrame) -> ArrayLike:
-    #     X_new = X.sample(len(X)//10)
-    #     return X_new
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
@@ -351,6 +385,14 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         # Takes X and computes predictions
         # Returns prediction results
         pass
+
+    # def set_preprocessor(self, preprocessor:BaseEstimator):
+    #     self._sub_preprocessor = preprocessor
+        
+    @staticmethod
+    def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
+        return None
+
 
     # @abc.abstractmethod
     def check_conformance(self, ) -> bool:
@@ -465,6 +507,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # load dataset and hold in class
         #  dataset
         pass
+    
+    def evaluate(self, y_true, y_pred, **kwargs) -> OxariPipeline:
+        return super().evaluate(y_true, y_pred, **kwargs)
 
     def _preprocess(self, X, **kwargs) -> ArrayLike:
         X_new = self.preprocessor.transform(X, **kwargs)
@@ -481,7 +526,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
         return self
 
-    def clone(self):
+    def clone(self) -> OxariPipeline:
         # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
         return copy.deepcopy(self, {})
 

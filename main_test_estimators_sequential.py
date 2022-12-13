@@ -5,7 +5,7 @@ from preprocessors import BaselinePreprocessor, IIDPreprocessor, ImprovedBaselin
 from postprocessors import ScopeImputerPostprocessor
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueQuantileBucketImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator, SupportVectorEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator, SupportVectorEstimator, GLMEstimator
 import base
 from base import OxariMetaModel
 import pandas as pd
@@ -43,14 +43,15 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
     model_list = [
         BayesianRegressionEstimator,
-        GaussianProcessEstimator,
+        # GaussianProcessEstimator,
         SupportVectorEstimator,
-        LinearRegressionEstimator,
-        MiniModelArmyEstimator,
+        # LinearRegressionEstimator,
+        # MiniModelArmyEstimator,
         DummyEstimator,
         BaselineEstimator,
         PredictMeanEstimator,
         PredictMedianEstimator,
+        GLMEstimator,
     ]
     all_imputers = [
         RevenueQuantileBucketImputer,
@@ -64,6 +65,7 @@ if __name__ == "__main__":
     all_preprocessors = [
         IIDPreprocessor,
         BaselinePreprocessor,
+        ImprovedBaselinePreprocessor,
     ]
     all_models = [
         DefaultPipeline(

@@ -1,5 +1,5 @@
 from base.dataset_loader import OxariDataManager
-from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, OxariPreprocessor, OxariPipeline
+from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, OxariPreprocessor, OxariPipeline, OxariConfidenceEstimator
 from base import OxariImputer, JacknifeConfidenceEstimator
 
 from dataset_loader.csv_loader import CSVDataManager
@@ -20,12 +20,14 @@ class DefaultPipeline(OxariPipeline):
         feature_selector: OxariFeatureReducer = None,
         imputer: OxariImputer = None,
         scope_estimator: OxariScopeEstimator = None,
+        ci_estimator: OxariConfidenceEstimator = None,
     ):
         super().__init__(
             # dataset=dataset or CSVDataLoader(),
             preprocessor=(preprocessor or BaselinePreprocessor()).set_imputer(imputer or BaselineImputer()),
             feature_selector=feature_selector or DummyFeatureReducer(),
             scope_estimator=scope_estimator or DummyEstimator(),
+            ci_estimator = ci_estimator,
         )
 
     def optimise(self, X, y, **kwargs) -> OxariPipeline:

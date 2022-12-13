@@ -446,6 +446,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         preprocessor: OxariPreprocessor = None,
         feature_selector: OxariFeatureReducer = None,
         scope_estimator: OxariScopeEstimator = None,
+        ci_estimator: OxariConfidenceEstimator = None,
         **kwargs,
     ):
         # self.dataset = dataset
@@ -453,6 +454,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.preprocessor = preprocessor
         self.feature_selector = feature_selector
         self.estimator = scope_estimator
+        self.ci_estimator = ci_estimator
         self._evaluation_results = {}
         self._start_time = None
         self._end_time = None

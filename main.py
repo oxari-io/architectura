@@ -53,12 +53,14 @@ if __name__ == "__main__":
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=LinearRegressionEstimator(),
+        ci_estimator = BaselineConfidenceEstimator(),
     )
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=GaussianProcessEstimator(),
+        ci_estimator = BaselineConfidenceEstimator(),
     )
     model = OxariMetaModel()
     scope_imputer = ScopeImputerPostprocessor(estimator=model)

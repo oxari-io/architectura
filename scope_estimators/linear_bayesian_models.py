@@ -58,13 +58,12 @@ class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
     def score_trial(self, trial: optuna.Trial, X_train: pd.DataFrame, y_train, X_val, y_val, **kwargs):
         alpha_1 = trial.suggest_float("alpha_init", 1e-8, 1, log=True)
         lambda_1 = trial.suggest_float("lambda_init", 1e-8, 1, log=True)
-        n_iter = trial.suggest_int("n_iter", 100, 500, step=100)
         degree = trial.suggest_int("degree", 1, 10)
         preprocessor = BayesianRegressionEstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
         X_train = preprocessor.transform(X_train)
         X_val = preprocessor.transform(X_val)        
         indices = self.get_sample_indices(X_train)
-        model = linear_model.BayesianRidge(n_iter=n_iter, alpha_init=alpha_1, lambda_init=lambda_1).fit(X_train[indices], y_train.values[indices])
+        model = linear_model.BayesianRidge(alpha_init=alpha_1, lambda_init=lambda_1).fit(X_train[indices], y_train.values[indices])
         y_pred = model.predict(X_val)
 
         return smape(y_true=y_val, y_pred=y_pred)
@@ -85,8 +84,9 @@ class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
         degree = self.params.pop("degree", 1)
         self._sub_preprocessor = BayesianRegressionEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)
+        y_ = np.array(y)
         indices = self.get_sample_indices(X_)
-        self._estimator = self._estimator.set_params(**kwargs).fit(X_.iloc[indices], y[indices])
+        self._estimator = self._estimator.set_params(**kwargs).fit(X_[indices], y_[indices])
         return self
 
     @staticmethod
@@ -97,7 +97,8 @@ class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
 
 
     def predict(self, X) -> Union[np.ndarray, pd.DataFrame]:
-        return self._estimator.predict(X)
+        X_ = self._sub_preprocessor.transform(X)
+        return self._estimator.predict(X_)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)

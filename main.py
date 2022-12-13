@@ -30,7 +30,7 @@ from lar_calculator.model_lar import OxariLARCalculator
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
-        
+
     dataset = CSVDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
@@ -43,55 +43,23 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=LinearRegressionEstimator(),
-    ).optimise(
-        SPLIT_1.train.X,
-        SPLIT_1.train.y,
-    ).fit(
-        SPLIT_1.train.X,
-        SPLIT_1.train.y,
-    ).evaluate(
-        SPLIT_1.rem.X,
-        SPLIT_1.rem.y,
-        SPLIT_1.val.X,
-        SPLIT_1.val.y,
-    )
+        scope_estimator=GLMEstimator(),
+    ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=GLMEstimator(),
-    ).optimise(
-        SPLIT_2.train.X,
-        SPLIT_2.train.y,
-    ).fit(
-        SPLIT_2.train.X,
-        SPLIT_2.train.y,
-    ).evaluate(
-        SPLIT_2.rem.X,
-        SPLIT_2.rem.y,
-        SPLIT_2.val.X,
-        SPLIT_2.val.y,
-    )
+        scope_estimator=BayesianRegressionEstimator(),
+    ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=KMeansBucketImputer(),
-        scope_estimator=GLMEstimator(),
-    ).optimise(
-        SPLIT_3.train.X,
-        SPLIT_3.train.y,
-    ).fit(
-        SPLIT_3.train.X,
-        SPLIT_3.train.y,
-    ).evaluate(
-        SPLIT_3.rem.X,
-        SPLIT_3.rem.y,
-        SPLIT_3.val.X,
-        SPLIT_3.val.y,
-    )
-    model = OxariMetaModel()
+        imputer=RevenueQuantileBucketImputer(),
+        scope_estimator=GaussianProcessEstimator(),
+    ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)
     
+    
+    model = OxariMetaModel()
     model.add_pipeline(scope=1, pipeline=dp1)
     model.add_pipeline(scope=2, pipeline=dp2)
     model.add_pipeline(scope=3, pipeline=dp3)

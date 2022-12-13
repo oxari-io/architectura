@@ -366,7 +366,7 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         optimizer = kwargs.pop('optimizer', DefaultOptimizer())
         self.set_optimizer(optimizer)
         # This is a model specific preprocessor
-        self._sub_preprocessor:BaseEstimator = None 
+        self._sub_preprocessor:OxariTransformer = None 
 
 
     @abc.abstractmethod

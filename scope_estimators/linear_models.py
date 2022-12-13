@@ -113,7 +113,7 @@ class LinearRegressionEstimator(OxariScopeEstimator):
 
 
 class GLMOptimizer(OxariOptimizer):
-    def __init__(self, num_trials=20, num_startup_trials=NUM_STARTUP_TRIALS, sampler=None, **kwargs) -> None:
+    def __init__(self, num_trials=50, num_startup_trials=NUM_STARTUP_TRIALS, sampler=None, **kwargs) -> None:
         super().__init__(
             num_trials=num_trials,
             num_startup_trials=num_startup_trials,
@@ -125,8 +125,8 @@ class GLMOptimizer(OxariOptimizer):
         return super().optimize(X_train, y_train, X_val, y_val, **kwargs)
 
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        alpha = trial.suggest_float("alpha", 0.01, 5.0)
-        power = trial.suggest_categorical("power", (2, 3))
+        alpha = trial.suggest_float("alpha", 1e-4, 1.0, log=True)
+        power = trial.suggest_categorical("power", (0, 2, 3))
         degree = trial.suggest_categorical("degree", list(range(1, 5)))
 
         preprocessor = GLMEstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
@@ -137,6 +137,7 @@ class GLMOptimizer(OxariOptimizer):
         model = linear_model.TweedieRegressor(
             alpha=alpha,
             power=power,
+            max_iter=500,
         ).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
@@ -153,7 +154,7 @@ class GLMEstimator(OxariScopeEstimator):
         degree = self.params.pop("degree", 1)
         self._sub_preprocessor = GLMEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)
-        self._estimator = self._estimator.set_params(**kwargs).fit(X_, y)
+        self._estimator = self._estimator.set_params(**kwargs, max_iter=500).fit(X_, y)
         return self
 
     def predict(self, X, **kwargs) -> ArrayLike:

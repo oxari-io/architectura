@@ -496,7 +496,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.preprocessor = preprocessor
         self.feature_selector = feature_selector
         self.estimator = scope_estimator
-        self.ci_estimator = ci_estimator.set_pipeline(self)
+        self.ci_estimator = ci_estimator.set_pipeline(self) if ci_estimator else DummyConfidenceEstimator()
         self._evaluation_results = {}
         self._start_time = None
         self._end_time = None
@@ -544,7 +544,23 @@ class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
         self.estimator = pipeline
         return self
         
-    
+class DummyConfidenceEstimator(OxariConfidenceEstimator):
+    """
+    For Probablistic models that already have a native way to predict the standard deviation.
+    """
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+        return super().fit(X, y, **kwargs)
+
+    def predict(self, X, **kwargs) -> ArrayLike:
+        df = pd.DataFrame()
+        mean_ = self.estimator.predict(X)
+        df['upper'] = mean_ 
+        df['lower'] = mean_ 
+        df['pred'] = mean_ 
+        return df    
 
 class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:

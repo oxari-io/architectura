@@ -43,10 +43,10 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
     model_list = [
         BayesianRegressionEstimator,
-        # GaussianProcessEstimator,
+        GaussianProcessEstimator,
         SupportVectorEstimator,
-        # LinearRegressionEstimator,
-        # MiniModelArmyEstimator,
+        LinearRegressionEstimator,
+        MiniModelArmyEstimator,
         DummyEstimator,
         BaselineEstimator,
         PredictMeanEstimator,

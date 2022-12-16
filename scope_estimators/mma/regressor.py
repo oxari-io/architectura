@@ -72,6 +72,7 @@ class RegressorOptimizer(OxariOptimizer):
         study.best_params (data structure): contains the best found hyperparameters within the given space
         """
         # selecting the models that will be trained to build the voting regressor --> tuple(name, model)
+        # TODO: Use ExtraTree instead of RandomForest as it is much faster with similar performance
         models = [
             # ("GBR", GradientBoostingRegressor), # Is fundamentally the same as XGBOOST but XGBoost is better - https://stats.stackexchange.com/a/282814/361976
             ("RFR", RandomForestRegressor),

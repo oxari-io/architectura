@@ -43,12 +43,12 @@ class PCAFeatureSelector(OxariFeatureReducer):
         return new_X_reduced
 
 
-class ModifiedLocallyLinearEmbedding(OxariFeatureReducer):
+class Modified_Locally_Linear_Embedding(OxariFeatureReducer):
     """This Feature Selector results in a lower-dimensional projection of the data 
     which preserves distances within local neighborhoods. It additionally uses multiple 
     weight vectors in each neighborhood to solve the LLE regularisation problem"""
-    def __init__(self, n_neighbors=5, n_components=5, method="modified", **kwargs):  #are kwargs the parameters of this estimator?
-        self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method)
+    def __init__(self, n_neighbors=5, n_components=5, eigen_solver = "dense", method="modified", **kwargs):  #are kwargs the parameters of this estimator?
+        self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method, eigen_solver=eigen_solver)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         self._features = list(kwargs.get('features'))
@@ -63,24 +63,42 @@ class ModifiedLocallyLinearEmbedding(OxariFeatureReducer):
         return new_X_reduced
 
 
-class SpectralEmbedding(OxariFeatureReducer):
+class Spectral_Embedding(OxariFeatureReducer):
     """This Feature Selector finds a low dimensional representation of the data using 
     a spectral decomposition of the graph Laplacian"""
     def __init__(self, n_components=5, **kwargs):
         self._dimensionality_reducer = SpectralEmbedding(n_components=n_components)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
-        self._features = list(kwargs.get('features'))
-        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+        # self._features = list(kwargs.get('features'))
+        # self._dimensionality_reducer.fit(X[self._features], y)
+        # self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+        print("this is called")
         return self
 
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        self._dimensionality_reducer.fit(X[self._features], y)
-        new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
-        new_X_reduced = self.merge(new_X, reduced_features, self._features)
-        return new_X_reduced
+    def transform(self, X, y=None, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        # self._dimensionality_reducer.fit(X[self._features], y)
+        # new_X = X.copy()
+        # reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        # new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        # return new_X_reduced
+        print("this is also called")
+        return self
 
+    def fit_transform(self, X, y=None, **kwargs) -> Union[np.ndarray, pd.DataFrame]:  
+        self._features = list(kwargs.get('features'))
+        self._dimensionality_reducer.fit(X[self._features], y)
+        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+
+        new_X = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
+        new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        print("this went through")
+        # fit_transform will generate a new embedding space instead of projecting new points 
+        # into the same embedding space used for the reference data. 
+        # Plus the doc-page indicates that the output is an ndarray, not an array-like object (tho that's not an issue???)
+        # new_X_reduced = new_X_reduced.reshape(-1)
+        return new_X_reduced
 
 class Factor_Analysis(OxariFeatureReducer):
     """This Feature Selector creates factors from the observed variables to represent the common variance 
@@ -91,6 +109,9 @@ class Factor_Analysis(OxariFeatureReducer):
         self._dimensionality_reducer = FactorAnalysis(n_components=n_components, rotation=rotation)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
+        self._features = list(kwargs.get('features'))
+        self._dimensionality_reducer.fit(X[self._features], y)        
+        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]      
         return self
 
     def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -102,7 +123,7 @@ class Factor_Analysis(OxariFeatureReducer):
         return new_X
 
     
-class LatentDirichletAllocation(OxariFeatureReducer):
+class Latent_Dirichlet_Allocation(OxariFeatureReducer):
     """This Feature Selector is a statistical technique that can extract underlying themes/topics 
     from a corpus."""
     # N_COMPONENTS DEFAULT IS 10
@@ -111,6 +132,9 @@ class LatentDirichletAllocation(OxariFeatureReducer):
         self._dimensionality_reducer = LatentDirichletAllocation(n_components=n_components, learning_method=learning_method)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
+        self._features = list(kwargs.get('features'))
+        self._dimensionality_reducer.fit(X[self._features], y)        
+        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
         return self
 
     def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:

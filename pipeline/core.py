@@ -35,7 +35,7 @@ class DefaultPipeline(OxariPipeline):
         df_processed: pd.DataFrame = self.preprocessor.fit_transform(df_original)
         dataset.add_data(f"scope_{self.scope}_processed", df_processed, "Dataset after preprocessing.")
         df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_original.columns.difference(list_of_skipped_columns))
-        print(self.feature_selector.labels_)
+        # print(self.feature_selector.labels_)
         dataset.add_data(f"scope_{self.scope}_reduced", df_reduced, "Dataset after feature selection.")
         X, y = df_reduced.drop(columns=list_of_skipped_columns, errors="ignore"), df_reduced[f"scope_{self.scope}"]
 

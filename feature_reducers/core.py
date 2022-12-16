@@ -116,7 +116,7 @@ class Factor_Analysis(OxariFeatureReducer):
 
     def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
         reduced_features.columns = [f"pc_{i}" for i in reduced_features.columns] 
         new_X = new_X.drop(columns=self._features)
         new_X = new_X.merge(reduced_features, left_index=True, right_index=True)

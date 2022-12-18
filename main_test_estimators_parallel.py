@@ -74,7 +74,7 @@ if __name__ == "__main__":
     all_models = [
         DefaultPipeline(
             preprocessor=Preprocessor(),
-            feature_selector=FtReducer(),
+            feature_reducer=FtReducer(),
             imputer=Imputer(buckets_number=5),
             scope_estimator=Model(),
         ) for Model in model_list for Preprocessor in all_preprocessors for FtReducer in all_feature_reducers for Imputer in all_imputers

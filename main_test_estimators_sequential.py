@@ -77,7 +77,7 @@ if __name__ == "__main__":
         DefaultPipeline(
             name = f"{Model.__name__}-{idx}",
             preprocessor=Preprocessor(),
-            feature_selector=FtReducer(),
+            feature_reducer=FtReducer(),
             imputer=Imputer(buckets_number=5),
             scope_estimator=Model(),
         ) for Model, Preprocessor, Imputer, FtReducer, idx in all_combinations

@@ -1,6 +1,7 @@
 from base.dataset_loader import OxariDataManager
 from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, OxariPreprocessor, OxariPipeline, OxariConfidenceEstimator
-from base import OxariImputer, JacknifeConfidenceEstimator
+from base import OxariImputer, JacknifeConfidenceEstimator, OxariTransformer, DummyConfidenceEstimator, DummyScaler
+from base.helper import LogarithmScaler
 
 from dataset_loader.csv_loader import CSVDataManager
 from imputers import BaselineImputer
@@ -16,38 +17,34 @@ class DefaultPipeline(OxariPipeline):
     def __init__(
         self,
         # dataset: OxariDataLoader = None,
-        preprocessor: OxariPreprocessor = None,
-        feature_selector: OxariFeatureReducer = None,
-        imputer: OxariImputer = None,
-        scope_estimator: OxariScopeEstimator = None,
-        ci_estimator: OxariConfidenceEstimator = None,
         **kwargs,
     ):
         super().__init__(
             # dataset=dataset or CSVDataLoader(),
-            preprocessor=(preprocessor or BaselinePreprocessor()).set_imputer(imputer or BaselineImputer()),
-            feature_selector=feature_selector or DummyFeatureReducer(),
-            scope_estimator=scope_estimator or DummyEstimator(),
-            ci_estimator = ci_estimator,
+            preprocessor=kwargs.pop('preprocessor', BaselinePreprocessor()).set_imputer(kwargs.pop('imputer', BaselineImputer())),
+            feature_selector=kwargs.pop('feature_reducer', DummyFeatureReducer()),
+            scope_estimator= kwargs.pop('scope_estimator', DummyEstimator()),
+            ci_estimator = kwargs.pop('ci_estimator', DummyConfidenceEstimator()),
+            scope_transformer = kwargs.pop('scope_transformer', DummyScaler(scope_features=OxariDataManager.DEPENDENT_FEATURES)),
             **kwargs,
         )
 
     def optimise(self, X, y, **kwargs) -> OxariPipeline:
         # kwargs.pop("")
-        # df_original = dataset.get_data_by_name('original')
         df_processed: pd.DataFrame = self.preprocessor.fit_transform(X,y)
-        # dataset.add_data(f"scope_{self.scope}_processed", df_processed, "Dataset after preprocessing.")
         df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
-        # dataset.add_data(f"scope_{self.scope}_reduced", df_reduced, "Dataset after feature selection.")
-        X, y = df_reduced, y
+        y_transformed = self.scope_transformer.fit_transform(X,y)
+        X, y = df_reduced, y_transformed
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)        
         self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
         return self
 
-    def evaluate(self, X_train, y_train, X_val, y_val) -> OxariPipeline:
-        X_val = self._preprocess(X_val)
-        y_pred = self.estimator.predict(X_val)
-        self._evaluation_results = self.estimator.evaluate(y_val, y_pred, X_test=X_val)
+    def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
+        X_test = self._preprocess(X_test)
+        # y_test = self._transform_scope(y_test)
+        y_pred = self.estimator.predict(X_test)
+        y_pred = self.scope_transformer.reverse_transform(y_pred)        
+        self._evaluation_results = self.estimator.evaluate(y_test, y_pred, X_test=X_test)
         return self
 
 
@@ -83,8 +80,11 @@ class CVPipeline(DefaultPipeline):
         # TODO: This is just a start and not completed. It should use smape and R2. Also a postprocessor is probably more appropriate
         tmp_estimator = self.estimator.clone()
         X_train = self._preprocess(X_train, **kwargs)        
-        X_test = self._preprocess(X_test, **kwargs)        
+        X_test = self._preprocess(X_test, **kwargs)  
+        # y_test = self._transform_scope(y_test)
+        # TODO: Needs rework so that all the estimators are actually using their params.
         scores = ms.cross_val_score(estimator=tmp_estimator, X=X_train, y=y_train, cv=10, scoring="neg_mean_absolute_percentage_error", error_score='raise')
         y_pred = self.estimator.predict(X_test)
+        y_pred = self.scope_transformer.reverse_transform(y_pred)
         self._evaluation_results = {"crossval": {"mape": np.mean(scores)}, **self.estimator.evaluate(y_test, y_pred, X_test=X_test)}
         return self

@@ -206,6 +206,7 @@ class BucketRegressor(OxariRegressor):
 
         """
         groups = kwargs.get('groups')
+        # TODO: Doesn't work with CVPipeline as candidates are not set. Needs a fix.
         regressor_kwargs = dict(self.params.get("candidates"))
         trained_candidates = {}
         for bucket, candidates_data in regressor_kwargs.items():

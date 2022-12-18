@@ -1,15 +1,16 @@
 from typing import Union
 from base import OxariScopeEstimator, DefaultRegressorEvaluator
+from base.helper import BucketScopeDiscretizer
 import numpy as np
 import pandas as pd
-from scope_estimators.mma.classifier import BucketClassifier, BucketScopeDiscretizer, ClassifierOptimizer, BucketClassifierEvauator
+from scope_estimators.mma.classifier import BucketClassifier, ClassifierOptimizer, BucketClassifierEvauator
 from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer
-
+from base.oxari_types import ArrayLike
 N_TRIALS = 1
 N_STARTUP_TRIALS = 1
 
 class MiniModelArmyEstimator(OxariScopeEstimator):
-    def __init__(self, n_buckets=5, **kwargs):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
         super().__init__(**kwargs)
         self.n_buckets = n_buckets
         self.discretizer = BucketScopeDiscretizer(self.n_buckets)
@@ -17,21 +18,21 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS)).set_evaluator(DefaultRegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        y_binned = self.discretizer.transform(y)
-        self.bucket_cl:BucketClassifier = self.bucket_cl.set_params(**self.cls).fit(X, y_binned)
+        y_binned = self.discretizer.fit_transform(X, y)
+        self.bucket_cl:BucketClassifier = self.bucket_cl.set_params(**self.params.get("cls", {})).fit(X, y_binned)
         groups = self.bucket_cl.predict(X)
-        self.bucket_rg = self.bucket_rg.set_params(**self.rgs).fit(X, y, groups=groups)
+        self.bucket_rg = self.bucket_rg.set_params(**self.params.get("rgs", {})).fit(X, y, groups=groups)
         return self
 
-    def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+    def predict(self, X, **kwargs) -> ArrayLike:
         y_binned_pred = self.bucket_cl.predict(X)
         y_pred = self.bucket_rg.predict(X, groups=y_binned_pred)
         return y_pred
 
-    def set_params(self, **params):
-        self.cls=params.pop("cls", {})
-        self.rgs=params.pop("rgs", {})
-        return super().set_params(**params)
+    # def set_params(self, **params):
+    #     # self.cls=params.pop("cls", {})
+    #     # self.rgs=params.pop("rgs", {})
+    #     return super().set_params(**params)
     
     def get_config(self, deep=True):
         result = {"n_buckets":self.n_buckets, **super().get_config(deep)}
@@ -40,7 +41,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         return {**result}
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        self.discretizer = self.discretizer.fit(y_train)
+        self.discretizer = self.discretizer.fit(X_train, y_train)
         y_train_binned = self.discretizer.transform(y_train)
         y_val_binned = self.discretizer.transform(y_val)
         best_params_cls, info_cls = self.bucket_cl.optimize(X_train, y_train_binned, X_val, y_val_binned, **kwargs)

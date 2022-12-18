@@ -10,7 +10,6 @@ from tqdm import tqdm
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score, RandomizedSearchCV
 # from model.abstract_base_class import MLModelInterface
-from sklearn.preprocessing import KBinsDiscretizer
 # from model.misc.hyperparams_tuning import tune_hps_classifier
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
 
@@ -65,21 +64,6 @@ class BucketClassifierEvauator(DefaultClassificationEvaluator):
         correct_adjacency = np.abs(y_true[selector_inbetween] - y_pred[selector_inbetween]) <= 1
         return (correct_bottom.sum() + correct_top.sum() + correct_adjacency.sum()) / len(y_pred)
 
-
-class BucketScopeDiscretizer(OxariTransformer):
-    def __init__(self, n_buckets, prefix="bucket_", **kwargs) -> None:
-        super().__init__()
-        self.n_buckets = n_buckets
-        self.prefix = prefix
-        encode = kwargs.pop("encode", "ordinal")
-        self.discretizer = KBinsDiscretizer(n_buckets, encode=encode, **kwargs)
-
-    def fit(self, X, y=None):
-        self.discretizer.fit(X.values[:, None])
-        return self
-
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        return self.discretizer.transform(X.values[:, None], **kwargs)
 
 
 class ClassifierOptimizer(OxariOptimizer):

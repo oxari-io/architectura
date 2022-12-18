@@ -12,6 +12,7 @@ from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, M
 from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator, BaselineConfidenceEstimator
 import base
 from base import helper
+from base.helper import LogarithmScaler
 from base import OxariMetaModel
 import pandas as pd
 # import cPickle as
@@ -19,12 +20,7 @@ import joblib as pkl
 import io
 from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import pathlib
-import platform
 from pprint import pprint
-
-if "intel" in platform.processor().lower():
-    from sklearnex import patch_sklearn
-    patch_sklearn()
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
@@ -40,26 +36,30 @@ if __name__ == "__main__":
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
 
+    # Test what happens if not all the optimise functions are called.
     dp1 = CVPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_selector=PCAFeatureSelector(),
+        feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=BayesianRegressionEstimator(),
-        ci_estimator = ProbablisticConfidenceEstimator(),
+        scope_estimator=MiniModelArmyEstimator(),
+        ci_estimator = BaselineConfidenceEstimator(),
+        scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
     dp2 = CVPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_selector=PCAFeatureSelector(),
+        feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=LinearRegressionEstimator(),
         ci_estimator = BaselineConfidenceEstimator(),
+        scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
     dp3 = CVPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_selector=PCAFeatureSelector(),
+        feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=BayesianRegressionEstimator(),
         ci_estimator = BaselineConfidenceEstimator(),
+        scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)
     
     

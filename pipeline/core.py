@@ -45,16 +45,11 @@ class DefaultPipeline(OxariPipeline):
         return self
 
     def evaluate(self, X_train, y_train, X_val, y_val) -> OxariPipeline:
-        X_train = self._preprocess(X_train)
         X_val = self._preprocess(X_val)
-        self.estimator = self.estimator.set_params(**self.params).fit(X_train, y_train)
-        self._evaluation_results = self._validate_results(X_train, y_train, X_val, y_val)
+        y_pred = self.estimator.predict(X_val)
+        self._evaluation_results = self.estimator.evaluate(y_val, y_pred, X_test=X_val)
         return self
 
-    def _validate_results(self, X_rem, y_rem, X_test, y_test):
-        self.estimator = self.estimator.set_params(**self.params).fit(X_rem, y_rem)
-        y_pred = self.estimator.predict(X_test)
-        return self.estimator.evaluate(y_test, y_pred, X_test=X_test)
 
     @property
     def evaluation_results(self):
@@ -79,32 +74,17 @@ class DefaultPipeline(OxariPipeline):
         }
 
 
-class ConfidenceEstimatorPipeline(DefaultPipeline):
-    """deprecated"""
-    def __init__(
-        self,
-        scope: int,
-        preprocessor: OxariPreprocessor = None,
-        feature_selector: OxariFeatureReducer = None,
-        imputer: OxariImputer = None,
-        scope_estimator: OxariScopeEstimator = None,
-        alpha=0.05,
-    ):
-        super().__init__(scope, preprocessor, feature_selector, imputer, scope_estimator)
-        self.alpha = alpha
 
 
 class CVPipeline(DefaultPipeline):
     # TODO: Implement a version of the default pipeline which makes sure that a proper crossvalidation is run to evaluate the models. Might need to be handled on the Evaluator level.
-    # def run_pipeline(self, dataset: OxariDataManager, scope: int, **kwargs):
-    #     # Basically all similar as above.
-    #     # However, after optimize and setting the parameters not just a test but a proper CV run
 
-    #     raise NotImplementedError()
-
-    def _validate_results(self, X_rem, y_rem, X_test, y_test, *kwargs):
+    def evaluate(self, X_train, y_train, X_test, y_test, **kwargs):
         # TODO: This is just a start and not completed. It should use smape and R2. Also a postprocessor is probably more appropriate
-        scores = ms.cross_val_score(estimator=self.estimator, X=X_rem, y=y_rem, cv=10, scoring="mape")
-        self.estimator = self.estimator.fit(X_rem, y_rem)
+        tmp_estimator = self.estimator.clone()
+        X_train = self._preprocess(X_train, **kwargs)        
+        X_test = self._preprocess(X_test, **kwargs)        
+        scores = ms.cross_val_score(estimator=tmp_estimator, X=X_train, y=y_train, cv=10, scoring="neg_mean_absolute_percentage_error", error_score='raise')
         y_pred = self.estimator.predict(X_test)
         self._evaluation_results = {"crossval": {"mape": np.mean(scores)}, **self.estimator.evaluate(y_test, y_pred, X_test=X_test)}
+        return self

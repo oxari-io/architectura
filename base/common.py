@@ -256,6 +256,10 @@ class OxariMixin(abc.ABC):
     @property
     def name(self):
         return self._name
+
+    def clone(self) -> OxariMixin:
+        # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
+        return copy.deepcopy(self, {})   
     
 class OxariTransformer(OxariMixin, sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
@@ -291,6 +295,7 @@ class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseE
     @abc.abstractmethod
     def predict(self, X, **kwargs) -> ArrayLike:
         pass
+
 
 
 class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):

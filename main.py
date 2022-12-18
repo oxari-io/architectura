@@ -1,6 +1,6 @@
 import time
 from datetime import date
-from pipeline.core import DefaultPipeline
+from pipeline.core import DefaultPipeline, CVPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
@@ -40,21 +40,21 @@ if __name__ == "__main__":
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
 
-    dp1 = DefaultPipeline(
+    dp1 = CVPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=BayesianRegressionEstimator(),
         ci_estimator = ProbablisticConfidenceEstimator(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
-    dp2 = DefaultPipeline(
+    dp2 = CVPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=LinearRegressionEstimator(),
         ci_estimator = BaselineConfidenceEstimator(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
-    dp3 = DefaultPipeline(
+    dp3 = CVPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),

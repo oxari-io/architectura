@@ -73,12 +73,12 @@ class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
     """
     This estimator uses a bayesian version of linear regression. 
     """
-    def __init__(self, optimizer=None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._estimator = linear_model.BayesianRidge()
         # TODO: Add polynomializer to estimation and optimization - Degreese 1-3
         # self._polynomializer = PolynomialFeatures()
-        self._optimizer = optimizer or BayesianRegressorOptimizer()
+        self._optimizer = kwargs.pop("optimizer",BayesianRegressorOptimizer())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         degree = self.params.pop("degree", 1)

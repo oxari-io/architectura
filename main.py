@@ -75,7 +75,8 @@ if __name__ == "__main__":
 
     ### EVALUATION RESULTS ###
     print("Eval results")
-    print(pd.json_normalize(model.collect_eval_results()))
+    eval_results = pd.json_normalize(model.collect_eval_results())
+    print(eval_results)
     print("Predict with Pipeline")
     # print(dp1.predict(X))
     print("Predict with Model only SCOPE1")

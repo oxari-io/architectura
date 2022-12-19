@@ -11,7 +11,6 @@ from scope_estimators import DummyEstimator
 import numpy as np
 import pandas as pd
 from sklearn import model_selection as ms
-from sklearn.model_selection import train_test_split
 
 class DefaultPipeline(OxariPipeline):
     def __init__(
@@ -29,23 +28,7 @@ class DefaultPipeline(OxariPipeline):
             **kwargs,
         )
 
-    def optimise(self, X, y, **kwargs) -> OxariPipeline:
-        # kwargs.pop("")
-        df_processed: pd.DataFrame = self.preprocessor.fit_transform(X,y)
-        df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
-        y_transformed = self.scope_transformer.fit_transform(X,y)
-        X, y = df_reduced, y_transformed
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)        
-        self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
-        return self
 
-    def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
-        X_test = self._preprocess(X_test)
-        # y_test = self._transform_scope(y_test)
-        y_pred = self.estimator.predict(X_test)
-        y_pred = self.scope_transformer.reverse_transform(y_pred)        
-        self._evaluation_results = self.estimator.evaluate(y_test, y_pred, X_test=X_test)
-        return self
 
 
     @property

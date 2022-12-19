@@ -209,10 +209,12 @@ class BucketRegressor(OxariRegressor):
         # TODO: Doesn't work with CVPipeline as candidates are not set. Needs a fix.
         regressor_kwargs = dict(self.params.get("candidates"))
         trained_candidates = {}
+        total = len(regressor_kwargs) * len(list(regressor_kwargs.items())[0][1])
+        pbar = tqdm(desc="MMA-Regressor", total=total)
         for bucket, candidates_data in regressor_kwargs.items():
             selector = groups == bucket
-
-            X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3) if np.any(selector) else train_test_split(X, y, test_size=0.3)
+            is_any = np.any(selector)
+            X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3) if is_any else train_test_split(X, y, test_size=0.3)
             for name, candidate_data in candidates_data.items():
                 best_params = candidate_data.get("best_params")
                 ModelConstructor = candidate_data.get("Model")
@@ -222,15 +224,11 @@ class BucketRegressor(OxariRegressor):
                 y_pred = model.predict(X_val)
 
                 model_score = smape(y_val, y_pred)
-
-                # the lower the smape the better
-                # candidate_data["score"] =
-                # candidate_data["model"] = model
                 trained_candidates[name] = {"model": model, "score": 100 - model_score, **candidate_data}
-
+                pbar.update(1)
             weights = [v["score"] for _, v in trained_candidates.items()]
             models = [(name, v["model"]) for name, v in trained_candidates.items()]
-            self.voting_regressors_[bucket] = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector], y[selector])
+            self.voting_regressors_[bucket] = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
 
         return self
 

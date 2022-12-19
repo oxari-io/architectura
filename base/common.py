@@ -39,6 +39,7 @@ import sklearn
 import numpy as np
 import pandas as pd
 from sklearn.utils.estimator_checks import check_estimator
+from sklearn.model_selection import train_test_split
 
 
 class OxariLogger:
@@ -528,15 +529,6 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._end_time = None
         # self.resources_postprocessor = database_deployer
 
-    @abc.abstractmethod
-    def optimise(self, **kwargs) -> OxariPipeline:
-        # load dataset and hold in class
-        #  dataset
-        pass
-
-    def evaluate(self, y_true, y_pred, **kwargs) -> OxariPipeline:
-        return super().evaluate(y_true, y_pred, **kwargs)
-
     def _preprocess(self, X, **kwargs) -> ArrayLike:
         X_new = self.preprocessor.transform(X, **kwargs)
         X_new = self.feature_selector.transform(X_new, **kwargs)
@@ -547,14 +539,42 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return y_new
 
     def predict(self, X, **kwargs) -> ArrayLike:
-        X_new = self._preprocess(X, **kwargs)
-        return self.estimator.predict(X_new.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore'), **kwargs)
+        return_std = kwargs.pop('return_std', False)
+        X_new = self._preprocess(X, **kwargs).drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore')
+        if return_std:
+            return self.ci_estimator.predict(X_new, **kwargs)
+        return self.estimator.predict(X_new, **kwargs)
 
     def fit(self, X, y, **kwargs) -> OxariPipeline:
         is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
         y = self._transform_scope(y, **kwargs)
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
+        return self
+    
+    def fit_confidence(self, X,y,**kwargs) -> OxariPipeline:
+        is_na = np.isnan(y)
+        # X = self._preprocess(X, **kwargs)
+        # y = self._transform_scope(y, **kwargs)
+        self.ci_estimator = self.ci_estimator.fit(X[~is_na], y[~is_na], **kwargs)
+        return self
+
+
+    def optimise(self, X, y, **kwargs) -> OxariPipeline:
+        df_processed: pd.DataFrame = self.preprocessor.fit_transform(X,y)
+        df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
+        y_transformed = self.scope_transformer.fit_transform(X,y)
+        X, y = df_reduced, y_transformed
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)        
+        self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
+        return self
+
+    def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
+        X_test = self._preprocess(X_test)
+        # y_test = self._transform_scope(y_test)
+        y_pred = self.estimator.predict(X_test)
+        y_pred = self.scope_transformer.reverse_transform(y_pred)        
+        self._evaluation_results = self.estimator.evaluate(y_test, y_pred, X_test=X_test)
         return self
 
     def clone(self) -> OxariPipeline:
@@ -629,6 +649,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
+        return_std = kwargs.pop("return_std", False)
         X = X.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], errors='ignore')
         if scope == "all":
             return self._predict_all(X, **kwargs)

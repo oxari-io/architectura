@@ -7,7 +7,7 @@ import scope_estimators
 import postprocessors
 import imputers
 import feature_reducers
-
+import lar_calculator
 MODULES_TO_PICKLE = [
     base,
     pipeline,
@@ -16,6 +16,7 @@ MODULES_TO_PICKLE = [
     postprocessors,
     imputers,
     feature_reducers,
+    lar_calculator,
 ]
 import time
 from os import PathLike

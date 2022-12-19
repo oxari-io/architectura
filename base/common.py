@@ -64,7 +64,7 @@ class OxariLoggerMixin:
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger_name = self.__class__.__name__
-    
+        
     def debug(self, message):
         self.logger.debug(self.logger_name + "says: " + message)
 

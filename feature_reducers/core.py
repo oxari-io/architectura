@@ -4,13 +4,10 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.manifold import Isomap, MDS, SpectralEmbedding, LocallyLinearEmbedding
-<<<<<<< HEAD
 
 # from factor_analyzer import FactorAnalyzer
 # from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity, calculate_kmo
-=======
 from sklearn.decomposition import FactorAnalysis, LatentDirichletAllocation
->>>>>>> main
 
 
 # https://datascience.stackexchange.com/questions/29572/is-it-possible-to-do-feature-selection-for-unsupervised-machine-learning-problem
@@ -83,7 +80,6 @@ class SpectralEmbedding(OxariFeatureReducer):
         new_X_reduced = self.merge(new_X, reduced_features, self._features)
         return new_X_reduced
 
-<<<<<<< HEAD
     #DOING THIS BECAUSE THERE IS NO "TRANSFORM" METHOD; THERE IS A FIT METHOD BUT IF WE"RE USING
     #THE FIT_TRANSFORM METHOD THEN THE FIT METHOD MUST BE REDUNDANT
     # def fit_transform(self, X:pd.DataFrame, y=None, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -96,7 +92,6 @@ class SpectralEmbedding(OxariFeatureReducer):
     #     new_X = new_X.merge(reduced_features, left_index=True, right_index=True)
     #     return new_X
 
-=======
 
 class FactorAnalysis(OxariFeatureReducer):
     """This Feature Selector creates factors from the observed variables to represent the common variance 
@@ -136,7 +131,6 @@ class LatentDirichletAllocation(OxariFeatureReducer):
         new_X = new_X.drop(columns=self._features)
         new_X = new_X.merge(reduced_features, left_index=True, right_index=True)
         return new_X
->>>>>>> main
 
 # class FactorAnalysis(OxariFeatureReducer):
 #     """This Feature Selector creates factors from the observed variables to represent the common variance

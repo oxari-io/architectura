@@ -31,20 +31,20 @@ if __name__ == "__main__":
     
 
     dataset = CSVDataLoader().run()
-    dp3 = DefaultPipeline(
-        scope=3,
-        preprocessor=BaselinePreprocessor(),
-        feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
-        scope_estimator=PredictMedianEstimator(),
-    )
-    dp2 = DefaultPipeline(
-        scope=2,
-        preprocessor=BaselinePreprocessor(),
-        feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
-        scope_estimator=PredictMeanEstimator(),
-    )
+    # dp3 = DefaultPipeline(
+    #     scope=3,
+    #     preprocessor=BaselinePreprocessor(),
+    #     feature_selector=PCAFeatureSelector(),
+    #     imputer=BaselineImputer(),
+    #     scope_estimator=PredictMedianEstimator(),
+    # )
+    # dp2 = DefaultPipeline(
+    #     scope=2,
+    #     preprocessor=BaselinePreprocessor(),
+    #     feature_selector=PCAFeatureSelector(),
+    #     imputer=BaselineImputer(),
+    #     scope_estimator=PredictMeanEstimator(),
+    # )
     dp1 = DefaultPipeline(
         scope=1,
         preprocessor=BaselinePreprocessor(),

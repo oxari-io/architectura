@@ -201,11 +201,11 @@ class FeatureAgglomeration(OxariFeatureReducer):
         # return new_X_reduced
         return reduced_features
 
-class GausRandProjection(OxariFeatureReducer):
+class GaussRandProjection(OxariFeatureReducer):
     def __init__(self, n_components=10, **kwargs):
         self._dimensionality_reducer = GaussianRandomProjection(n_components=n_components)
 
-    def fit(self, X, y=None, **kwargs) -> "GausRandProjection":
+    def fit(self, X, y=None, **kwargs) -> "GaussRandProjection":
         self._features = list(kwargs.get('features'))
         self._dimensionality_reducer.fit(X[self._features], y)
         # self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]

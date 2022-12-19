@@ -590,10 +590,10 @@ class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
     def __init__(self, pipeline: OxariPipeline = None, alpha=0.05, **kwargs) -> None:
         super().__init__(**kwargs)
         self.alpha = alpha
-        self.estimator = pipeline
+        self.pipeline = pipeline
 
     def set_pipeline(self, pipeline: OxariPipeline):
-        self.estimator = pipeline
+        self.pipeline = pipeline
         return self
 
 
@@ -609,7 +609,7 @@ class DummyConfidenceEstimator(OxariConfidenceEstimator):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
-        mean_ = self.estimator.predict(X)
+        mean_ = self.pipeline.predict(X)
         df['upper'] = mean_
         df['lower'] = mean_
         df['pred'] = mean_
@@ -687,6 +687,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
 class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, abc.ABC):
     def __init__(self):
+        self.params = {}
         pass
 
     @abc.abstractmethod

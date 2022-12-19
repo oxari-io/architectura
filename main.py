@@ -7,7 +7,7 @@ from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import BaselineImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GausRandProjection, SparseRandProjection, Factor_Analysis, Spectral_Embedding, Latent_Dirichlet_Allocation, Modified_Locally_Linear_Embedding
+from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Spectral_Embedding, Latent_Dirichlet_Allocation, Modified_Locally_Linear_Embedding
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
 import base
 from base import helper

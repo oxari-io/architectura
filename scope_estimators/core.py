@@ -9,14 +9,11 @@ class DummyEstimator(OxariScopeEstimator):
         super().__init__(**kwargs)
         
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        self.value = 42
         return self
     
     def predict(self, X) -> ArrayLike:
-        return np.ones(len(X)) * 42
-
-    def check_conformance(self):
-        pass
-
+        return np.ones(len(X)) * self.value
 
 
 class BaselineEstimator(OxariScopeEstimator):
@@ -31,40 +28,31 @@ class BaselineEstimator(OxariScopeEstimator):
     def predict(self, X) -> ArrayLike:
         return np.random.uniform(self.low, self.high, len(X))
     
-    def check_conformance(self):
-        pass
 
-
-
-
-class PredictMedianEstimator(OxariScopeEstimator):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        
+class PredictMedianEstimator(DummyEstimator):        
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        self.median_value = np.median(y)
+        y_ = np.random.choice(y,len(y)//4, replace=False)
+        self.value = np.median(y_)
+        return self
+
+class PredictLowerQuartileEstimator(DummyEstimator):
+    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        y_ = np.random.choice(y,len(y)//4, replace=False)
+        self.value = np.quantile(y_, 0.25)
+        return self
+
+class PredictUpperQuartileEstimator(DummyEstimator):
+    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        y_ = np.random.choice(y,len(y)//4, replace=False)
+        self.value = np.quantile(y_, 0.75)
+        return self
+        
+
+class PredictMeanEstimator(DummyEstimator):        
+    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        y_ = np.random.choice(y,len(y)//4, replace=False)        
+        self.value = np.mean(y_)
         return self
     
-    def predict(self, X) -> ArrayLike:
-        return np.ones(len(X)) * self.median_value 
-    
-    def check_conformance(self):
-        pass
 
-
-
-
-class PredictMeanEstimator(OxariScopeEstimator):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        
-    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        self.mean_value = np.mean(y)
-        return self
-    
-    def predict(self, X) -> ArrayLike:
-        return np.ones(len(X)) * self.mean_value 
-    
-    def check_conformance(self):
-        pass
 

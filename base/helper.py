@@ -1,4 +1,10 @@
+from __future__ import annotations
 import pandas as pd
+
+from typing import Union
+import numpy as np
+import pandas as pd
+from base.common import OxariTransformer, OxariMixin
 
 def mock_data():
     num_data = {
@@ -29,6 +35,32 @@ def mock_data():
             "country_name": "Philippines",
             "sector_name": "Industrials",
     }
+    df = pd.Series({**num_data, **cat_data}).to_frame().T.sort_index(axis=1)
+    return df
+    
+class LogarithmScaler(OxariTransformer):
+    def __init__(self, name=None, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.scope_features = kwargs.pop("scope_features", [])
+    
+    def fit(self, X, y=None, **kwargs) -> LogarithmScaler:
+        return self
 
-    return pd.Series({**num_data, **cat_data}).to_frame().T
+    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        X_new = X.copy()
+        X_new[self.scope_features] = np.log1p(X[self.scope_features])
+        return X_new
+    
+    def reverse_transform(self, X, **kwargs):
+        return np.expm1(X)
+    
+    
+class DummyScaler(OxariTransformer):
+    def fit(self, X, y=None, **kwargs) -> DummyScaler:
+        self.scope_features = kwargs.pop("scope_features", [])
+        return self
+
+    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        return X
+    
     

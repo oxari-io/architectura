@@ -11,21 +11,33 @@ N_STARTUP_TRIALS = 1
 class MiniModelArmyEstimator(OxariScopeEstimator):
     def __init__(self, n_buckets=5, **kwargs):
         super().__init__(**kwargs)
-        self.discretizer = BucketScopeDiscretizer(n_buckets)
+        self.n_buckets = n_buckets
+        self.discretizer = BucketScopeDiscretizer(self.n_buckets)
         self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=N_TRIALS, num_startup_trials=N_STARTUP_TRIALS)).set_evaluator(BucketClassifierEvauator())
         self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS)).set_evaluator(DefaultRegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         y_binned = self.discretizer.transform(y)
-        self.bucket_cl:BucketClassifier = self.bucket_cl.fit(X, y_binned, **kwargs.get("cls"))
+        self.bucket_cl:BucketClassifier = self.bucket_cl.set_params(**self.cls).fit(X, y_binned)
         groups = self.bucket_cl.predict(X)
-        self.bucket_rg = self.bucket_rg.fit(X, y, groups=groups, **kwargs.get("rgs"))
+        self.bucket_rg = self.bucket_rg.set_params(**self.rgs).fit(X, y, groups=groups)
         return self
 
     def predict(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         y_binned_pred = self.bucket_cl.predict(X)
         y_pred = self.bucket_rg.predict(X, groups=y_binned_pred)
         return y_pred
+
+    def set_params(self, **params):
+        self.cls=params.pop("cls", {})
+        self.rgs=params.pop("rgs", {})
+        return super().set_params(**params)
+    
+    def get_config(self, deep=True):
+        result = {"n_buckets":self.n_buckets, **super().get_config(deep)}
+        if deep:
+            result = {**result, "cls":self.bucket_cl.get_config(), "rgs":self.bucket_rg.params}
+        return {**result}
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         self.discretizer = self.discretizer.fit(y_train)

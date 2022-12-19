@@ -47,17 +47,15 @@ class CSVCategoricalLoader(CategoricalLoader, LocalDatasourceMixin):
         return self
 
 
-class CSVDataLoader(OxariDataManager):
+class CSVDataManager(OxariDataManager):
     def __init__(self,
-                #  object_filename,
-                 scope_loader: ScopeLoader = CSVScopeLoader(path  = DATA_DIR / "scopes.csv"),
+                 scope_loader: ScopeLoader = CSVScopeLoader(path  = DATA_DIR / "scopes.csv"),                 
                  financial_loader: FinancialLoader = CSVFinancialLoader(path = DATA_DIR / "financials.csv"),
                  categorical_loader: CategoricalLoader = CSVCategoricalLoader(path =  DATA_DIR / "categoricals.csv"),
                  other_loaders: Dict[str, PartialLoader] = {},
                  verbose=False,
                  **kwargs):
         super().__init__(
-            # object_filename,
             scope_loader,
             financial_loader,
             categorical_loader,
@@ -65,3 +63,5 @@ class CSVDataLoader(OxariDataManager):
             verbose,
             **kwargs,
         )
+
+#inherit form this 

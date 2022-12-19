@@ -81,8 +81,7 @@ class OxariLARCalculator(OxariLinearAnnualReduction):
         # scopes = scopes.loc[scopes["year"].isin(years_range)]
 
         scope_columns = ["scope_1", "scope_2"]
-
-        scopes["scope_1_2"] = scopes[scope_columns].sum(axis=1)
+        scopes = scopes.assign(scope_1_2=scopes[scope_columns].sum(axis=1))
 
         isins = pd.unique(scopes["isin"])
 

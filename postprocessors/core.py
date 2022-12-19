@@ -19,9 +19,9 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         predicted_scope_3 = self.estimator.predict(data, scope=3)
 
         # adding a column that indicates whether the scope has been predicted or was reported
-        data['predicted_s1'] = np.where(data['scope_1'].isnull(), True, False)
-        data['predicted_s2'] = np.where(data['scope_2'].isnull(), True, False)
-        data['predicted_s3'] = np.where(data['scope_3'].isnull(), True, False)
+        data = data.assign(predicted_s1=np.where(data['scope_1'].isnull(), True, False))
+        data = data.assign(predicted_s2=np.where(data['scope_2'].isnull(), True, False)) 
+        data = data.assign(predicted_s3=np.where(data['scope_3'].isnull(), True, False))
         self.imputed = {f"scope_{k.split('_')[1][1]}": v for k, v in dict((data[['predicted_s1', 'predicted_s2', 'predicted_s3']] == True).sum()).items()}
 
         # filling missing values of scopes with model predictions

@@ -1,14 +1,15 @@
 import time
 from datetime import date
 from pipeline.core import DefaultPipeline
-from dataset_loader.csv_loader import CSVDataLoader
+from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
-from preprocessors import BaselinePreprocessor
+from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor
-from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import BaselineImputer
+from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
+from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator
+from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator, BaselineConfidenceEstimator
 import base
 from base import helper
 from base import OxariMetaModel
@@ -19,16 +20,25 @@ import io
 from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import pathlib
 import platform
-import logging
+from pprint import pprint
 
 if "intel" in platform.processor().lower():
     from sklearnex import patch_sklearn
-    patch_sklearn()    
+    patch_sklearn()
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
+
 if __name__ == "__main__":
-    
+    today = time.strftime('%d-%m-%Y')
+
+    dataset = CSVDataManager().run()
+    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    X = dataset.get_features(OxariDataManager.ORIGINAL)
+    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+    SPLIT_1 = bag.scope_1
+    SPLIT_2 = bag.scope_2
+    SPLIT_3 = bag.scope_3
 
     dataset = CSVDataLoader().run()
     # dp3 = DefaultPipeline(
@@ -46,20 +56,37 @@ if __name__ == "__main__":
     #     scope_estimator=PredictMeanEstimator(),
     # )
     dp1 = DefaultPipeline(
-        scope=1,
-        preprocessor=BaselinePreprocessor(),
+        preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),
-        imputer=BaselineImputer(),
-        scope_estimator=BaselineEstimator(),
-    )
+        imputer=RevenueQuantileBucketImputer(),
+        scope_estimator=BayesianRegressionEstimator(),
+        ci_estimator = ProbablisticConfidenceEstimator(),
+    ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
+    dp2 = DefaultPipeline(
+        preprocessor=IIDPreprocessor(),
+        feature_selector=PCAFeatureSelector(),
+        imputer=RevenueQuantileBucketImputer(),
+        scope_estimator=LinearRegressionEstimator(),
+        ci_estimator = BaselineConfidenceEstimator(),
+    ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
+    dp3 = DefaultPipeline(
+        preprocessor=IIDPreprocessor(),
+        feature_selector=PCAFeatureSelector(),
+        imputer=RevenueQuantileBucketImputer(),
+        scope_estimator=BayesianRegressionEstimator(),
+        ci_estimator = BaselineConfidenceEstimator(),
+    ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)
+    
+    
     model = OxariMetaModel()
-    postprocessor = ScopeImputerPostprocessor(estimator=model)
-    model.add_pipeline(scope=1, pipeline=dp1.run_pipeline(dataset))
-    # model.add_pipeline(scope=2, pipeline=dp2.run_pipeline(dataset))
-    # model.add_pipeline(scope=3, pipeline=dp3.run_pipeline(dataset))
+    model.add_pipeline(scope=1, pipeline=dp1)
+    model.add_pipeline(scope=2, pipeline=dp2)
+    model.add_pipeline(scope=3, pipeline=dp3)
 
-
-    X = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    print("Parameter Configuration")
+    print(dp1.get_config(deep=True))
+    print(dp2.get_config(deep=True))
+    print(dp3.get_config(deep=True))
 
     ### EVALUATION RESULTS ###
     print("Eval results")
@@ -69,12 +96,11 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(X, scope=1))
 
-    scope_imputed_data = postprocessor.run(X=X)
-    today = time.strftime('%d-%m-%Y')
+    print("Impute scopes with Model")
+    scope_imputer = ScopeImputerPostprocessor(estimator=model)
+    scope_imputed_data = scope_imputer.run(X=DATA)
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     print(scope_imputed_data)
-
-    
 
     print("\n", "Predict ALL with Model")
     print(model.predict(X))
@@ -82,6 +108,10 @@ if __name__ == "__main__":
     print("\n", "Predict ALL on Mock data")
     print(model.predict(helper.mock_data()))
 
+    print("\n", "Compute Confidences")
+    confidence_intervall_estimator = dp1.ci_estimator
+    confidence_intervall_estimator = confidence_intervall_estimator.fit(SPLIT_1.train.X, SPLIT_1.train.y)
+    print(confidence_intervall_estimator.predict(SPLIT_1.val.X))
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
@@ -90,10 +120,10 @@ if __name__ == "__main__":
     print(lar_imputed_data)
 
     tmp_pipeline = model.get_pipeline(1)
-    
+
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
-    
+
     local_model_saver = LocalMetaModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=model)
     local_lar_saver = LocalLARModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
     local_data_saver = LocalDataSaver(today=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)

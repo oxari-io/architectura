@@ -139,7 +139,6 @@ class OxariSavingManager():
     """
     def __init__(
         self,
-        # object_filename,
         meta_model: MetaModelSaver = None,
         dataset: DataSaver = None,
         lar_model: LARModelSaver = None,

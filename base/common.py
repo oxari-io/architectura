@@ -296,9 +296,12 @@ class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseE
         return self
 
     @abc.abstractmethod
-    def predict(self, X, **kwargs) -> ArrayLike:
+    def predict(self, X:ArrayLike, **kwargs) -> ArrayLike:
         pass
 
+    def _set_meta(self, X:ArrayLike, **kwargs) -> ArrayLike:
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = len(self.feature_names_in_)
 
 class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     """
@@ -527,6 +530,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._evaluation_results = {}
         self._start_time = None
         self._end_time = None
+        self.features = None
         # self.resources_postprocessor = database_deployer
 
     def _preprocess(self, X, **kwargs) -> ArrayLike:
@@ -546,11 +550,14 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return self.estimator.predict(X_new, **kwargs)
 
     def fit(self, X, y, **kwargs) -> OxariPipeline:
+        self._set_meta(X)
         is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
         y = self._transform_scope(y, **kwargs)
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
         return self
+
+
     
     def fit_confidence(self, X,y,**kwargs) -> OxariPipeline:
         is_na = np.isnan(y)
@@ -637,9 +644,10 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         return self.pipelines[f"scope_{scope}"]
 
     def fit(self, X, y=None, **kwargs):
+        self._set_meta(X)
         scope = kwargs.pop("scope", "all")
         if scope == "all":
-            return self._fit_all(X, y, **kwargs)
+            return self._fit_all(X, **kwargs)
         return self.get_pipeline(scope).fit(X, y[scope], **kwargs)
 
     def _fit_all(self, X, y=None, **kwargs) -> ArrayLike:

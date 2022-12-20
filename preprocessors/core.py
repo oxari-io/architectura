@@ -4,12 +4,11 @@ from base import OxariPreprocessor
 import sklearn.preprocessing as prep
 import category_encoders as ce
 import sklearn
-from base.common import OxariMixin, OxariTransformer
+from base.common import OxariMixin, OxariTransformer, DummyScaler
 from base.dataset_loader import OxariDataManager
 import numpy as np
 import pandas as pd
 from base.mappings import CatMapping, NumMapping
-from base.helper import DummyScaler
 
 
 class DummyPreprocessor(OxariPreprocessor):

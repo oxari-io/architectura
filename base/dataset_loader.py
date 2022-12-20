@@ -15,7 +15,7 @@ from base import OxariMixin, OxariTransformer
 # from base.common import OxariMixin
 from base.mappings import CatMapping, NumMapping
 from sklearn.model_selection import train_test_split
-from base.helper import LogarithmScaler, DummyScaler
+from base.helper import LogarithmScaler
 from base.oxari_types import ArrayLike
 from collections import namedtuple
 
@@ -173,11 +173,10 @@ class OxariDataManager(OxariMixin):
         categorical_loader: CategoricalLoader = None,
         other_loaders: Dict[str, PartialLoader] = None,
         verbose=False,
-        scope_transformer: OxariTransformer = None,
         **kwargs,
     ):
         self.scope_loader = scope_loader
-        self.scope_transformer = scope_transformer or LogarithmScaler(scope_features=self.DEPENDENT_FEATURES)
+        # self.scope_transformer = scope_transformer or LogarithmScaler(scope_features=self.DEPENDENT_FEATURES)
         self.financial_loader = financial_loader
         self.categorical_loader = categorical_loader
         self.other_loaders = other_loaders
@@ -189,8 +188,8 @@ class OxariDataManager(OxariMixin):
         self.scope_loader = self.scope_loader.run()
         self.financial_loader = self.financial_loader.run()
         self.categorical_loader = self.categorical_loader.run()
-        scope_data:ArrayLike = self.scope_transformer.fit_transform(self.scope_loader.data)
-        _df_original = scope_data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
+        # scope_data:ArrayLike = self.scope_transformer.fit_transform(self.scope_loader.data)
+        _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
         _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
         # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
         self.add_data(OxariDataManager.ORIGINAL, _df_original, "Dataset without changes.")

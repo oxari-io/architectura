@@ -11,9 +11,9 @@ from sklearn import metrics
 from sklearn import cluster
 import kmedoids
 from base.common import OxariEvaluator, DefaultClusterEvaluator
+from .core import BucketImputerBase
 
-
-class KMeansBucketImputer(OxariImputer):
+class KMeansBucketImputer(BucketImputerBase):
     def __init__(self, buckets_number=3, **kwargs):
         super().__init__(**kwargs)
         self.bucket_number = buckets_number

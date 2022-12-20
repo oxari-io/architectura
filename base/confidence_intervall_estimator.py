@@ -8,6 +8,7 @@ from sklearn.base import MultiOutputMixin
 from sklearn.model_selection import KFold
 from base import OxariConfidenceEstimator
 
+
 # TODO: Implement evaluator that computes the coverage. https://towardsdatascience.com/prediction-intervals-in-python-64b992317b1a
 class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     """
@@ -28,17 +29,19 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
         super().__init__(**kwargs)
 
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
-        y_hat = self.estimator.predict(X, **kwargs)
+        y_hat = self.pipeline.predict(X, **kwargs)
         residuals = pd.DataFrame(np.abs(y_hat - y)).dropna()
-        self.error_range = np.quantile(residuals, q=1-self.alpha)
+        self.error_range = np.quantile(residuals, q=1 - self.alpha)
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
-        df['pred'] = self.estimator.predict(X, **kwargs)
-        df['upper'] = df['pred'] + self.error_range
-        df['lower'] = np.maximum(df['pred'] - self.error_range, 0)
+        mean_ = self.pipeline.predict(X, **kwargs)
+        df['lower'] = mean_ - self.error_range
+        df['pred'] = mean_
+        df['upper'] = mean_ + self.error_range
         return df
+
 
 class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
     """
@@ -52,10 +55,10 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
-        mean_, std_= self.estimator.predict(X, return_std=True)
-        df['upper'] = mean_ + std_
+        mean_, std_ = self.pipeline.predict(X, return_std=True)
         df['lower'] = mean_ - std_
-        df['pred'] = mean_ 
+        df['pred'] = mean_
+        df['upper'] = mean_ + std_
         return df
 
 
@@ -77,15 +80,16 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
         self.n_splits = n_splits
 
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
-        kf = KFold(n_splits=self.n_splits, shuffle=True, random_state=42)
-        for idx, (train_index, test_index) in enumerate(kf.split(X)):
-            print(f"Start Kfold fit number {idx}")
+        kf = KFold(n_splits=self.n_splits, shuffle=True)
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
+        for idx, (train_index, test_index) in tqdm(enumerate(kf.split(X)), total=self.n_splits, desc="Jacknife++ Training"):
             X_train_, X_test_ = X.iloc[train_index], X.iloc[test_index]
             y_train_, y_test_ = y.iloc[train_index], y.iloc[test_index]
-
-            self.estimator.fit(X_train_, y_train_)
-            self._all_estimators.append(self.estimator.clone())
-            self.res.extend(list(y_test_ - self.estimator.predict(X_test_)))
+            new_estimator: OxariRegressor = self.pipeline.estimator.clone()
+            new_estimator.fit(X_train_, y_train_)
+            self._all_estimators.append(new_estimator)
+            self.res.extend(list(y_test_ - new_estimator.predict(X_test_)))
         return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
@@ -103,7 +107,7 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
 
         preds = np.median(y_pred_multi, axis=1)
         df = pd.DataFrame()
+        df['lower'] = bottom
         df['pred'] = preds
         df['upper'] = top
-        df['lower'] = bottom
         return df

@@ -7,9 +7,9 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from base.mappings import NumMapping
 from base.metrics import mape
+from .core import BucketImputerBase
 
-
-class RevenueBucketImputer(OxariImputer):
+class RevenueBucketImputer(BucketImputerBase):
     def __init__(self, buckets_number=3, **kwargs):
         super().__init__(**kwargs)
         self.bucket_number = buckets_number

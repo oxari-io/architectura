@@ -3,7 +3,7 @@ from base.common import OxariImputer
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
-
+import abc
 
 class BaselineImputer(OxariImputer):
     def __init__(self, strategy="median", missing_values=np.nan, verbose=0, copy=True, add_indicator=False, **kwargs):
@@ -24,3 +24,7 @@ class BaselineImputer(OxariImputer):
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         return self._imputer.transform(X, **kwargs)
+    
+class BucketImputerBase(OxariImputer):
+    def get_config(self, deep=True):
+        return {"bucket_number":self.bucket_number, **super().get_config(deep)}

@@ -29,14 +29,17 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
         super().__init__(**kwargs)
 
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
-        y_hat = self.pipeline.predict(X, **kwargs)
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
+        y_hat = self.pipeline.estimator.predict(X, **kwargs)
         residuals = pd.DataFrame(np.abs(y_hat - y)).dropna()
         self.error_range = np.quantile(residuals, q=1 - self.alpha)
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
-        mean_ = self.pipeline.predict(X, **kwargs)
+        X = self.pipeline._preprocess(X)
+        mean_ = self.pipeline.estimator.predict(X, **kwargs)
         df['lower'] = mean_ - self.error_range
         df['pred'] = mean_
         df['upper'] = mean_ + self.error_range
@@ -51,10 +54,13 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
         super().__init__(**kwargs)
 
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
+        X = self.pipeline._preprocess(X)
         mean_, std_ = self.pipeline.predict(X, return_std=True)
         df['lower'] = mean_ - std_
         df['pred'] = mean_
@@ -93,6 +99,7 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
         return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
+        X = self.pipeline._preprocess(X)
         y_pred_multi = np.column_stack([e.predict(X) for e in self._all_estimators])
         ci = np.quantile(self.res, 1 - self.alpha)
         top = []

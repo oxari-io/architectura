@@ -67,11 +67,11 @@ class BucketClassifierEvauator(DefaultClassificationEvaluator):
 
 
 class ClassifierOptimizer(OxariOptimizer):
-    def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.num_trials = num_trials
-        self.num_startup_trials = num_startup_trials
-        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
+        self.n_trials = n_trials
+        self.n_startup_trials = n_startup_trials
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
@@ -100,7 +100,7 @@ class ClassifierOptimizer(OxariOptimizer):
 
         # running optimization
         # trials is the full number of iterations
-        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.n_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
         # df.to_csv(OPTUNA_DIR / f"df_optuna_hps_CL_{self.scope}_buckets_{self.n_buckets}.csv", index=False)

@@ -149,11 +149,11 @@ class DefaultClassificationEvaluator(OxariEvaluator):
 
 
 class OxariOptimizer(abc.ABC):
-    def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__()
-        self.num_trials = num_trials
-        self.num_startup_trials = num_startup_trials
-        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
+        self.n_trials = n_trials
+        self.n_startup_trials = n_startup_trials
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False)
 
     # def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
     #     """
@@ -190,7 +190,7 @@ class OxariOptimizer(abc.ABC):
         # running optimization
         # trials is the full number of iterations
 
-        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.n_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
@@ -373,6 +373,8 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         self.set_evaluator(evaluator)
         optimizer = kwargs.pop('optimizer', DefaultOptimizer())
         self.set_optimizer(optimizer)
+        self.n_trials = kwargs.get("n_trials", 5)
+        self.n_startup_trials = kwargs.get("n_startup_trials", 1)        
         # This is a model specific preprocessor
         self._sub_preprocessor: OxariTransformer = None
 
@@ -580,10 +582,13 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
         X_test = self._preprocess(X_test)
-        # y_test = self._transform_scope(y_test)
-        y_pred = self.estimator.predict(X_test)
-        y_pred = self.scope_transformer.reverse_transform(y_pred)        
-        self._evaluation_results = self.estimator.evaluate(y_test, y_pred, X_test=X_test)
+        X_train = self._preprocess(X_train)
+        y_pred_test = self.estimator.predict(X_test)
+        y_pred_train = self.estimator.predict(X_train)
+        y_pred_test = self.scope_transformer.reverse_transform(y_pred_test)        
+        self._evaluation_results = {}
+        self._evaluation_results["val"] = self.estimator.evaluate(y_test, y_pred_test, X_test=X_train)
+        self._evaluation_results["train"] = self.estimator.evaluate(y_train, y_pred_train, X_test=X_test)
         return self
 
     def clone(self) -> OxariPipeline:

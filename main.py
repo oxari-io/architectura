@@ -42,7 +42,7 @@ if __name__ == "__main__":
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
-        ci_estimator = JacknifeConfidenceEstimator(),
+        ci_estimator = BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = CVPipeline(

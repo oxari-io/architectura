@@ -7,6 +7,7 @@ import functools
 import operator
 import shap
 import xgboost as xgb
+import lightgbm as lgb
 import io
 import warnings
 import optuna
@@ -17,6 +18,7 @@ from sklearn.ensemble import GradientBoostingRegressor, AdaBoostRegressor, Rando
 from sklearn.model_selection import train_test_split, cross_val_score
 from typing import Dict
 from base.common import OxariEvaluator, OxariMixin, OxariOptimizer, OxariRegressor
+
 # from sklearn.metrics import root_mean_squared_error as rmse
 # from sklearn.metrics import mean_absolute_percentage_error as mape
 # from model.misc.metrics import mape
@@ -48,9 +50,9 @@ OPTUNA_DIR = Path("model/optuna")
 class RegressorOptimizer(OxariOptimizer):
     def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.num_trials = n_trials
-        self.num_startup_trials = n_startup_trials
-        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False)
+        self.n_trials = n_trials
+        self.n_startup_trials = n_startup_trials
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False)
         self.scope = None
         self.bucket_specific = None
 
@@ -74,9 +76,10 @@ class RegressorOptimizer(OxariOptimizer):
         # selecting the models that will be trained to build the voting regressor --> tuple(name, model)
         # TODO: Use ExtraTree instead of RandomForest as it is much faster with similar performance
         models = [
-            ("GBR", GradientBoostingRegressor), # Is fundamentally the same as XGBOOST but XGBoost is better - https://stats.stackexchange.com/a/282814/361976
+            # ("GBR", GradientBoostingRegressor), # Is fundamentally the same as XGBOOST but XGBoost is better - https://stats.stackexchange.com/a/282814/361976
             ("RFR", RandomForestRegressor),
             # ("XGB", xgb.XGBRegressor),
+            ("LGB", lgb.LGBMRegressor),
         ]
         # scores will be used to compute weights for voting mechanism
         info = defaultdict(lambda: defaultdict(dict))
@@ -98,11 +101,11 @@ class RegressorOptimizer(OxariOptimizer):
                 study = optuna.create_study(
                     study_name=f"regressor_{name}_hp_tuning",
                     direction="minimize",
-                    sampler=optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials, warn_independent_sampling=False),
+                    sampler=optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False),
                 )
                 study.optimize(
                     lambda trial: self.score_trial(trial, name, X_train[selector_train], y_train[selector_train].values, X_val[selector_val], y_val[selector_val].values),
-                    n_trials=self.num_trials,
+                    n_trials=self.n_trials,
                     show_progress_bar=False)
 
                 candidates[bucket_name][name]["best_params"] = study.best_params
@@ -134,18 +137,13 @@ class RegressorOptimizer(OxariOptimizer):
             #  definin search space of RandomForest
             param_space = {
                 # this parameter means using the GPU when training our model to speedup the training process
-                'n_estimators': trial.suggest_int("n_estimators", 100, 900, 200),
-                # 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'mae']),
-                # Whether bootstrap samples are used when building trees
-                'bootstrap': trial.suggest_categorical('bootstrap', ['True', 'False']),
-                # The maximum depth of the tree.
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                # 'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'n_estimators': trial.suggest_int("n_estimators", 25, 125, 25),
+                'max_features': trial.suggest_float('max_features', 0.2, 0.8, step=0.2),
+                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 2, 20, 2),
+                'criterion': trial.suggest_categorical('criterion', ['squared_error', 'absolute_error']),
                 # The number of features to consider when looking for the best split
-                'max_features': trial.suggest_categorical('max_features', [None, 'sqrt']),
-                'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
-                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 1, 5, 1),
-                # Grow trees with max_leaf_nodes in best-first fashion.
-                # 'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 1, 100),
+                # 'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
                 "n_jobs": -1
             }
 
@@ -175,6 +173,22 @@ class RegressorOptimizer(OxariOptimizer):
             }
 
             model = xgb.XGBRegressor(**param_space)
+            model.fit(X_train, y_train)
+        if regr_name == "LGB":
+
+            param_space = {
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
+                'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
+                'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
+                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+                'n_estimators': trial.suggest_int("n_estimators", 25, 125, 25),
+
+                # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning.
+            }
+            # param_space["num_leaves"] = 2**param_space["max_depth"]
+
+            model = lgb.LGBMRegressor(**param_space)
             model.fit(X_train, y_train)
 
         # if regr_name == "ADB":

@@ -41,7 +41,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=5),
         ci_estimator = BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=5),
         ci_estimator = BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=5),
         ci_estimator = BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
@@ -77,6 +77,7 @@ if __name__ == "__main__":
     print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
     print(eval_results)
+    eval_results.to_csv('local/eval_results/model_pipelines.csv')
     print("Predict with Pipeline")
     # print(dp1.predict(X))
     print("Predict with Model only SCOPE1")
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     print("\n", "DIRECT COMPARISON")
     result = model.predict(SPLIT_1.test.X,  scope=1, return_ci=True)
     result["true_scope"] = SPLIT_1.test.y
-    result.to_csv('local/eval_results/model_training.csv')
+    result.to_csv('local/eval_results/model_training_direct_comparison.csv')
     print(result)
 
 

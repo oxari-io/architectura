@@ -36,9 +36,10 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
-        df['lower'] = df['pred'] - self.error_range
-        df['pred'] = self.pipeline.predict(X, **kwargs)
-        df['upper'] = df['pred'] + self.error_range
+        mean_ = self.pipeline.predict(X, **kwargs)
+        df['lower'] = mean_ - self.error_range
+        df['pred'] = mean_
+        df['upper'] = mean_ + self.error_range
         return df
 
 

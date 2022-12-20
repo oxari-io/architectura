@@ -544,10 +544,10 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         return_std = kwargs.pop('return_ci', False)
-        X_new = self._preprocess(X, **kwargs).drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore')
         if return_std:
-            preds = self.ci_estimator.predict(X_new, **kwargs)
+            preds = self.ci_estimator.predict(X, **kwargs)
             return self.scope_transformer.reverse_transform(preds)
+        X_new = self._preprocess(X, **kwargs).drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore')
         preds = self.estimator.predict(X_new, **kwargs)
         return self.scope_transformer.reverse_transform(preds)
 

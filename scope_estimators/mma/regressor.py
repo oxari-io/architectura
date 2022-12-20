@@ -74,9 +74,9 @@ class RegressorOptimizer(OxariOptimizer):
         # selecting the models that will be trained to build the voting regressor --> tuple(name, model)
         # TODO: Use ExtraTree instead of RandomForest as it is much faster with similar performance
         models = [
-            # ("GBR", GradientBoostingRegressor), # Is fundamentally the same as XGBOOST but XGBoost is better - https://stats.stackexchange.com/a/282814/361976
+            ("GBR", GradientBoostingRegressor), # Is fundamentally the same as XGBOOST but XGBoost is better - https://stats.stackexchange.com/a/282814/361976
             ("RFR", RandomForestRegressor),
-            ("XGB", xgb.XGBRegressor),
+            # ("XGB", xgb.XGBRegressor),
         ]
         # scores will be used to compute weights for voting mechanism
         info = defaultdict(lambda: defaultdict(dict))

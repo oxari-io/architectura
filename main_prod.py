@@ -95,7 +95,15 @@ if __name__ == "__main__":
     print(model.predict(helper.mock_data()))
 
     print("\n", "Compute Confidences")
-    print(model.predict(SPLIT_1.val.X, return_std=True))
+    print(model.predict(SPLIT_1.val.X, return_ci=True))
+
+    print("\n", "DIRECT COMPARISON")
+    result = model.predict(SPLIT_1.test.X,  scope=1, return_ci=True)
+    result["true_scope"] = SPLIT_1.test.y
+    result.to_csv('local/eval_results/model_training.csv')
+    print(result)
+
+
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
@@ -108,8 +116,8 @@ if __name__ == "__main__":
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
 
-    local_model_saver = LocalMetaModelSaver(today=time.strftime('%d-%m-%Y'), name="prod").set(model=model)
-    local_lar_saver = LocalLARModelSaver(today=time.strftime('%d-%m-%Y'), name="prod").set(model=lar_model)
-    local_data_saver = LocalDataSaver(today=time.strftime('%d-%m-%Y'), name="prod").set(dataset=dataset)
+    local_model_saver = LocalMetaModelSaver(today=time.strftime('%d-%m-%Y'), name="lightweight").set(model=model)
+    local_lar_saver = LocalLARModelSaver(today=time.strftime('%d-%m-%Y'), name="lightweight").set(model=lar_model)
+    local_data_saver = LocalDataSaver(today=time.strftime('%d-%m-%Y'), name="lightweight").set(dataset=dataset)
     SavingManager = OxariSavingManager(meta_model=local_model_saver, lar_model=local_lar_saver, dataset=local_data_saver)
     SavingManager.run()

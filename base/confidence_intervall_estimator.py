@@ -36,9 +36,9 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
+        df['lower'] = df['pred'] - self.error_range
         df['pred'] = self.pipeline.predict(X, **kwargs)
         df['upper'] = df['pred'] + self.error_range
-        df['lower'] = np.maximum(df['pred'] - self.error_range, 0)
         return df
 
 
@@ -55,9 +55,9 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
         mean_, std_ = self.pipeline.predict(X, return_std=True)
-        df['upper'] = mean_ + std_
         df['lower'] = mean_ - std_
         df['pred'] = mean_
+        df['upper'] = mean_ + std_
         return df
 
 
@@ -106,7 +106,7 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
 
         preds = np.median(y_pred_multi, axis=1)
         df = pd.DataFrame()
+        df['lower'] = bottom
         df['pred'] = preds
         df['upper'] = top
-        df['lower'] = bottom
         return df

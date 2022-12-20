@@ -543,11 +543,13 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return y_new
 
     def predict(self, X, **kwargs) -> ArrayLike:
-        return_std = kwargs.pop('return_std', False)
+        return_std = kwargs.pop('return_ci', False)
         X_new = self._preprocess(X, **kwargs).drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore')
         if return_std:
-            return self.ci_estimator.predict(X_new, **kwargs)
-        return self.estimator.predict(X_new, **kwargs)
+            preds = self.ci_estimator.predict(X_new, **kwargs)
+            return self.scope_transformer.reverse_transform(preds)
+        preds = self.estimator.predict(X_new, **kwargs)
+        return self.scope_transformer.reverse_transform(preds)
 
     def fit(self, X, y, **kwargs) -> OxariPipeline:
         self._set_meta(X)
@@ -617,9 +619,9 @@ class DummyConfidenceEstimator(OxariConfidenceEstimator):
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
         mean_ = self.pipeline.predict(X)
-        df['upper'] = mean_
         df['lower'] = mean_
         df['pred'] = mean_
+        df['upper'] = mean_
         return df
 
 
@@ -657,7 +659,6 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
-        return_std = kwargs.pop("return_std", False)
         X = X.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], errors='ignore')
         if scope == "all":
             return self._predict_all(X, **kwargs)
@@ -665,6 +666,14 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def _predict_all(self, X, **kwargs) -> ArrayLike:
         result = pd.DataFrame()
+        return_ci = kwargs.pop('return_ci', False)
+        if return_ci:
+            for scope_str, estimator in self.pipelines.items():
+                y_pred = estimator.predict(X, return_ci=return_ci, **kwargs)
+                y_pred.columns = [f"{scope_str}_{col}" for col in y_pred.columns]
+                result = pd.concat([result, y_pred], axis=1)
+            return result               
+        
         for scope_str, estimator in self.pipelines.items():
             y_pred = estimator.predict(X, **kwargs)
             result[scope_str] = y_pred

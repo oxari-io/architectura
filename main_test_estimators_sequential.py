@@ -17,7 +17,7 @@ import sklearn
 from concurrent import futures
 from itertools import product
 import random
-
+import numpy as np
 
 # NOTE: IIDPreprocessor seems like a much better for most models
 class Runner(object):
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     ]
     all_feature_reducers = [
         PCAFeatureSelector,
-        # DummyFeatureReducer,
+        DummyFeatureReducer,
     ]
     all_preprocessors = [
         IIDPreprocessor,
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             name = f"{Model.__name__}-{idx}",
             preprocessor=Preprocessor(),
             feature_reducer=FtReducer(),
-            imputer=Imputer(buckets_number=5),
+            imputer=Imputer(buckets_number=random.randint(3,7)),
             scope_estimator=Model(),
         ) for Model, Preprocessor, Imputer, FtReducer, idx in all_combinations
     ]

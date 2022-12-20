@@ -95,7 +95,15 @@ if __name__ == "__main__":
     print(model.predict(helper.mock_data()))
 
     print("\n", "Compute Confidences")
-    print(model.predict(SPLIT_1.val.X, return_std=True))
+    print(model.predict(SPLIT_1.val.X, return_ci=True))
+
+    print("\n", "DIRECT COMPARISON")
+    result = model.predict(SPLIT_1.test.X,  scope=1, return_ci=True)
+    result["true_scope"] = SPLIT_1.test.y
+    result.to_csv('local/eval_results/model_training.csv')
+    print(result)
+
+
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))

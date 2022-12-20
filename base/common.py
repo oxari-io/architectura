@@ -227,7 +227,7 @@ class DefaultOptimizer(OxariOptimizer):
 
 class OxariMixin(abc.ABC):
     def __init__(self, name=None, **kwargs) -> None:
-        super().__init__(**kwargs)
+        super().__init__()
         self._name = name or self.__class__.__name__
         self.start_time = None
         self.end_time = None
@@ -345,7 +345,6 @@ class OxariPreprocessor(OxariTransformer, OxariLoggerMixin, abc.ABC):
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
         # Reference:  https://scikit-learn.org/stable/developers/develop.html#instantiation
-        super().__init__(**kwargs)
         self.imputer = imputer
 
     @abc.abstractmethod
@@ -367,8 +366,8 @@ class OxariPreprocessor(OxariTransformer, OxariLoggerMixin, abc.ABC):
         self.imputer = imputer
         return self
 
-    def debug(self, message):
-        return super().debug(message)
+    # def debug(self, message):
+    #     return super().debug(message)
 
     # def set_feature_selector(self, feature_selector: OxariFeatureSelector) -> "OxariPreprocessor":
     #     self.feature_selector = feature_selector

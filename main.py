@@ -76,9 +76,9 @@ if __name__ == "__main__":
     ### EVALUATION RESULTS ###
     print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
+    # eval_results.to_csv('local/eval_results/model_pipelines.csv')
     print(eval_results)
-    print("Predict with Pipeline")
-    # print(dp1.predict(X))
+
     print("Predict with Model only SCOPE1")
     print(model.predict(X, scope=1))
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     print("\n", "DIRECT COMPARISON")
     result = model.predict(SPLIT_1.test.X,  scope=1, return_ci=True)
     result["true_scope"] = SPLIT_1.test.y
-    result.to_csv('local/eval_results/model_training.csv')
+    # result.to_csv('local/eval_results/model_training.csv')
     print(result)
 
 

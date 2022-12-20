@@ -42,9 +42,9 @@ from sklearn.utils.estimator_checks import check_estimator
 import logging
 from sklearn.model_selection import train_test_split
 
-os.environ["LOGLEVEL"] = "INFO"
-LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
-WRITE_TO = "./logger.log"
+os.environ["LOGLEVEL"] = "DEBUG"
+LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
+WRITE_TO = "./logger.log" #"cout"
 
 class OxariLoggerMixin:
     """
@@ -62,10 +62,16 @@ class OxariLoggerMixin:
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
+        if WRITE_TO == "cout":
+            logging.basicConfig()
+            logging.root.setLevel(LOGLEVEL)
+        else:
+            logging.basicConfig(filename=WRITE_TO, level=LOGLEVEL) # level=logging.DEBUG
+        
         self.logger_name = self.__class__.__name__
         
-    def debug(self, message):
-        self.logger.debug(self.logger_name + "says: " + message)
+    # def debug(self, message):
+    #     self.logger.debug(self.logger_name + "says: " + message)
 
     # info, error, warning, etc..... 
 

@@ -39,9 +39,13 @@ import sklearn
 import numpy as np
 import pandas as pd
 from sklearn.utils.estimator_checks import check_estimator
+import logging
 
+os.environ["LOGLEVEL"] = "INFO"
+LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
+WRITE_TO = "./logger.log"
 
-class OxariLogger:
+class OxariLoggerMixin:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
     The logger writes it's outputs to STDOUT or to a FILE if a LOG_FILE environment variable was set.   
@@ -53,9 +57,7 @@ class OxariLogger:
     - In case of production env, the logger should upload the log file of the full pipeline run to digital ocean spaces
     
     """
-    def __init__():
-        # https://docs.python.org/3/howto/logging-cookbook.html
-        pass
+    logger: logging.Logger
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
@@ -225,7 +227,7 @@ class DefaultOptimizer(OxariOptimizer):
 
 class OxariMixin(abc.ABC):
     def __init__(self, name=None, **kwargs) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
         self._name = name or self.__class__.__name__
         self.start_time = None
         self.end_time = None
@@ -326,7 +328,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         pass
 
 
-class OxariPreprocessor(OxariTransformer, abc.ABC):
+class OxariPreprocessor(OxariTransformer, OxariLoggerMixin, abc.ABC):
     def __init__(self, imputer: OxariImputer = None, **kwargs):
         super().__init__(**kwargs)
         # Only data independant hyperparams.
@@ -355,7 +357,8 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
         self.imputer = imputer
         return self
 
-
+    def debug(self, message):
+        return super().debug(message)
 
     # def set_feature_selector(self, feature_selector: OxariFeatureSelector) -> "OxariPreprocessor":
     #     self.feature_selector = feature_selector

@@ -39,22 +39,7 @@ if __name__ == "__main__":
     SPLIT_1 = bag.scope_1
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
-
-    dataset = CSVDataLoader().run()
-    # dp3 = DefaultPipeline(
-    #     scope=3,
-    #     preprocessor=BaselinePreprocessor(),
-    #     feature_selector=PCAFeatureSelector(),
-    #     imputer=BaselineImputer(),
-    #     scope_estimator=PredictMedianEstimator(),
-    # )
-    # dp2 = DefaultPipeline(
-    #     scope=2,
-    #     preprocessor=BaselinePreprocessor(),
-    #     feature_selector=PCAFeatureSelector(),
-    #     imputer=BaselineImputer(),
-    #     scope_estimator=PredictMeanEstimator(),
-    # )
+    
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_selector=PCAFeatureSelector(),

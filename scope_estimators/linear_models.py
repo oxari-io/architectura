@@ -12,6 +12,7 @@ from .linear.helper import PolynomialFeaturesMixin, NormalizedFeaturesMixin
 from base.oxari_types import ArrayLike
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
+from base.metrics import optuna_metric
 
 DEBUG_NUM_TRIALS = True
 NUM_TRIALS = 50 if not DEBUG_NUM_TRIALS else 10
@@ -73,7 +74,7 @@ class LROptimizer(OxariOptimizer):
         model = linear_model.ElasticNet(alpha=alpha, l1_ratio=l1_ratio).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class LinearRegressionEstimator(OxariScopeEstimator):

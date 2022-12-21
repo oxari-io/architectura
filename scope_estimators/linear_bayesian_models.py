@@ -12,6 +12,7 @@ from sklearn import linear_model
 from .linear.helper import PolynomialFeaturesMixin
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
+from base.metrics import optuna_metric
 
 class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
     def __init__(self, n_trials=50, n_startup_trials=1, sampler=None, **kwargs) -> None:
@@ -66,7 +67,7 @@ class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
         model = linear_model.BayesianRidge(alpha_init=alpha_1, lambda_init=lambda_1).fit(X_train[indices], y_train.values[indices])
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):

@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split, cross_val_score, Randomize
 # from model.abstract_base_class import MLModelInterface
 # from model.misc.hyperparams_tuning import tune_hps_classifier
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
+from base.metrics import optuna_metric
 
 from pathlib import Path
 

@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
 from scipy import spatial
+from sklearn.metrics import mean_absolute_error
 
+def optuna_metric(y_true, y_hat):
+    return mean_absolute_error(y_true=y_true, y_pred=y_hat) 
 
 def calculate_smape(actual, predicted) -> float:
 

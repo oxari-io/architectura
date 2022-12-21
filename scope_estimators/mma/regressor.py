@@ -18,6 +18,7 @@ from sklearn.ensemble import GradientBoostingRegressor, AdaBoostRegressor, Rando
 from sklearn.model_selection import train_test_split, cross_val_score
 from typing import Dict
 from base.common import OxariEvaluator, OxariMixin, OxariOptimizer, OxariRegressor
+from base.metrics import optuna_metric
 
 # from sklearn.metrics import root_mean_squared_error as rmse
 # from sklearn.metrics import mean_absolute_percentage_error as mape
@@ -204,7 +205,7 @@ class RegressorOptimizer(OxariOptimizer):
 
         y_pred = model.predict(X_val)
 
-        return smape(y_val, y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class BucketRegressor(OxariRegressor):

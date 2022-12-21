@@ -48,7 +48,8 @@ class BucketScopeDiscretizer(OxariScopeTransformer):
         self.n_buckets = n_buckets
         self.prefix = prefix
         encode = kwargs.pop("encode", "ordinal")
-        self.discretizer = KBinsDiscretizer(n_buckets, encode=encode, **kwargs)
+        strategy = kwargs.pop("strategy", "kmeans")
+        self.discretizer = KBinsDiscretizer(n_buckets, encode=encode, strategy=strategy, **kwargs)
 
     def fit(self, X, y=None):
         self.discretizer.fit(np.array(y)[:, None])

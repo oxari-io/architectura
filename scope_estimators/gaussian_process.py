@@ -7,7 +7,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 import sklearn.gaussian_process.kernels as kernels
 import optuna
 from pmdarima.metrics import smape
-
+from base.metrics import optuna_metric
 STANDARD_KERNEL = kernels.DotProduct() + kernels.WhiteKernel()
 
 
@@ -69,7 +69,7 @@ class GPOptimizer(ReducedDataMixin, OxariOptimizer):
         model = GaussianProcessRegressor(kernel=kernel, alpha=outer_alpha, normalize_y=True).fit(X_train.iloc[indices], y_train.iloc[indices])
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
     # TODO: Explore kernel setups for the GP that have a better fit with the data. https://www.cs.toronto.edu/~duvenaud/cookbook/
 

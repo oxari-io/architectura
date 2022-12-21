@@ -7,6 +7,7 @@ from sklearn.svm import SVR
 import optuna
 from pmdarima.metrics import smape
 from base.oxari_types import ArrayLike
+from base.metrics import optuna_metric
 
 
 class SVROptimizer(OxariOptimizer):
@@ -63,7 +64,7 @@ class SVROptimizer(OxariOptimizer):
         model = SVR(epsilon=epsilon, C=C).fit(X_train.iloc[indices], y_train.iloc[indices])
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class SupportVectorEstimator(OxariScopeEstimator):

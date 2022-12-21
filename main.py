@@ -41,7 +41,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=SupportVectorEstimator(),
+        scope_estimator=MiniModelArmyEstimator(),
         ci_estimator = BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     print("\n", "DIRECT COMPARISON")
     result = model.predict(SPLIT_1.test.X,  scope=1, return_ci=True)
-    result["true_scope"] = SPLIT_1.test.y
+    result["true_scope"] = SPLIT_1.test.y.values
     # result.to_csv('local/eval_results/model_training.csv')
     print(result)
 

@@ -6,7 +6,6 @@ import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 import sklearn.gaussian_process.kernels as kernels
 import optuna
-from pmdarima.metrics import smape
 from base.metrics import optuna_metric
 STANDARD_KERNEL = kernels.DotProduct() + kernels.WhiteKernel()
 

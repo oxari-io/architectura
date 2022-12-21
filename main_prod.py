@@ -37,7 +37,7 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
 
     # Test what happens if not all the optimise functions are called.
-    dp1 = CVPipeline(
+    dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         ci_estimator = BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
-    dp2 = CVPipeline(
+    dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         ci_estimator = BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
-    dp3 = CVPipeline(
+    dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     print("\n", "DIRECT COMPARISON")
     result = model.predict(SPLIT_1.test.X,  scope=1, return_ci=True)
-    result["true_scope"] = SPLIT_1.test.y
+    result["true_scope"] = SPLIT_1.test.y.values
     result.to_csv('local/eval_results/model_training_direct_comparison.csv')
     print(result)
 

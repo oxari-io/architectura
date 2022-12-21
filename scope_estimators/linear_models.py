@@ -6,7 +6,6 @@ import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 import sklearn.gaussian_process.kernels as kernels
 import optuna
-from pmdarima.metrics import smape
 from sklearn import linear_model
 from .linear.helper import PolynomialFeaturesMixin, NormalizedFeaturesMixin
 from base.oxari_types import ArrayLike
@@ -142,7 +141,7 @@ class GLMOptimizer(OxariOptimizer):
         ).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class GLMEstimator(OxariScopeEstimator):

@@ -4,7 +4,8 @@ from scipy import spatial
 from sklearn.metrics import mean_absolute_error
 
 def optuna_metric(y_true, y_pred):
-    return mean_absolute_error(y_true=y_true, y_pred=y_pred) 
+    # return mean_absolute_error(y_true=y_true, y_pred=y_pred) 
+    return smape(y_true=y_true, y_pred=y_pred) 
 
 def calculate_smape(actual, predicted) -> float:
 

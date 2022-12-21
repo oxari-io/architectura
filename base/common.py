@@ -546,6 +546,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         return_std = kwargs.pop('return_ci', False)
+        # return_raw = kwargs.pop('return_raw', False) # 
         if return_std:
             preds = self.ci_estimator.predict(X, **kwargs)
             return self.scope_transformer.reverse_transform(preds)
@@ -587,8 +588,8 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         y_pred_train = self.estimator.predict(X_train)
         y_pred_test = self.scope_transformer.reverse_transform(y_pred_test)        
         self._evaluation_results = {}
-        self._evaluation_results["val"] = self.estimator.evaluate(y_test, y_pred_test, X_test=X_train)
-        self._evaluation_results["train"] = self.estimator.evaluate(y_train, y_pred_train, X_test=X_test)
+        self._evaluation_results["val"] = self.estimator.evaluate(y_test, y_pred_test, X_test=X_test)
+        self._evaluation_results["train"] = self.estimator.evaluate(y_train, y_pred_train, X_test=X_train)
         return self
 
     def clone(self) -> OxariPipeline:

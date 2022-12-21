@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from sklearn.svm import SVR
 import optuna
-from pmdarima.metrics import smape
 from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
 

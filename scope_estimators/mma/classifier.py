@@ -117,6 +117,7 @@ class ClassifierOptimizer(OxariOptimizer):
 
         # cl_name = trial.suggest_categorical("classifier", ["RF", "XGB"])
         cl_name = "RF"
+        y_train = y_train.ravel()
 
         if cl_name == "RF":
             # min_impurity_decrease,  max_leaf_nodes, min_weight_fraction_leaf, warm_start
@@ -130,7 +131,7 @@ class ClassifierOptimizer(OxariOptimizer):
                 # 'max_features': trial.suggest_categorical("max_features", [None, "sqrt"]),
                 # 'criterion': trial.suggest_categorical('criterion', ['mse', 'mae']),
                 # Whether bootstrap samples are used when building trees
-                'bootstrap': trial.suggest_categorical('bootstrap', ['True', 'False']),
+                'bootstrap': trial.suggest_categorical('bootstrap', [True, False]),
                 # The maximum depth of the tree.
                 'max_depth': trial.suggest_int('max_depth', 1, 20, 1),
                 # The number of features to consider when looking for the best split

@@ -228,7 +228,7 @@ class BucketRegressor(OxariRegressor):
         pbar = tqdm(desc="MMA-Regressor", total=total)
         for bucket, candidates_data in regressor_kwargs.items():
             selector = groups == bucket
-            is_any = np.any(selector)
+            is_any = np.sum(selector) > 10
             X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3) if is_any else train_test_split(X, y, test_size=0.3)
             for name, candidate_data in candidates_data.items():
                 best_params = candidate_data.get("best_params")
@@ -239,9 +239,10 @@ class BucketRegressor(OxariRegressor):
                 y_pred = model.predict(X_val)
 
                 model_score = smape(y_val, y_pred)
-                trained_candidates[name] = {"model": model, "score": 100 - model_score, **candidate_data}
+                trained_candidates[name] = {"model": model, "score": -model_score, **candidate_data}
                 pbar.update(1)
-            weights = [v["score"] for _, v in trained_candidates.items()]
+            weights = np.array([v["score"] for _, v in trained_candidates.items()])
+            weights = (weights - weights.min())/(weights.max()-weights.min())
             models = [(name, v["model"]) for name, v in trained_candidates.items()]
             self.voting_regressors_[bucket] = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
 

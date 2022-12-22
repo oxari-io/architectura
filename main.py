@@ -103,7 +103,7 @@ if __name__ == "__main__":
     result["absolute_difference"] = np.abs(result["pred"] - result["true_scope"])
     result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"]) 
     result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values 
-    # result.to_csv('local/eval_results/model_training.csv')
+    result.to_csv('local/eval_results/model_training.csv')
     print(result)
 
     print("\n", "Predict LARs on Mock data")

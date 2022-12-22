@@ -3,15 +3,22 @@ import numpy as np
 from scipy import spatial
 from sklearn.metrics import mean_absolute_error, log_loss, balanced_accuracy_score
 
+
 def optuna_metric(y_true, y_pred) -> float:
-    # return smape(a=y_true, f=y_pred) 
-    return mean_absolute_error(y_true=y_true, y_pred=y_pred) 
+    # return smape(a=y_true, f=y_pred)
+    return mean_absolute_error(y_true=y_true, y_pred=y_pred)
+
 
 def classification_metric(y_true, y_pred) -> float:
     return balanced_accuracy_score(y_true, y_pred)
 
+
+def cv_metric(estimator, X, y) -> float:
+    y_hat = estimator.predict(X)
+    return smape(y, y_hat)
+
+
 def calculate_smape(actual, predicted) -> float:
-    
 
     # Convert actual and predicted to numpy
     # array data type if not already

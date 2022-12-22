@@ -122,7 +122,7 @@ class ClassifierOptimizer(OxariOptimizer):
             'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
             'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
             'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-            'n_estimators': trial.suggest_int("n_estimators", 100, 500, 100),
+            'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
         }
 
         cl = lgb.LGBMClassifier(**param_space)

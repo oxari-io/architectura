@@ -44,8 +44,11 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         self.discretizer = self.discretizer.fit(X_train, y_train)
         y_train_binned = self.discretizer.transform(y_train)
         y_val_binned = self.discretizer.transform(y_val)
+        
+        # TODO: Maybe they need to be connected
         best_params_cls, info_cls = self.bucket_cl.optimize(X_train, y_train_binned, X_val, y_val_binned, **kwargs)
         best_params_rgs, info_rgs = self.bucket_rg.optimize(X_train, y_train, X_val, y_val, grp_train=y_train_binned, grp_val=y_val_binned, **kwargs)
+        
         # return {**best_params_cls,**best_params_rgs}, {"classifier":info_cls, "regressor":info_rgs}
         return {"cls": best_params_cls, "rgs": best_params_rgs}, {"classifier": info_cls, "regressor": info_rgs}
 

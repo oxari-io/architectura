@@ -588,7 +588,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         y_pred_train = self.estimator.predict(X_train)
         y_pred_test = self.scope_transformer.reverse_transform(y_pred_test)        
         self._evaluation_results = {}
-        self._evaluation_results["val"] = self.estimator.evaluate(y_test, y_pred_test, X_test=X_test)
+        self._evaluation_results["test"] = self.estimator.evaluate(y_test, y_pred_test, X_test=X_test)
         self._evaluation_results["train"] = self.estimator.evaluate(y_train, y_pred_train, X_test=X_train)
         return self
 

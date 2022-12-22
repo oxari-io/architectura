@@ -8,7 +8,7 @@ from postprocessors import ScopeImputerPostprocessor
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator,SupportVectorEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, SupportVectorEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator
 from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator, BaselineConfidenceEstimator
 import base
 from base import helper
@@ -21,6 +21,7 @@ import io
 from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import pathlib
 from pprint import pprint
+import numpy as np
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
@@ -37,32 +38,31 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
 
     # Test what happens if not all the optimise functions are called.
-    dp1 = CVPipeline(
+    dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=MiniModelArmyEstimator(),
-        ci_estimator = BaselineConfidenceEstimator(),
+        ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
-    dp2 = CVPipeline(
+    dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
-        ci_estimator = JacknifeConfidenceEstimator(),
+        ci_estimator=JacknifeConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
-    dp3 = CVPipeline(
+    dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
-        ci_estimator = JacknifeConfidenceEstimator(),
+        ci_estimator=JacknifeConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
-    
-    
+
     model = OxariMetaModel()
     model.add_pipeline(scope=1, pipeline=dp1)
     model.add_pipeline(scope=2, pipeline=dp2)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     print(eval_results)
 
     print("Predict with Model only SCOPE1")
-    print(model.predict(X, scope=1))
+    print(model.predict(SPLIT_1.val.X, scope=1))
 
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     print(scope_imputed_data)
 
     print("\n", "Predict ALL with Model")
-    print(model.predict(X))
+    print(model.predict(SPLIT_1.val.X))
 
     print("\n", "Predict ALL on Mock data")
     print(model.predict(helper.mock_data()))
@@ -98,12 +98,13 @@ if __name__ == "__main__":
     print(model.predict(SPLIT_1.val.X, return_ci=True))
 
     print("\n", "DIRECT COMPARISON")
-    result = model.predict(SPLIT_1.test.X,  scope=1, return_ci=True)
+    result = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
     result["true_scope"] = SPLIT_1.test.y.values
+    result["absolute_difference"] = np.abs(result["pred"] - result["true_scope"])
+    result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"]) 
+    result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values 
     # result.to_csv('local/eval_results/model_training.csv')
     print(result)
-
-
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))

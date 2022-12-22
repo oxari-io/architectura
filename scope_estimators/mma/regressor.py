@@ -117,7 +117,7 @@ class RegressorOptimizer(OxariOptimizer):
 
     def score_trial(self, trial: optuna.Trial, regr_name: str, X_train, y_train, X_val, y_val):
         # TODO: add docstring here
-
+        # TODO: Try MSLE as optimization objective https://machinelearningmastery.com/how-to-choose-loss-functions-when-training-deep-learning-neural-networks/
         if regr_name == "GBR":
 
             param_space = {
@@ -184,10 +184,7 @@ class RegressorOptimizer(OxariOptimizer):
                 'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
                 'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
                 'n_estimators': trial.suggest_int("n_estimators", 25, 125, 25),
-
-                # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning.
             }
-            # param_space["num_leaves"] = 2**param_space["max_depth"]
 
             model = lgb.LGBMRegressor(**param_space)
             model.fit(X_train, y_train)
@@ -239,10 +236,10 @@ class BucketRegressor(OxariRegressor):
                 y_pred = model.predict(X_val)
 
                 model_score = smape(y_val, y_pred)
-                trained_candidates[name] = {"model": model, "score": -model_score, **candidate_data}
+                trained_candidates[name] = {"model": model, "score": 100-model_score, **candidate_data}
                 pbar.update(1)
             weights = np.array([v["score"] for _, v in trained_candidates.items()])
-            weights = (weights - weights.min())/(weights.max()-weights.min())
+            # weights = (weights - weights.min())/(weights.max()-weights.min())
             models = [(name, v["model"]) for name, v in trained_candidates.items()]
             self.voting_regressors_[bucket] = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
 

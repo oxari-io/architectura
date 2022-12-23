@@ -58,7 +58,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
 
     def evaluate(self, y_true, y_pred, **kwargs):
         X_test = kwargs.get("X_test")
-        y_true_bins = self.discretizer.transform(y_true)
+        y_true_bins = self.discretizer.transform(y_true) 
 
         y_pred_cl = self.bucket_cl.predict(X_test)
         results_cl = self.bucket_cl.evaluate(y_true_bins, y_pred_cl)
@@ -70,8 +70,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         combined_results = {"n_buckets": self.n_buckets, "classifier": results_cl, "regressor": results_rg, **results_end_to_end}
         return combined_results
 
-    def check_conformance(self):
-        pass
 
-    def run(self):
-        pass
+class MiniModelArmyClusterBucketEstimator(MiniModelArmyEstimator):
+    # TODO: instead of classifier uses clustering for bucketing
+    pass

@@ -148,18 +148,14 @@ class DefaultClassificationEvaluator(OxariEvaluator):
         return super().evaluate(y_true, y_pred, **error_metrics)
 
 
+# TODO: Integrate optuna visualisation as method
 class OxariOptimizer(abc.ABC):
     def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__()
         self.n_trials = n_trials
         self.n_startup_trials = n_startup_trials
-        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False)
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, multivariate=True)
 
-    # def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
-    #     """
-    #     Evaluates multiple metrics and returns a dict with all computed scores.
-    #     """
-    #     return {}, pd.DataFrame()
 
     @abc.abstractmethod
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, pd.DataFrame]:
@@ -202,7 +198,6 @@ class OxariOptimizer(abc.ABC):
         Evaluates multiple metrics and returns a dict with all computed scores.
         """
         return 0
-
 
 class DefaultOptimizer(OxariOptimizer):
     """
@@ -533,6 +528,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._start_time = None
         self._end_time = None
         self.features = None
+        self._evaluator = DefaultRegressorEvaluator()
         # self.resources_postprocessor = database_deployer
 
     def _preprocess(self, X, **kwargs) -> ArrayLike:
@@ -542,6 +538,10 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     def _transform_scope(self, y, **kwargs) -> ArrayLike:
         y_new = self.scope_transformer.transform(y, **kwargs)
+        return y_new
+    
+    def _reverse_scope(self, y, **kwargs) -> ArrayLike:
+        y_new = self.scope_transformer.reverse_transform(y, **kwargs)
         return y_new
 
     def predict(self, X, **kwargs) -> ArrayLike:
@@ -586,10 +586,13 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         X_train = self._preprocess(X_train)
         y_pred_test = self.estimator.predict(X_test)
         y_pred_train = self.estimator.predict(X_train)
-        y_pred_test = self.scope_transformer.reverse_transform(y_pred_test)        
+        y_pred_test_reversed = self._reverse_scope(y_pred_test)        
+        y_test_transformed = self._transform_scope(y_test)
+        y_train_transformed = self._transform_scope(y_train)
         self._evaluation_results = {}
-        self._evaluation_results["test"] = self.estimator.evaluate(y_test, y_pred_test, X_test=X_test)
-        self._evaluation_results["train"] = self.estimator.evaluate(y_train, y_pred_train, X_test=X_train)
+        self._evaluation_results["raw"] = self._evaluator.evaluate(y_test, y_pred_test_reversed, X_test=X_test)
+        self._evaluation_results["test"] = self.estimator.evaluate(y_test_transformed, y_pred_test, X_test=X_test)
+        self._evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
         return self
 
     def clone(self) -> OxariPipeline:

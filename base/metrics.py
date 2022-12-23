@@ -1,11 +1,13 @@
 import pandas as pd
 import numpy as np
 from scipy import spatial
-from sklearn.metrics import mean_absolute_error, log_loss, balanced_accuracy_score
+from sklearn.metrics import mean_absolute_error, log_loss, balanced_accuracy_score, mean_squared_log_error
 
 
 def optuna_metric(y_true, y_pred) -> float:
     # return smape(a=y_true, f=y_pred)
+    # TODO: try msle but fix issue with negative values.
+    # return mean_squared_log_error(y_true=y_true, y_pred=y_pred)
     return mean_absolute_error(y_true=y_true, y_pred=y_pred)
 
 

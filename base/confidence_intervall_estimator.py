@@ -28,7 +28,7 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+    def fit(self, X, y, **kwargs) -> "BaselineConfidenceEstimator":
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
         y_hat = self.pipeline.estimator.predict(X, **kwargs)
@@ -53,7 +53,7 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+    def fit(self, X, y, **kwargs) -> "ProbablisticConfidenceEstimator":
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
         return super().fit(X, y, **kwargs)
@@ -85,14 +85,14 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
         self.res = []
         self.n_splits = n_splits
 
-    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+    def fit(self, X, y, **kwargs) -> "JacknifeConfidenceEstimator":
         kf = KFold(n_splits=self.n_splits, shuffle=True)
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
         for idx, (train_index, test_index) in tqdm(enumerate(kf.split(X)), total=self.n_splits, desc="Jacknife++ Training"):
             X_train_, X_test_ = X.iloc[train_index], X.iloc[test_index]
             y_train_, y_test_ = y.iloc[train_index], y.iloc[test_index]
-            new_estimator: OxariRegressor = self.pipeline.estimator.clone()
+            new_estimator: OxariScopeEstimator = self.pipeline.estimator.clone()
             new_estimator.fit(X_train_, y_train_)
             self._all_estimators.append(new_estimator)
             self.res.extend(list(y_test_ - new_estimator.predict(X_test_)))

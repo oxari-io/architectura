@@ -18,6 +18,7 @@ from concurrent import futures
 from itertools import product
 import random
 import numpy as np
+import tqdm
 
 # NOTE: IIDPreprocessor seems like a much better for most models
 class Runner(object):
@@ -45,30 +46,30 @@ if __name__ == "__main__":
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
     model_list = [
-        DummyEstimator,
-        BaselineEstimator,
-        PredictMeanEstimator,
-        PredictMedianEstimator,
-        BayesianRegressionEstimator,
-        SupportVectorEstimator,
-        LinearRegressionEstimator,
-        GLMEstimator,
-        GaussianProcessEstimator,
+        # DummyEstimator,
+        # BaselineEstimator,
+        # PredictMeanEstimator,
+        # PredictMedianEstimator,
+        # BayesianRegressionEstimator,
+        # SupportVectorEstimator,
+        # LinearRegressionEstimator,
+        # GLMEstimator,
+        # GaussianProcessEstimator,
         MiniModelArmyEstimator,
     ]
     all_imputers = [
         RevenueQuantileBucketImputer,
-        RevenueBucketImputer,
-        KMeansBucketImputer,
+        # RevenueBucketImputer,
+        # KMeansBucketImputer,
     ]
     all_feature_reducers = [
-        PCAFeatureSelector,
+        # PCAFeatureSelector,
         DummyFeatureReducer,
     ]
     all_preprocessors = [
-        IIDPreprocessor,
+        # IIDPreprocessor,
         BaselinePreprocessor,
-        ImprovedBaselinePreprocessor,
+        # ImprovedBaselinePreprocessor,
     ]
 
     all_combinations = list(product(model_list, all_preprocessors, all_imputers, all_feature_reducers, range(5)))
@@ -83,7 +84,7 @@ if __name__ == "__main__":
         ) for Model, Preprocessor, Imputer, FtReducer, idx in all_combinations
     ]
 
-    random.shuffle(all_models)
+    # random.shuffle(all_models)
 
     all_evaluations = []
     all_models_trained = []
@@ -93,7 +94,7 @@ if __name__ == "__main__":
     eval_data = SPLIT_1.rem.X, SPLIT_1.rem.y, SPLIT_1.val.X, SPLIT_1.val.y
 
     runner = Runner(optimize_data, fit_data, eval_data)
-    for model in all_models:
+    for model in tqdm.tqdm(all_models):
         print(f"\n====================== MODEL: {model.name}")
         model = runner.run(model)
         all_models_trained.append(model.evaluation_results)

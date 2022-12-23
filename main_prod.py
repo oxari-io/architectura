@@ -25,6 +25,8 @@ import numpy as np
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
+N_TRIALS = 40
+N_STARTUP_TRIALS = 10
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
@@ -41,24 +43,24 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=40),
+        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=40),
+        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
     dp3 = DefaultPipeline(
         preprocessor=BaselinePreprocessor(),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=40),
+        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
@@ -102,8 +104,8 @@ if __name__ == "__main__":
     result = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
     result["true_scope"] = SPLIT_1.test.y.values
     result["absolute_difference"] = np.abs(result["pred"] - result["true_scope"])
-    result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"]) 
-    result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values 
+    result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"])
+    result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
     result.to_csv('local/eval_results/model_training_direct_comparison.csv')
     print(result)
 

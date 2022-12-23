@@ -22,10 +22,11 @@ from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCat
 import pathlib
 from pprint import pprint
 import numpy as np
-
-DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
 
+DATA_DIR = pathlib.Path('local/data')
+N_TRIALS = 5
+N_STARTUP_TRIALS = 1
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
@@ -37,12 +38,13 @@ if __name__ == "__main__":
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
 
-    # Test what happens if not all the optimise functions are called.
+    # TODO: Test what happens if not all the optimise functions are called.
+    # TODO: Check why scope_transformer destroys accuracy.
     dp1 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=MiniModelArmyEstimator(),
+        preprocessor=BaselinePreprocessor(),
+        feature_reducer=DummyFeatureReducer(),
+        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -76,7 +78,7 @@ if __name__ == "__main__":
     ### EVALUATION RESULTS ###
     print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
-    # eval_results.to_csv('local/eval_results/model_pipelines.csv')
+    eval_results.to_csv('local/eval_results/model_pipelines_test.csv')
     print(eval_results)
 
     print("Predict with Model only SCOPE1")
@@ -103,7 +105,7 @@ if __name__ == "__main__":
     result["absolute_difference"] = np.abs(result["pred"] - result["true_scope"])
     result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"]) 
     result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values 
-    result.to_csv('local/eval_results/model_training.csv')
+    result.to_csv('local/eval_results/model_training_test.csv')
     print(result)
 
     print("\n", "Predict LARs on Mock data")

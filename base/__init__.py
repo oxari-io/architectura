@@ -12,6 +12,10 @@ try:
         print(f"Cannot use intel-sklearn optimization because processor type is {processor_type}")
 except Exception as e:
     print(f"Something went wrong => {e}")
+    if "libsvml.so" in str(e):
+        print("Try to install 'icc-rt'")
+    if "libsycl.so" in str(e):
+        print("Try to install 'opencl-rt'")
             
 
 import sklearn

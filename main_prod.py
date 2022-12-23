@@ -39,24 +39,24 @@ if __name__ == "__main__":
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
+        preprocessor=BaselinePreprocessor(),
+        feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=40),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
+        preprocessor=BaselinePreprocessor(),
+        feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=40),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
     dp3 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
+        preprocessor=BaselinePreprocessor(),
+        feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=40),
         ci_estimator=BaselineConfidenceEstimator(),

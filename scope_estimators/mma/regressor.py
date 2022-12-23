@@ -126,7 +126,7 @@ class RegressorOptimizer(OxariOptimizer):
 
             param_space = {
                 # The number of boosting stages to perform
-                "n_estimators": trial.suggest_int("n_estimators", 100, 300, step=100),
+                "n_estimators": trial.suggest_int("n_estimators", 100, 500, step=100),
                 "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
                 "max_depth": trial.suggest_int("max_depth", 3, 21, 3),
                 # The fraction of samples to be used for fitting the individual base learners
@@ -143,7 +143,7 @@ class RegressorOptimizer(OxariOptimizer):
             param_space = {
                 # this parameter means using the GPU when training our model to speedup the training process
                 # 'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
-                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 500, 100),
                 'max_features': trial.suggest_float('max_features', 0.2, 0.8, step=0.2),
                 'min_samples_leaf': trial.suggest_int("min_samples_leaf", 2, 20, 2),
                 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'friedman_mse', 'poisson']),

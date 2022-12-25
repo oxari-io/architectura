@@ -82,7 +82,7 @@ class RegressorOptimizer(OxariOptimizer):
             ("RFR", RandomForestRegressor),
             # ("XGB", xgb.XGBRegressor),
             ("LGB", lgb.LGBMRegressor),
-            # ("KNN", KNeighborsRegressor),
+            ("KNN", KNeighborsRegressor),
             ("EXF", ExtraTreesRegressor),
         ]
         # scores will be used to compute weights for voting mechanism
@@ -164,7 +164,7 @@ class RegressorOptimizer(OxariOptimizer):
             }
 
             model = KNeighborsRegressor(**param_space)
-            model.fit(np.array(X_train), np.array(y_train))
+            model.fit(X_train, y_train)
 
         if regr_name == "EXF":
             #  definin search space of KNN

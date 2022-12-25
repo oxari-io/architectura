@@ -46,8 +46,6 @@ class OxariLARCalculator(OxariLinearAnnualReduction):
         # make sure that we dont use nan values to calculate LAR
         X = X.dropna()
         years, values = X.iloc[:, 0].values, X.iloc[:, 1].values
-        # values = np.array(values)
-        # year_range = np.array(year_range)
 
         # slope, intercept, r, p, se = stats.linregress(year_range, values_)
         lr = LinearRegression().fit(years[:, None], values)

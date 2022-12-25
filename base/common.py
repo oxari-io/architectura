@@ -557,18 +557,18 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def fit(self, X, y, **kwargs) -> OxariPipeline:
         self._set_meta(X)
         is_na = np.isnan(y)
-        X = np.array(self._preprocess(X, **kwargs))
-        y = np.array(self._transform_scope(y, **kwargs))
+        X = self._preprocess(X, **kwargs)
+        y = self._transform_scope(y, **kwargs)
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
         return self
 
 
     
     def fit_confidence(self, X,y,**kwargs) -> OxariPipeline:
-        is_na = np.isnan(np.array(y))
+        is_na = np.isnan(y)
         # X = self._preprocess(X, **kwargs)
         # y = self._transform_scope(y, **kwargs)
-        X,y =X[~is_na], np.array(y)[~is_na] 
+        X,y =X[~is_na], y[~is_na] 
         self.ci_estimator = self.ci_estimator.fit(X,y, **kwargs)
         return self
 

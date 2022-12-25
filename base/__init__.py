@@ -12,6 +12,7 @@ try:
         print(f"Cannot use intel-sklearn optimization because processor type is {processor_type}")
 except Exception as e:
     print(f"Something went wrong => {e}")
+    # https://www.intel.com/content/www/us/en/develop/documentation/oneapi-programming-guide/top/oneapi-development-environment-setup/use-the-setvars-script-with-linux-or-macos.html
     if "libsvml.so" in str(e):
         print("Try to install 'icc-rt'")
     if "libsycl.so" in str(e):

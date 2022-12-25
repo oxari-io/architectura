@@ -85,9 +85,8 @@ class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
         degree = self.params.pop("degree", 1)
         self._sub_preprocessor = BayesianRegressionEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)
-        y_ = np.array(y)
         indices = self.get_sample_indices(X_)
-        self._estimator = self._estimator.set_params(**kwargs).fit(X_[indices], y_[indices])
+        self._estimator = self._estimator.set_params(**kwargs).fit(X_.iloc[indices], y.iloc[indices])
         return self
 
     @staticmethod

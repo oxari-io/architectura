@@ -12,12 +12,13 @@ from sklearn import linear_model
 from .linear.helper import PolynomialFeaturesMixin
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
+from base.metrics import optuna_metric
 
 class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
-    def __init__(self, num_trials=50, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=50, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
-            num_trials=num_trials,
-            num_startup_trials=num_startup_trials,
+            n_trials=n_trials,
+            n_startup_trials=n_startup_trials,
             sampler=sampler,
             **kwargs,
         )
@@ -49,7 +50,7 @@ class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
 
         # running optimization
         # trials is the full number of iterations
-        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.n_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
@@ -66,7 +67,7 @@ class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
         model = linear_model.BayesianRidge(alpha_init=alpha_1, lambda_init=lambda_1).fit(X_train[indices], y_train.values[indices])
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
@@ -84,9 +85,8 @@ class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
         degree = self.params.pop("degree", 1)
         self._sub_preprocessor = BayesianRegressionEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)
-        y_ = np.array(y)
         indices = self.get_sample_indices(X_)
-        self._estimator = self._estimator.set_params(**kwargs).fit(X_[indices], y_[indices])
+        self._estimator = self._estimator.set_params(**kwargs).fit(X_.iloc[indices], y.iloc[indices])
         return self
 
     @staticmethod

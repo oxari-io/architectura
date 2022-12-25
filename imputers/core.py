@@ -25,5 +25,6 @@ class BaselineImputer(OxariImputer):
         return self._imputer.transform(X, **kwargs)
     
 class BucketImputerBase(OxariImputer):
+    bucket_number:int = None
     def get_config(self, deep=True):
         return {"bucket_number":self.bucket_number, **super().get_config(deep)}

@@ -6,16 +6,15 @@ import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 import sklearn.gaussian_process.kernels as kernels
 import optuna
-from pmdarima.metrics import smape
-
+from base.metrics import optuna_metric
 STANDARD_KERNEL = kernels.DotProduct() + kernels.WhiteKernel()
 
 
 class GPOptimizer(ReducedDataMixin, OxariOptimizer):
-    def __init__(self, num_trials=20, num_startup_trials=5, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=20, n_startup_trials=5, sampler=None, **kwargs) -> None:
         super().__init__(
-            num_trials=num_trials,
-            num_startup_trials=num_startup_trials,
+            n_trials=n_trials,
+            n_startup_trials=n_startup_trials,
             sampler=sampler,
             **kwargs,
         )
@@ -47,7 +46,7 @@ class GPOptimizer(ReducedDataMixin, OxariOptimizer):
 
         # running optimization
         # trials is the full number of iterations
-        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.n_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
@@ -69,7 +68,7 @@ class GPOptimizer(ReducedDataMixin, OxariOptimizer):
         model = GaussianProcessRegressor(kernel=kernel, alpha=outer_alpha, normalize_y=True).fit(X_train.iloc[indices], y_train.iloc[indices])
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
     # TODO: Explore kernel setups for the GP that have a better fit with the data. https://www.cs.toronto.edu/~duvenaud/cookbook/
 

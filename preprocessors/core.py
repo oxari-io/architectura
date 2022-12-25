@@ -65,7 +65,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         # transform numerical
         self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
         # encode categorical
-        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=y)
+        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=np.array(y))
         # fill missing values
         self.imputer = self.imputer.fit(data[self.financial_columns])
         # reduce dimensionality/feature count

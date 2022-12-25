@@ -28,15 +28,18 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def fit(self, X, y, **kwargs) -> "OxariRegressor":
-        y_hat = self.pipeline.predict(X, **kwargs)
+    def fit(self, X, y, **kwargs) -> "BaselineConfidenceEstimator":
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
+        y_hat = self.pipeline.estimator.predict(X, **kwargs)
         residuals = pd.DataFrame(np.abs(y_hat - y)).dropna()
         self.error_range = np.quantile(residuals, q=1 - self.alpha)
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
-        mean_ = self.pipeline.predict(X, **kwargs)
+        X = self.pipeline._preprocess(X)
+        mean_ = self.pipeline.estimator.predict(X, **kwargs)
         df['lower'] = mean_ - self.error_range
         df['pred'] = mean_
         df['upper'] = mean_ + self.error_range
@@ -50,11 +53,14 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+    def fit(self, X, y, **kwargs) -> "ProbablisticConfidenceEstimator":
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
+        X = self.pipeline._preprocess(X)
         mean_, std_ = self.pipeline.predict(X, return_std=True)
         df['lower'] = mean_ - std_
         df['pred'] = mean_
@@ -79,20 +85,21 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
         self.res = []
         self.n_splits = n_splits
 
-    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+    def fit(self, X, y, **kwargs) -> "JacknifeConfidenceEstimator":
         kf = KFold(n_splits=self.n_splits, shuffle=True)
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
         for idx, (train_index, test_index) in tqdm(enumerate(kf.split(X)), total=self.n_splits, desc="Jacknife++ Training"):
             X_train_, X_test_ = X.iloc[train_index], X.iloc[test_index]
             y_train_, y_test_ = y.iloc[train_index], y.iloc[test_index]
-            new_estimator: OxariRegressor = self.pipeline.estimator.clone()
+            new_estimator: OxariScopeEstimator = self.pipeline.estimator.clone()
             new_estimator.fit(X_train_, y_train_)
             self._all_estimators.append(new_estimator)
             self.res.extend(list(y_test_ - new_estimator.predict(X_test_)))
         return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
+        X = self.pipeline._preprocess(X)
         y_pred_multi = np.column_stack([e.predict(X) for e in self._all_estimators])
         ci = np.quantile(self.res, 1 - self.alpha)
         top = []

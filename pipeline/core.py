@@ -42,6 +42,7 @@ class DefaultPipeline(OxariPipeline):
             
             **super().evaluation_results,
             "optimal_params":self.params,
+            "cfg":self.get_config(),
         }
 
     # TODO: Should be get_config

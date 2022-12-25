@@ -1,6 +1,23 @@
 import pandas as pd
 import numpy as np
 from scipy import spatial
+from sklearn.metrics import mean_absolute_error, log_loss, balanced_accuracy_score, mean_squared_log_error
+
+
+def optuna_metric(y_true, y_pred) -> float:
+    # return smape(a=y_true, f=y_pred)
+    # TODO: try msle but fix issue with negative values.
+    # return mean_squared_log_error(y_true=y_true, y_pred=y_pred)
+    return mean_absolute_error(y_true=y_true, y_pred=y_pred)
+
+
+def classification_metric(y_true, y_pred) -> float:
+    return balanced_accuracy_score(y_true, y_pred)
+
+
+def cv_metric(estimator, X, y) -> float:
+    y_hat = estimator.predict(X)
+    return smape(y, y_hat)
 
 
 def calculate_smape(actual, predicted) -> float:
@@ -8,8 +25,7 @@ def calculate_smape(actual, predicted) -> float:
     # Convert actual and predicted to numpy
     # array data type if not already
     if not all([isinstance(actual, np.ndarray), isinstance(predicted, np.ndarray)]):
-        actual, predicted = np.array(actual),
-        np.array(predicted)
+        actual, predicted = np.array(actual), np.array(predicted)
 
     return round(np.mean(np.abs(predicted - actual) / ((np.abs(predicted) + np.abs(actual)) / 2)) * 100, 2)
 

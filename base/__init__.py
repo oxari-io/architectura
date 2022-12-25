@@ -13,10 +13,9 @@ try:
 except Exception as e:
     print(f"Something went wrong => {e}")
     # https://www.intel.com/content/www/us/en/develop/documentation/oneapi-programming-guide/top/oneapi-development-environment-setup/use-the-setvars-script-with-linux-or-macos.html
-    if "libsvml.so" in str(e):
-        print("Try to install 'icc-rt'")
-    if "libsycl.so" in str(e):
-        print("Try to install 'opencl-rt'")
+    print("Try to install intel-AI-Toolkit from 'https://www.intel.com/content/www/us/en/develop/documentation/installation-guide-for-intel-oneapi-toolkits-linux/top/installation/install-using-package-managers/apt.html#apt'")
+    print("Install command is: sudo apt install intel-basekit")
+    print("Then choose the installed python package with command: 'poetry use env <PATH-TO-INTEL-PYTHON-BINARY>'")
             
 
 import sklearn

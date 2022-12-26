@@ -62,9 +62,9 @@ class LROptimizer(OxariOptimizer):
         return study.best_params, df
 
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        alpha = trial.suggest_float("alpha", 0.01, 5.0)
-        l1_ratio = trial.suggest_float("l1_ratio", 0.01, 1.0)
-        degree = trial.suggest_categorical("degree", list(range(1, 5)))
+        alpha = trial.suggest_float("alpha", 0.1, 5.0)
+        l1_ratio = trial.suggest_float("l1_ratio", 0.1, 1.0)
+        degree = trial.suggest_categorical("degree", list(range(1, 10)))
 
         preprocessor = LinearRegressionEstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
         X_train = preprocessor.transform(X_train)

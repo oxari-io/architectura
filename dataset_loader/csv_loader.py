@@ -60,6 +60,7 @@ class S3Datasource(Datasource):
         )
         return self.client
 
+    # TODO: change to load instead of run
     def run(self) -> "S3Datasource":
         # https://docs.digitalocean.com/reference/api/spaces-api/
         self._check_if_data_exists()

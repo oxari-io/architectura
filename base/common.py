@@ -89,7 +89,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         # TODO: add docstring here
 
         # compute metrics of interest
-
+        # y_pred[np.isinf(y_pred)] = 10e12
         error_metrics = {
             "sMAPE": smape(y_true, y_pred) / 100,
             "R2": r2_score(y_true, y_pred),
@@ -154,7 +154,7 @@ class OxariOptimizer(abc.ABC):
         super().__init__()
         self.n_trials = n_trials
         self.n_startup_trials = n_startup_trials
-        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, multivariate=True)
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials)
 
 
     @abc.abstractmethod

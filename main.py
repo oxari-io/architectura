@@ -2,7 +2,7 @@ import time
 from datetime import date
 from pipeline.core import DefaultPipeline, CVPipeline
 from dataset_loader.csv_loader import CSVDataManager
-from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
+from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
@@ -30,7 +30,8 @@ N_STARTUP_TRIALS = 1
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
-    dataset = CSVDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
+    # dataset = CSVDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
+    dataset = CSVDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -41,10 +42,10 @@ if __name__ == "__main__":
     # TODO: Test what happens if not all the optimise functions are called.
     # TODO: Check why scope_transformer destroys accuracy.
     dp1 = DefaultPipeline(
-        preprocessor=BaselinePreprocessor(),
+        preprocessor=IIDPreprocessor(),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(buckets_number=3),
-        scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=PredictMeanEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -52,8 +53,8 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=SupportVectorEstimator(),
-        ci_estimator=JacknifeConfidenceEstimator(),
+        scope_estimator=LinearRegressionEstimator(),
+        ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
     dp3 = DefaultPipeline(
@@ -119,8 +120,8 @@ if __name__ == "__main__":
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
 
-    local_model_saver = LocalMetaModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=model)
-    local_lar_saver = LocalLARModelSaver(today=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
-    local_data_saver = LocalDataSaver(today=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)
+    local_model_saver = S3MetaModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=model)
+    local_lar_saver = LocalLARModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
+    local_data_saver = LocalDataSaver(time=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)
     SavingManager = OxariSavingManager(meta_model=local_model_saver, lar_model=local_lar_saver, dataset=local_data_saver)
     SavingManager.run()

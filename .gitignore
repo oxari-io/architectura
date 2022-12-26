@@ -11,8 +11,8 @@ __pycache__/
 local/data/*
 
 # objects
-local/objects/*
-!/**/.gitkeep
+local/objects/**/*
+!**/.gitkeep
 
 # Distribution / packaging
 .Python

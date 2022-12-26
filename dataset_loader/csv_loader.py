@@ -33,7 +33,7 @@ class CSVCategoricalLoader(CategoricalLoader, LocalDatasource):
 
 
 
-
+# TODO: The internet loaders need a progressbar
 class S3ScopeLoader(ScopeLoader, S3Datasource):
 
     def __init__(self, **kwargs):

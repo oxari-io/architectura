@@ -32,24 +32,29 @@ from base import OxariMetaModel, OxariDataManager
 from os import environ as env
 import boto3
 
+ROOT_LOCAL = "local"
+ROOT_REMOTE = "remote"
 
 class Destination(abc.ABC):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.local_path = ''
+        self.destination_path = Path('.')
 
 
 class LocalDestination(Destination):
 
-    def __init__(self, local_path: Path = OBJECT_DIR, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.local_path = Path(local_path)
-        self._check_if_destination_accessible()
+        self.destination_path = ROOT_LOCAL / self.SUB_FOLDER
 
+        
     def _check_if_destination_accessible(self):
-        if not self.local_path.exists():
-            raise Exception(f"Path(s) does not exist! Got {self.local_path}")
+        if not self.destination_path.exists():
+            raise Exception(f"Path(s) do/does not exist! Got {self.destination_path.absolute()}")
+
+    def _create_path(self):
+        self.destination_path.mkdir(parents=True, exist_ok=True)        
 
 
 class S3Destination(Destination):
@@ -94,6 +99,7 @@ class PartialSaver(abc.ABC):
 
     def save(self, **kwargs) -> bool:
         try:
+            self._create
             self._check_if_destination_accessible()
             self._save(**kwargs)
             return True
@@ -152,20 +158,21 @@ class LARModelSaver(PartialSaver, abc.ABC):
 class LocalMetaModelSaver(LocalDestination, MetaModelSaver):
 
     def _save(self, **kwargs) -> bool:
-        return pkl.dump(self._store, io.open("local" / self.SUB_FOLDER / f"{self.name}.pkl", 'wb'))
+        
+        return pkl.dump(self._store, io.open(self.destination_path / f"{self.name}.pkl", 'wb'))
 
 
 class LocalLARModelSaver(LocalDestination, LARModelSaver):
 
     def _save(self, **kwargs) -> bool:
-        return pkl.dump(self._store, io.open("local" / self.SUB_FOLDER / f"{self.name}.pkl", 'wb'))
+        return pkl.dump(self._store, io.open(self.destination_path / f"{self.name}.pkl", 'wb'))
 
 
 class LocalDataSaver(LocalDestination, DataSaver):
 
     def _save(self, **kwargs) -> bool:
-        csv_name_1 = "local" / self.SUB_FOLDER / f"scope_imputed_{self._time}_{self._name}.csv"
-        csv_name_2 = "local" / self.SUB_FOLDER / f"lar_imputed_{self._time}_{self._name}.csv"
+        csv_name_1 = self.destination_path / f"scope_imputed_{self._time}_{self._name}.csv"
+        csv_name_2 = self.destination_path / f"lar_imputed_{self._time}_{self._name}.csv"
         scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
         lar_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_LARS)
         scope_imputed.to_csv(csv_name_1, index=False)

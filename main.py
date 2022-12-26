@@ -30,8 +30,8 @@ N_STARTUP_TRIALS = 1
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
-    dataset = CSVDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-    # dataset = CSVDataManager().run()
+    # dataset = CSVDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
+    dataset = CSVDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

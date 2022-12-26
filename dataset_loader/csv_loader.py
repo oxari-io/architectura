@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Dict
-from base.dataset_loader import CategoricalLoader, LocalDatasourceMixin, OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader, DatasourceMixin
+from base.dataset_loader import CategoricalLoader, LocalDatasource, OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader, Datasource
 from base.mappings import CatMapping, NumMapping
 import pandas as pd
 import numpy as np
@@ -14,47 +14,28 @@ COLS_CATEGORICALS = CatMapping.get_features()
 COLS_FINANCIALS = NumMapping.get_features()
 
 
-class CSVScopeLoader(ScopeLoader, LocalDatasourceMixin):
+class CSVScopeLoader(ScopeLoader, LocalDatasource):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "scopes.csv")
 
-        print("")
 
-    def run(self) -> "ScopeLoader":
-        self.data = pd.read_csv(self.path)
-        self.data = self._clean_up_targets(data=self.data, threshold=self.threshold)
-        return self
-
-
-class CSVFinancialLoader(FinancialLoader, LocalDatasourceMixin):
+class CSVFinancialLoader(FinancialLoader, LocalDatasource):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "financials.csv")
 
-    def run(self) -> "FinancialLoader":
-        super()._check_if_data_exists()
-        self.data = pd.read_csv(self.path)
-        self.data = self.data[["isin", "year"] + COLS_FINANCIALS]
-        return self
 
-
-class CSVCategoricalLoader(CategoricalLoader, LocalDatasourceMixin):
+class CSVCategoricalLoader(CategoricalLoader, LocalDatasource):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "categoricals.csv")
 
-    def run(self) -> "CategoricalLoader":
-        super()._check_if_data_exists()
-        self.data = pd.read_csv(self.path)
-        self.data = self.data[["isin"] + COLS_CATEGORICALS]
-        return self
 
-
-class S3Datasource(DatasourceMixin):
+class S3Datasource(Datasource):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -83,7 +64,7 @@ class S3Datasource(DatasourceMixin):
         # https://docs.digitalocean.com/reference/api/spaces-api/
         self._check_if_data_exists()
         response = self.client.get_object(Bucket=self.do_spaces_folder, Key=self.file_name)
-        self.data = pd.read_csv(response['Body'])
+        self._data = pd.read_csv(response['Body'])
         return self
 
 
@@ -94,9 +75,6 @@ class S3ScopeLoader(ScopeLoader, S3Datasource):
         self.file_name = "scopes.csv"
         self.client = self.connect()
 
-    def run(self) -> "PartialLoader":
-        return super().run()
-
 
 class S3FinancialLoader(FinancialLoader, S3Datasource):
 
@@ -105,9 +83,6 @@ class S3FinancialLoader(FinancialLoader, S3Datasource):
         self.file_name = "financials.csv"
         self.client = self.connect()
 
-    def run(self) -> "PartialLoader":
-        return super().run()
-
 
 class S3CategoricalLoader(CategoricalLoader, S3Datasource):
 
@@ -115,9 +90,6 @@ class S3CategoricalLoader(CategoricalLoader, S3Datasource):
         super().__init__(**kwargs)
         self.file_name = "categoricals.csv"
         self.client = self.connect()
-
-    def run(self) -> "PartialLoader":
-        return super().run()
 
 
 class CSVDataManager(OxariDataManager):

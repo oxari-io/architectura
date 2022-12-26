@@ -19,33 +19,18 @@ from base.helper import LogarithmScaler
 from base.oxari_types import ArrayLike
 from collections import namedtuple
 
+COLS_CATEGORICALS = CatMapping.get_features()
+COLS_FINANCIALS = NumMapping.get_features()
 
-class DatasourceMixin(abc.ABC):
+
+class Datasource(abc.ABC):
+
     @abc.abstractmethod
     def _check_if_data_exists(self) -> bool:
         """
         Implementation should check if self.path is set and then check the specifics for it.
         """
         return None
-
-
-class LocalDatasourceMixin(DatasourceMixin):
-    def __init__(self, path: str = "", **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.path = Path(path)
-        self._check_if_data_exists()
-
-    def _check_if_data_exists(self):
-        if not self.path.exists():
-            raise Exception(f"Path(s) does not exist! Got {self.path}")
-
-
-class PartialLoader(abc.ABC):
-    def __init__(self, verbose=False, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.verbose = verbose
-        self.data: pd.DataFrame = None
-        self.columns: List[str] = None
 
     @abc.abstractmethod
     def run(self) -> "PartialLoader":
@@ -55,19 +40,50 @@ class PartialLoader(abc.ABC):
         return self
 
 
+class LocalDatasource(Datasource):
+
+    def __init__(self, path: str = "", **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.path = Path(path)
+        self._check_if_data_exists()
+
+    def _check_if_data_exists(self):
+        if not self.path.exists():
+            raise Exception(f"Path(s) does not exist! Got {self.path}")
+
+    def run(self) -> "CategoricalLoader":
+        super()._check_if_data_exists()
+        self._data = pd.read_csv(self.path)
+        return self
+
+
+class PartialLoader(abc.ABC):
+
+    def __init__(self, verbose=False, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.verbose = verbose
+        self._data: pd.DataFrame = None
+        self.columns: List[str] = None
+
+    @property
+    def data(self):
+        return self._data
+
 class ScopeLoader(PartialLoader, abc.ABC):
+
     def __init__(self, threshold=5, **kwargs) -> None:
         super().__init__(**kwargs)
         self.threshold = threshold
         self.columns = NumMapping.get_targets()
 
-    def _clean_up_targets(self, **kwargs):
+    @property
+    def data(self):
         # before logging some scopes have very small values so we discard them
 
-        data = kwargs.get("data", self.data)
+        data = self._data
         num_inititial = data.shape[0]
 
-        threshold = kwargs.get("threshold", self.threshold)
+        threshold = self.threshold
 
         # dropping data entries where unlogged scopes are lower than threshold
         data[self.columns] = np.where((data[self.columns] < threshold), np.nan, data[self.columns])
@@ -83,19 +99,31 @@ class ScopeLoader(PartialLoader, abc.ABC):
 
 
 class FinancialLoader(PartialLoader, abc.ABC):
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.columns = NumMapping.get_features()
 
+    @property
+    def data(self):
+        return self._data[["isin", "year"] + COLS_FINANCIALS]
+
 
 class CategoricalLoader(PartialLoader, abc.ABC):
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.columns = CatMapping.get_features()
 
+    @property
+    def data(self):
+        return self._data[["isin"] + COLS_CATEGORICALS]
+
 
 class SplitBag():
+
     class Pair:
+
         def __init__(self, X, y) -> None:
             self.X = X
             self.y = y
@@ -120,6 +148,7 @@ class SplitBag():
 
 
 class SplitScopeDataset():
+
     def __init__(
         self,
         data: ArrayLike,
@@ -168,10 +197,10 @@ class OxariDataManager(OxariMixin):
 
     def __init__(
         self,
-        scope_loader: ScopeLoader = None,
-        financial_loader: FinancialLoader = None,
-        categorical_loader: CategoricalLoader = None,
-        other_loaders: Dict[str, PartialLoader] = None,
+        scope_loader: Datasource = None,
+        financial_loader: Datasource = None,
+        categorical_loader: Datasource = None,
+        other_loaders: Dict[str, Datasource] = None,
         verbose=False,
         **kwargs,
     ):

@@ -61,6 +61,7 @@ mkl-include = "^2023.0.0"
 onednn-devel-cpu-dpcpp-gpu-dpcpp = "^2023.0.0"
 python-dotenv = "^0.21.0"
 boto3 = "^1.26.37"
+typing-extensions = "^4.4.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"

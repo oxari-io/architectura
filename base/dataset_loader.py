@@ -1,10 +1,4 @@
-"""
-OxariMixin has been removed from the inheritance of the DataLoader class. 
-That is because DataLoader does not need methods as set_optimizer or load_state, etc.
-
-Also, object_filename has been removed from DataLoader objects because what's the use of assigning a name to a class which won't be saved as a file.
-"""
-
+from __future__ import annotations
 from os import PathLike
 from pathlib import Path
 from typing import Dict, List, Union
@@ -16,8 +10,11 @@ from base import OxariMixin, OxariTransformer
 from base.mappings import CatMapping, NumMapping
 from sklearn.model_selection import train_test_split
 from base.helper import LogarithmScaler
-from base.oxari_types import ArrayLike
+from base.oxari_types import ArrayLike, Self
 from collections import namedtuple
+import boto3
+from os import environ as env
+import io
 
 COLS_CATEGORICALS = CatMapping.get_features()
 COLS_FINANCIALS = NumMapping.get_features()
@@ -26,19 +23,58 @@ COLS_FINANCIALS = NumMapping.get_features()
 class Datasource(abc.ABC):
 
     @abc.abstractmethod
-    def _check_if_data_exists(self) -> bool:
+    def _check_if_data_exists(self, **kwargs) -> bool:
         """
         Implementation should check if self.path is set and then check the specifics for it.
         """
         return None
 
     @abc.abstractmethod
-    def run(self) -> "PartialLoader":
+    def _load(self, **kwargs) -> Self:
         """
         Reads the files and combines them to one single file.
         """
         return self
+    
+    def load(self, **kwargs) -> Self:
+        # https://docs.digitalocean.com/reference/api/spaces-api/
+        self._check_if_data_exists()
+        self._load(**kwargs)
+        return self
+    
+    
+class S3Datasource(Datasource):
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.file_name = ''
+        self.do_spaces_endpoint = env.get('S3_ENDPOINT')
+        self.do_spaces_folder = env.get('S3_BUCKET')
+        self.do_spaces_key_id = env.get('S3_KEY_ID')
+        self.do_spaces_access_key = env.get('S3_ACCESS_KEY')
+        self.do_spaces_region = env.get('S3_REGION')
+        self.connect()
+
+    def _check_if_data_exists(self) -> bool:
+        self.meta = self.client.head_object(Bucket=self.do_spaces_folder, Key=self.file_name)
+
+
+    def _load(self) -> Self:
+        # https://docs.digitalocean.com/reference/api/spaces-api/
+        response = self.client.get_object(Bucket=self.do_spaces_folder, Key=self.file_name)
+        self._data = pd.read_csv(response['Body'])
+        return self
+
+    def connect(self):
+        self.session: boto3.Session = boto3.Session()
+        self.client = self.session.client(
+            's3',
+            region_name=self.do_spaces_region,
+            endpoint_url=f'{self.do_spaces_endpoint}',
+            aws_access_key_id=self.do_spaces_key_id,
+            aws_secret_access_key=self.do_spaces_access_key,
+        )
+        return self.client
 
 class LocalDatasource(Datasource):
 
@@ -51,10 +87,10 @@ class LocalDatasource(Datasource):
         if not self.path.exists():
             raise Exception(f"Path(s) does not exist! Got {self.path}")
 
-    def run(self) -> "CategoricalLoader":
-        super()._check_if_data_exists()
+    def _load(self) -> "CategoricalLoader":
         self._data = pd.read_csv(self.path)
         return self
+
 
 
 class PartialLoader(abc.ABC):
@@ -214,9 +250,9 @@ class OxariDataManager(OxariMixin):
         self.threshold = kwargs.pop("threshold", 5)
 
     def run(self, **kwargs) -> "OxariDataManager":
-        self.scope_loader = self.scope_loader.run()
-        self.financial_loader = self.financial_loader.run()
-        self.categorical_loader = self.categorical_loader.run()
+        self.scope_loader = self.scope_loader.load()
+        self.financial_loader = self.financial_loader.load()
+        self.categorical_loader = self.categorical_loader.load()
         # scope_data:ArrayLike = self.scope_transformer.fit_transform(self.scope_loader.data)
         _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
         _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")

@@ -98,6 +98,7 @@ class PartialSaver(abc.ABC):
             self._save(**kwargs)
             return True
         except Exception as e:
+            # TODO: Needs local emergency saving in case of exception
             print(f"ERROR: Something went horribly wrong while saving {self._name}: {e}")
             return False
 

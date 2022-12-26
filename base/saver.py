@@ -40,7 +40,6 @@ class Destination(abc.ABC):
         self.local_path = ''
 
 
-
 class LocalDestination(Destination):
 
     def __init__(self, local_path: Path = OBJECT_DIR, **kwargs) -> None:
@@ -76,17 +75,18 @@ class S3Destination(Destination):
         return self.client
 
     def _check_if_destination_accessible(self):
+        # TODO: Construct a proper check
         test = self.session.get_available_resources()
 
 
 class PartialSaver(abc.ABC):
-
-    def __init__(self, time=time.strftime('%d-%m-%Y'), name="", verbose=False, **kwargs) -> None:
+    
+    def __init__(self, time=time.strftime('%d-%m-%Y'), name="noname", verbose=False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.verbose = verbose
         self._store = None
-        self.time = time
-        self.name = name
+        self._time = time
+        self._name = name
 
     @abc.abstractmethod
     def _save(self, **kwargs) -> bool:
@@ -98,7 +98,7 @@ class PartialSaver(abc.ABC):
             self._save(**kwargs)
             return True
         except Exception as e:
-            print(f"ERROR: Something went horribly wrong while saving {self.name}: {e}")
+            print(f"ERROR: Something went horribly wrong while saving {self._name}: {e}")
             return False
 
     @abc.abstractmethod
@@ -114,71 +114,83 @@ class PartialSaver(abc.ABC):
 
 
 class MetaModelSaver(PartialSaver, abc.ABC):
-    SUB_FOLDER = Path("meta_model")
+    SUB_FOLDER = Path("objects/meta_model")
     
     def set(self, model: OxariMetaModel) -> "MetaModelSaver":
         self._store = model
         return self
+    
+    @property
+    def name(self):
+        return f"meta_model_{self._name}_{self._time}"
 
 
 class DataSaver(PartialSaver, abc.ABC):
+    SUB_FOLDER = Path("objects/estimates")
 
     def set(self, dataset: OxariDataManager) -> "DataSaver":
         self._store = dataset
         return self
 
+    @property
+    def name(self):
+        return f"estimates_{self._name}_{self._time}"
+
 
 class LARModelSaver(PartialSaver, abc.ABC):
+    SUB_FOLDER = Path("objects/lar_model")
 
     def set(self, model: OxariMetaModel) -> "LARModelSaver":
         self._store = model
         return self
 
+    @property
+    def name(self):
+        return f"lar_model_{self._name}_{self._time}"
 
 class LocalMetaModelSaver(LocalDestination, MetaModelSaver):
 
-    # def __init__(self, **kwargs):
-    #     super().__init__(**kwargs)
-
     def _save(self, **kwargs) -> bool:
-        name = "noname" if self.name == "" else self.name
-        return pkl.dump(self._store, io.open(self.local_path / self.SUB_FOLDER / f"MetaModel_{self.time}_{name}.pkl", 'wb'))
-
-
-class S3MetaModelSaver(S3Destination, MetaModelSaver):
-
-    def _save(self, **kwargs):
-        name = "noname" if self.name == "" else self.name
-        pkl_stream = pkl.dumps(self._store)
-        self.client.put_object(Body=pkl_stream, Bucket='remote', Key=str(self.SUB_FOLDER / f"MetaModel_{self.time}_{name}.pkl"))
-
-    # def _check_if_destination_accessible(self) -> bool:
-    #     return super()._check_if_destination_accessible()
+        return pkl.dump(self._store, io.open("local" / self.SUB_FOLDER / f"{self.name}.pkl", 'wb'))
 
 
 class LocalLARModelSaver(LocalDestination, LARModelSaver):
 
-    # def __init__(self, **kwargs):
-    #     super().__init__(**kwargs)
-
     def _save(self, **kwargs) -> bool:
-        name = "noname" if self.name == "" else self.name
-        return pkl.dump(self._store, io.open(self.local_path / f"LARModel_{self.time}_{name}.pkl", 'wb'))
+        return pkl.dump(self._store, io.open("local" / self.SUB_FOLDER / f"{self.name}.pkl", 'wb'))
 
 
 class LocalDataSaver(LocalDestination, DataSaver):
 
-    # def __init__(self, **kwargs):
-    #     super().__init__(**kwargs)
-
     def _save(self, **kwargs) -> bool:
-        name = "noname" if self.name == "" else self.name
-        csv_name_1 = self.local_path / f"scope_imputed_{self.time}_{name}.csv"
-        csv_name_2 = self.local_path / f"lar_imputed_{self.time}_{name}.csv"
+        csv_name_1 = "local" / self.SUB_FOLDER / f"scope_imputed_{self._time}_{self._name}.csv"
+        csv_name_2 = "local" / self.SUB_FOLDER / f"lar_imputed_{self._time}_{self._name}.csv"
         scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
         lar_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_LARS)
         scope_imputed.to_csv(csv_name_1, index=False)
         lar_imputed.to_csv(csv_name_2, index=False)
+
+class S3MetaModelSaver(S3Destination, MetaModelSaver):
+
+    def _save(self, **kwargs):
+        pkl_stream = pkl.dumps(self._store)
+        self.client.put_object(Body=pkl_stream, Bucket='remote', Key=str(self.SUB_FOLDER / f"{self.name}.pkl"))
+
+class S3LARModelSaver(S3Destination, LARModelSaver):
+
+    def _save(self, **kwargs):
+        pkl_stream = pkl.dumps(self._store)
+        self.client.put_object(Body=pkl_stream, Bucket='remote', Key=str(self.SUB_FOLDER / f"{self.name}.pkl"))
+
+class S3DataSaver(S3Destination, DataSaver):
+
+    def _save(self, **kwargs) -> bool:
+        csv_name_1 = f"scope_imputed_{self.name}"
+        csv_name_2 = f"lar_imputed_{self.name}"
+        scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
+        lar_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_LARS)
+        self.client.put_object(Body=scope_imputed.to_csv(index=False), Bucket='remote', Key=str(self.SUB_FOLDER / f"{csv_name_1}.csv"))
+        self.client.put_object(Body=lar_imputed.to_csv(index=False), Bucket='remote', Key=str(self.SUB_FOLDER / f"{csv_name_2}.csv"))
         
 
 class OxariSavingManager():

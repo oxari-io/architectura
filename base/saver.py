@@ -99,7 +99,6 @@ class PartialSaver(abc.ABC):
 
     def save(self, **kwargs) -> bool:
         try:
-            self._create
             self._check_if_destination_accessible()
             self._save(**kwargs)
             return True

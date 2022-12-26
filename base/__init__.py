@@ -1,7 +1,8 @@
 
 import platform
 import cpuinfo
-
+from dotenv import load_dotenv
+load_dotenv()
 try:
     processor_type = cpuinfo.get_cpu_info()['brand_raw']
     if "intel" in processor_type.lower():

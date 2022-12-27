@@ -170,6 +170,7 @@ class LocalLARModelSaver(LocalDestination, LARModelSaver):
 class LocalDataSaver(LocalDestination, DataSaver):
 
     def _save(self, **kwargs) -> bool:
+        # TODO: Save all data stored in the manager
         csv_name_1 = self.destination_path / f"scope_imputed_{self._time}_{self._name}.csv"
         csv_name_2 = self.destination_path / f"lar_imputed_{self._time}_{self._name}.csv"
         scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
@@ -190,8 +191,8 @@ class S3LARModelSaver(S3Destination, LARModelSaver):
         self.client.put_object(Body=pkl_stream, Bucket='remote', Key=str(self.SUB_FOLDER / f"{self.name}.pkl"))
 
 class S3DataSaver(S3Destination, DataSaver):
-
     def _save(self, **kwargs) -> bool:
+        # TODO: Save all data stored in the manager
         csv_name_1 = f"scope_imputed_{self.name}"
         csv_name_2 = f"lar_imputed_{self.name}"
         scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)

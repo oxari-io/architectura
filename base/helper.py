@@ -67,6 +67,8 @@ class BucketScopeDiscretizer(OxariScopeTransformer):
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
         return super().reverse_transform(y, **kwargs)
 
+
+# TODO: Checkout TargetTransformer and QuantileTransformer
 class LogarithmScaler(OxariScopeTransformer):
     def __init__(self, name=None, **kwargs) -> None:
         super().__init__(name, **kwargs)

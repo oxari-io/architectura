@@ -4,7 +4,7 @@ from pipeline.core import DefaultPipeline, CVPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
-from postprocessors import ScopeImputerPostprocessor
+from postprocessors import ScopeImputerPostprocessor, JumpRateEvaluator
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(buckets_number=3),
-        scope_estimator=IndependentFeatureVotingRegressionEstimator(),
+        scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=LinearRegressionEstimator(),
+        scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
@@ -86,10 +86,14 @@ if __name__ == "__main__":
     print(model.predict(SPLIT_1.val.X, scope=1))
 
     print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model)
-    scope_imputed_data = scope_imputer.run(X=DATA)
-    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    print(scope_imputed_data)
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    
+    scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
+    scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
+
 
     print("\n", "Predict ALL with Model")
     print(model.predict(SPLIT_1.val.X))

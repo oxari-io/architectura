@@ -218,7 +218,7 @@ class SplitScopeDataset():
         X = self.data.dropna(how="all", subset=scope_col).copy()
         return SplitBag(X[columns], X[scope_col], self.split_size_test, self.split_size_test)
 
-
+HOW_TO_MERGE = "inner"
 class OxariDataManager(OxariMixin):
     """
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
@@ -226,6 +226,8 @@ class OxariDataManager(OxariMixin):
     """
     ORIGINAL = 'original'
     IMPUTED_SCOPES = 'imputed_scopes'
+    JUMP_RATES = 'jump_rates'
+    JUMP_RATES_AGG = 'jump_rates_aggregated'
     IMPUTED_LARS = 'imputed_lars'
 
     NON_FEATURES = ["isin", "year", "scope_1", "scope_2", "scope_3"]
@@ -254,7 +256,8 @@ class OxariDataManager(OxariMixin):
         self.financial_loader = self.financial_loader.load()
         self.categorical_loader = self.categorical_loader.load()
         # scope_data:ArrayLike = self.scope_transformer.fit_transform(self.scope_loader.data)
-        _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
+        _df_original = self.scope_loader.data.dropna(subset="isin")
+        _df_original = _df_original.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
         _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
         # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
         self.add_data(OxariDataManager.ORIGINAL, _df_original, "Dataset without changes.")

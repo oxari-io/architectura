@@ -56,7 +56,6 @@ class RegressorOptimizer(OxariOptimizer):
         self.n_startup_trials = n_startup_trials
         self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False)
         self.scope = None
-        self.bucket_specific = None
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
@@ -240,6 +239,7 @@ class BucketRegressor(OxariRegressor):
     def __init__(self, **kwargs):
         # self.scope = check_scope(scope)
         self.voting_regressors_: Dict[int, VotingRegressor] = {}
+        self.bucket_specifics_ = {"scores":{}}
 
     def fit(self, X, y, **kwargs):
         """
@@ -253,6 +253,7 @@ class BucketRegressor(OxariRegressor):
         trained_candidates = {}
         total = len(regressor_kwargs) * len(list(regressor_kwargs.items())[0][1])
         pbar = tqdm(desc="MMA-Regressor", total=total)
+        
         for bucket, candidates_data in regressor_kwargs.items():
             # TODO: Use cross validation instead. So to make most of the data and have more robust results.
             selector = groups == bucket
@@ -272,8 +273,11 @@ class BucketRegressor(OxariRegressor):
             weights = np.array([v["score"] for _, v in trained_candidates.items()])
             # weights = (weights - weights.min())/(weights.max()-weights.min())
             models = [(name, v["model"]) for name, v in trained_candidates.items()]
+            
             self.voting_regressors_[bucket] = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
-
+            y_hat = self.voting_regressors_[bucket].predict(X[selector] if is_any else X)
+            y_true = y[selector] if is_any else y
+            self.bucket_specifics_["scores"][bucket] = self.evaluate(y_true, y_hat)
         return self
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):

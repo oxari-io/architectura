@@ -24,7 +24,7 @@ from pprint import pprint
 import numpy as np
 
 DATA_DIR = pathlib.Path('local/data')
-from lar_calculator.model_lar import OxariLARCalculator
+from lar_calculator.lar_model import OxariUnboundLAR
 N_TRIALS = 40
 N_STARTUP_TRIALS = 10
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     print(result)
 
     print("\n", "Predict LARs on Mock data")
-    lar_model = OxariLARCalculator().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
     lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
     dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
     print(lar_imputed_data)

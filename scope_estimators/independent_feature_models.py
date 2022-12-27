@@ -12,9 +12,12 @@ N_TRIALS = 1
 N_STARTUP_TRIALS = 1
 
 
-
-class LinearRegressionArmyEstimator(OxariScopeEstimator):
-
+class IndependentFeatureVotingRegressionEstimator(OxariScopeEstimator):
+    """
+    This model is a stupid model. Very very stupid. However, it shows what happen if you train a regressor with only one feature on the data.
+    The core idea is to train a linear model for each feature. Then take the score weighted average for the prediction.
+    We can use this model to test how important interactions are and we can use individual estimators to show how stupid they are.
+    """
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._estimators = {}

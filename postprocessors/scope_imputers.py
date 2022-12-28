@@ -5,7 +5,9 @@ import numpy as np
 from typing import Union
 from typing_extensions import Self
 
+
 class ScopeImputerPostprocessor(OxariPostprocessor):
+
     def __init__(self, estimator: OxariMetaModel, **kwargs):
         super().__init__(**kwargs)
         self.estimator = estimator
@@ -21,7 +23,7 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
 
         # adding a column that indicates whether the scope has been predicted or was reported
         data = data.assign(predicted_s1=np.where(data['scope_1'].isnull(), True, False))
-        data = data.assign(predicted_s2=np.where(data['scope_2'].isnull(), True, False)) 
+        data = data.assign(predicted_s2=np.where(data['scope_2'].isnull(), True, False))
         data = data.assign(predicted_s3=np.where(data['scope_3'].isnull(), True, False))
         self.imputed = {f"scope_{k.split('_')[1][1]}": v for k, v in dict((data[['predicted_s1', 'predicted_s2', 'predicted_s3']] == True).sum()).items()}
 
@@ -44,28 +46,42 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         self.jump_rates_agg = self.jump_rate_evaluator.jump_rates_agg
         return self
 
-
     def __repr__(self):
         return f"@{self.__class__.__name__}[ Count of imputed {self.imputed} ]"
 
+
 class JumpRateEvaluator():
-    def __init__(self, estimator:OxariMetaModel) -> None:
-        self.estimator = estimator 
+
+    def __init__(self, estimator: OxariMetaModel) -> None:
+        self.estimator = estimator
         self.metrics = []
-    
-    def _compute_jump_rates(self, df_company:pd.DataFrame):
+
+    def _compute_jump_rates(self, df_company: pd.DataFrame):
         columns = ['year', 'scope_1', 'scope_2', 'scope_3']
-        
         pre, post = df_company.iloc[:-1][columns], df_company.iloc[1:][columns]
-        jump_rate = post.values/pre
-        jump_rate["year"] = pre['year'].astype('str').values + '-' + post['year'].astype('str').values
-        
-        # jump_rate_median = jump_rate.median(axis=0)
-        return jump_rate
-    
-    def evaluate(self, X:pd.DataFrame) -> Self:
+        jump_rate = post.values / pre
+        jump_rate["year_transition"] = pre['year'].astype('str').values + '-' + post['year'].astype('str').values
+
+        return jump_rate.drop('year', axis=1)
+
+    def _compute_estimate_to_fact_ratio(self, df_company: pd.DataFrame):
+        columns_predicted = ["predicted_s1", "predicted_s2", "predicted_s3"]
+        df_tmp = df_company[columns_predicted]
+        num_datapoints = len(df_tmp)
+
+        tmp_1 = {f"pred_num_s{idx+1}": val for idx, val in enumerate(df_tmp.sum(axis=0).to_dict().values())}
+        tmp_2 = {f"pred_ratio_s{idx+1}": val for idx, val in enumerate((df_tmp.sum(axis=0) / num_datapoints).to_dict().values())}
+        years = "-".join(df_company["year"].astype(str))
+        result_series = pd.Series({**tmp_1, **tmp_2, "num_years": num_datapoints, "year_with_data": years})
+
+        return result_series
+
+    def evaluate(self, X: pd.DataFrame) -> Self:
         companies = X.groupby('isin', group_keys=True)
-        self.jump_rates = companies.apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1)
+        jump_rates: pd.DataFrame = companies.apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
+        estimation_stats: pd.DataFrame = companies.apply(self._compute_estimate_to_fact_ratio).reset_index()
+        self.jump_rates = jump_rates.merge(estimation_stats, left_on="isin", right_on="isin").drop('index', axis=1)
+        # self.jump_rates = self.jump_rates.drop('level_1', axis=1)
         self.jump_rates_agg = self.jump_rates.drop('year', axis=1).groupby('isin').agg(['median', 'mean', 'std', 'max', 'min'])
         self.jump_rates_agg.columns = self.jump_rates_agg.columns.map('|'.join).str.strip('|')
         return self

@@ -59,7 +59,7 @@ class BaselinePreprocessor(OxariPreprocessor):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
         data = X
-
+        self.original_features = data.columns
         # # log scaling the scopes
         # self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical
@@ -73,7 +73,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        X_new = X.copy()
+        X_new = pd.DataFrame(X, columns=self.original_features)
         # impute all the missing columns
         X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
         # log scaling the scopes -> NOTE: NOT NECESSARY DURING INFERENCE

@@ -4,7 +4,7 @@ from pipeline.core import DefaultPipeline, CVPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
-from postprocessors import ScopeImputerPostprocessor, ShapExplainer
+from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
@@ -88,15 +88,21 @@ if __name__ == "__main__":
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
+    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
     
     scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
     scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
 
-    print("Explain Features using SHAP")
-    explainer = ShapExplainer(model.get_pipeline(1)).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    # print("Explain Features using SHAP")
+    # explainer = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    # explainer.plot()
+    
+    print("Explain Effects of features on Residuals")
+    explainer = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     explainer.plot()
+    
+    
     print("\n", "Predict ALL with Model")
     print(model.predict(SPLIT_1.val.X))
 
@@ -126,8 +132,11 @@ if __name__ == "__main__":
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
 
-    local_model_saver = S3MetaModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=model)
-    local_lar_saver = S3LARModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
-    local_data_saver = S3DataSaver(time=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)
+    local_model_saver = LocalMetaModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=model)
+    local_lar_saver = LocalLARModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
+    local_data_saver = LocalDataSaver(time=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)
+    # local_model_saver = S3MetaModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=model)
+    # local_lar_saver = S3LARModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
+    # local_data_saver = S3DataSaver(time=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)
     SavingManager = OxariSavingManager(meta_model=local_model_saver, lar_model=local_lar_saver, dataset=local_data_saver)
     SavingManager.run()

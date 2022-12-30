@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy import spatial
 from sklearn.metrics import mean_absolute_error, log_loss, balanced_accuracy_score, mean_squared_log_error
-
+from pmdarima.metrics import smape
 
 def optuna_metric(y_true, y_pred) -> float:
     # return smape(a=y_true, f=y_pred)
@@ -30,12 +30,12 @@ def calculate_smape(actual, predicted) -> float:
     return round(np.mean(np.abs(predicted - actual) / ((np.abs(predicted) + np.abs(actual)) / 2)) * 100, 2)
 
 
-def smape(a, f):
-    """
-    a --> actual (y_true)
-    f --> forecast (y_pred)
-    """
-    return 1 / len(a) * np.sum(2 * np.abs(f - a) / (np.abs(a) + np.abs(f)) * 100)
+# def smape(a, f):
+#     """
+#     a --> actual (y_true)
+#     f --> forecast (y_pred)
+#     """
+#     return 1 / len(a) * np.sum(2 * np.abs(f - a) / (np.abs(a) + np.abs(f)) * 100)
 
 
 def mape(A, F):

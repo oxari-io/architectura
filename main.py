@@ -4,7 +4,7 @@ from pipeline.core import DefaultPipeline, CVPipeline
 from dataset_loader.csv_loader import CSVDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
-from postprocessors import ScopeImputerPostprocessor, JumpRateEvaluator
+from postprocessors import ScopeImputerPostprocessor, ShapExplainer
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
@@ -94,7 +94,9 @@ if __name__ == "__main__":
     scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
     scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
 
-
+    print("Explain Features using SHAP")
+    explainer = ShapExplainer(model.get_pipeline(1)).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    explainer.plot()
     print("\n", "Predict ALL with Model")
     print(model.predict(SPLIT_1.val.X))
 

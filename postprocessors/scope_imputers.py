@@ -82,6 +82,6 @@ class JumpRateEvaluator():
         estimation_stats: pd.DataFrame = companies.apply(self._compute_estimate_to_fact_ratio).reset_index()
         self.jump_rates = jump_rates.merge(estimation_stats, left_on="isin", right_on="isin").drop('index', axis=1)
         # self.jump_rates = self.jump_rates.drop('level_1', axis=1)
-        self.jump_rates_agg = self.jump_rates.drop('year', axis=1).groupby('isin').agg(['median', 'mean', 'std', 'max', 'min'])
+        self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('isin').agg(['median', 'mean', 'std', 'max', 'min'])
         self.jump_rates_agg.columns = self.jump_rates_agg.columns.map('|'.join).str.strip('|')
         return self

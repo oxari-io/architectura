@@ -114,8 +114,8 @@ class JumpRateExplainer():
         y_jump_rate = get_jump_rate(y, y_hat)
         y_target = y_jump_rate < self.threshold
         self.pipeline.fit(X, y_target, **kwargs)
-        self.feature_names_out_ = self.pipeline[:-1].get_feature_names_out()
-        self.surrogate_model.get_booster().feature_names = list(self.feature_names_out_)
+        self.feature_names_out_ = list(self.pipeline[:-1].get_feature_names_out())
+        self.surrogate_model.get_booster().feature_names = self.feature_names_out_ 
         return self
 
     def explain(self, X, y, **kwargs):
@@ -154,23 +154,14 @@ class JumpRateExplainer():
         tmp['importance'] = self.feature_importances_
         tmp_sorted_subset = tmp.sort_values('importance', ascending=False).iloc[:self.topk_features]
         ax = sns.barplot(data=tmp_sorted_subset, y='feature', x='importance', ax=ax)
+        for (index, row), p in zip(tmp_sorted_subset.iterrows(), ax.patches):
+            ax.text(x=p.get_x(), y=p.get_y()+p.get_height()/2, s=row["feature"], color='black', ha="left", va='center')        
+        ax.get_yaxis().set_ticks([])
         return fig, ax
 
     def plot_tree(self, fig=None, ax=None):
         fig, ax = self._create_canvas(fig, ax)
-        # tmp = pd.DataFrame()
-        # tmp['feature'] = self.feature_names_out_
-        # tmp['importance'] = "q"
-        # is_binary = [self.BINARIES_PREFIX in ft for ft in self.feature_names_out_]
-        # tmp.iloc[is_binary] = 'i'
-        # file_content = tmp.to_csv(sep="\t", header=None, lineterminator='\n')
-        # # virtual_file = io.StringIO(file_content)       
-        # fp = tempfile.TemporaryFile(delete=False)
-        # fp.write(file_content.encode('utf-8'))
-        # fp.close()
-        # plot_tree(self.pipeline[-1], ax=ax, fmap=fp.name, rankdir='LR')
-        plot_tree(self.pipeline[-1], ax=ax, rankdir='LR')
-        
+        ax = plot_tree(self.pipeline[-1], ax=ax, rankdir='LR')
         return fig, ax
 
     def plot(self):

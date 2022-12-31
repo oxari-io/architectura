@@ -22,6 +22,7 @@ from xgboost import plot_tree
 import io
 import tempfile
 import abc
+from base.oxari_types import ArrayLike
 
 
 def get_jump_rate(y_pre, y_post):
@@ -92,16 +93,28 @@ class ShapExplainer(OxariExplainer):
         shap.summary_plot(self.shap_values, self.X)
 
 
-class TreeBasedExplainer(abc.ABC):
+class SurrogateExplainerMixin(abc.ABC):
+    BINARIES_PREFIX = "categorical"
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, estimator:OxariScopeEstimator, surrogate:XGBModel, **kwargs) -> None:
         super().__init__()
-        self.surrogate_model: XGBModel = None
+        self.estimator = estimator
+        self.surrogate_model: XGBModel = surrogate
         self.pipeline: Pipeline = None
+
+
+class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
+
+    def __init__(self, estimator: OxariScopeEstimator, surrogate, topk_features=20, **kwargs) -> None:
+        super().__init__(estimator=estimator, surrogate=surrogate ,**kwargs)
+        self.feature_importances_: ArrayLike = None
+        self.topk_features = topk_features
+        self._init_preprocessor()
+        self._init_surrogate_model()
 
     def _init_feature_names(self):
         self.feature_names_out_ = list(self.pipeline[:-1].get_feature_names_out())
-        self.surrogate_model.get_booster().feature_names = self.feature_names_out_
+        self.pipeline[-1].get_booster().feature_names = self.feature_names_out_
 
     def _init_preprocessor(self):
         self.cat_transform = ColumnTransformer([(self.BINARIES_PREFIX, OneHotEncoder(drop='first', handle_unknown='infrequent_if_exist'), CatMapping.get_features())],
@@ -136,15 +149,10 @@ class TreeBasedExplainer(abc.ABC):
         return fig, axes
 
 
-class ResidualFeatureImportanceExplainer(TreeBasedExplainer, OxariExplainer):
+class ResidualFeatureImportanceExplainer(TreeBasedExplainerMixin):
 
-    def __init__(self, estimator: OxariScopeEstimator, topk_features=20, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.estimator = estimator
-        self.surrogate_model = XGBRegressor()
-        self.topk_features = topk_features
-        self._init_preprocessor()
-        self._init_surrogate_model()
+    def __init__(self, estimator: OxariScopeEstimator, **kwargs) -> None:
+        super().__init__(estimator=estimator, surrogate=XGBRegressor(), **kwargs)
 
     def fit(self, X, y, **kwargs):
         y_hat = self.estimator.predict(X)
@@ -160,16 +168,11 @@ class ResidualFeatureImportanceExplainer(TreeBasedExplainer, OxariExplainer):
         return self
 
 
-class JumpRateExplainer(TreeBasedExplainer, OxariExplainer):
+class JumpRateExplainer(TreeBasedExplainerMixin):
 
-    def __init__(self, estimator: OxariScopeEstimator, topk_features=20, threshhold=1.2, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.estimator = estimator
-        self.surrogate_model = XGBClassifier()
-        self.topk_features = topk_features
+    def __init__(self, estimator: OxariScopeEstimator, threshhold=1.2, **kwargs) -> None:
+        super().__init__(estimator=estimator, surrogate=XGBClassifier(), **kwargs)
         self.threshold = threshhold
-        self._init_preprocessor()
-        self._init_surrogate_model()
 
     def fit(self, X, y, **kwargs):
         y_hat = self.estimator.predict(X)
@@ -189,16 +192,11 @@ class JumpRateExplainer(TreeBasedExplainer, OxariExplainer):
         return self
 
 
-class DecisionExplainer(JumpRateExplainer):
+class DecisionExplainer(TreeBasedExplainerMixin):
 
-    def __init__(self, estimator: OxariScopeEstimator, topk_features=20, threshhold=1.2, **kwargs) -> None:
-        super().__init__(estimator=estimator, **kwargs)
-        # self.estimator = estimator
-        self.surrogate_model = XGBRegressor()
-        self.topk_features = topk_features
+    def __init__(self, estimator: OxariScopeEstimator, threshhold=1.2, **kwargs) -> None:
+        super().__init__(estimator=estimator, surrogate=XGBRegressor(), **kwargs)
         self.threshold = threshhold
-        self._init_preprocessor()
-        self._init_surrogate_model()
 
     def fit(self, X, y, **kwargs):
         y_hat = self.estimator.predict(X)

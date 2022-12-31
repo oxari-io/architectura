@@ -19,7 +19,11 @@ from sklearn.metrics import classification_report
 from xgboost import plot_tree
 import io
 import tempfile
+import abc
 
+def get_jump_rate(y_pre, y_post):
+    result = np.maximum(y_pre, y_post) / np.minimum(y_pre, y_post)
+    return result
 
 def custom_masker(mask, x):
     x_ = x.copy()
@@ -28,8 +32,32 @@ def custom_masker(mask, x):
     return x_.reshape(1, len(x))  # in this simple example we just zero out the features we are masking
     # return pd.Series(zip(features, x_)).to_frame() # in this simple example we just zero out the features we are masking
 
+class OxariExplainer(abc.ABC):
+    def _create_canvas(self, fig, ax):
+        if fig and ax:
+            # Both are provided => Nothing needs to be created
+            pass
 
-class ShapExplainer():
+        if (not fig) and (not ax):
+            # Nothing is provided => Both are needed.
+            fig = plt.figure(figsize=(15, 10))
+            ax = fig.add_subplot()
+
+        if (fig) and (not ax):
+            # Only figure is provided => Ax needs to be created.
+            ax = fig.add_subplot()
+
+        if (not fig) and ax:
+            # Only ax is proided => No need for a figure. Plot on ax.
+            pass
+
+        return fig, ax
+    
+    @abc.abstractmethod
+    def visualize(self):
+        pass
+
+class ShapExplainer(OxariExplainer):
 
     def __init__(self, estimator: OxariScopeEstimator, sample_size=100, **kwargs) -> None:
         self.estimator = estimator
@@ -51,11 +79,11 @@ class ShapExplainer():
         self.shap_values = self.ex(self.X)
         return self
 
-    def plot(self):
+    def visualize(self):
         shap.summary_plot(self.shap_values, self.X)
 
 
-class ResidualFeatureImportanceExplainer():
+class ResidualFeatureImportanceExplainer(OxariExplainer):
 
     def __init__(self, estimator: OxariScopeEstimator, topk_features=20, **kwargs) -> None:
         self.estimator = estimator
@@ -79,7 +107,7 @@ class ResidualFeatureImportanceExplainer():
         self.feature_importances_ = self.surrogate_model.feature_importances_
         return self
 
-    def plot(self):
+    def visualize(self):
         fig, ax = plt.subplots(1, 1, figsize=(15, 7))
         tmp = pd.DataFrame()
         tmp['feature'] = self.feature_names_out_
@@ -91,12 +119,10 @@ class ResidualFeatureImportanceExplainer():
         return plt.show(block=True)
 
 
-def get_jump_rate(y_pre, y_post):
-    result = np.maximum(y_pre, y_post) / np.minimum(y_pre, y_post)
-    return result
 
 
-class JumpRateExplainer():
+
+class JumpRateExplainer(OxariExplainer):
     BINARIES_PREFIX = 'categoricals'
 
     def __init__(self, estimator: OxariScopeEstimator, topk_features=20, threshhold=1.2, **kwargs) -> None:
@@ -127,25 +153,6 @@ class JumpRateExplainer():
         self.feature_importances_ = self.surrogate_model.feature_importances_
         return self
 
-    def _create_canvas(self, fig, ax):
-        if fig and ax:
-            # Both are provided => Nothing needs to be created
-            pass
-
-        if (not fig) and (not ax):
-            # Nothing is provided => Both are needed.
-            fig = plt.figure(figsize=(15, 7))
-            ax = fig.add_subplot()
-
-        if (fig) and (not ax):
-            # Only figure is provided => Ax needs to be created.
-            ax = fig.add_subplot()
-
-        if (not fig) and ax:
-            # Only ax is proided => No need for a figure. Plot on ax.
-            pass
-
-        return fig, ax
 
     def plot_importances(self, fig=None, ax=None):
         fig, ax = self._create_canvas(fig, ax)
@@ -164,7 +171,7 @@ class JumpRateExplainer():
         ax = plot_tree(self.pipeline[-1], ax=ax, rankdir='LR')
         return fig, ax
 
-    def plot(self):
+    def visualize(self):
         fig, axes = plt.subplots(2, 1, figsize=(15, 7))
         ax1, ax2 = axes
         fig, ax1 = self.plot_importances(fig, ax1)
@@ -173,18 +180,22 @@ class JumpRateExplainer():
         return fig, axes
 
 
-class DecisionExplainer():
+class DecisionExplainer(JumpRateExplainer):
 
-    def __init__(self, estimator: OxariScopeEstimator, **kwargs) -> None:
+    def __init__(self, estimator: OxariScopeEstimator, topk_features=20, threshhold=1.2, **kwargs) -> None:
         self.estimator = estimator
         self.surrogate_model = XGBRegressor()
-
-        self.cat_transform = ColumnTransformer([('categoricals', OneHotEncoder(drop='first'), CatMapping.get_features())], remainder='passthrough')
+        self.topk_features = topk_features
+        self.threshold = threshhold
+        self.cat_transform = ColumnTransformer([(self.BINARIES_PREFIX, OneHotEncoder(drop='first', handle_unknown='infrequent_if_exist'), CatMapping.get_features())],
+                                               remainder='passthrough')
         self.pipeline = Pipeline([('cat-encode', self.cat_transform), ('regress', self.surrogate_model)])
 
     def fit(self, X, y, **kwargs):
         y_hat = self.estimator.predict(X)
         self.pipeline.fit(X, y_hat, **kwargs)
+        self.feature_names_out_ = list(self.pipeline[:-1].get_feature_names_out())
+        self.surrogate_model.get_booster().feature_names = self.feature_names_out_ 
         return self
 
     def explain(self, X, y, **kwargs):
@@ -194,5 +205,20 @@ class DecisionExplainer():
         self.feature_importances_ = self.surrogate_model.feature_importances_
         return self
 
-    def plot(self):
-        sns.barplot(self.feature_importances_)
+    def plot_importances(self, fig=None, ax=None):
+        fig, ax = self._create_canvas(fig, ax)
+        tmp = pd.DataFrame()
+        tmp['feature'] = self.feature_names_out_
+        tmp['importance'] = self.feature_importances_
+        tmp_sorted_subset = tmp.sort_values('importance', ascending=False).iloc[:self.topk_features]
+        ax = sns.barplot(data=tmp_sorted_subset, y='feature', x='importance', ax=ax)
+        for (index, row), p in zip(tmp_sorted_subset.iterrows(), ax.patches):
+            ax.text(x=p.get_x(), y=p.get_y()+p.get_height()/2, s=row["feature"], color='black', ha="left", va='center')        
+        ax.get_yaxis().set_ticks([])
+        return fig, ax
+    
+    def visualize(self):
+        fig, ax = plt.subplots(1, 1, figsize=(15, 7))
+        fig, ax = self.plot_importances(fig, ax)
+        fig.tight_layout()
+        return fig, ax

@@ -91,6 +91,8 @@ class ShapExplainer(OxariExplainer):
 
     def visualize(self):
         shap.summary_plot(self.shap_values, self.X)
+        # TODO: Should also return fig and ax like the other explainers.
+        return None, None
 
 
 class SurrogateExplainerMixin(abc.ABC):

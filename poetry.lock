@@ -679,48 +679,6 @@ files = [
 ]
 
 [[package]]
-name = "daal"
-version = "2023.0.0"
-description = "Intel® oneAPI Data Analytics Library"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "daal-2023.0.0-py2.py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:00f762d2bfb94b3649a6a86bbaf32a6ba78ea47b6cee57eb5544bf93bf9eabc6"},
-    {file = "daal-2023.0.0-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:93516a8b4d40dc1ff6b2b30dba2ed3a37ec4776ea00b0b852e7406aea2d21896"},
-    {file = "daal-2023.0.0-py2.py3-none-win_amd64.whl", hash = "sha256:15b3f184709b1a33316662dbab2e45c104e2528534734e803597a872d3bb1f4a"},
-]
-
-[package.dependencies]
-tbb = ">=2021.0.0,<2022.0.0"
-
-[[package]]
-name = "daal4py"
-version = "2023.0.0"
-description = "daal4py is a Convenient Python API to the Intel® oneAPI Data Analytics Library (oneDAL)"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "daal4py-2023.0.0-py310-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:c8d83e00caf355ac1142913d6f25a6af5f10c43b60ce859e4aa5e19f1af7a630"},
-    {file = "daal4py-2023.0.0-py310-none-manylinux1_x86_64.whl", hash = "sha256:7f293bc157d0ac296adc14c67cadd5b1ad75463a4cbea8d55fd64c799a26e6b2"},
-    {file = "daal4py-2023.0.0-py310-none-win_amd64.whl", hash = "sha256:238fd7e6dd8d6d6f23d8caebf3e001be37b7c61f0e4de2e0d02a6f2ff951b41b"},
-    {file = "daal4py-2023.0.0-py37-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:d31dcb26f10a8ef5277b164f8081b57df1044aca9d3e240949b56d553e98b640"},
-    {file = "daal4py-2023.0.0-py37-none-manylinux1_x86_64.whl", hash = "sha256:bea793d0f2283cd83277ccae03028c42780f0f2c776458a7c200953cb165f8de"},
-    {file = "daal4py-2023.0.0-py37-none-win_amd64.whl", hash = "sha256:ee93ad418c2429a921d7ddad8e2a0973fd567a51e3d8bd795d92aaf56356c3d1"},
-    {file = "daal4py-2023.0.0-py38-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:3ce844206214edaad2103b1c4a3f1999ae2328e2c445eef34f0ab2d8da088745"},
-    {file = "daal4py-2023.0.0-py38-none-manylinux1_x86_64.whl", hash = "sha256:b43f8b9b03c6f465e39bde4ff9191e4b63c222f6db1985f9b02d266da032f153"},
-    {file = "daal4py-2023.0.0-py38-none-win_amd64.whl", hash = "sha256:2d411fb259fdb8acd7d2268b5049ca1206b80dca82db399bf21c280f35ead191"},
-    {file = "daal4py-2023.0.0-py39-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:302c304d9be58358340f417dafbb0b0f5f4e27e1c7ffac812fbb4d65dbd39c79"},
-    {file = "daal4py-2023.0.0-py39-none-manylinux1_x86_64.whl", hash = "sha256:d485226a2ef4edd49d5e0b8287f13d7e2da21dc90004f2883cd12265e4fa3de4"},
-    {file = "daal4py-2023.0.0-py39-none-win_amd64.whl", hash = "sha256:07861c4a0d42f6b2fe2153f2f78443f2ecfdab6681ad34197b24b873291fcaeb"},
-]
-
-[package.dependencies]
-daal = "2023.0.0"
-numpy = ">=1.15"
-
-[[package]]
 name = "debugpy"
 version = "1.6.4"
 description = "An implementation of the Debug Adapter Protocol for Python"
@@ -879,6 +837,23 @@ files = [
 ]
 
 [[package]]
+name = "graphviz"
+version = "0.20.1"
+description = "Simple Python interface for Graphviz"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "graphviz-0.20.1-py3-none-any.whl", hash = "sha256:587c58a223b51611c0cf461132da386edd896a029524ca61a1462b880bf97977"},
+    {file = "graphviz-0.20.1.zip", hash = "sha256:8c58f14adaa3b947daf26c19bc1e98c4e0702cdc31cf99153e6f06904d492bf8"},
+]
+
+[package.extras]
+dev = ["flake8", "pep8-naming", "tox (>=3)", "twine", "wheel"]
+docs = ["sphinx (>=5)", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
+test = ["coverage", "mock (>=4)", "pytest (>=7)", "pytest-cov", "pytest-mock (>=3)"]
+
+[[package]]
 name = "greenlet"
 version = "2.0.1"
 description = "Lightweight in-process concurrent programming"
@@ -983,19 +958,6 @@ zipp = ">=0.5"
 docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)"]
 perf = ["ipython"]
 testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)"]
-
-[[package]]
-name = "intel-openmp"
-version = "2023.0.0"
-description = "Intel® OpenMP* Runtime Library"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "intel_openmp-2023.0.0-py2.py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:77131c2cda75ace2060f6e9cdcc9f9c672ec838c4602fc544ce0858cfe8f416e"},
-    {file = "intel_openmp-2023.0.0-py2.py3-none-manylinux1_i686.whl", hash = "sha256:adfb32b0dde6b3a95ced62608b05a45a7cfad928054136ddbfe0563e16cbf33c"},
-    {file = "intel_openmp-2023.0.0-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:1ebce47df0b5ddad77992a70689fd3185df25f47cf901dd8384fd6d05a974f81"},
-]
 
 [[package]]
 name = "ipykernel"
@@ -1724,23 +1686,6 @@ files = [
     {file = "mistune-2.0.4-py2.py3-none-any.whl", hash = "sha256:182cc5ee6f8ed1b807de6b7bb50155df7b66495412836b9a74c8fbdfc75fe36d"},
     {file = "mistune-2.0.4.tar.gz", hash = "sha256:9ee0a66053e2267aba772c71e06891fa8f1af6d4b01d5e84e267b4570d4d9808"},
 ]
-
-[[package]]
-name = "mkl"
-version = "2023.0.0"
-description = "Intel® oneAPI Math Kernel Library"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "mkl-2023.0.0-py2.py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:e75ce244cd8ba36c497404fa166896f9042531a2f838ae83c75591c9af15589e"},
-    {file = "mkl-2023.0.0-py2.py3-none-manylinux1_i686.whl", hash = "sha256:7c5c1f3aa4d129e0ae004e1f35d4e6bbdd0720715e5139b218b559c8901c7d97"},
-    {file = "mkl-2023.0.0-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:9c9309dc7a394d935b50996772b35b95b4056c668e0deca5939de55b6e9995b4"},
-]
-
-[package.dependencies]
-intel-openmp = ">=2023.0.0,<2024.0.0"
-tbb = ">=2021.0.0,<2022.0.0"
 
 [[package]]
 name = "nbclassic"
@@ -2938,32 +2883,6 @@ examples = ["matplotlib (>=3.1.3)", "pandas (>=1.0.5)", "plotly (>=5.10.0)", "po
 tests = ["black (>=22.3.0)", "flake8 (>=3.8.2)", "matplotlib (>=3.1.3)", "mypy (>=0.961)", "numpydoc (>=1.2.0)", "pandas (>=1.0.5)", "pooch (>=1.6.0)", "pyamg (>=4.0.0)", "pytest (>=5.3.1)", "pytest-cov (>=2.9.0)", "scikit-image (>=0.16.2)"]
 
 [[package]]
-name = "scikit-learn-intelex"
-version = "2023.0.0"
-description = "Intel(R) Extension for Scikit-learn is a seamless way to speed up your Scikit-learn application."
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "scikit_learn_intelex-2023.0.0-py310-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:a0509fab0793c3c1dfec0ff9fe83b423064ef440df9f224920d0879e72c458b3"},
-    {file = "scikit_learn_intelex-2023.0.0-py310-none-manylinux1_x86_64.whl", hash = "sha256:2953f9dd37c725620050800452fd2e757db34bcf46c7606139cc7bb163d61afa"},
-    {file = "scikit_learn_intelex-2023.0.0-py310-none-win_amd64.whl", hash = "sha256:7a5f9bbcb8d9a09a778a7a45ba63c790bf00aeb6309e21f0f45beacc919fe5ba"},
-    {file = "scikit_learn_intelex-2023.0.0-py37-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:537a4fe40c69a8b977c8ba87778b2ea9fc50b4772dfdb165669486674632c072"},
-    {file = "scikit_learn_intelex-2023.0.0-py37-none-manylinux1_x86_64.whl", hash = "sha256:92249f478bca8ae6a1e18d6c8646c57eb385a116355966819aa8893c19ebafd6"},
-    {file = "scikit_learn_intelex-2023.0.0-py37-none-win_amd64.whl", hash = "sha256:81db79d1e58eb0d0497038b26b9da0b528b689fdf395f33033fbbafd04408689"},
-    {file = "scikit_learn_intelex-2023.0.0-py38-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:a849a02a7f1ba85d24cea321726cabacde9ae507072b375a983885775fc5258b"},
-    {file = "scikit_learn_intelex-2023.0.0-py38-none-manylinux1_x86_64.whl", hash = "sha256:bd2128031c61ffdb32a06d38273727d9625b90d510f5c9f79e47ec8ed95bb374"},
-    {file = "scikit_learn_intelex-2023.0.0-py38-none-win_amd64.whl", hash = "sha256:0b61dae93fbe0194923812bd8e1162d6a6b1b39bcfd609464257967c13d390b6"},
-    {file = "scikit_learn_intelex-2023.0.0-py39-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:37365c6a42f03f45f66ee3eebfa6f1a4f9aa026277f158db04119de2027a92a4"},
-    {file = "scikit_learn_intelex-2023.0.0-py39-none-manylinux1_x86_64.whl", hash = "sha256:ad7a78774ea678d66020787cf554cb1c03abef6b608ae9ebc19c670f92345c25"},
-    {file = "scikit_learn_intelex-2023.0.0-py39-none-win_amd64.whl", hash = "sha256:a5288821e6890d81c164be887123d5044303381bae9c7e33411503a40b80f10a"},
-]
-
-[package.dependencies]
-daal4py = "2023.0.0"
-scikit-learn = ">=0.22"
-
-[[package]]
 name = "scipy"
 version = "1.8.1"
 description = "SciPy: Scientific Library for Python"
@@ -3319,19 +3238,6 @@ files = [
 
 [package.dependencies]
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
-
-[[package]]
-name = "tbb"
-version = "2021.8.0"
-description = "Intel® oneAPI Threading Building Blocks (oneTBB)"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "tbb-2021.8.0-py2.py3-none-macosx_10_15_x86_64.macosx_11_0_x86_64.whl", hash = "sha256:4b65e890524aa5e8ab92e68b83ec5e7160f57e6cd63622fe0af2e626d4010de4"},
-    {file = "tbb-2021.8.0-py2.py3-none-manylinux1_i686.whl", hash = "sha256:6ffb8e6c43e03a3a70ec44e28b15e01833a6d336e900253ebf708905c7dc60aa"},
-    {file = "tbb-2021.8.0-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:7d3fad573a032915838cff9fc224cb4aa9cdc6746b2d2c1b6039420379a8a2ef"},
-]
 
 [[package]]
 name = "terminado"
@@ -3727,4 +3633,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "4021e7a670e5711a178ac06dbb4866860ddf15ecb425db96091d808196014473"
+content-hash = "6951951dada29892de570a09ce3abb14d3509f48eb5e5da7d814fa272d3ff2ac"

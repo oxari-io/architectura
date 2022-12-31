@@ -106,6 +106,7 @@ class TreeBasedExplainer(abc.ABC):
     def _init_preprocessor(self):
         self.cat_transform = ColumnTransformer([(self.BINARIES_PREFIX, OneHotEncoder(drop='first', handle_unknown='infrequent_if_exist'), CatMapping.get_features())],
                                                remainder='passthrough')
+
     def _init_surrogate_model(self):
         self.pipeline = Pipeline([('cat-encode', self.cat_transform), ('regress', self.surrogate_model)])
 
@@ -134,6 +135,7 @@ class TreeBasedExplainer(abc.ABC):
         fig.tight_layout()
         return fig, axes
 
+
 class ResidualFeatureImportanceExplainer(TreeBasedExplainer, OxariExplainer):
 
     def __init__(self, estimator: OxariScopeEstimator, topk_features=20, **kwargs) -> None:
@@ -144,11 +146,10 @@ class ResidualFeatureImportanceExplainer(TreeBasedExplainer, OxariExplainer):
         self._init_preprocessor()
         self._init_surrogate_model()
 
-
     def fit(self, X, y, **kwargs):
         y_hat = self.estimator.predict(X)
         self.pipeline.fit(X, y - y_hat, **kwargs)
-        self._init_feature_names()        
+        self._init_feature_names()
         return self
 
     def explain(self, X, y, **kwargs):
@@ -157,16 +158,6 @@ class ResidualFeatureImportanceExplainer(TreeBasedExplainer, OxariExplainer):
         self.unfaithfulness = smape(y_true, y_hat)
         self.feature_importances_ = self.surrogate_model.feature_importances_
         return self
-
-    # def plot_importances(self):
-    #     fig, ax = self._create_canvas(fig, ax)
-    #     tmp = pd.DataFrame()
-    #     tmp['feature'] = self.feature_names_out_
-    #     tmp['importance'] = self.feature_importances_
-    #     tmp_sorted_subset = tmp.sort_values('importance', ascending=False).iloc[:self.topk_features]
-
-    #     ax = sns.barplot(data=tmp_sorted_subset, y='feature', x='importance', ax=ax)
-    #     return fig, ax
 
 
 class JumpRateExplainer(TreeBasedExplainer, OxariExplainer):
@@ -177,12 +168,9 @@ class JumpRateExplainer(TreeBasedExplainer, OxariExplainer):
         self.surrogate_model = XGBClassifier()
         self.topk_features = topk_features
         self.threshold = threshhold
-        # self.cat_transform = ColumnTransformer([(self.BINARIES_PREFIX, OneHotEncoder(drop='first', handle_unknown='infrequent_if_exist'), CatMapping.get_features())],
-        #                                        remainder='passthrough')
-        # self.pipeline = Pipeline([('cat-encode', self.cat_transform), ('regress', self.surrogate_model)])
         self._init_preprocessor()
         self._init_surrogate_model()
-        
+
     def fit(self, X, y, **kwargs):
         y_hat = self.estimator.predict(X)
         y_jump_rate = get_jump_rate(y, y_hat)
@@ -201,8 +189,6 @@ class JumpRateExplainer(TreeBasedExplainer, OxariExplainer):
         return self
 
 
-
-
 class DecisionExplainer(JumpRateExplainer):
 
     def __init__(self, estimator: OxariScopeEstimator, topk_features=20, threshhold=1.2, **kwargs) -> None:
@@ -211,9 +197,6 @@ class DecisionExplainer(JumpRateExplainer):
         self.surrogate_model = XGBRegressor()
         self.topk_features = topk_features
         self.threshold = threshhold
-        # self.cat_transform = ColumnTransformer([(self.BINARIES_PREFIX, OneHotEncoder(drop='first', handle_unknown='infrequent_if_exist'), CatMapping.get_features())],
-        #                                        remainder='passthrough')
-        # self.pipeline = Pipeline([('cat-encode', self.cat_transform), ('regress', self.surrogate_model)])
         self._init_preprocessor()
         self._init_surrogate_model()
 
@@ -229,21 +212,3 @@ class DecisionExplainer(JumpRateExplainer):
         self.unfaithfulness = smape(y_true, y_hat)
         self.feature_importances_ = self.surrogate_model.feature_importances_
         return self
-
-    # def plot_importances(self, fig=None, ax=None):
-    #     fig, ax = self._create_canvas(fig, ax)
-    #     tmp = pd.DataFrame()
-    #     tmp['feature'] = self.feature_names_out_
-    #     tmp['importance'] = self.feature_importances_
-    #     tmp_sorted_subset = tmp.sort_values('importance', ascending=False).iloc[:self.topk_features]
-    #     ax = sns.barplot(data=tmp_sorted_subset, y='feature', x='importance', ax=ax)
-    #     for (index, row), p in zip(tmp_sorted_subset.iterrows(), ax.patches):
-    #         ax.text(x=p.get_x(), y=p.get_y() + p.get_height() / 2, s=row["feature"], color='black', ha="left", va='center')
-    #     ax.get_yaxis().set_ticks([])
-    #     return fig, ax
-
-    # def visualize(self):
-    #     fig, ax = plt.subplots(1, 1, figsize=(15, 7))
-    #     fig, ax = self.plot_importances(fig, ax)
-    #     fig.tight_layout()
-    #     return fig, ax

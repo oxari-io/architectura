@@ -2,13 +2,13 @@ import time
 from datetime import date
 from pipeline.core import DefaultPipeline, CVPipeline
 from dataset_loader.csv_loader import CSVDataManager
-from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
+from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
-from postprocessors import ScopeImputerPostprocessor
+from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, SupportVectorEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator, IndependentFeatureVotingRegressionEstimator
 from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator, BaselineConfidenceEstimator
 import base
 from base import helper
@@ -18,10 +18,12 @@ import pandas as pd
 # import cPickle as
 import joblib as pkl
 import io
-from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
+from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader,S3ScopeLoader, S3CategoricalLoader,S3FinancialLoader
 import pathlib
 from pprint import pprint
 import numpy as np
+from lar_calculator.lar_model import OxariUnboundLAR
+import matplotlib.pyplot as plt
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.lar_model import OxariUnboundLAR
@@ -86,10 +88,32 @@ if __name__ == "__main__":
     print(model.predict(SPLIT_1.val.X, scope=1))
 
     print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model)
-    scope_imputed_data = scope_imputer.run(X=DATA)
-    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputed_data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    print(scope_imputed_data)
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
+    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
+    
+    scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
+    scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
+
+    print("\n", "Predict LARs on Mock data")
+    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
+    print(lar_imputed_data)
+
+    print("Explain Features using SHAP")
+    explainer = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    explainer.plot()
+    
+    print("Explain Effects of features on Residuals")
+    explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    fig, axes = explainer1.visualize()
+    fig, axes = explainer2.visualize()
+    fig, axes = explainer3.visualize()
+    plt.show(block=True)
 
     print("\n", "Predict ALL with Model")
     print(model.predict(SPLIT_1.val.X))

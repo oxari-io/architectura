@@ -85,18 +85,24 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
 
-    # print("Impute scopes with Model")
-    # scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
-    # dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    # dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
-    # dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
+    print("Impute scopes with Model")
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
+    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
     
-    # scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
-    # scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
+    scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
+    scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
 
-    # print("Explain Features using SHAP")
-    # explainer = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
-    # explainer.plot()
+    print("\n", "Predict LARs on Mock data")
+    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
+    print(lar_imputed_data)
+
+    print("Explain Features using SHAP")
+    explainer = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    explainer.plot()
     
     print("Explain Effects of features on Residuals")
     explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
@@ -126,11 +132,7 @@ if __name__ == "__main__":
     result.to_csv('local/eval_results/model_training_test.csv')
     print(result)
 
-    print("\n", "Predict LARs on Mock data")
-    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
-    print(lar_imputed_data)
+
 
     tmp_pipeline = model.get_pipeline(1)
 

@@ -102,7 +102,8 @@ class SurrogateExplainerMixin(abc.ABC):
         self.surrogate_model: XGBModel = surrogate
         self.pipeline: Pipeline = None
 
-
+#  TODO: Needs function to evalute how faithfull the surrogate is
+#  TODO: Needs function to optimize for most faithfull surrogacy
 class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
 
     def __init__(self, estimator: OxariScopeEstimator, surrogate, topk_features=20, **kwargs) -> None:
@@ -145,11 +146,12 @@ class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
         ax1, ax2 = axes
         fig, ax1 = self.plot_importances(fig, ax1)
         fig, ax2 = self.plot_tree(fig, ax2)
+        fig.suptitle(f'{self.__class__.__name__}')
         fig.tight_layout()
         return fig, axes
 
 
-class ResidualFeatureImportanceExplainer(TreeBasedExplainerMixin):
+class ResidualExplainer(TreeBasedExplainerMixin):
 
     def __init__(self, estimator: OxariScopeEstimator, **kwargs) -> None:
         super().__init__(estimator=estimator, surrogate=XGBRegressor(), **kwargs)
@@ -163,6 +165,8 @@ class ResidualFeatureImportanceExplainer(TreeBasedExplainerMixin):
     def explain(self, X, y, **kwargs):
         y_true = y - self.estimator.predict(X)
         y_hat = self.pipeline.predict(X)
+        # TODO: Inherit from OxariMixin... Consider that shap explainer istn't evaluatable
+        # TODO: Use defaultregression evaluator and defaultclassification evaluator here!
         self.unfaithfulness = smape(y_true, y_hat)
         self.feature_importances_ = self.surrogate_model.feature_importances_
         return self

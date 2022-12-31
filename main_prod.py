@@ -102,18 +102,18 @@ if __name__ == "__main__":
     dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
     print(lar_imputed_data)
 
-    print("Explain Features using SHAP")
-    explainer = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
-    fig, axes = explainer.visualize()
-    
-    print("Explain Effects of features on Residuals")
+    print("Explain Effects of features")
+    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    fig, ax = explainer0.visualize()
+    fig.savefig(f'local/eval_results/importance_explainer{0}.png')
     explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    fig, axes = explainer1.visualize()
-    fig, axes = explainer2.visualize()
-    fig, axes = explainer3.visualize()
-    plt.show(block=True)
+    for idx, expl in enumerate([explainer1, explainer2, explainer3]):
+        fig, ax = expl.plot_tree()
+        fig.savefig(f'local/eval_results/tree_explainer{idx+1}.png', dpi=300)
+        fig, ax = expl.plot_importances()
+        fig.savefig(f'local/eval_results/importance_explainer{idx+1}.png')
 
     print("\n", "Predict ALL with Model")
     print(model.predict(SPLIT_1.val.X))

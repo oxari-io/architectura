@@ -95,7 +95,7 @@ class ShapExplainer(OxariExplainer):
 class TreeBasedExplainer(abc.ABC):
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+        super().__init__()
         self.surrogate_model: XGBModel = None
         self.pipeline: Pipeline = None
 
@@ -206,8 +206,8 @@ class JumpRateExplainer(TreeBasedExplainer, OxariExplainer):
 class DecisionExplainer(JumpRateExplainer):
 
     def __init__(self, estimator: OxariScopeEstimator, topk_features=20, threshhold=1.2, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.estimator = estimator
+        super().__init__(estimator=estimator, **kwargs)
+        # self.estimator = estimator
         self.surrogate_model = XGBRegressor()
         self.topk_features = topk_features
         self.threshold = threshhold

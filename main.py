@@ -99,9 +99,12 @@ if __name__ == "__main__":
     # explainer.plot()
     
     print("Explain Effects of features on Residuals")
-    # explainer = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    explainer = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    fig, axes = explainer.visualize()
+    explainer1 = ResidualFeatureImportanceExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    fig, axes = explainer1.visualize()
+    fig, axes = explainer2.visualize()
+    fig, axes = explainer3.visualize()
     plt.show(block=True)
     
     

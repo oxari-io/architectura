@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
     print("Explain Features using SHAP")
     explainer = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
-    explainer.plot()
+    explainer.visualize()
     
     print("Explain Effects of features on Residuals")
     explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)

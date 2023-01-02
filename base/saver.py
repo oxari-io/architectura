@@ -97,6 +97,10 @@ class PartialSaver(abc.ABC):
     def _save(self, **kwargs) -> bool:
         return False
 
+    # @abc.abstractmethod
+    # def _save_fallback(self, **kwargs) -> bool:
+    #     return False
+
     def save(self, **kwargs) -> bool:
         try:
             self._check_if_destination_accessible()
@@ -104,7 +108,8 @@ class PartialSaver(abc.ABC):
             return True
         except Exception as e:
             # TODO: Needs local emergency saving in case of exception
-            print(f"ERROR: Something went horribly wrong while saving {self._name}: {e}")
+            print(f"ERROR: Something went horribly wrong while saving '{self._name}': {e}")
+            
             return False
 
     @abc.abstractmethod

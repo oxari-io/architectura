@@ -113,7 +113,7 @@ if __name__ == "__main__":
         fig, ax = expl.plot_importances()
         fig.savefig(f'local/eval_results/test_importance_explainer{idx+1}.png')
 
-    plt.show(block=True)
+    # plt.show(block=True)
     
     
     print("\n", "Predict ALL with Model")

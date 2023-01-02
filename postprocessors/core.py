@@ -2,7 +2,7 @@ import itertools
 import pandas as pd
 import numpy as np
 from shap import KernelExplainer, Explainer
-from base import OxariMetaModel, OxariScopeEstimator
+from base import OxariMetaModel, OxariScopeEstimator, OxariPipeline
 import shap
 # from shap.explainers import maskers
 from base.metrics import smape
@@ -23,7 +23,8 @@ import io
 import tempfile
 import abc
 from base.oxari_types import ArrayLike
-
+from sklearn.feature_selection import RFECV, RFE
+from typing_extensions import Self
 
 def get_jump_rate(y_pre, y_post):
     result = np.maximum(y_pre, y_post) / np.minimum(y_pre, y_post)
@@ -65,10 +66,34 @@ class OxariExplainer(abc.ABC):
     def visualize(self):
         pass
 
+def run_shap(estimator):
+    explainer = shap.Explainer(estimator.predict, custom_masker)
+    pass
+
+# class UselessFeaturesExplainer(OxariExplainer):
+#     def __init__(self, pipeline: OxariPipeline, sample_size=100, **kwargs) -> None:
+#         super().__init__(**kwargs)
+#         self.pipeline = pipeline
+#         self.sample_size = sample_size
+#         self.rfe = RFECV(self.pipeline.estimator, importance_getter=run_shap)
+        
+#     def fit(self, X, y, **kwargs) -> Self:
+#         X_ = self.pipeline._preprocess(X)
+#         y_ = self.pipeline._transform_scope(y)
+#         self.rfe.fit(X_, y_, **kwargs)
+#         return self
+
+#     def explain(self, X, y, **kwargs) -> Self:
+#         self.feature_importances_ = self.rfe.ranking_
+#         return Self
+    
+#     def visualize(self):
+#         return super().visualize()
+
 
 class ShapExplainer(OxariExplainer):
 
-    def __init__(self, estimator: OxariScopeEstimator, sample_size=100, **kwargs) -> None:
+    def __init__(self, estimator: OxariPipeline, sample_size=100, **kwargs) -> None:
         super().__init__(**kwargs)
         self.estimator = estimator
         self.sample_size = sample_size
@@ -100,7 +125,7 @@ class ShapExplainer(OxariExplainer):
 class SurrogateExplainerMixin(abc.ABC):
     BINARIES_PREFIX = "categorical"
 
-    def __init__(self, estimator:OxariScopeEstimator, surrogate:XGBModel, **kwargs) -> None:
+    def __init__(self, estimator:OxariPipeline, surrogate:XGBModel, **kwargs) -> None:
         super().__init__()
         self.estimator = estimator
         self.surrogate_model: XGBModel = surrogate
@@ -110,7 +135,7 @@ class SurrogateExplainerMixin(abc.ABC):
 #  TODO: Needs function to optimize for most faithfull surrogacy
 class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
 
-    def __init__(self, estimator: OxariScopeEstimator, surrogate, topk_features=20, **kwargs) -> None:
+    def __init__(self, estimator: OxariPipeline, surrogate, topk_features=20, **kwargs) -> None:
         super().__init__(estimator=estimator, surrogate=surrogate ,**kwargs)
         self.feature_importances_: ArrayLike = None
         self.topk_features = topk_features
@@ -157,7 +182,7 @@ class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
 
 class ResidualExplainer(TreeBasedExplainerMixin):
 
-    def __init__(self, estimator: OxariScopeEstimator, **kwargs) -> None:
+    def __init__(self, estimator: OxariPipeline, **kwargs) -> None:
         super().__init__(estimator=estimator, surrogate=XGBRegressor(), **kwargs)
 
     def fit(self, X, y, **kwargs):
@@ -178,7 +203,7 @@ class ResidualExplainer(TreeBasedExplainerMixin):
 
 class JumpRateExplainer(TreeBasedExplainerMixin):
 
-    def __init__(self, estimator: OxariScopeEstimator, threshhold=1.2, **kwargs) -> None:
+    def __init__(self, estimator: OxariPipeline, threshhold=1.2, **kwargs) -> None:
         super().__init__(estimator=estimator, surrogate=XGBClassifier(), **kwargs)
         self.threshold = threshhold
 
@@ -218,3 +243,5 @@ class DecisionExplainer(TreeBasedExplainerMixin):
         self.unfaithfulness = smape(y_true, y_hat)
         self.feature_importances_ = self.surrogate_model.feature_importances_
         return self
+    
+    

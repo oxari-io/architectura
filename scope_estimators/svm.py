@@ -76,7 +76,10 @@ class SupportVectorEstimator(OxariScopeEstimator):
         max_size = len(X)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)   
-        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices])
+        X = pd.DataFrame(X)
+        y = pd.DataFrame(y)
+        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
+        # self.coef_ = self._estimator.coef_
         return self
 
     def predict(self, X) -> ArrayLike:

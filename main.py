@@ -1,10 +1,10 @@
 import time
 from datetime import date
 from pipeline.core import DefaultPipeline, CVPipeline
-from dataset_loader.csv_loader import CSVDataManager
+from dataset_loader.csv_loader import DefaultDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
-from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer, UselessFeaturesExplainer
+from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
     # dataset = CSVDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-    dataset = CSVDataManager().run()
+    dataset = DefaultDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -84,9 +84,6 @@ if __name__ == "__main__":
 
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
-
-    print("Explain Useless features")
-    explainer_tmp = UselessFeaturesExplainer(model.get_pipeline(1)).fit(*SPLIT_1.train)
 
 
     print("Impute scopes with Model")

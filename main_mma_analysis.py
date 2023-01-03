@@ -1,5 +1,5 @@
 from pipeline.core import DefaultPipeline
-from dataset_loader.csv_loader import CSVDataManager
+from dataset_loader.csv_loader import DefaultDataManager
 from base import OxariDataManager, OxariPipeline, DummyScaler
 from preprocessors import BaselinePreprocessor, IIDPreprocessor, ImprovedBaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
@@ -39,7 +39,7 @@ class Runner(object):
 
 if __name__ == "__main__":
 
-    dataset = CSVDataManager().run()
+    dataset = DefaultDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

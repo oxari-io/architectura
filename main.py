@@ -89,36 +89,36 @@ if __name__ == "__main__":
     explainer_tmp = UselessFeaturesExplainer(model.get_pipeline(1)).fit(*SPLIT_1.train)
 
 
-    # print("Impute scopes with Model")
-    # scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
-    # dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    # dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
-    # dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
+    print("Impute scopes with Model")
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
+    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
     
-    # scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
-    # scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
+    scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
+    scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
 
-    # print("\n", "Predict LARs on Mock data")
-    # lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    # lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    # dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
-    # print(lar_imputed_data)
+    print("\n", "Predict LARs on Mock data")
+    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
+    print(lar_imputed_data)
     
 
-    # print("Explain Effects of features")
-    # explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
-    # fig, ax = explainer0.visualize()
-    # fig.savefig(f'local/eval_results/test_importance_explainer{0}.png')
-    # explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    # explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    # explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    # for idx, expl in enumerate([explainer1, explainer2, explainer3]):
-    #     fig, ax = expl.plot_tree()
-    #     fig.savefig(f'local/eval_results/test_tree_explainer{idx+1}.png')
-    #     fig, ax = expl.plot_importances()
-    #     fig.savefig(f'local/eval_results/test_importance_explainer{idx+1}.png')
+    print("Explain Effects of features")
+    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    fig, ax = explainer0.visualize()
+    fig.savefig(f'local/eval_results/test_importance_explainer{0}.png')
+    explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    for idx, expl in enumerate([explainer1, explainer2, explainer3]):
+        fig, ax = expl.plot_tree()
+        fig.savefig(f'local/eval_results/test_tree_explainer{idx+1}.png')
+        fig, ax = expl.plot_importances()
+        fig.savefig(f'local/eval_results/test_importance_explainer{idx+1}.png')
 
-    # plt.show(block=True)
+    plt.show(block=True)
     
     
     print("\n", "Predict ALL with Model")

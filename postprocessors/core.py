@@ -130,6 +130,7 @@ class SurrogateExplainerMixin(abc.ABC):
         self.estimator = estimator
         self.surrogate_model: XGBModel = surrogate
         self.pipeline: Pipeline = None
+        self.name = self.__class__.__name__
 
 #  TODO: Needs function to evalute how faithfull the surrogate is
 #  TODO: Needs function to optimize for most faithfull surrogacy
@@ -164,11 +165,13 @@ class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
         for (index, row), p in zip(tmp_sorted_subset.iterrows(), ax.patches):
             ax.text(x=p.get_x(), y=p.get_y() + p.get_height() / 2, s=row["feature"], color='black', ha="left", va='center')
         ax.get_yaxis().set_ticks([])
+        ax.set_title(self.name)
         return fig, ax
 
     def plot_tree(self, fig=None, ax=None):
         fig, ax = self._create_canvas(fig, ax)
         ax = plot_tree(self.pipeline[-1], ax=ax, rankdir='LR')
+        ax.set_title(self.name)
         return fig, ax
 
     def visualize(self):
@@ -176,13 +179,13 @@ class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
         ax1, ax2 = axes
         fig, ax1 = self.plot_importances(fig, ax1)
         fig, ax2 = self.plot_tree(fig, ax2)
-        fig.suptitle(f'{self.__class__.__name__}')
+        fig.suptitle(f'{self.name}')
         fig.tight_layout()
         return fig, axes
 
 
 class ResidualExplainer(TreeBasedExplainerMixin):
-
+    
     def __init__(self, estimator: OxariPipeline, **kwargs) -> None:
         super().__init__(estimator=estimator, surrogate=XGBRegressor(), **kwargs)
 

@@ -111,7 +111,7 @@ if __name__ == "__main__":
     explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     for idx, expl in enumerate([explainer1, explainer2, explainer3]):
         fig, ax = expl.plot_tree()
-        fig.savefig(f'local/eval_results/tree_explainer{idx+1}.png', dpi=300)
+        fig.savefig(f'local/eval_results/tree_explainer{idx+1}.png', dpi=600)
         fig, ax = expl.plot_importances()
         fig.savefig(f'local/eval_results/importance_explainer{idx+1}.png')
 

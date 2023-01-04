@@ -1,7 +1,7 @@
 import time
 from datetime import date
 from pipeline.core import DefaultPipeline
-from dataset_loader.csv_loader import CSVDataLoader
+from dataset_loader.csv_loader import CSVDataLoader, FeatureSelectionExperimentDataLoader
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
@@ -26,6 +26,37 @@ if "intel" in platform.processor().lower():
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.model_lar import OxariLARCalculator
+
+def experiment():
+    # this step should load the data just like CSVDataLoader, but a selection of the data
+    dataset = FeatureSelectionExperimentDataLoader().run()
+    
+
+    # ideas:
+    # 1
+    # just like a normal pipeline, but all feature selectors are run
+    pipeline = FeatureSelectionExperimentPipeline(
+        scope=3,
+        preprocessor=BaselinePreprocessor(),
+        imputer=BaselineImputer(),
+        scope_estimator=PredictMedianEstimator(),
+    )
+    pipeline.run_experiment_pipeline(dataset)
+
+    # 2
+    # let this experiment() function expect the names pf feature-selection methods that you want to compare as arguments, and this function runs a pipeline with each of them
+    results = [] # maybe this should be a dict where, key=feature selection method, value = evaluation results
+    for selection_method in selection_methods:
+        pipeline = FeatureSelectionExperimentPipeline(
+            scope=3,
+            preprocessor=BaselinePreprocessor(),
+            feature_selector=selection_method(),
+            imputer=BaselineImputer(),
+            scope_estimator=PredictMedianEstimator(),
+        )
+        pipeline.run_pipeline(dataset) # the run_pipeline seems to be removed/altered on the main branch, so we need to find out what it has been replaced by
+        results.append(pipeline._evaluation_results) # not sure how evaluation works in the code in general. I think with DefaultRegressorEvaluator, but where is that set? 
+
 
 if __name__ == "__main__":
     

@@ -66,4 +66,5 @@ class CSVDataLoader(OxariDataManager):
             **kwargs,
         )
 
-#inherit form this 
+class FeatureSelectionExperimentDataLoader(OxariDataManager):
+    pass

@@ -64,3 +64,5 @@ class CVPipeline(DefaultPipeline):
     def run_pipeline(self, dataset: OxariDataManager, scope: int, **kwargs):
         raise NotImplementedError()    
     
+class FSExperimentPipeline(DefaultPipeline):
+    pass

@@ -209,6 +209,7 @@ class DropFeatureReducer(OxariFeatureReducer):
 class FeatureAgglomeration(OxariFeatureReducer):
     def __init__(self, features=[], **kwargs):
         self._dimensionality_reducer = cluster.FeatureAgglomeration(n_clusters=17)
+        print("----HIIIIII-----")
 
     def fit(self, X, y=None, **kwargs) -> "FeatureAgglomeration":
         self._features = list(kwargs.get('features'))

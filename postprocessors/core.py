@@ -139,15 +139,16 @@ class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
         super().__init__(estimator=estimator, surrogate=surrogate ,**kwargs)
         self.feature_importances_: ArrayLike = None
         self.topk_features = topk_features
-        self._init_preprocessor()
-        self._init_surrogate_model()
+        # self._init_preprocessor()
+        # self._init_surrogate_model()
 
     def _init_feature_names(self):
         self.feature_names_out_ = list(self.pipeline[:-1].get_feature_names_out())
         self.pipeline[-1].get_booster().feature_names = self.feature_names_out_
 
-    def _init_preprocessor(self):
-        self.cat_transform = ColumnTransformer([(self.BINARIES_PREFIX, OneHotEncoder(drop='first', handle_unknown='infrequent_if_exist'), CatMapping.get_features())],
+    def _init_preprocessor(self, df:pd.DataFrame):
+        cat_cols = df.columns[df.columns.str.startswith('ft_cat')]
+        self.cat_transform = ColumnTransformer([(self.BINARIES_PREFIX, OneHotEncoder(drop='first', handle_unknown='infrequent_if_exist'), cat_cols)],
                                                remainder='passthrough')
 
     def _init_surrogate_model(self):
@@ -186,6 +187,8 @@ class ResidualExplainer(TreeBasedExplainerMixin):
         super().__init__(estimator=estimator, surrogate=XGBRegressor(), **kwargs)
 
     def fit(self, X, y, **kwargs):
+        self._init_preprocessor(X)
+        self._init_surrogate_model()        
         y_hat = self.estimator.predict(X)
         self.pipeline.fit(X, y - y_hat, **kwargs)
         self._init_feature_names()
@@ -208,6 +211,8 @@ class JumpRateExplainer(TreeBasedExplainerMixin):
         self.threshold = threshhold
 
     def fit(self, X, y, **kwargs):
+        self._init_preprocessor(X)
+        self._init_surrogate_model()         
         y_hat = self.estimator.predict(X)
         y_jump_rate = get_jump_rate(y, y_hat)
         y_target = y_jump_rate < self.threshold
@@ -232,6 +237,8 @@ class DecisionExplainer(TreeBasedExplainerMixin):
         self.threshold = threshhold
 
     def fit(self, X, y, **kwargs):
+        self._init_preprocessor(X)
+        self._init_surrogate_model()         
         y_hat = self.estimator.predict(X)
         self.pipeline.fit(X, y_hat, **kwargs)
         self._init_feature_names()

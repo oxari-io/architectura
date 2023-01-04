@@ -1,7 +1,7 @@
 import time
 from datetime import date
 from pipeline.core import DefaultPipeline, CVPipeline
-from dataset_loader.csv_loader import DefaultDataManager
+from dataset_loader.csv_loader import DefaultDataManager, PreviousScopeFeaturesDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
@@ -31,7 +31,8 @@ if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
     # dataset = CSVDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-    dataset = DefaultDataManager().run()
+    # dataset = DefaultDataManager().run()
+    dataset = PreviousScopeFeaturesDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

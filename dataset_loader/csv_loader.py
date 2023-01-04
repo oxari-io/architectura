@@ -79,10 +79,10 @@ class DefaultDataManager(OxariDataManager):
 class PreviousScopeFeaturesDataManager(DefaultDataManager):
     def _take_previous_scopes(self, df:pd.DataFrame):
         df_tmp = df[self.scope_loader._COLS].shift(1)
-        df_tmp.columns = [f"pre_{col}" for col in df_tmp.columns]
+        df_tmp.columns = [f"ft_fin_preyear_{col}" for col in df_tmp.columns]
         df[df_tmp.columns] = df_tmp
         return df
     
     def _transform(self, df:pd.DataFrame):
-        df = df.transform(self._take_previous_scopes)
+        df = df.sort_values(['isin', 'year'], ascending=[True, True]).groupby('isin').apply(self._take_previous_scopes)
         return df

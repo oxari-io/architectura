@@ -1,7 +1,7 @@
 import time
 from datetime import date
 from pipeline.core import DefaultPipeline, CVPipeline
-from dataset_loader.csv_loader import DefaultDataManager
+from dataset_loader.csv_loader import DefaultDataManager, PreviousScopeFeaturesDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
@@ -33,7 +33,7 @@ N_STARTUP_TRIALS = 10
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
-    dataset = DefaultDataManager().run()
+    dataset = PreviousScopeFeaturesDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     print(lar_imputed_data)
 
     print("Explain Effects of features")
-    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=100).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
     fig, ax = explainer0.visualize()
     fig.savefig(f'local/eval_results/importance_explainer{0}.png')
     explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
@@ -144,8 +144,8 @@ if __name__ == "__main__":
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
 
-    local_model_saver = LocalMetaModelSaver(today=time.strftime('%d-%m-%Y'), name="lightweight").set(model=model)
-    local_lar_saver = LocalLARModelSaver(today=time.strftime('%d-%m-%Y'), name="lightweight").set(model=lar_model)
-    local_data_saver = LocalDataSaver(today=time.strftime('%d-%m-%Y'), name="lightweight").set(dataset=dataset)
+    local_model_saver = LocalMetaModelSaver(time=time.strftime('%d-%m-%Y'), name="lightweight").set(model=model)
+    local_lar_saver = LocalLARModelSaver(time=time.strftime('%d-%m-%Y'), name="lightweight").set(model=lar_model)
+    local_data_saver = LocalDataSaver(time=time.strftime('%d-%m-%Y'), name="lightweight").set(dataset=dataset)
     SavingManager = OxariSavingManager(meta_model=local_model_saver, lar_model=local_lar_saver, dataset=local_data_saver)
     SavingManager.run()

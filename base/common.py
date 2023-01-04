@@ -44,7 +44,7 @@ from sklearn.model_selection import train_test_split
 
 os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
-WRITE_TO = "./logger.log" #"cout"
+WRITE_TO =  "cout" # "./logger.log"
 
 class OxariLoggerMixin:
     """
@@ -69,11 +69,7 @@ class OxariLoggerMixin:
             logging.basicConfig(filename=WRITE_TO, level=LOGLEVEL) # level=logging.DEBUG
         
         self.logger_name = self.__class__.__name__
-        
-    # def debug(self, message):
-    #     self.logger.debug(self.logger_name + "says: " + message)
-
-    # info, error, warning, etc..... 
+    
 
 class ReducedDataMixin:
     def get_sample_indices(self, X: ArrayLike) -> ArrayLike:
@@ -352,6 +348,7 @@ class OxariPreprocessor(OxariTransformer, OxariLoggerMixin, abc.ABC):
         # Does not contain any logic except setting hyperparams immediately as class attributes
         # Reference:  https://scikit-learn.org/stable/developers/develop.html#instantiation
         self.imputer = imputer
+        self.logger.debug("Preprocessor initialized!")
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariPreprocessor":
@@ -362,10 +359,12 @@ class OxariPreprocessor(OxariTransformer, OxariLoggerMixin, abc.ABC):
         # When fit is called, any previous call to fit should be ignored.
         # Attributes that have been estimated from the data must always have a name ending with trailing underscore. (e.g.: self.coef_)
         # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
+        self.logger.debug("Preprocessor is fitted!")
         return self
 
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> ArrayLike:
+        self.logger.debug("Preprocessor is transformed!")
         pass
 
     def set_imputer(self, imputer: OxariImputer) -> "OxariPreprocessor":

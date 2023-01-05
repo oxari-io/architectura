@@ -63,6 +63,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         data = X
          
         # log scaling the scopes
+        print(self.scope_transformer)
         self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical
         self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])

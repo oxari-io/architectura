@@ -126,23 +126,14 @@ class OxariDataManager(OxariMixin):
 
     def run(self, **kwargs) -> "OxariDataManager":
         self.scope_loader = self.scope_loader.run()
-        # self.financial_loader = self.financial_loader.run()
-        # self.categorical_loader = self.categorical_loader.run()
-        # _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
-        # _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
-        # # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
-        # self.add_data(OxariDataManager.ORIGINAL, _df_original, "Dataset without changes.")
-        return self
-
-    def run_experimental(self, **kwargs) -> "OxariDataManager":
-        self.scope_loader = self.scope_loader.run()
         self.financial_loader = self.financial_loader.run()
         self.categorical_loader = self.categorical_loader.run()
         _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
         _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
         # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
-        self.add_data(OxariDataManager.SHORTENED, _df_original, "Subset of original dataset.")
+        self.add_data(OxariDataManager.ORIGINAL, _df_original, "Dataset without changes.")
         return self
+
 
     def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> "OxariDataManager":
         self._dataset_stack.append((name, df, descr))

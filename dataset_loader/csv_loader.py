@@ -130,3 +130,14 @@ class FSExperimentDataLoader(OxariDataManager):
             # verbose,
             **kwargs,
         )
+
+    def run(self, **kwargs) -> "OxariDataManager":
+        print("running shortened dataset function")
+        self.scope_loader = self.scope_loader.run()
+        self.financial_loader = self.financial_loader.run()
+        self.categorical_loader = self.categorical_loader.run()
+        _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
+        _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
+        # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
+        self.add_data(OxariDataManager.SHORTENED, _df_original, "Dataset without changes.")
+        return self

@@ -6,17 +6,25 @@ from sklearn import cluster
 from sklearn.decomposition import PCA
 from sklearn.random_projection import GaussianRandomProjection, SparseRandomProjection
 from sklearn.manifold import Isomap, MDS, SpectralEmbedding, LocallyLinearEmbedding
+from sklearn.base import BaseEstimator
 from sklearn.decomposition import FactorAnalysis, LatentDirichletAllocation
 
 # from factor_analyzer import FactorAnalyzer
 # from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity, calculate_kmo
-
+class SKlearnFeatureReducerWrapperMixin():
+    # def __init__(self,**kwargs):
+    #     super().__init__(**kwargs)
+    #     self._dimensionality_reducer:BaseEstimator = None
+         
+    def get_params(self, deep=False):
+        return {**self._dimensionality_reducer.get_params(deep)}
 
 # https://datascience.stackexchange.com/questions/29572/is-it-possible-to-do-feature-selection-for-unsupervised-machine-learning-problem
 class DummyFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector does not select any feature. Use this if no feature selection is used."""
     def __init__(self, **kwargs):
-        pass
+        super().__init__(**kwargs)        
+        
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         return self
@@ -25,9 +33,10 @@ class DummyFeatureReducer(OxariFeatureReducer):
         return X
 
 
-class PCAFeatureSelector(OxariFeatureReducer):
+class PCAFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """ This Feature Selector uses PCA to reduce the dimensionality of the features first"""
     def __init__(self, n_components=5, **kwargs):
+        super().__init__(**kwargs)
         self._dimensionality_reducer = PCA(n_components=n_components)
 
     def fit(self, X, y=None, **kwargs) -> "PCAFeatureSelector":
@@ -37,18 +46,28 @@ class PCAFeatureSelector(OxariFeatureReducer):
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
-        new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        X_new = X.copy()
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(X_new[self._features]), index=X_new.index)
+        new_X_reduced = self.merge(X_new, reduced_features, self._features)
         return new_X_reduced
 
 
+<<<<<<< HEAD
 class Modified_Locally_Linear_Embedding(OxariFeatureReducer):
     """This Feature Selector results in a lower-dimensional projection of the data 
     which preserves distances within local neighborhoods. It additionally uses multiple 
     weight vectors in each neighborhood to solve the LLE regularisation problem"""
     def __init__(self, n_neighbors=5, n_components=5, eigen_solver = "dense", method="modified", **kwargs):  #are kwargs the parameters of this estimator?
         self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method, eigen_solver=eigen_solver)
+=======
+class ModifiedLocallyLinearEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
+    """This Feature Selector results in a lower-dimensional projection of the data 
+    which preserves distances within local neighborhoods. It additionally uses multiple 
+    weight vectors in each neighborhood to solve the LLE regularisation problem"""
+    def __init__(self, n_neighbors=5, n_components=5, method="modified", **kwargs):  #are kwargs the parameters of this estimator?
+        super().__init__(**kwargs)
+        self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method)
+>>>>>>> main
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         self._features = list(kwargs.get('features'))
@@ -63,10 +82,15 @@ class Modified_Locally_Linear_Embedding(OxariFeatureReducer):
         return new_X_reduced
 
 
+<<<<<<< HEAD
 class Spectral_Embedding(OxariFeatureReducer):
+=======
+class SpectralEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
+>>>>>>> main
     """This Feature Selector finds a low dimensional representation of the data using 
     a spectral decomposition of the graph Laplacian"""
     def __init__(self, n_components=5, **kwargs):
+        super().__init__(**kwargs)        
         self._dimensionality_reducer = SpectralEmbedding(n_components=n_components)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -149,9 +173,11 @@ class Latent_Dirichlet_Allocation(OxariFeatureReducer):
 
 
 
-class IsomapFeatureSelector(OxariFeatureReducer):
+class IsomapFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """ This Feature Selector uses Isomap manifold learning to reduce the dimensionality of the features"""
     def __init__(self, n_components=10, **kwargs):
+        #TODO think about arguments of isomap
+        super().__init__(**kwargs)        
         self._dimensionality_reducer = Isomap(n_components=n_components)
 
     # "Compute the embedding vectors for data X."
@@ -168,12 +194,13 @@ class IsomapFeatureSelector(OxariFeatureReducer):
         return new_X_reduced
 
 
-class MDSSelector(OxariFeatureReducer):
+class MDSSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """ This Feature Selector uses Multidimensional Scaling
     
     You can find an explanation here: https://www.statisticshowto.com/multidimensional-scaling/ 
     """
     def __init__(self, n_components=10, **kwargs):
+        super().__init__(**kwargs)        
         self._dimensionality_reducer = MDS(n_components=n_components)
 
     "Compute the embedding vectors for data X."
@@ -196,6 +223,7 @@ class DropFeatureReducer(OxariFeatureReducer):
     In other words, if the feature elimination algorithm cannot run during preprocessing.
     """
     def __init__(self, features=[], **kwargs):
+        super().__init__(**kwargs)        
         self._features = features
 
     def fit(self, X, y=None, **kwargs) -> "DropFeatureReducer":

@@ -1,88 +1,74 @@
 from base.dataset_loader import OxariDataManager
-from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, OxariPreprocessor, OxariPipeline
-from base.common import OxariImputer
-from dataset_loader.csv_loader import CSVDataLoader
+from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, OxariPreprocessor, OxariPipeline, OxariConfidenceEstimator
+from base import OxariImputer, JacknifeConfidenceEstimator, OxariTransformer, DummyConfidenceEstimator, DummyScaler
+from base.helper import LogarithmScaler
+
+from dataset_loader.csv_loader import DefaultDataManager
 from imputers import BaselineImputer
 from feature_reducers import DummyFeatureReducer
 from preprocessors import BaselinePreprocessor
 from scope_estimators import DummyEstimator
 import numpy as np
 import pandas as pd
-
+from sklearn import model_selection as ms
 
 class DefaultPipeline(OxariPipeline):
     def __init__(
         self,
         # dataset: OxariDataLoader = None,
-        scope:int,
-        preprocessor: OxariPreprocessor = None,
-        feature_selector: OxariFeatureReducer = None,
-        imputer: OxariImputer = None,
-        scope_estimator: OxariScopeEstimator = None,
+        **kwargs,
     ):
         super().__init__(
             # dataset=dataset or CSVDataLoader(),
-            preprocessor=(preprocessor or BaselinePreprocessor()).set_imputer(imputer or BaselineImputer()),
-            feature_selector=feature_selector or DummyFeatureReducer(),
-            scope_estimator=scope_estimator or DummyEstimator(),
-        )
-        self.scope = scope
-
-    def run_pipeline(self, dataset: OxariDataManager, **kwargs):
-        # kwargs.pop("")
-        list_of_skipped_columns = ["scope_1", "scope_2", "scope_3", "isin", "year"]
-        df_original = dataset.get_data_by_name('c')
-        df_processed: pd.DataFrame = self.preprocessor.fit_transform(df_original)
-        dataset.add_data(f"scope_{self.scope}_processed", df_processed, "Dataset after preprocessing.")
-        df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_original.columns.difference(list_of_skipped_columns))
-        # print(self.feature_selector.labels_)
-        dataset.add_data(f"scope_{self.scope}_reduced", df_reduced, "Dataset after feature selection.")
-        X, y = df_reduced.drop(columns=list_of_skipped_columns, errors="ignore"), df_reduced[f"scope_{self.scope}"]
-
-        # TODO: Implement the train test split params as method parameters of run_pipeline
-        X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test = OxariDataManager.train_test_val_split(
-            X=X,
-            y=y,
-            split_size_test=0.2,
-            split_size_val=0.2,
+            preprocessor=kwargs.pop('preprocessor', BaselinePreprocessor()).set_imputer(kwargs.pop('imputer', BaselineImputer())),
+            feature_selector=kwargs.pop('feature_reducer', DummyFeatureReducer()),
+            scope_estimator= kwargs.pop('scope_estimator', DummyEstimator()),
+            ci_estimator = kwargs.pop('ci_estimator', DummyConfidenceEstimator()),
+            scope_transformer = kwargs.pop('scope_transformer', DummyScaler(scope_features=OxariDataManager.DEPENDENT_VARIABLES)),
+            **kwargs,
         )
 
-        best_parameters, info = self.estimator.optimize(X_train, y_train, X_val, y_val)
-        # info.to_csv('optimization_results.csv')
-        self.estimator = self.estimator.fit(X_rem, y_rem, **best_parameters)
-        y_pred = self.estimator.predict(X_test)
-        self._evaluation_results = self.estimator.evaluate(y_test, y_pred, X_test=X_test)
-        return self
-    
+
+
+
     @property
     def evaluation_results(self):
-        return {**super().evaluation_results, "scope":self.scope}
+        # return {**super().evaluation_results}
+        return {
+            "imputer": self.preprocessor.imputer.name,
+            "preprocessor": self.preprocessor.name,
+            "feature_selector": self.feature_selector.name,
+            "scope_estimator": self.estimator.name,
+            
+            **super().evaluation_results,
+            "optimal_params":self.params,
+            "cfg":self.get_config(),
+        }
+
+    # TODO: Should be get_config
+    def get_config(self, deep=True):
+        return {
+            "preprocessor": self.preprocessor.get_config(deep),
+            "feature_selector": self.feature_selector.get_config(deep),
+            "scope_estimator": self.estimator.get_config(deep),
+            **super().get_config(deep),
+        }
+
+
 
 
 class CVPipeline(DefaultPipeline):
     # TODO: Implement a version of the default pipeline which makes sure that a proper crossvalidation is run to evaluate the models. Might need to be handled on the Evaluator level.
-    def run_pipeline(self, dataset: OxariDataManager, scope: int, **kwargs):
-        raise NotImplementedError()    
-    
-class FSExperimentPipeline(DefaultPipeline):
-    
-    def run_pipeline(self, dataset: OxariDataManager, **kwargs):
-        # kwargs.pop("")
-        list_of_skipped_columns = ["scope_1", "scope_2", "scope_3", "isin", "year"]
-        df_original = dataset.get_data_by_name('c')
-        df_processed: pd.DataFrame = self.preprocessor.fit_transform(df_original)
-        dataset.add_data(f"scope_{self.scope}_processed", df_processed, "Dataset after preprocessing.")
-        df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_original.columns.difference(list_of_skipped_columns))
-        # print(self.feature_selector.labels_)
-        dataset.add_data(f"scope_{self.scope}_reduced", df_reduced, "Dataset after feature selection.")
-        X, y = df_reduced.drop(columns=list_of_skipped_columns, errors="ignore"), df_reduced[f"scope_{self.scope}"]
 
-        # TODO: Implement the train test split params as method parameters of run_pipeline
-        X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test = OxariDataManager.train_test_val_split(
-            X=X,
-            y=y,
-            split_size_test=0.2,
-            split_size_val=0.2,
-        )
-
+    def evaluate(self, X_train, y_train, X_test, y_test, **kwargs):
+        # TODO: This is just a start and not completed. It should use smape and R2. Also a postprocessor is probably more appropriate
+        tmp_estimator = self.estimator.clone()
+        X_train = self._preprocess(X_train, **kwargs)        
+        X_test = self._preprocess(X_test, **kwargs)  
+        # y_test = self._transform_scope(y_test)
+        # TODO: Needs rework so that all the estimators are actually using their params.
+        scores = ms.cross_val_score(estimator=tmp_estimator, X=X_train, y=y_train, cv=10, scoring="neg_mean_absolute_percentage_error", error_score='raise')
+        y_pred = self.estimator.predict(X_test)
+        y_pred = self.scope_transformer.reverse_transform(y_pred)
+        self._evaluation_results = {"crossval": {"mape": np.mean(scores)}, **self.estimator.evaluate(y_test, y_pred, X_test=X_test)}
         return self

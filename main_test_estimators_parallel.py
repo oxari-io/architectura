@@ -1,12 +1,12 @@
 from pipeline.core import DefaultPipeline
-from dataset_loader.csv_loader import CSVDataLoader
-from base import OxariDataManager
-from preprocessors import BaselinePreprocessor
+from dataset_loader.csv_loader import DefaultDataManager
+from base import OxariDataManager, OxariPipeline
+from preprocessors import BaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor, ImprovedBaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import BaselineImputer, KMeansBucketImputer
+from imputers import BaselineImputer, KMeansBucketImputer, RevenueQuantileBucketImputer
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator, GLMEstimator
 import base
 from base import OxariMetaModel
 import pandas as pd
@@ -16,42 +16,89 @@ import io
 
 # import multiprocessing as mp
 from concurrent import futures
+import csv
+
+def run_model(optimize_data, fit_data, eval_data, model):
+    return model.optimise(*optimize_data).fit(*fit_data).evaluate(*eval_data)
+
+
+class Runner(object):
+    def __init__(self, optimize_data, fit_data, eval_data) -> None:
+        self.optimize_data = optimize_data
+        self.fit_data = fit_data
+        self.eval_data = eval_data
+
+    def run(self, model: OxariPipeline):
+        try:
+            return model.optimise(*self.optimize_data).fit(*self.fit_data).evaluate(*self.eval_data)
+        except Exception as e:
+            print("Something went wrong!")
+            print(e)
+            return model
 
 if __name__ == "__main__":
 
-    dataset = CSVDataLoader().run()
+    dataset = DefaultDataManager().run()
+    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    X = dataset.get_features(OxariDataManager.ORIGINAL)
+    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+    SPLIT_1 = bag.scope_1
+    SPLIT_2 = bag.scope_2
+    SPLIT_3 = bag.scope_3
     model_list = [
-            # REVIEWME: which sampler do the optimizer for the following estimator use?
-            LinearRegressionEstimator,
-            BayesianRegressionEstimator,
-            DummyEstimator,
-            BaselineEstimator,
-            PredictMeanEstimator,
-            PredictMedianEstimator,
-            MiniModelArmyEstimator,
-            # GaussianProcessEstimator,
-        ]
+        # REVIEWME: which sampler do the optimizer for the following estimator use?
+        GLMEstimator,
+        LinearRegressionEstimator,
+        BayesianRegressionEstimator,
+        # DummyEstimator,
+        # BaselineEstimator,
+        # PredictMeanEstimator,
+        # PredictMedianEstimator,
+        # MiniModelArmyEstimator,
+        # GaussianProcessEstimator,
+    ]
+    all_imputers = [
+        RevenueQuantileBucketImputer,
+        RevenueBucketImputer,
+        KMeansBucketImputer,
+    ]
+    all_feature_reducers = [
+        PCAFeatureSelector,
+        DummyFeatureReducer,
+    ]
+    all_preprocessors = [
+        IIDPreprocessor,
+        ImprovedBaselinePreprocessor,
+        BaselinePreprocessor,
+    ]
     all_models = [
         DefaultPipeline(
-            scope=1,
-            preprocessor=BaselinePreprocessor(),
-            feature_selector=PCAFeatureSelector(),
-            imputer=KMeansBucketImputer(buckets_number=5),
+            preprocessor=Preprocessor(),
+            feature_reducer=FtReducer(),
+            imputer=Imputer(buckets_number=5),
             scope_estimator=Model(),
-        ) for Model in model_list
-    ] 
+        ) for Model in model_list for Preprocessor in all_preprocessors for FtReducer in all_feature_reducers for Imputer in all_imputers
+    ]
 
+    all_evaluations = []
     all_models_trained = []
     # TODO: how many threads? all the models in oneppol? look into this!
-    with futures.ProcessPoolExecutor() as pool:
-        for model in all_models:
-            for results in pool.map(model.run_pipeline(dataset)):
-                all_models_trained.append(results)
+    optimize_data = SPLIT_1.train.X, SPLIT_1.train.y
+    fit_data = SPLIT_1.train.X, SPLIT_1.train.y
+    eval_data = SPLIT_1.rem.X, SPLIT_1.rem.y, SPLIT_1.val.X, SPLIT_1.val.y
 
+    runner = Runner(optimize_data, fit_data, eval_data)
+    # TODO: Implement failsafe with try-except and interative csv writing
+    
+    with futures.ProcessPoolExecutor(8) as pool:
+        for model in pool.map(runner.run, all_models):
+            print(f"SAVE MODEL {model.name}")
+            all_models_trained.append(model.evaluation_results)
+            eval_results = pd.DataFrame(all_models_trained)
+            eval_results.to_csv('local/eval_results/results_parallel.csv')
+
+    
     # Multiprocessing also for evaluation?
-    all_evaluations = []
-    for model in all_models_trained:
-        all_evaluations.append(model.evaluation_results)
+    # for model in all_models_trained:
+    #     all_evaluations.append(model.evaluation_results)
 
-    eval_results = pd.DataFrame(all_evaluations)
-    print(eval_results.to_csv('local/eval_results/junk/results_1.csv'))

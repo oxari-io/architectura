@@ -15,6 +15,7 @@ from sklearn.base import (
     RegressorMixin,
     TransformerMixin,
 )
+import copy
 from sklearn.impute import SimpleImputer, _base
 from sklearn.metrics import (
     balanced_accuracy_score,
@@ -29,16 +30,17 @@ from sklearn.utils.estimator_checks import check_estimator
 from typing import Any, Dict, List, Tuple
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
-#import seaborn as sns
-# from .metrics import dunn_index, mape
-# from .oxari_types import ArrayLike
+import seaborn as sns
+from .metrics import dunn_index, mape
+from .oxari_types import ArrayLike
 
+from typing import Union
+import sklearn
+import numpy as np
+import pandas as pd
+from sklearn.utils.estimator_checks import check_estimator
+from sklearn.model_selection import train_test_split
 
-# from typing import Union
-# import sklearn
-# import numpy as np
-# import pandas as pd
-# from sklearn.utils.estimator_checks import check_estimator
 
 class OxariLogger:
     """
@@ -55,6 +57,13 @@ class OxariLogger:
     def __init__():
         # https://docs.python.org/3/howto/logging-cookbook.html
         pass
+
+
+class ReducedDataMixin:
+    def get_sample_indices(self, X: ArrayLike) -> ArrayLike:
+        max_size = len(X) // 10
+        indices = np.random.randint(0, len(X), max_size)
+        return indices
 
 
 class OxariEvaluator(abc.ABC):
@@ -74,14 +83,13 @@ class OxariEvaluator(abc.ABC):
         return self.__class__.__name__
 
 
-
 class DefaultRegressorEvaluator(OxariEvaluator):
     def evaluate(self, y_true, y_pred, **kwargs):
 
         # TODO: add docstring here
 
         # compute metrics of interest
-
+        # y_pred[np.isinf(y_pred)] = 10e12
         error_metrics = {
             "sMAPE": smape(y_true, y_pred) / 100,
             "R2": r2_score(y_true, y_pred),
@@ -114,6 +122,7 @@ class DefaultClusterEvaluator(OxariEvaluator):
         }
         return super().evaluate(X, labels, **error_metrics)
 
+
 class DefaultClassificationEvaluator(OxariEvaluator):
     def __init__(self, **kwargs) -> None:
         super().__init__()
@@ -129,7 +138,7 @@ class DefaultClassificationEvaluator(OxariEvaluator):
 
         """
         precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average="weighted")
-        acc = balanced_accuracy_score(y_true,y_pred)
+        acc = balanced_accuracy_score(y_true, y_pred)
         error_metrics = {
             "balanced_accuracy": acc,
             "balanced_precision": precision,
@@ -138,19 +147,50 @@ class DefaultClassificationEvaluator(OxariEvaluator):
         }
         return super().evaluate(y_true, y_pred, **error_metrics)
 
+
+# TODO: Integrate optuna visualisation as method
 class OxariOptimizer(abc.ABC):
-    def __init__(self, num_trials=2, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__()
-        self.num_trials = num_trials
-        self.num_startup_trials = num_startup_trials
-        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.num_startup_trials)
+        self.n_trials = n_trials
+        self.n_startup_trials = n_startup_trials
+        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials)
+
 
     @abc.abstractmethod
-    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, pd.DataFrame]:
         """
-        Evaluates multiple metrics and returns a dict with all computed scores.
+        Explore the hyperparameter tning space with optuna.
+        Creates csv and pickle files with the saved hyperparameters for classification
+
+        Parameters:
+        X_train (numpy array): training data (features)
+        y_train (numpy array): training data (targets)
+        X_val (numpy array): validation data (features)
+        y_val (numpy array): validation data (targets)
+        num_startup_trials (int): 
+        n_trials (int): 
+
+        Return:
+        study.best_params (data structure): contains the best found parameters within the given space
         """
-        return {}, pd.DataFrame()
+
+        # create optuna study
+        # num_startup_trials is the number of random iterations at the beginiing
+        study = optuna.create_study(
+            study_name=f"{self.__class__.__name__}_process_hp_tuning",
+            direction="minimize",
+            sampler=self.sampler,
+        )
+
+        # running optimization
+        # trials is the full number of iterations
+
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.n_trials, show_progress_bar=False)
+
+        df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
+
+        return study.best_params, df
 
     @abc.abstractmethod
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs) -> Number:
@@ -163,7 +203,6 @@ class DefaultOptimizer(OxariOptimizer):
     """
     This optimzer does absolutely nothing. 
     """
-    
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
         return super().optimize(X_train, y_train, X_val, y_val, **kwargs)
 
@@ -172,11 +211,12 @@ class DefaultOptimizer(OxariOptimizer):
 
 
 class OxariMixin(abc.ABC):
-    def __init__(self, object_filename=None, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.object_filename = object_filename or self.__class__.__name__
+    def __init__(self, name=None, **kwargs) -> None:
+        super().__init__()
+        self._name = name or self.__class__.__name__
         self.start_time = None
         self.end_time = None
+        self.params = kwargs.pop("params", {})
 
     # @abc.abstractmethod
     # def run(self, **kwargs) -> "OxariMixin":
@@ -185,19 +225,38 @@ class OxariMixin(abc.ABC):
     #     """
     #     return self
 
-    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> OxariMixin:
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
 
-    def evaluate(self, y_true, y_pred, **kwargs):
+    def evaluate(self, y_true, y_pred, **kwargs) -> OxariMixin:
         return self._evaluator.evaluate(y_true, y_pred, **kwargs)
 
-    def set_evaluator(self, evaluator: OxariEvaluator) -> "OxariMixin":
+    def set_evaluator(self, evaluator: OxariEvaluator) -> OxariMixin:
         self._evaluator = evaluator
         return self
 
-    def set_optimizer(self, optimizer: OxariOptimizer) -> "OxariMixin":
+    def set_optimizer(self, optimizer: OxariOptimizer) -> OxariMixin:
         self._optimizer = optimizer
         return self
+
+    def set_params(self, **params):
+        self.params = params
+        return self
+
+    def get_params(self, deep=True):
+        return {"params": self.params}
+
+    # TODO: Needs get_params and get_config
+    def get_config(self, deep=True):
+        return {"name": self._name, **self.params}
+
+    @property
+    def name(self):
+        return self._name
+
+    def clone(self) -> OxariMixin:
+        # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
+        return copy.deepcopy(self, {})
 
 
 class OxariTransformer(OxariMixin, sklearn.base.TransformerMixin, sklearn.base.BaseEstimator, abc.ABC):
@@ -224,14 +283,20 @@ class OxariClassifier(OxariMixin, sklearn.base.ClassifierMixin, sklearn.base.Bas
 
 class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseEstimator, abc.ABC):
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
         return self
 
     @abc.abstractmethod
-    def predict(self, X, **kwargs) -> ArrayLike:
+    def predict(self, X:ArrayLike, **kwargs) -> ArrayLike:
         pass
 
+    def _set_meta(self, X:ArrayLike, **kwargs) -> ArrayLike:
+        self.feature_names_in_ = list(X.columns)
+        self.n_features_in_ = len(self.feature_names_in_)
 
 class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     """
@@ -257,6 +322,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
+
 class OxariPreprocessor(OxariTransformer, abc.ABC):
     def __init__(self, imputer: OxariImputer = None, **kwargs):
         super().__init__(**kwargs)
@@ -264,6 +330,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
         # Reference:  https://scikit-learn.org/stable/developers/develop.html#instantiation
+        super().__init__(**kwargs)
         self.imputer = imputer
 
     @abc.abstractmethod
@@ -285,8 +352,6 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
         self.imputer = imputer
         return self
 
-
-
     # def set_feature_selector(self, feature_selector: OxariFeatureSelector) -> "OxariPreprocessor":
     #     self.feature_selector = feature_selector
     #     return self
@@ -294,6 +359,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
 
 class OxariScopeEstimator(OxariRegressor, abc.ABC):
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
@@ -302,7 +368,10 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         self.set_evaluator(evaluator)
         optimizer = kwargs.pop('optimizer', DefaultOptimizer())
         self.set_optimizer(optimizer)
-        self._name = self.__class__.__name__
+        self.n_trials = kwargs.get("n_trials", 5)
+        self.n_startup_trials = kwargs.get("n_startup_trials", 1)        
+        # This is a model specific preprocessor
+        self._sub_preprocessor: OxariTransformer = None
 
     @abc.abstractmethod
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
@@ -321,18 +390,22 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
         # Returns prediction results
         pass
 
-    @abc.abstractmethod
+    # def set_preprocessor(self, preprocessor:BaseEstimator):
+    #     self._sub_preprocessor = preprocessor
+
+    @staticmethod
+    def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
+        return None
+
+    # @abc.abstractmethod
     def check_conformance(self, ) -> bool:
+        # TODO: Implement
         # Returns a boolean
         # Uses sklearn utils function check_estimator(self)
         # If this test passes, then deployment shall be allowed
         # check_estimator Makes sure that we can use model evaluation and selection tools such as model_selection.GridSearchCV and pipeline.Pipeline.
         # Reference
         pass
-
-    @property
-    def name(self):
-        return self._name
 
 
 class OxariPostprocessor(OxariMixin, abc.ABC):
@@ -360,6 +433,29 @@ class DefaultPostprocessor(OxariPostprocessor):
         return X
 
 
+class OxariScopeTransformer(OxariTransformer):
+    def fit(self, X, y=None, **kwargs) -> OxariScopeTransformer:
+        return self
+
+    def fit_transform(self, X, y=None, **fit_params):
+        return self.fit(X, y).transform(y, **fit_params)
+
+    @abc.abstractmethod
+    def transform(self, y, **kwargs) -> ArrayLike:
+        return y.copy()
+
+    @abc.abstractmethod
+    def reverse_transform(self, y, **kwargs) -> ArrayLike:
+        return y.copy()
+
+
+class DummyScaler(OxariScopeTransformer):
+    def transform(self, y, **kwargs) -> ArrayLike:
+        return super().transform(y, **kwargs)
+
+    def reverse_transform(self, y, **kwargs) -> ArrayLike:
+        return super().reverse_transform(y, **kwargs)
+
 
 class OxariFeatureReducer(OxariTransformer, abc.ABC):
     """
@@ -369,7 +465,6 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         super().__init__(missing_values=missing_values, add_indicator=add_indicator)
         self.verbose = verbose
         self.copy = copy
-
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -396,20 +491,19 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
-
     def visualize(self, X, **kwargs):
-        figsize = kwargs.pop('figsize',(15,15))
+        figsize = kwargs.pop('figsize', (15, 15))
         fig = plt.subplots(figsize=figsize)
         reduced_X = X[self.reduced_feature_columns].values
-        x,y,z = reduced_X[:, :3].T
+        x, y, z = reduced_X[:, :3].T
         ax = plt.axes(projection='3d')
-        ax.scatter3D(x,y,z)
+        ax.scatter3D(x, y, z)
         plt.show()
 
-    def merge(self, old_data:pd.DataFrame, reduced_feature_data:pd.DataFrame, feature_columns:List[str]):
+    def merge(self, old_data: pd.DataFrame, reduced_feature_data: pd.DataFrame, feature_columns: List[str]):
         reduced_feature_data.columns = self.reduced_feature_columns
-        return old_data.merge(reduced_feature_data, left_index=True, right_index=True).drop(feature_columns, axis=1)        
-        
+        return old_data.merge(reduced_feature_data, left_index=True, right_index=True).drop(feature_columns, axis=1)
+
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
 class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
@@ -419,69 +513,177 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         preprocessor: OxariPreprocessor = None,
         feature_selector: OxariFeatureReducer = None,
         scope_estimator: OxariScopeEstimator = None,
+        ci_estimator: OxariConfidenceEstimator = None,
+        scope_transformer: OxariScopeTransformer = None,
+        **kwargs,
     ):
         # self.dataset = dataset
+        super().__init__(**kwargs)
         self.preprocessor = preprocessor
         self.feature_selector = feature_selector
         self.estimator = scope_estimator
+        self.ci_estimator = ci_estimator.set_pipeline(self) if ci_estimator else DummyConfidenceEstimator()
+        self.scope_transformer = scope_transformer
         self._evaluation_results = {}
         self._start_time = None
         self._end_time = None
+        self.features = None
+        self._evaluator = DefaultRegressorEvaluator()
         # self.resources_postprocessor = database_deployer
 
-    @abc.abstractmethod
-    def run_pipeline(self, **kwargs):
-        # load dataset and hold in class
-        #  dataset
-        pass
-
     def _preprocess(self, X, **kwargs) -> ArrayLike:
-        X = self.preprocessor.transform(X, **kwargs)
-        X = self.feature_selector.transform(X, **kwargs)
-        return X
+        X_new = self.preprocessor.transform(X, **kwargs)
+        X_new = self.feature_selector.transform(X_new, **kwargs)
+        return X_new
+
+    def _transform_scope(self, y, **kwargs) -> ArrayLike:
+        y_new = self.scope_transformer.transform(y, **kwargs)
+        return y_new
+    
+    def _reverse_scope(self, y, **kwargs) -> ArrayLike:
+        y_new = self.scope_transformer.reverse_transform(y, **kwargs)
+        return y_new
 
     def predict(self, X, **kwargs) -> ArrayLike:
+        return_std = kwargs.pop('return_ci', False)
+        # return_raw = kwargs.pop('return_raw', False) # 
+        if return_std:
+            preds = self.ci_estimator.predict(X, **kwargs)
+            return self.scope_transformer.reverse_transform(preds)
+        X_new = self._preprocess(X, **kwargs).drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore')
+        preds = self.estimator.predict(X_new, **kwargs)
+        return self.scope_transformer.reverse_transform(preds)
+
+    def fit(self, X, y, **kwargs) -> OxariPipeline:
+        self._set_meta(X)
+        is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
-        return self.estimator.predict(X.drop(columns = ["scope_1", "scope_2", "scope_3"], axis=1), **kwargs)
-    
-    def fit(self, X, y, **kwargs) -> "OxariPipeline":
-        self.estimator = self.estimator.fit(X, y, **kwargs)
+        y = self._transform_scope(y, **kwargs)
+        self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
         return self
+
+
+    
+    def fit_confidence(self, X,y,**kwargs) -> OxariPipeline:
+        is_na = np.isnan(y)
+        # X = self._preprocess(X, **kwargs)
+        # y = self._transform_scope(y, **kwargs)
+        X,y =X[~is_na], y[~is_na] 
+        self.ci_estimator = self.ci_estimator.fit(X,y, **kwargs)
+        return self
+
+
+    def optimise(self, X, y, **kwargs) -> OxariPipeline:
+        df_processed: pd.DataFrame = self.preprocessor.fit_transform(X,y)
+        df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
+        y_transformed = self.scope_transformer.fit_transform(X,y)
+        X, y = df_reduced, y_transformed
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)        
+        self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
+        return self
+
+    def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
+        X_test = self._preprocess(X_test)
+        X_train = self._preprocess(X_train)
+        y_pred_test = self.estimator.predict(X_test)
+        y_pred_train = self.estimator.predict(X_train)
+        y_pred_test_reversed = self._reverse_scope(y_pred_test)        
+        y_test_transformed = self._transform_scope(y_test)
+        y_train_transformed = self._transform_scope(y_train)
+        self._evaluation_results = {}
+        self._evaluation_results["raw"] = self._evaluator.evaluate(y_test, y_pred_test_reversed, X_test=X_test)
+        self._evaluation_results["test"] = self.estimator.evaluate(y_test_transformed, y_pred_test, X_test=X_test)
+        self._evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
+        return self
+
+    def clone(self) -> OxariPipeline:
+        # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
+        return copy.deepcopy(self, {})
 
     @property
     def evaluation_results(self):
-        return {"model": self.estimator.name, **self._evaluation_results}
+        return {"pipeline": self.name, **self._evaluation_results}
+
+
+class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
+    def __init__(self, pipeline: OxariPipeline = None, alpha=0.05, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.alpha = alpha
+        self.pipeline = pipeline
+
+    def set_pipeline(self, pipeline: OxariPipeline):
+        self.pipeline = pipeline
+        return self
+
+
+class DummyConfidenceEstimator(OxariConfidenceEstimator):
+    """
+    For Probablistic models that already have a native way to predict the standard deviation.
+    """
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+        return super().fit(X, y, **kwargs)
+
+    def predict(self, X, **kwargs) -> ArrayLike:
+        df = pd.DataFrame()
+        mean_ = self.pipeline.predict(X)
+        df['lower'] = mean_
+        df['pred'] = mean_
+        df['upper'] = mean_
+        return df
 
 
 class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.created = None # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
+        self.created = None  # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
         self.pipelines: Dict[str, OxariPipeline] = {}
 
-    def add_pipeline(self, scope: int, pipeline: OxariPipeline) -> "OxariMetaModel":
+    def add_pipeline(self, scope: int, pipeline: OxariPipeline, **kwargs) -> "OxariMetaModel":
+        self.check_scope(scope)
+        self.pipelines[f"scope_{scope}"] = pipeline
+        return self
+
+    def check_scope(self, scope):
         if not isinstance(scope, int):
             raise Exception(f"'scope' is not an int: {scope}")
         if not ((scope > 0) and (scope < 4)):
             raise Exception(f"'scope' is not between either 1, 2 or 3: {scope}")
-        self.pipelines[f"scope_{scope}"] = pipeline
-        return self
 
     def get_pipeline(self, scope: int) -> OxariPipeline:
         return self.pipelines[f"scope_{scope}"]
 
     def fit(self, X, y=None, **kwargs):
-        pass
+        self._set_meta(X)
+        scope = kwargs.pop("scope", "all")
+        if scope == "all":
+            return self._fit_all(X, **kwargs)
+        return self.get_pipeline(scope).fit(X, y[scope], **kwargs)
+
+    def _fit_all(self, X, y=None, **kwargs) -> ArrayLike:
+        for scope_str, estimator in self.pipelines.items():
+            estimator.fit(X, y[scope_str], **kwargs)
+        return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
-        X = X.drop(columns = ["isin", "year"])
+        X = X.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], errors='ignore')
         if scope == "all":
             return self._predict_all(X, **kwargs)
         return self.get_pipeline(scope).predict(X, **kwargs)
 
     def _predict_all(self, X, **kwargs) -> ArrayLike:
         result = pd.DataFrame()
+        return_ci = kwargs.pop('return_ci', False)
+        if return_ci:
+            for scope_str, estimator in self.pipelines.items():
+                y_pred = estimator.predict(X, return_ci=return_ci, **kwargs)
+                y_pred.columns = [f"{scope_str}_{col}" for col in y_pred.columns]
+                result = pd.concat([result, y_pred], axis=1)
+            return result               
+        
         for scope_str, estimator in self.pipelines.items():
             y_pred = estimator.predict(X, **kwargs)
             result[scope_str] = y_pred
@@ -494,9 +696,25 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
             results.append(pipeline.evaluation_results)
 
         return results
-    
+
+
+# class DefaultMetaModel(OxariMetaModel):
+#     """
+#     A subclass of the Meta model. However this model will also provide confidence intervalls.
+#     """
+#     def __init__(self, **kwargs) -> None:
+#         super().__init__(**kwargs)
+
+#     def add_pipeline(self, scope: int, pipeline: OxariPipeline, ci_strategy:OxariConfidenceEstimator, **kwargs) -> "OxariMetaModel":
+#         self.check_scope(scope)
+#         pipeline = ci_strategy.set_pipeline(pipeline)
+#         self.pipelines[f"scope_{scope}"] = pipeline
+#         return self
+
+
 class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, abc.ABC):
     def __init__(self):
+        self.params = {}
         pass
 
     @abc.abstractmethod

@@ -7,6 +7,7 @@ import scope_estimators
 import postprocessors
 import imputers
 import feature_reducers
+import lar_calculator
 
 MODULES_TO_PICKLE = [
     base,
@@ -16,6 +17,7 @@ MODULES_TO_PICKLE = [
     postprocessors,
     imputers,
     feature_reducers,
+    lar_calculator,
 ]
 import time
 from os import PathLike
@@ -27,30 +29,88 @@ import numpy as np
 import abc
 from sklearn.model_selection import train_test_split
 from base import OxariMetaModel, OxariDataManager
+from os import environ as env
+import boto3
 
+ROOT_LOCAL = "local"
+ROOT_REMOTE = "remote"
 
-class LocalDestinationMixin():
-    def __init__(self, local_path: str = OBJECT_DIR, **kwargs) -> None:
+class Destination(abc.ABC):
+
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.local_path = Path(local_path)
-        self._check_if_destination_accessible()
+        self.destination_path = Path('.')
+
+
+class LocalDestination(Destination):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.destination_path = ROOT_LOCAL / self.SUB_FOLDER
+
+        
+    def _check_if_destination_accessible(self):
+        if not self.destination_path.exists():
+            raise Exception(f"Path(s) do/does not exist! Got {self.destination_path.absolute()}")
+
+    def _create_path(self):
+        self.destination_path.mkdir(parents=True, exist_ok=True)        
+
+
+class S3Destination(Destination):
+
+    def __init__(self,  **kwargs):
+        super().__init__(**kwargs)
+        self.do_spaces_endpoint = env.get('S3_ENDPOINT')
+        self.do_spaces_folder = env.get('S3_BUCKET')
+        self.do_spaces_key_id = env.get('S3_KEY_ID')
+        self.do_spaces_access_key = env.get('S3_ACCESS_KEY')
+        self.do_spaces_region = env.get('S3_REGION')
+        self.connect()
+
+    def connect(self):
+        self.session: boto3.Session = boto3.Session()
+        self.client = self.session.client(
+            's3',
+            region_name=self.do_spaces_region,
+            endpoint_url=f'{self.do_spaces_endpoint}',
+            aws_access_key_id=self.do_spaces_key_id,
+            aws_secret_access_key=self.do_spaces_access_key,
+        )
+        return self.client
 
     def _check_if_destination_accessible(self):
-        if not self.local_path.exists():
-            raise Exception(f"Path(s) does not exist! Got {self.local_path}")
+        # TODO: Construct a proper check
+        test = self.session.get_available_resources()
 
 
 class PartialSaver(abc.ABC):
-    def __init__(self, time=time.strftime('%d-%m-%Y'), name="", verbose=False, **kwargs) -> None:
-        super().__init__()
+    
+    def __init__(self, time=time.strftime('%d-%m-%Y'), name="noname", verbose=False, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.verbose = verbose
         self._store = None
-        self.time = time
-        self.name = name
+        self._time = time
+        self._name = name
 
     @abc.abstractmethod
-    def save(self, **kwargs) -> bool:
+    def _save(self, **kwargs) -> bool:
         return False
+
+    # @abc.abstractmethod
+    # def _save_fallback(self, **kwargs) -> bool:
+    #     return False
+
+    def save(self, **kwargs) -> bool:
+        try:
+            self._check_if_destination_accessible()
+            self._save(**kwargs)
+            return True
+        except Exception as e:
+            # TODO: Needs local emergency saving in case of exception
+            print(f"ERROR: Something went horribly wrong while saving '{self._name}': {e}")
+            
+            return False
 
     @abc.abstractmethod
     def _check_if_destination_accessible(self) -> bool:
@@ -65,81 +125,95 @@ class PartialSaver(abc.ABC):
 
 
 class MetaModelSaver(PartialSaver, abc.ABC):
+    SUB_FOLDER = Path("objects/meta_model")
+    
     def set(self, model: OxariMetaModel) -> "MetaModelSaver":
         self._store = model
         return self
+    
+    @property
+    def name(self):
+        return f"meta_model_{self._name}_{self._time}"
 
 
 class DataSaver(PartialSaver, abc.ABC):
+    SUB_FOLDER = Path("objects/estimates")
+
     def set(self, dataset: OxariDataManager) -> "DataSaver":
         self._store = dataset
         return self
 
+    @property
+    def name(self):
+        return f"estimates_{self._name}_{self._time}"
+
 
 class LARModelSaver(PartialSaver, abc.ABC):
+    SUB_FOLDER = Path("objects/lar_model")
+
     def set(self, model: OxariMetaModel) -> "LARModelSaver":
         self._store = model
         return self
 
+    @property
+    def name(self):
+        return f"lar_model_{self._name}_{self._time}"
 
-class LocalMetaModelSaver(LocalDestinationMixin, MetaModelSaver):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class LocalMetaModelSaver(LocalDestination, MetaModelSaver):
 
-    def save(self, **kwargs) -> bool:
-        try:
-            self._check_if_destination_accessible()
-            name = "noname" if self.name == "" else self.name
-            pkl.dump(self._store, io.open(self.local_path / f"MetaModel_{self.time}_{name}.pkl", 'wb'))
-            return True
-        except Exception as e:
-            print(f"ERROR: Something went horribly wrong while saving {self.name}: {e}")
-            return False
+    def _save(self, **kwargs) -> bool:
+        
+        return pkl.dump(self._store, io.open(self.destination_path / f"{self.name}.pkl", 'wb'))
 
 
-class LocalLARModelSaver(LocalDestinationMixin, LARModelSaver):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class LocalLARModelSaver(LocalDestination, LARModelSaver):
 
-    def save(self, **kwargs) -> bool:
-        try:
-            self._check_if_destination_accessible()
-            name = "noname" if self.name == "" else self.name
-            pkl.dump(self._store, io.open(self.local_path / f"LARModel_{self.time}_{name}.pkl", 'wb'))
-            return True
-        except Exception as e:
-            print(f"ERROR: Something went horribly wrong while saving {self.name}: {e}")
-            return False
+    def _save(self, **kwargs) -> bool:
+        return pkl.dump(self._store, io.open(self.destination_path / f"{self.name}.pkl", 'wb'))
 
 
-class LocalDataSaver(LocalDestinationMixin, DataSaver):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+class LocalDataSaver(LocalDestination, DataSaver):
 
-    def save(self, **kwargs) -> bool:
-        try:
-            self._check_if_destination_accessible()
-            name = "noname" if self.name == "" else self.name
-            csv_name_1 = self.local_path / f"scope_imputed_{self.time}_{name}.csv"
-            csv_name_2 = self.local_path / f"lar_imputed_{self.time}_{name}.csv"
-            scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
-            lar_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_LARS)
-            scope_imputed.to_csv(csv_name_1, index=False)
-            lar_imputed.to_csv(csv_name_2, index=False)
-            return True
-        except Exception as e:
-            
-            print(f"ERROR: Something went horribly wrong while saving {self.name}: {e}")
-            return False
+    def _save(self, **kwargs) -> bool:
+        # TODO: Save all data stored in the manager
+        # TODO: On Exception do fallback
+        csv_name_1 = self.destination_path / f"scope_imputed_{self._time}_{self._name}.csv"
+        csv_name_2 = self.destination_path / f"lar_imputed_{self._time}_{self._name}.csv"
+        scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
+        lar_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_LARS)
+        scope_imputed.to_csv(csv_name_1, index=False)
+        lar_imputed.to_csv(csv_name_2, index=False)
 
+class S3MetaModelSaver(S3Destination, MetaModelSaver):
+
+    def _save(self, **kwargs):
+        pkl_stream = pkl.dumps(self._store)
+        self.client.put_object(Body=pkl_stream, Bucket='remote', Key=str(self.SUB_FOLDER / f"{self.name}.pkl"))
+
+class S3LARModelSaver(S3Destination, LARModelSaver):
+
+    def _save(self, **kwargs):
+        pkl_stream = pkl.dumps(self._store)
+        self.client.put_object(Body=pkl_stream, Bucket='remote', Key=str(self.SUB_FOLDER / f"{self.name}.pkl"))
+
+class S3DataSaver(S3Destination, DataSaver):
+    def _save(self, **kwargs) -> bool:
+        # TODO: Save all data stored in the manager
+        csv_name_1 = f"scope_imputed_{self.name}"
+        csv_name_2 = f"lar_imputed_{self.name}"
+        scope_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
+        lar_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_LARS)
+        self.client.put_object(Body=scope_imputed.to_csv(index=False), Bucket='remote', Key=str(self.SUB_FOLDER / f"{csv_name_1}.csv"))
+        self.client.put_object(Body=lar_imputed.to_csv(index=False), Bucket='remote', Key=str(self.SUB_FOLDER / f"{csv_name_2}.csv"))
+        
 
 class OxariSavingManager():
     """
     Saves the files into the appropriate location
     """
+
     def __init__(
         self,
-        # object_filename,
         meta_model: MetaModelSaver = None,
         dataset: DataSaver = None,
         lar_model: LARModelSaver = None,

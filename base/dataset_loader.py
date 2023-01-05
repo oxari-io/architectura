@@ -292,6 +292,7 @@ class OxariDataManager(OxariMixin):
         _df_original = _df_original.merge(categorical_loader.data, on=categorical_loader.KEYS, how="left")
         return _df_original
 
+    #TODO: JUST OVERWRITE THIS ONE
     def _transform(self, df, **kwargs):
         return df
 

@@ -51,15 +51,7 @@ class PCAFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin)
         new_X_reduced = self.merge(X_new, reduced_features, self._features)
         return new_X_reduced
 
-
-<<<<<<< HEAD
-class Modified_Locally_Linear_Embedding(OxariFeatureReducer):
-    """This Feature Selector results in a lower-dimensional projection of the data 
-    which preserves distances within local neighborhoods. It additionally uses multiple 
-    weight vectors in each neighborhood to solve the LLE regularisation problem"""
-    def __init__(self, n_neighbors=5, n_components=5, eigen_solver = "dense", method="modified", **kwargs):  #are kwargs the parameters of this estimator?
-        self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method, eigen_solver=eigen_solver)
-=======
+#The SKlearnFeatureReducerWrapperMixin was not an argument in the original iteration of this
 class ModifiedLocallyLinearEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """This Feature Selector results in a lower-dimensional projection of the data 
     which preserves distances within local neighborhoods. It additionally uses multiple 
@@ -67,7 +59,6 @@ class ModifiedLocallyLinearEmbedding(OxariFeatureReducer, SKlearnFeatureReducerW
     def __init__(self, n_neighbors=5, n_components=5, method="modified", **kwargs):  #are kwargs the parameters of this estimator?
         super().__init__(**kwargs)
         self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method)
->>>>>>> main
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         self._features = list(kwargs.get('features'))
@@ -81,12 +72,8 @@ class ModifiedLocallyLinearEmbedding(OxariFeatureReducer, SKlearnFeatureReducerW
         new_X_reduced = self.merge(new_X, reduced_features, self._features)
         return new_X_reduced
 
-
-<<<<<<< HEAD
-class Spectral_Embedding(OxariFeatureReducer):
-=======
+#The SKlearnFeatureReducerWrapperMixin was not an argument in the original iteration of this
 class SpectralEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
->>>>>>> main
     """This Feature Selector finds a low dimensional representation of the data using 
     a spectral decomposition of the graph Laplacian"""
     def __init__(self, n_components=5, **kwargs):

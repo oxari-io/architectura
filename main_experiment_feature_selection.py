@@ -26,16 +26,17 @@ if __name__ == "__main__":
     # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments
     results = {} # dictionary where key=feature selection method, value = evaluation results
     for selection_method in selection_methods:
-        # if (selection_method == "FeatureAgglomeration"):
+        # if (selection_method == None):
         #     selection_method = FeatureAgglomeration()
         
-        ppl = FSExperimentPipeline(
-            scope=3,
-            preprocessor=BaselinePreprocessor(),
-            feature_selector=selection_method,
-            imputer=BaselineImputer(),
-            scope_estimator=BaselineEstimator(),
-        )
+        dp1 = DefaultPipeline(
+        preprocessor=IIDPreprocessor(),
+        feature_reducer=DummyFeatureReducer(),
+        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        scope_estimator=SupportVectorEstimator(),
+        ci_estimator=BaselineConfidenceEstimator(),
+        scope_transformer=LogarithmScaler(),
+        ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
 
         model = OxariMetaModel()
         postprocessor = ScopeImputerPostprocessor(estimator=model)
@@ -59,3 +60,7 @@ if __name__ == "__main__":
     #         result = run(x)
     #         results[x] = result
               # where x is a feature selection method, and run() is the entire model run with that feature selection method
+
+
+# **** DOn't inherit from class S3Datasource(Datasource)
+# **** Plot results to visualise & analyze

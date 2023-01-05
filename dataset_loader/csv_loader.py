@@ -147,6 +147,7 @@ class FSExperimentDataLoader(OxariDataManager):
             **kwargs,
         )
 
+    # TODO: _transform instead of run (use df.sample)
     def run(self, **kwargs) -> "OxariDataManager":
         print("running shortened dataset function")
         self.scope_loader = self.scope_loader.run()
@@ -157,6 +158,8 @@ class FSExperimentDataLoader(OxariDataManager):
         # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
         self.add_data(OxariDataManager.SHORTENED, _df_original, "Dataset without changes.")
         return self
+
+
 class PreviousScopeFeaturesDataManager(DefaultDataManager):
     def _take_previous_scopes(self, df:pd.DataFrame):
         df_tmp = df[self.scope_loader._COLS].shift(1)

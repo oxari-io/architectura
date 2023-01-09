@@ -49,12 +49,6 @@ class FSExperimentCSVScopeLoader(ScopeLoader, LocalDatasource):
         return self
 
 
-# class CSVFinancialLoader(FinancialLoader, LocalDatasourceMixin):
-#     def __init__(self, **kwargs):
-#         super().__init__(**kwargs)
-#         self.path = kwargs.pop("path", DATA_DIR / "financials.csv")
-
-
 class FSExperimentCSVFinancialLoader(FinancialLoader, LocalDatasource):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -130,34 +124,37 @@ class DefaultDataManager(OxariDataManager):
 
 class FSExperimentDataLoader(OxariDataManager):
     def __init__(self,
-                #  object_filename,
                 scope_loader: ScopeLoader = FSExperimentCSVScopeLoader(path  = DATA_DIR / "scopes.csv"),
                 financial_loader: FinancialLoader = FSExperimentCSVFinancialLoader(path = DATA_DIR / "financials.csv"),
                 categorical_loader: CategoricalLoader = FSExperimentCSVCategoricalLoader(path =  DATA_DIR / "categoricals.csv"),
-                #  other_loaders: Dict[str, PartialLoader] = {},
-                #  verbose=False,
+                other_loaders: Dict[str, PartialLoader] = {},
+                verbose=False,
                  **kwargs):
         super().__init__(
-            # object_filename,
             scope_loader,
             financial_loader,
             categorical_loader,
-            # other_loaders,
-            # verbose,
+            other_loaders,
+            verbose,
             **kwargs,
         )
 
-    # TODO: _transform instead of run (use df.sample)
-    def run(self, **kwargs) -> "OxariDataManager":
-        print("running shortened dataset function")
-        self.scope_loader = self.scope_loader.run()
-        self.financial_loader = self.financial_loader.run()
-        self.categorical_loader = self.categorical_loader.run()
-        _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
-        _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
-        # TODO: Use class constant instead of manual string to name dataset versions on OxariDataManager.add_data
-        self.add_data(OxariDataManager.SHORTENED, _df_original, "Dataset without changes.")
-        return self
+    # TODO ask why this run function is different from the run function of OxariDataManager.
+    # if answered remove this function because the super funtion is fine
+    # def run(self, **kwargs) -> "OxariDataManager":
+    #     print("running shortened dataset function")
+    #     self.scope_loader = self.scope_loader.run()
+    #     self.financial_loader = self.financial_loader.run()
+    #     self.categorical_loader = self.categorical_loader.run()
+    #     _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
+    #     _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
+    #     self.add_data(OxariDataManager.SHORTENED, _df_original, "Dataset without changes.")
+    #     return self
+    
+    # (use df.sample)
+    def _transform(self, df, **kwargs):
+        # replace sample_n_from_csv here 
+        pass
 
 
 class PreviousScopeFeaturesDataManager(DefaultDataManager):

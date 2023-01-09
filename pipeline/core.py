@@ -28,9 +28,6 @@ class DefaultPipeline(OxariPipeline):
             **kwargs,
         )
 
-
-
-
     @property
     def evaluation_results(self):
         # return {**super().evaluation_results}
@@ -55,8 +52,6 @@ class DefaultPipeline(OxariPipeline):
         }
 
 
-
-
 class CVPipeline(DefaultPipeline):
     # TODO: Implement a version of the default pipeline which makes sure that a proper crossvalidation is run to evaluate the models. Might need to be handled on the Evaluator level.
 
@@ -72,3 +67,7 @@ class CVPipeline(DefaultPipeline):
         y_pred = self.scope_transformer.reverse_transform(y_pred)
         self._evaluation_results = {"crossval": {"mape": np.mean(scores)}, **self.estimator.evaluate(y_test, y_pred, X_test=X_test)}
         return self
+
+
+def FSExperimentPipeline(DefaultPipeline):
+    pass

@@ -1,12 +1,15 @@
 from pipeline.core import DefaultPipeline, FSExperimentPipeline
-from dataset_loader.csv_loader import CSVDataLoader, FSExperimentDataLoader
+from dataset_loader.csv_loader import FSExperimentDataLoader
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import BaselineImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Spectral_Embedding, Latent_Dirichlet_Allocation, Modified_Locally_Linear_Embedding
+from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Latent_Dirichlet_Allocation
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
+from base import BaselineConfidenceEstimator
+from base.helper import LogarithmScaler
+from dataset_loader.csv_loader import DefaultDataManager
 
 # import base
 # from base import helper
@@ -21,36 +24,42 @@ if __name__ == "__main__":
     # print(selection_methods)
 
     # loads the data just like CSVDataLoader, but a selection of the data
-    dataset = FSExperimentDataLoader().run()
-    
-    # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments
+    dataset = DefaultDataManager().run() # run() calls _transform()
+    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+    SPLIT_1 = bag.scope_1
+    SPLIT_2 = bag.scope_2
+    SPLIT_3 = bag.scope_3
+
+    # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments, by default compare all methods
     results = {} # dictionary where key=feature selection method, value = evaluation results
     for selection_method in selection_methods:
         # if (selection_method == None):
         #     selection_method = FeatureAgglomeration()
         
-        dp1 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=3),
-        scope_estimator=SupportVectorEstimator(),
-        ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogarithmScaler(),
+        ppl = DefaultPipeline(
+            preprocessor=BaselinePreprocessor(),
+            feature_reducer=DummyFeatureReducer(),
+            imputer=BaselineImputer,
+            scope_estimator=BaselineEstimator(),
+            ci_estimator=BaselineConfidenceEstimator(),
+            scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
+        
 
         model = OxariMetaModel()
         postprocessor = ScopeImputerPostprocessor(estimator=model)
-        model.add_pipeline(scope=3, pipeline=ppl.run_pipeline(dataset))
-
-        X = dataset.get_data_by_name(OxariDataManager.SHORTENED)
+        model.add_pipeline(scope=1, pipeline=ppl.run_pipeline(dataset)) # make scope variable later
 
         ### EVALUATION RESULTS ###
         print("Eval results")
-        print(pd.json_normalize(model.collect_eval_results()))
+        result = pd.json_normalize(model.collect_eval_results())
+        print(result)  
 
-        print("hello")
-        # pipeline.run_pipeline(dataset) # the run_pipeline seems to be removed/altered on the main branch, so we need to find out what it has been replaced by
-        # results[selection_method] = pipeline._evaluation_results # not sure how evaluation works in the code in general. I think with DefaultRegressorEvaluator, but where is that set? 
+        results[selection_method] = result # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 
+    
+print("--------hello----------")
+print("hi")
+
 
 # another idea, very similar:
 # if __name__ == "__main__":

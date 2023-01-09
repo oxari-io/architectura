@@ -43,10 +43,10 @@ class FSExperimentCSVScopeLoader(ScopeLoader, LocalDatasource):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "scopes.csv")
 
-    def run(self) -> "ScopeLoader":
-        self.data = sample_n_from_csv(self.path, n=500)
-        self.data = self._clean_up_targets(data = self.data, threshold = self.threshold)
-        return self
+    # def run(self) -> "ScopeLoader":
+    #     self.data = sample_n_from_csv(self.path, n=500)
+    #     self.data = self._clean_up_targets(data = self.data, threshold = self.threshold)
+    #     return self
 
 
 class FSExperimentCSVFinancialLoader(FinancialLoader, LocalDatasource):
@@ -54,11 +54,11 @@ class FSExperimentCSVFinancialLoader(FinancialLoader, LocalDatasource):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "financials.csv")
 
-    def run(self) -> "FinancialLoader":
-        super()._check_if_data_exists()
-        self.data = sample_n_from_csv(self.path, n=500)
-        self.data = self.data[["isin", "year"] + COLS_FINANCIALS]
-        return self
+    # def run(self) -> "FinancialLoader":
+    #     super()._check_if_data_exists()
+    #     self.data = sample_n_from_csv(self.path, n=500)
+    #     self.data = self.data[["isin", "year"] + COLS_FINANCIALS]
+    #     return self
 
 class CSVCategoricalLoader(CategoricalLoader, LocalDatasource):
 
@@ -72,11 +72,11 @@ class FSExperimentCSVCategoricalLoader(CategoricalLoader, LocalDatasource):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "categoricals.csv")
 
-    def run(self) -> "CategoricalLoader":
-        super()._check_if_data_exists()
-        self.data = sample_n_from_csv(self.path, n=500)
-        self.data = self.data[["isin"] + COLS_CATEGORICALS]
-        return self
+    # def run(self) -> "CategoricalLoader":
+    #     super()._check_if_data_exists()
+    #     self.data = sample_n_from_csv(self.path, n=500)
+    #     self.data = self.data[["isin"] + COLS_CATEGORICALS]
+    #     return self
 
 
 # TODO: The internet loaders need a progressbar
@@ -124,11 +124,11 @@ class DefaultDataManager(OxariDataManager):
 
 class FSExperimentDataLoader(OxariDataManager):
     def __init__(self,
-                scope_loader: ScopeLoader = FSExperimentCSVScopeLoader(path  = DATA_DIR / "scopes.csv"),
-                financial_loader: FinancialLoader = FSExperimentCSVFinancialLoader(path = DATA_DIR / "financials.csv"),
-                categorical_loader: CategoricalLoader = FSExperimentCSVCategoricalLoader(path =  DATA_DIR / "categoricals.csv"),
-                other_loaders: Dict[str, PartialLoader] = {},
-                verbose=False,
+                scope_loader: ScopeLoader = CSVScopeLoader(path=DATA_DIR / "scopes.csv"),
+                 financial_loader: FinancialLoader = CSVFinancialLoader(path=DATA_DIR / "financials.csv"),
+                 categorical_loader: CategoricalLoader = CSVCategoricalLoader(path=DATA_DIR / "categoricals.csv"),
+                 other_loaders: Dict[str, PartialLoader] = {},
+                 verbose=False,
                  **kwargs):
         super().__init__(
             scope_loader,
@@ -152,9 +152,9 @@ class FSExperimentDataLoader(OxariDataManager):
     #     return self
     
     # (use df.sample)
-    def _transform(self, df, **kwargs):
-        # replace sample_n_from_csv here 
-        pass
+    # def _transform(self, df, **kwargs):
+    #     # replace sample_n_from_csv here 
+    #     pass
 
 
 class PreviousScopeFeaturesDataManager(DefaultDataManager):

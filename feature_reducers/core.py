@@ -117,6 +117,7 @@ class Factor_Analysis(OxariFeatureReducer):
     # Number of components can (and maybe should) change
     # What's the effect of the rotation parameter? What if it's None?
     def __init__(self, n_components=5, rotation="varimax", **kwargs):
+        super().__init__(**kwargs)
         self._dimensionality_reducer = FactorAnalysis(n_components=n_components, rotation=rotation)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -140,6 +141,7 @@ class Latent_Dirichlet_Allocation(OxariFeatureReducer):
     # N_COMPONENTS DEFAULT IS 10
     # If the data size is large, the "ONLINE" update will be much faster than the "BATCH" update
     def __init__(self, n_components=5, learning_method="batch", **kwargs):
+        super().__init__(**kwargs)
         self._dimensionality_reducer = LatentDirichletAllocation(n_components=n_components, learning_method=learning_method)
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -223,8 +225,8 @@ class DropFeatureReducer(OxariFeatureReducer):
 
 class FeatureAgglomeration(OxariFeatureReducer):
     def __init__(self, features=[], **kwargs):
+        super().__init__(**kwargs)
         self._dimensionality_reducer = cluster.FeatureAgglomeration(n_clusters=17)
-        print("----HIIIIII-----")
 
     def fit(self, X, y=None, **kwargs) -> "FeatureAgglomeration":
         self._features = list(kwargs.get('features'))
@@ -241,6 +243,7 @@ class FeatureAgglomeration(OxariFeatureReducer):
 
 class GaussRandProjection(OxariFeatureReducer):
     def __init__(self, n_components=10, **kwargs):
+        super().__init__(**kwargs)
         self._dimensionality_reducer = GaussianRandomProjection(n_components=n_components)
 
     def fit(self, X, y=None, **kwargs) -> "GaussRandProjection":
@@ -258,6 +261,7 @@ class GaussRandProjection(OxariFeatureReducer):
 
 class SparseRandProjection(OxariFeatureReducer):
     def __init__(self, n_components=10, **kwargs):
+        super().__init__(**kwargs)
         self._dimensionality_reducer = SparseRandomProjection(n_components=n_components)
 
     def fit(self, X, y=None, **kwargs) -> "SparseRandProjection":

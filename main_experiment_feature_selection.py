@@ -22,9 +22,11 @@ import sys
 if __name__ == "__main__":
     selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
     # print(selection_methods)
+    selection_methods = [FeatureAgglomeration]
 
     # loads the data just like CSVDataLoader, but a selection of the data
-    dataset = DefaultDataManager().run() # run() calls _transform()
+    dataset = FSExperimentDataLoader().run() # run() calls _transform()
+    X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
     SPLIT_1 = bag.scope_1
     SPLIT_2 = bag.scope_2
@@ -39,7 +41,7 @@ if __name__ == "__main__":
         ppl = DefaultPipeline(
             preprocessor=BaselinePreprocessor(),
             feature_reducer=DummyFeatureReducer(),
-            imputer=BaselineImputer,
+            imputer=BaselineImputer(),
             scope_estimator=BaselineEstimator(),
             ci_estimator=BaselineConfidenceEstimator(),
             scope_transformer=LogarithmScaler(),
@@ -48,11 +50,12 @@ if __name__ == "__main__":
 
         model = OxariMetaModel()
         postprocessor = ScopeImputerPostprocessor(estimator=model)
-        model.add_pipeline(scope=1, pipeline=ppl.run_pipeline(dataset)) # make scope variable later
+        model.add_pipeline(scope=1, pipeline=ppl) # make scope variable later
 
         ### EVALUATION RESULTS ###
         print("Eval results")
         result = pd.json_normalize(model.collect_eval_results())
+        pd.set_option('display.max_columns', 500)
         print(result)  
 
         results[selection_method] = result # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 

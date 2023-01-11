@@ -15,5 +15,12 @@ df_results
 # %%
 list(df_results.columns.values)
 # %%
-sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="sMAPE", y="scope_estimator")
+sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="test.sMAPE", y="feature_selector")
 # %%
+sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="test.R2", y="feature_selector")
+# %%
+sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="test.MAE", y="feature_selector")
+# %%
+sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="test.RMSE", y="feature_selector")
+# %%
+sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="test.MAPE", y="feature_selector")

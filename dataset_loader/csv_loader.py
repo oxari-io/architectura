@@ -12,7 +12,7 @@ COLS_CATEGORICALS = CatMapping.get_features()
 COLS_FINANCIALS = NumMapping.get_features()
 
 # source: https://cmdlinetips.com/2022/07/randomly-sample-rows-from-a-big-csv-file/
-# 21584 is the number of rows in the scope dataset
+# 21584 is the number of rows in the scope dataset ??????
 def sample_n_from_csv(filename:str, n:int=100, total_rows:int=21584) -> pd.DataFrame:
     if total_rows==None:
         with open(filename,"r") as fh:
@@ -153,8 +153,10 @@ class FSExperimentDataLoader(OxariDataManager):
     
     def _transform(self, df, **kwargs):
         # we don't want sampling of the same row more than once
-        df.sample(n=5000, replace=False, random_state=1)
-        return df
+        print("hi")
+        df_reduced = df.sample(n=5000, replace=False, random_state=1)
+        print("hi")
+        return df_reduced
     
 
 

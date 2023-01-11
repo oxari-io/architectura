@@ -20,8 +20,11 @@ import pandas as pd
 import sys
 import csv
 import seaborn as sns
+import time
 
 if __name__ == "__main__":
+    start = time.time()
+
     selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
     # print(selection_methods)
     selection_methods = [FeatureAgglomeration]
@@ -59,7 +62,7 @@ if __name__ == "__main__":
         result = pd.json_normalize(model.collect_eval_results())
         # remove irrelevant columns 
 
-        results.append(result) # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 
+         # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 
         # results.append((selection_method, result))
 
         pd.set_option('display.max_columns', 500)
@@ -68,20 +71,19 @@ if __name__ == "__main__":
         df_smaller = result[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
         print(df_smaller)
 
+        results.append(df_smaller)
 
-dfs = [df.set_index('feature_selector') for df in df_smaller]
-concatenated = pd.concat(dfs, axis=1)
+
+
+# dfs = [df.set_index('feature_selector') for df in results]
+concatenated = pd.concat(results, axis=1)
 
 concatenated.to_csv('local/eval_results/test.csv')
 
 
 
-
-        
-
-print("--------hello----------")
-print("hi")
-
+end = time.time()
+print(end - start)
 
 
 # another idea, very similar:

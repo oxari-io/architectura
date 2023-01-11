@@ -18,6 +18,8 @@ import pandas as pd
 # import joblib as pkl
 # from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import sys
+import csv
+import seaborn as sns
 
 if __name__ == "__main__":
     selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
@@ -33,7 +35,7 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
 
     # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments, by default compare all methods
-    results = {} # dictionary where key=feature selection method, value = evaluation results
+    results = [] # dictionary where key=feature selection method, value = evaluation results
     for selection_method in selection_methods:
         # if (selection_method == None):
         #     selection_method = FeatureAgglomeration()
@@ -55,13 +57,18 @@ if __name__ == "__main__":
         ### EVALUATION RESULTS ###
         print("Eval results")
         result = pd.json_normalize(model.collect_eval_results())
-        pd.set_option('display.max_columns', 500)
-        print(result)  
+        # remove irrelevant columns 
 
-        results[selection_method] = result # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 
-    
-print("--------hello----------")
+        results.append(result) # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 
+        # results.append((selection_method, result))
+
+
+dfs = [df.set_index('feature_selector') for df in results]
+concatenated = pd.concat(dfs, axis=1)
+
+concatenated.to_csv('local/eval_results/test.csv')
 print("hi")
+
 
 
 # another idea, very similar:

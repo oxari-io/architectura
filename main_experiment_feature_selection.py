@@ -62,11 +62,24 @@ if __name__ == "__main__":
         results.append(result) # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 
         # results.append((selection_method, result))
 
+        pd.set_option('display.max_columns', 500)
+        print(result)  
+        df_smaller = pd.DataFrame()
+        df_smaller = result[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
+        print(df_smaller)
 
-dfs = [df.set_index('feature_selector') for df in results]
+
+dfs = [df.set_index('feature_selector') for df in df_smaller]
 concatenated = pd.concat(dfs, axis=1)
 
 concatenated.to_csv('local/eval_results/test.csv')
+
+
+
+
+        
+
+print("--------hello----------")
 print("hi")
 
 

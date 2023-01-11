@@ -178,7 +178,7 @@ class IsomapFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMix
 
     def transform(self, X, y=None, **kwargs):
         new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
         new_X_reduced = self.merge(new_X, reduced_features, self._features)
         return new_X_reduced
 

@@ -693,7 +693,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         results = []
 
         for scope, pipeline in self.pipelines.items():
-            results.append(pipeline.evaluation_results)
+            results.append({"scope":scope, **pipeline.evaluation_results})
 
         return results
 

@@ -52,9 +52,7 @@ if __name__ == "__main__":
             scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
         
-
         model = OxariMetaModel()
-        postprocessor = ScopeImputerPostprocessor(estimator=model)
         model.add_pipeline(scope=1, pipeline=ppl) # make scope variable later
 
         ### EVALUATION RESULTS ###
@@ -67,7 +65,6 @@ if __name__ == "__main__":
 
         pd.set_option('display.max_columns', 500)
         print(result)  
-        df_smaller = pd.DataFrame()
         df_smaller = result[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
         print(df_smaller)
 

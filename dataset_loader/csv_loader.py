@@ -154,7 +154,7 @@ class FSExperimentDataLoader(OxariDataManager):
     def _transform(self, df, **kwargs):
         # we don't want sampling of the same row more than once
         df.sample(n=5000, replace=False, random_state=1)
-    return df
+        return df
     
 
 

@@ -57,9 +57,14 @@ if __name__ == "__main__":
         result = pd.json_normalize(model.collect_eval_results())
         pd.set_option('display.max_columns', 500)
         print(result)  
+        df_smaller = pd.DataFrame()
+        df_smaller = result[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
+        print(df_smaller)
 
-        results[selection_method] = result # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 
-    
+
+
+        
+
 print("--------hello----------")
 print("hi")
 

@@ -151,10 +151,12 @@ class FSExperimentDataLoader(OxariDataManager):
     #     self.add_data(OxariDataManager.SHORTENED, _df_original, "Dataset without changes.")
     #     return self
     
-    # (use df.sample)
-    # def _transform(self, df, **kwargs):
-    #     # replace sample_n_from_csv here 
-    #     pass
+    def _transform(self, df, **kwargs):
+        # we don't want sampling of the same row more than once
+        df.sample(n=5000, replace=False, random_state=1)
+    return df
+    
+
 
 
 class PreviousScopeFeaturesDataManager(DefaultDataManager):

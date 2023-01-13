@@ -1,12 +1,12 @@
 from pipeline.core import DefaultPipeline, FSExperimentPipeline
 from dataset_loader.csv_loader import FSExperimentDataLoader
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
-from preprocessors import BaselinePreprocessor
+from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor
 # from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import BaselineImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Latent_Dirichlet_Allocation
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
+from imputers import BaselineImputer, RevenueQuantileBucketImputer
+from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Latent_Dirichlet_Allocation, Spectral_Embedding 
+from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, SupportVectorEstimator
 from base import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
 from dataset_loader.csv_loader import DefaultDataManager
@@ -23,11 +23,9 @@ import seaborn as sns
 import time
 
 if __name__ == "__main__":
-    start = time.time()
-
     selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
     # print(selection_methods)
-    selection_methods = [FeatureAgglomeration]
+    selection_methods = [DummyFeatureReducer, FeatureAgglomeration]
 
     # loads the data just like CSVDataLoader, but a selection of the data
     dataset = FSExperimentDataLoader().run() # run() calls _transform()
@@ -38,16 +36,18 @@ if __name__ == "__main__":
     SPLIT_3 = bag.scope_3
 
     # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments, by default compare all methods
+    times = {}
     results = [] # dictionary where key=feature selection method, value = evaluation results
     for selection_method in selection_methods:
+        start = time.time()
         # if (selection_method == None):
         #     selection_method = FeatureAgglomeration()
         
         ppl = DefaultPipeline(
-            preprocessor=BaselinePreprocessor(),
-            feature_reducer=DummyFeatureReducer(),
-            imputer=BaselineImputer(),
-            scope_estimator=BaselineEstimator(),
+            preprocessor=IIDPreprocessor(),
+            feature_reducer=selection_method(),
+            imputer=RevenueQuantileBucketImputer(buckets_number=3),
+            scope_estimator=SupportVectorEstimator(),
             ci_estimator=BaselineConfidenceEstimator(),
             scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -58,17 +58,19 @@ if __name__ == "__main__":
         ### EVALUATION RESULTS ###
         print("Eval results")
         result = pd.json_normalize(model.collect_eval_results())
-        # remove irrelevant columns 
-
-         # Evaluation is done with DefaultRegressorEvaluator, set as default evaluator in OxariPipeline 
-        # results.append((selection_method, result))
-
+        # result = pd.json_normalize(ppl._evaluation_results)
+        
         pd.set_option('display.max_columns', 500)
         print(result)  
+
+        # remove irrelevant columns 
         df_smaller = result[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
         print(df_smaller)
 
         results.append(df_smaller)
+        end = time.time()
+        timing = end - start
+        times[selection_method] = timing    
 
 
 
@@ -79,8 +81,7 @@ concatenated.to_csv('local/eval_results/test.csv')
 
 
 
-end = time.time()
-print(end - start)
+print(times)
 
 
 # another idea, very similar:

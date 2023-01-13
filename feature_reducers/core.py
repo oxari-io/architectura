@@ -73,7 +73,7 @@ class ModifiedLocallyLinearEmbedding(OxariFeatureReducer, SKlearnFeatureReducerW
         return new_X_reduced
 
 #The SKlearnFeatureReducerWrapperMixin was not an argument in the original iteration of this
-class SpectralEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
+class Spectral_Embedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     """This Feature Selector finds a low dimensional representation of the data using 
     a spectral decomposition of the graph Laplacian"""
     def __init__(self, n_components=5, **kwargs):
@@ -98,7 +98,7 @@ class SpectralEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
 
     def fit_transform(self, X, y=None, **kwargs) -> Union[np.ndarray, pd.DataFrame]:  
         self._features = list(kwargs.get('features'))
-        self._dimensionality_reducer.fit(X[self._features], y)
+        # self._dimensionality_reducer.fit(X[self._features], y)
         self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
 
         new_X = X.copy()

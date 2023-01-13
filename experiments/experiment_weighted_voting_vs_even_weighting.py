@@ -24,7 +24,7 @@ if __name__ == "__main__":
     all_results = []
     # loads the data just like CSVDataLoader, but a selection of the data
     for i in range(10):
-        configurations = [MiniModelArmyEstimator(), SingleBucketModelEstimator(), BaselineEstimator(), PredictMedianEstimator()]
+        configurations = [MiniModelArmyEstimator(), EvenWeightMiniModelArmyEstimator(), BaselineEstimator(), PredictMedianEstimator()]
         dataset = DefaultDataManager().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
@@ -80,4 +80,4 @@ if __name__ == "__main__":
                 "test.RMSE",
                 "test.MAPE",
             ]]
-            concatenated.to_csv('local/eval_results/experiment_voting_regression_vs_single_regression.csv')
+            concatenated.to_csv('local/eval_results/experiment_weighted_voting_vs_even_weighting.csv')

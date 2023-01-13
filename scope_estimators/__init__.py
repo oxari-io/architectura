@@ -5,4 +5,4 @@ from .linear_bayesian_models import *
 from .linear_models import *
 from .independent_feature_models import *
 from .svm import *
-from .mini_model_party import *
+from .single_bucket_model_party import *

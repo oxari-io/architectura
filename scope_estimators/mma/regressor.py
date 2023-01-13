@@ -271,15 +271,18 @@ class BucketRegressor(OxariRegressor):
                 model_score = np.mean(cross_val_score(model, X[selector] if is_any else X, y[selector] if is_any else y, scoring=cv_metric)) 
                 trained_candidates[name] = {"model": model, "score": 100-model_score, **candidate_data}
                 pbar.update(1)
-            weights = np.array([v["score"] for _, v in trained_candidates.items()])
-            # weights = (weights - weights.min())/(weights.max()-weights.min())
-            models = [(name, v["model"]) for name, v in trained_candidates.items()]
-            
-            self.voting_regressors_[bucket] = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
+            v_regressor = self._construct_voting_regressor(X, y, trained_candidates, selector, is_any)
+            self.voting_regressors_[bucket] = v_regressor
             y_hat = self.voting_regressors_[bucket].predict(X[selector] if is_any else X)
             y_true = y[selector] if is_any else y
             self.bucket_specifics_["scores"][bucket] = self.evaluate(y_true, y_hat)
         return self
+
+    def _construct_voting_regressor(self, X, y, trained_candidates, selector, is_any):
+        weights = np.array([v["score"] for _, v in trained_candidates.items()])
+        models = [(name, v["model"]) for name, v in trained_candidates.items()]
+        v_regressor = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
+        return v_regressor
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
@@ -315,3 +318,10 @@ class BucketRegressor(OxariRegressor):
 
     def get_config(self, deep=True):
         return self.params
+
+
+class EvenWeightBucketRegressor(BucketRegressor):
+    def _construct_voting_regressor(self, X, y, trained_candidates, selector, is_any):
+        models = [(name, v["model"]) for name, v in trained_candidates.items()]
+        v_regressor = VotingRegressor(estimators=models, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
+        return v_regressor

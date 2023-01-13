@@ -4,7 +4,7 @@ from base.helper import BucketScopeDiscretizer
 import numpy as np
 import pandas as pd
 from scope_estimators.mma.classifier import BucketClassifier, ClassifierOptimizer, BucketClassifierEvauator
-from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer
+from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer, EvenWeightBucketRegressor
 from base.oxari_types import ArrayLike
 
 N_TRIALS = 1
@@ -70,6 +70,12 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         combined_results = {"n_buckets": self.n_buckets, "classifier": results_cl, "regressor": results_rg, **results_end_to_end}
         return combined_results
 
+
+class EvenWeightMiniModelArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_rg: BucketRegressor = EvenWeightBucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials,
+                                                                                             n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
 
 
 class MiniModelArmyClusterBucketEstimator(MiniModelArmyEstimator):

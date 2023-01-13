@@ -7,8 +7,8 @@ from base.oxari_types import ArrayLike
 from sklearn.base import MultiOutputMixin
 from sklearn.model_selection import KFold
 from base import OxariConfidenceEstimator
-
-
+from typing_extensions import Self
+import lightgbm as lgb
 # TODO: Implement evaluator that computes the coverage. https://towardsdatascience.com/prediction-intervals-in-python-64b992317b1a
 class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     """
@@ -28,7 +28,7 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def fit(self, X, y, **kwargs) -> "BaselineConfidenceEstimator":
+    def fit(self, X, y, **kwargs) -> Self:
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
         y_hat = self.pipeline.estimator.predict(X, **kwargs)
@@ -53,7 +53,7 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def fit(self, X, y, **kwargs) -> "ProbablisticConfidenceEstimator":
+    def fit(self, X, y, **kwargs) -> Self:
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
         return super().fit(X, y, **kwargs)
@@ -85,7 +85,7 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
         self.res = []
         self.n_splits = n_splits
 
-    def fit(self, X, y, **kwargs) -> "JacknifeConfidenceEstimator":
+    def fit(self, X, y, **kwargs) -> Self:
         kf = KFold(n_splits=self.n_splits, shuffle=True)
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
@@ -116,5 +116,45 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
         df = pd.DataFrame()
         df['lower'] = bottom
         df['pred'] = preds
+        df['upper'] = top
+        return df
+
+class DirectLossConfidenceEstimator(OxariConfidenceEstimator):
+    """
+    From here: https://towardsdatascience.com/generating-confidence-intervals-for-regression-models-2dd60026fbce
+    The method follows the Jacknife+ approach but with KFold CV. 
+    The idea is to fit multiple estimators and compute their residuals on unseen data. 
+    Then compute the confidence intervall and by taking the alpha quantile of the residuals. 
+    Then sum and substract them from the predictions on the real prediction.
+
+    The paper simulations show that this method is a little worse than the Jackknife+, however, it is way faster. 
+    In practical terms, this will probably be the method being used in most cases.
+    """
+    def __init__(self, n_splits=10, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._all_estimators: List[OxariScopeEstimator] = []
+        self.res = []
+        self.n_splits = n_splits
+        self.confidence_estimator = lgb.LGBMRegressor()
+
+    def fit(self, X, y, **kwargs) -> Self:
+        kf = KFold(n_splits=self.n_splits, shuffle=True)
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
+        y_pred = self.pipeline.estimator.predict(X)
+        y_residuals = np.abs(y - y_pred)
+        self.confidence_estimator = self.confidence_estimator.fit(X,y_residuals)
+        return self
+
+    def predict(self, X, **kwargs) -> ArrayLike:
+        X = self.pipeline._preprocess(X)
+        pred = self.pipeline.estimator.predict(X)
+        residuals_pred = self.confidence_estimator.predict(X)
+        bottom = pred - residuals_pred
+        top = pred + residuals_pred
+        
+        df = pd.DataFrame()
+        df['lower'] = bottom
+        df['pred'] = pred
         df['upper'] = top
         return df

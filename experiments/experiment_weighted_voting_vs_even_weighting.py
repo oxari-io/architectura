@@ -80,4 +80,5 @@ if __name__ == "__main__":
                 "test.RMSE",
                 "test.MAPE",
             ]]
-            concatenated.to_csv('local/eval_results/experiment_weighted_voting_vs_even_weighting.csv')
+            fname = __loader__.name.split(".")[-1]
+            concatenated.to_csv(f'local/eval_results/{fname}.csv')

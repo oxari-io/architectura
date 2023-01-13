@@ -1,0 +1,4 @@
+,repetition,time,scope,ci_estimator,evaluator,coverage_model,coverage_ground_truth
+0,1,13.921196460723877,1,BaselineConfidenceEstimator,DefaultConfidenceEvaluator,1.0,0.9492947007243614
+1,1,14.105915069580078,2,BaselineConfidenceEstimator,DefaultConfidenceEvaluator,1.0,0.9833200953137411
+2,1,14.276474237442017,3,BaselineConfidenceEstimator,DefaultConfidenceEvaluator,1.0,0.9502322495023225

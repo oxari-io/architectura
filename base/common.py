@@ -669,7 +669,7 @@ class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
 
     @property
     def evaluation_results(self):
-        return self._evaluation_results
+        return {"ci_estimator":self.name, **self._evaluation_results}
 
 
 class DummyConfidenceEstimator(OxariConfidenceEstimator):

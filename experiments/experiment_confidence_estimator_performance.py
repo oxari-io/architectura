@@ -70,4 +70,5 @@ if __name__ == "__main__":
             all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 3, **ppl3.ci_estimator.evaluate(*SPLIT_3.val).evaluation_results})
             ### EVALUATION RESULTS ###
             concatenated = pd.json_normalize(all_results)
-            concatenated.to_csv(f'local/eval_results/{__file__}.csv')
+            fname = __loader__.name.split(".")[-1]
+            concatenated.to_csv(f'local/eval_results/{fname}.csv')

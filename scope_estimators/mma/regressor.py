@@ -56,6 +56,14 @@ class RegressorOptimizer(OxariOptimizer):
         self.n_startup_trials = n_startup_trials
         self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials, warn_independent_sampling=False)
         self.scope = None
+        self.models = [
+            # ("GBR", GradientBoostingRegressor), # Is fundamentally the same as XGBOOST but XGBoost is better - https://stats.stackexchange.com/a/282814/361976
+            ("RFR", RandomForestRegressor),
+            # ("XGB", xgb.XGBRegressor),
+            ("LGB", lgb.LGBMRegressor),
+            ("KNN", KNeighborsRegressor),
+            ("EXF", ExtraTreesRegressor),
+        ]
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
@@ -76,14 +84,7 @@ class RegressorOptimizer(OxariOptimizer):
         """
         # selecting the models that will be trained to build the voting regressor --> tuple(name, model)
         # TODO: Use ExtraTree instead of RandomForest as it is much faster with similar performance
-        models = [
-            # ("GBR", GradientBoostingRegressor), # Is fundamentally the same as XGBOOST but XGBoost is better - https://stats.stackexchange.com/a/282814/361976
-            ("RFR", RandomForestRegressor),
-            # ("XGB", xgb.XGBRegressor),
-            ("LGB", lgb.LGBMRegressor),
-            ("KNN", KNeighborsRegressor),
-            ("EXF", ExtraTreesRegressor),
-        ]
+        
         # scores will be used to compute weights for voting mechanism
         info = defaultdict(lambda: defaultdict(dict))
         # candidates will be given to VotingRegressor
@@ -98,7 +99,7 @@ class RegressorOptimizer(OxariOptimizer):
             # info[n] = defaultdict(dict)
             # bucket_name = f"bucket_{n}"
             bucket_name = n
-            for name, Model in models:
+            for name, Model in self.models:
 
                 # print(f"Training {name} ... ")
 

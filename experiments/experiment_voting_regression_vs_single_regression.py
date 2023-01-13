@@ -65,7 +65,7 @@ if __name__ == "__main__":
             all_results.append({"time": time.time() - start, "scope": 2, **ppl2.evaluation_results})
             all_results.append({"time": time.time() - start, "scope": 3, **ppl3.evaluation_results})
         ### EVALUATION RESULTS ###
-        concatenated = pd.json_normalize(all_results)[[
-            "time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"
-        ]]
-        concatenated.to_csv('local/eval_results/experiment_voting_regression_vs_single_regression.csv')
+            concatenated = pd.json_normalize(all_results)[[
+                "time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"
+            ]]
+            concatenated.to_csv('local/eval_results/experiment_voting_regression_vs_single_regression.csv')

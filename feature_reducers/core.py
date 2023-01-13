@@ -128,7 +128,7 @@ class Factor_Analysis(OxariFeatureReducer):
 
     def transform(self, X:pd.DataFrame, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
+        reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(new_X[self._features]), index=new_X.index)
         reduced_features.columns = [f"pc_{i}" for i in reduced_features.columns] 
         new_X = new_X.drop(columns=self._features)
         new_X = new_X.merge(reduced_features, left_index=True, right_index=True)
@@ -195,14 +195,28 @@ class MDSSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
     "Compute the embedding vectors for data X."
 
     def fit(self, X, y=None, **kwargs) -> "MDSSelector":
-        self._features = list(kwargs.get('features'))
-        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+        # self._features = list(kwargs.get('features'))
+        # self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
         return self
 
     def transform(self, X, y=None, **kwargs):
+        # new_X = X.copy()
+        # reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
+        # new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        return self
+
+    def fit_transform(self, X, y=None, **kwargs) -> Union[np.ndarray, pd.DataFrame]:  
+        self._features = list(kwargs.get('features'))
+        # self._dimensionality_reducer.fit(X[self._features], y)
+        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+
         new_X = X.copy()
         reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
         new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        # fit_transform will generate a new embedding space instead of projecting new points 
+        # into the same embedding space used for the reference data. 
+        # Plus the doc-page indicates that the output is an ndarray, not an array-like object (tho that's not an issue???)
+        # new_X_reduced = new_X_reduced.reshape(-1)
         return new_X_reduced
 
 

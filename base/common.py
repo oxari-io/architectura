@@ -92,16 +92,25 @@ class DefaultRegressorEvaluator(OxariEvaluator):
     def evaluate(self, y_true, y_pred, **kwargs):
 
         # TODO: add docstring here
-
+        y_pred, y_true = np.array(y_pred), np.array(y_true)
         # compute metrics of interest
         # y_pred[np.isinf(y_pred)] = 10e12
+        offsets = np.array(np.maximum(y_pred, y_true) / np.minimum(y_pred, y_true))
+        percentile_deviation = np.quantile(offsets, [.5, .75, .90, .95])
+        # Important interpretation https://medium.com/@davide.sarra/how-to-interpret-smape-just-like-mape-bf799ba03bdc
         error_metrics = {
             "sMAPE": smape(y_true, y_pred) / 100,
             "R2": r2_score(y_true, y_pred),
             "MAE": mean_absolute_error(y_true, y_pred),
             "RMSE": mean_squared_error(y_true, y_pred, squared=False),
             # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
-            "MAPE": mape(y_true, y_pred)
+            "MAPE": mape(y_true, y_pred) / 100,
+            "offset_percentile": {
+                "50%": percentile_deviation[0],
+                "75%": percentile_deviation[1],
+                "90%": percentile_deviation[2],
+                "95%": percentile_deviation[3]
+            },
         }
 
         return super().evaluate(y_true, y_pred, **error_metrics)
@@ -115,13 +124,17 @@ class DefaultConfidenceEvaluator(OxariEvaluator):
         # compute metrics of interest
         # https://www.statisticshowto.com/coverage-probability/
         y_hat, y_lower, y_upper = y_pred["pred"], y_pred["lower"].values, y_pred["upper"].values
-        model_is_covered = y_hat.between(y_lower, y_upper, inclusive='both')
-        truth_is_covered = y_true.between(y_lower, y_upper, inclusive='both')
+        coverage_pred = y_hat.between(y_lower, y_upper, inclusive='both').mean()
+        coverage = y_true.between(y_lower, y_upper, inclusive='both').mean()
+        mean_range = np.median(y_upper - y_lower)
 
         error_metrics = {
             "evaluator": self.name,
-            "coverage_model": model_is_covered.mean(),
-            "coverage_ground_truth": truth_is_covered.mean(),
+            "mean_coverage_model_prediction": coverage_pred,
+            "mean_coverage_ground_truth": coverage,
+            "median_range": mean_range,
+            # "90th_percentile_deviation": percentile_deviation,
+            # "mean_deviation": mean_deviation,
         }
 
         return error_metrics
@@ -587,17 +600,26 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         y_new = self.scope_transformer.reverse_transform(y, **kwargs)
         return y_new
 
+    def set_ci_estimator(self, estimator: OxariConfidenceEstimator) -> Self:
+        self.ci_estimator = estimator.set_pipeline(self)
+        return self
+
+    def set_estimator(self, estimator: OxariScopeEstimator) -> Self:
+        self.estimator = estimator
+        return self
+
     def predict(self, X, **kwargs) -> ArrayLike:
         return_std = kwargs.pop('return_ci', False)
         # return_raw = kwargs.pop('return_raw', False) #
         if return_std:
             preds = self.ci_estimator.predict(X, **kwargs)
-            return self.scope_transformer.reverse_transform(preds)
+            return preds # Alread reversed
+            # return self.scope_transformer.reverse_transform(preds)
         X_new = self._preprocess(X, **kwargs).drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore')
         preds = self.estimator.predict(X_new, **kwargs)
         return self.scope_transformer.reverse_transform(preds)
 
-    def fit(self, X, y, **kwargs) -> OxariPipeline:
+    def fit(self, X, y, **kwargs) -> Self:
         self._set_meta(X)
         is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
@@ -605,7 +627,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
         return self
 
-    def fit_confidence(self, X, y, **kwargs) -> OxariPipeline:
+    def fit_confidence(self, X, y, **kwargs) -> Self:
         is_na = np.isnan(y)
         # X = self._preprocess(X, **kwargs)
         # y = self._transform_scope(y, **kwargs)
@@ -614,10 +636,11 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return self
 
     # TODO: Implement this function
-    def evaluate_confidence(self, X, y, **kwargs) -> OxariPipeline:
+    def evaluate_confidence(self, X, y, **kwargs) -> Self:
+        self.ci_estimator.evaluate(X, y, **kwargs)
         return self
 
-    def optimise(self, X, y, **kwargs) -> OxariPipeline:
+    def optimise(self, X, y, **kwargs) -> Self:
         df_processed: pd.DataFrame = self.preprocessor.fit_transform(X, y)
         df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
         y_transformed = self.scope_transformer.fit_transform(X, y)
@@ -626,7 +649,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
         return self
 
-    def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
+    def evaluate(self, X_train, y_train, X_test, y_test) -> Self:
         X_test = self._preprocess(X_test)
         X_train = self._preprocess(X_train)
         y_pred_test = self.estimator.predict(X_test)
@@ -640,7 +663,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
         return self
 
-    def clone(self) -> OxariPipeline:
+    def clone(self) -> Self:
         # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
         return copy.deepcopy(self, {})
 
@@ -662,14 +685,21 @@ class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
         return self
 
     def evaluate(self, X, y, **kwargs) -> Self:
-        ci_results = self.predict(X)
-        y = self.pipeline._transform_scope(y)
-        self._evaluation_results = self.evaluator.evaluate(y, ci_results)
+        y_ci = self.predict(X)
+        # y = self.pipeline._transform_scope(y)
+        self._evaluation_results = self.evaluator.evaluate(y, y_ci)
         return self
 
     @property
     def evaluation_results(self):
-        return {"ci_estimator":self.name, **self._evaluation_results}
+        return {"ci_estimator": self.name, **self._evaluation_results}
+
+    def _construct_result(self, top, bottom, preds):
+        df = pd.DataFrame()
+        df['lower'] = bottom
+        df['pred'] = preds
+        df['upper'] = top
+        return self.pipeline._reverse_scope(df)
 
 
 class DummyConfidenceEstimator(OxariConfidenceEstimator):

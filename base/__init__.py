@@ -12,11 +12,12 @@ try:
     else:
         print(f"Cannot use intel-sklearn optimization because processor type is {processor_type}")
 except Exception as e:
-    print(f"Something went wrong => {e}")
-    # https://www.intel.com/content/www/us/en/develop/documentation/oneapi-programming-guide/top/oneapi-development-environment-setup/use-the-setvars-script-with-linux-or-macos.html
-    print("Try to install intel-AI-Toolkit from 'https://www.intel.com/content/www/us/en/develop/documentation/installation-guide-for-intel-oneapi-toolkits-linux/top/installation/install-using-package-managers/apt.html#apt'")
-    print("Install command is: sudo apt install intel-basekit")
-    print("Then choose the installed python package with command: 'poetry use env <PATH-TO-INTEL-PYTHON-BINARY>'")
+    # print(f"Something went wrong => {e}")
+    # # https://www.intel.com/content/www/us/en/develop/documentation/oneapi-programming-guide/top/oneapi-development-environment-setup/use-the-setvars-script-with-linux-or-macos.html
+    # print("Try to install intel-AI-Toolkit from 'https://www.intel.com/content/www/us/en/develop/documentation/installation-guide-for-intel-oneapi-toolkits-linux/top/installation/install-using-package-managers/apt.html#apt'")
+    # print("Install command is: sudo apt install intel-basekit")
+    # print("Then choose the installed python package with command: 'poetry use env <PATH-TO-INTEL-PYTHON-BINARY>'")
+    pass
             
 
 import sklearn

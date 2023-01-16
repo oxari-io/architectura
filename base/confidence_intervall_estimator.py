@@ -9,6 +9,8 @@ from sklearn.model_selection import KFold
 from base import OxariConfidenceEstimator
 from typing_extensions import Self
 import lightgbm as lgb
+
+
 # TODO: Implement evaluator that computes the coverage. https://towardsdatascience.com/prediction-intervals-in-python-64b992317b1a
 class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     """
@@ -25,6 +27,7 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
     However, this naive solution is problematic because our model may overfit and even if it doesn’t, most of the time the error on the training set will be smaller than the error on the test set, after all, those points are known by the model.
     This may lead to over-optimistic confidence intervals. Therefore, this method should never be used.
     """
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
@@ -37,12 +40,40 @@ class BaselineConfidenceEstimator(OxariConfidenceEstimator):
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
-        df = pd.DataFrame()
         X = self.pipeline._preprocess(X)
         mean_ = self.pipeline.estimator.predict(X, **kwargs)
-        df['lower'] = mean_ - self.error_range
-        df['pred'] = mean_
-        df['upper'] = mean_ + self.error_range
+        df = pd.DataFrame()
+        bottom = mean_ - self.error_range
+        preds = mean_
+        top = mean_ + self.error_range
+        df = self._construct_result(top, bottom, preds)
+
+        return df
+
+
+class PercentileOffsetConfidenceEstimator(OxariConfidenceEstimator):
+    """
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def fit(self, X, y, **kwargs) -> Self:
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
+        y_hat = self.pipeline.estimator.predict(X, **kwargs)
+        offsets = np.maximum(y_hat, y) / np.minimum(y_hat, y)
+        self.error_range = np.quantile(offsets, q=1 - self.alpha)
+        return super().fit(X, y, **kwargs)
+
+    def predict(self, X, **kwargs) -> ArrayLike:
+        X = self.pipeline._preprocess(X)
+        mean_ = self.pipeline.estimator.predict(X, **kwargs)
+        bottom = mean_ / self.error_range
+        preds = mean_
+        top = mean_ * self.error_range
+        df = self._construct_result(top, bottom, preds)
+
         return df
 
 
@@ -50,6 +81,7 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
     """
     For Probablistic models that already have a native way to predict the standard deviation.
     """
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
@@ -59,12 +91,15 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
-        df = pd.DataFrame()
         X = self.pipeline._preprocess(X)
         mean_, std_ = self.pipeline.predict(X, return_std=True)
-        df['lower'] = mean_ - std_
-        df['pred'] = mean_
-        df['upper'] = mean_ + std_
+        df = pd.DataFrame()
+        bottom = mean_ - std_
+        preds = mean_
+        top = mean_ + std_
+
+        df = self._construct_result(top, bottom, preds)
+
         return df
 
 
@@ -79,6 +114,7 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
     The paper simulations show that this method is a little worse than the Jackknife+, however, it is way faster. 
     In practical terms, this will probably be the method being used in most cases.
     """
+
     def __init__(self, n_splits=10, **kwargs) -> None:
         super().__init__(**kwargs)
         self._all_estimators: List[OxariScopeEstimator] = []
@@ -112,12 +148,11 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
                 top.append(np.quantile(y_pred_multi[i] - ci, 1 - self.alpha))
                 bottom.append(np.quantile(y_pred_multi[i] + ci, 1 - self.alpha))
 
-        preds = np.median(y_pred_multi, axis=1)
-        df = pd.DataFrame()
-        df['lower'] = bottom
-        df['pred'] = preds
-        df['upper'] = top
+        # preds = np.median(y_pred_multi, axis=1)
+        preds = self.pipeline.estimator.predict(X)
+        df = self._construct_result(top, bottom, preds)
         return df
+
 
 class DirectLossConfidenceEstimator(OxariConfidenceEstimator):
     """
@@ -130,6 +165,7 @@ class DirectLossConfidenceEstimator(OxariConfidenceEstimator):
     The paper simulations show that this method is a little worse than the Jackknife+, however, it is way faster. 
     In practical terms, this will probably be the method being used in most cases.
     """
+
     def __init__(self, n_splits=10, **kwargs) -> None:
         super().__init__(**kwargs)
         self._all_estimators: List[OxariScopeEstimator] = []
@@ -138,23 +174,18 @@ class DirectLossConfidenceEstimator(OxariConfidenceEstimator):
         self.confidence_estimator = lgb.LGBMRegressor()
 
     def fit(self, X, y, **kwargs) -> Self:
-        kf = KFold(n_splits=self.n_splits, shuffle=True)
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
         y_pred = self.pipeline.estimator.predict(X)
         y_residuals = np.abs(y - y_pred)
-        self.confidence_estimator = self.confidence_estimator.fit(X,y_residuals)
+        self.confidence_estimator = self.confidence_estimator.fit(X, y_residuals)
         return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
         X = self.pipeline._preprocess(X)
-        pred = self.pipeline.estimator.predict(X)
+        preds = self.pipeline.estimator.predict(X)
         residuals_pred = self.confidence_estimator.predict(X)
-        bottom = pred - residuals_pred
-        top = pred + residuals_pred
-        
-        df = pd.DataFrame()
-        df['lower'] = bottom
-        df['pred'] = pred
-        df['upper'] = top
+        bottom = preds - residuals_pred
+        top = preds + residuals_pred
+        df = self._construct_result(top, bottom, preds)
         return df

@@ -51,6 +51,7 @@ class LocalDestination(Destination):
         
     def _check_if_destination_accessible(self):
         if not self.destination_path.exists():
+            self.logger.error(f"Exception: Path(s) do/does not exist! Got {self.destination_path.absolute()}")
             raise Exception(f"Path(s) do/does not exist! Got {self.destination_path.absolute()}")
 
     def _create_path(self):

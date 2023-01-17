@@ -85,7 +85,8 @@ class LocalDatasource(Datasource):
 
     def _check_if_data_exists(self):
         if not self.path.exists():
-            raise Exception(f"Path(s) does not exist! Got {self.path}")
+            self.logger.error(f"Exception: Path(s) does not exist! Got {self.path}")
+            raise Exception(f"Path(s) does not exist! Got {self.path}")  
 
     def _load(self) -> "CategoricalLoader":
         self._data = pd.read_csv(self.path)
@@ -128,13 +129,13 @@ class ScopeLoader(OxariMixin, PartialLoader, abc.ABC):
         # dropping datapoints that have no scopes
         data = data.dropna(how="all", subset=self.columns)
 
-        if self.verbose:
-            num_remaining = data.shape[0]
-            print(
-                f"*** From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes ***"
-            )
-            
-        self.logger.info(f"*** From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes ***")
+        # if self.verbose:
+        #     num_remaining = data.shape[0]
+        #     print(
+        #         f"*** From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes ***"
+        #     )
+        num_remaining = data.shape[0]
+        self.logger.info(f"From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes")
         result_data = data
 
         return result_data

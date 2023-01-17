@@ -45,7 +45,7 @@ from sklearn.model_selection import train_test_split
 
 os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
-WRITE_TO =  "cout" # "./logger.log"
+WRITE_TO =  "./logger.log" # "cout" 
 
 class OxariLoggerMixin:
     """
@@ -581,7 +581,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
         et = time.time()
         elapsed_time = et - st
-        self.logger.info('Fit function is completed with execution time: ', elapsed_time, 'seconds')
+        self.logger.info(f'Fit function is completed with execution time: {elapsed_time} seconds')
         return self
 
 
@@ -595,7 +595,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.ci_estimator = self.ci_estimator.fit(X,y, **kwargs)
         et = time.time()
         elapsed_time = et - st
-        self.logger.info('Fit_confidence function is completed with execution time: ', elapsed_time, 'seconds')
+        self.logger.info(f'Fit_confidence function is completed with execution time: {elapsed_time} seconds')
         return self
 
 
@@ -609,7 +609,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
         et = time.time()
         elapsed_time = et - st
-        self.logger.info('Optimize function is completed with execution time: ', elapsed_time, 'seconds')
+        self.logger.info(f'Optimize function is completed with execution time: {elapsed_time} seconds')
         return self
 
     def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
@@ -627,7 +627,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
         et = time.time()
         elapsed_time = et - st
-        self.logger.info('Evaluate function is completed with execution time: ', elapsed_time, 'seconds')
+        self.logger.info(f'Evaluate function is completed with execution time: {elapsed_time} seconds')
         return self
 
     def clone(self) -> OxariPipeline:
@@ -682,9 +682,12 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def check_scope(self, scope):
         if not isinstance(scope, int):
+            self.logger.error(f"Exception: 'scope' is not an int: {scope}")
             raise Exception(f"'scope' is not an int: {scope}")
         if not ((scope > 0) and (scope < 4)):
+            self.logger.error(f"Exception: 'scope' is not between either 1, 2 or 3: {scope}")
             raise Exception(f"'scope' is not between either 1, 2 or 3: {scope}")
+            
 
     def get_pipeline(self, scope: int) -> OxariPipeline:
         return self.pipelines[f"scope_{scope}"]

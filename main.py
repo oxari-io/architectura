@@ -33,8 +33,8 @@ if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
     # dataset = CSVDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-    # dataset = DefaultDataManager().run()
-    dataset = PreviousScopeFeaturesDataManager().run()
+    dataset = DefaultDataManager().run()
+    # dataset = PreviousScopeFeaturesDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -74,26 +74,24 @@ if __name__ == "__main__":
     # model.add_pipeline(scope=2, pipeline=dp2)
     # model.add_pipeline(scope=3, pipeline=dp3)
 
-
+    mainlogger = OxariLoggerMixin()
     # print("Parameter Configuration")
-    OxariLoggerMixin.logger.info("Parameter Configuration")
+    mainlogger.logger.info(f"Parameter Configuration: {dp1.get_config(deep=True)}")
     print(dp1.get_config(deep=True))
     # print(dp2.get_config(deep=True))
     # print(dp3.get_config(deep=True))
 
     ### EVALUATION RESULTS ###
     # print("Eval results")
-    OxariLoggerMixin.logger.info("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
     eval_results.to_csv('local/eval_results/model_pipelines_test.csv')
     # print(eval_results)
-    OxariLoggerMixin.logger.info(eval_results)
+    mainlogger.logger.info(f"Evaluation results: {eval_results}")
     
 
     # print("Predict with Model only SCOPE1")
     # print(model.predict(SPLIT_1.val.X, scope=1))
-    OxariLoggerMixin.logger.info("Predict with Model only SCOPE1")
-    OxariLoggerMixin.logger.info(model.predict(SPLIT_1.val.X, scope=1))
+    mainlogger.logger.info(f"Predict with Model only SCOPE1, Predictions: {model.predict(SPLIT_1.val.X, scope=1)}")
 
 
     print("Impute scopes with Model")

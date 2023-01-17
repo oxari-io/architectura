@@ -5,15 +5,15 @@ import numpy as np
 import pandas as pd
 from sklearn.svm import SVR
 import optuna
-from pmdarima.metrics import smape
 from base.oxari_types import ArrayLike
+from base.metrics import optuna_metric
 
 
 class SVROptimizer(OxariOptimizer):
-    def __init__(self, num_trials=10, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
-            num_trials=num_trials,
-            num_startup_trials=num_startup_trials,
+            n_trials=n_trials,
+            n_startup_trials=n_startup_trials,
             sampler=sampler,
             **kwargs,
         )
@@ -45,7 +45,7 @@ class SVROptimizer(OxariOptimizer):
 
         # running optimization
         # trials is the full number of iterations
-        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.n_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
@@ -63,7 +63,7 @@ class SVROptimizer(OxariOptimizer):
         model = SVR(epsilon=epsilon, C=C).fit(X_train.iloc[indices], y_train.iloc[indices])
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class SupportVectorEstimator(OxariScopeEstimator):
@@ -75,8 +75,11 @@ class SupportVectorEstimator(OxariScopeEstimator):
     def fit(self, X, y, **kwargs) -> "SupportVectorEstimator":
         max_size = len(X)
         sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)        
-        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices])
+        indices = np.random.randint(0, max_size, sample_size)   
+        X = pd.DataFrame(X)
+        y = pd.DataFrame(y)
+        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
+        # self.coef_ = self._estimator.coef_
         return self
 
     def predict(self, X) -> ArrayLike:

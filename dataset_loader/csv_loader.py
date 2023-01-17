@@ -1,57 +1,69 @@
 from pathlib import Path
 from typing import Dict
-from base.dataset_loader import CategoricalLoader, LocalDatasourceMixin, OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader
+from base.dataset_loader import CategoricalLoader, LocalDatasource, OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader, Datasource, S3Datasource
 from base.mappings import CatMapping, NumMapping
 import pandas as pd
 import numpy as np
 from base.constants import DATA_DIR
 
+
 COLS_CATEGORICALS = CatMapping.get_features()
 COLS_FINANCIALS = NumMapping.get_features()
 
 
-class CSVScopeLoader(ScopeLoader, LocalDatasourceMixin):
+class CSVScopeLoader(ScopeLoader, LocalDatasource):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "scopes.csv")
 
-        print("")
 
-    def run(self) -> "ScopeLoader":
-        self.data = pd.read_csv(self.path)
-        self.data = self._clean_up_targets(data = self.data, threshold = self.threshold)
-        return self
+class CSVFinancialLoader(FinancialLoader, LocalDatasource):
 
-
-class CSVFinancialLoader(FinancialLoader, LocalDatasourceMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "financials.csv")
 
-    def run(self) -> "FinancialLoader":
-        super()._check_if_data_exists()
-        self.data = pd.read_csv(self.path)
-        self.data = self.data[["isin", "year"] + COLS_FINANCIALS]
-        return self
 
+class CSVCategoricalLoader(CategoricalLoader, LocalDatasource):
 
-class CSVCategoricalLoader(CategoricalLoader, LocalDatasourceMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.path = kwargs.pop("path", DATA_DIR / "categoricals.csv")
 
-    def run(self) -> "CategoricalLoader":
-        super()._check_if_data_exists()
-        self.data = pd.read_csv(self.path)
-        self.data = self.data[["isin"] + COLS_CATEGORICALS]
-        return self
 
 
-class CSVDataManager(OxariDataManager):
+# TODO: The internet loaders need a progressbar
+class S3ScopeLoader(ScopeLoader, S3Datasource):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.file_name = "scopes.csv"
+        self.client = self.connect()
+
+
+class S3FinancialLoader(FinancialLoader, S3Datasource):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.file_name = "financials.csv"
+        self.client = self.connect()
+
+
+class S3CategoricalLoader(CategoricalLoader, S3Datasource):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.file_name = "categoricals.csv"
+        self.client = self.connect()
+
+
+class DefaultDataManager(OxariDataManager):
+
     def __init__(self,
-                 scope_loader: ScopeLoader = CSVScopeLoader(path  = DATA_DIR / "scopes.csv"),                 
-                 financial_loader: FinancialLoader = CSVFinancialLoader(path = DATA_DIR / "financials.csv"),
-                 categorical_loader: CategoricalLoader = CSVCategoricalLoader(path =  DATA_DIR / "categoricals.csv"),
+                 scope_loader: ScopeLoader = CSVScopeLoader(path=DATA_DIR / "scopes.csv"),
+                 financial_loader: FinancialLoader = CSVFinancialLoader(path=DATA_DIR / "financials.csv"),
+                 categorical_loader: CategoricalLoader = CSVCategoricalLoader(path=DATA_DIR / "categoricals.csv"),
                  other_loaders: Dict[str, PartialLoader] = {},
                  verbose=False,
                  **kwargs):
@@ -64,4 +76,13 @@ class CSVDataManager(OxariDataManager):
             **kwargs,
         )
 
-#inherit form this 
+class PreviousScopeFeaturesDataManager(DefaultDataManager):
+    def _take_previous_scopes(self, df:pd.DataFrame):
+        df_tmp = df[self.scope_loader._COLS].shift(1)
+        df_tmp.columns = [f"ft_fin_preyear_{col}" for col in df_tmp.columns]
+        df[df_tmp.columns] = df_tmp
+        return df
+    
+    def _transform(self, df:pd.DataFrame):
+        df = df.sort_values(['isin', 'year'], ascending=[True, True]).groupby('isin').apply(self._take_previous_scopes)
+        return df

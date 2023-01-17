@@ -9,12 +9,13 @@ from base.mappings import NumMapping
 from base.metrics import mape
 from .core import BucketImputerBase
 
+MAIN_VARIABLE = 'ft_fin_revenue'
 class RevenueBucketImputer(BucketImputerBase):
     def __init__(self, buckets_number=3, **kwargs):
         super().__init__(**kwargs)
         self.bucket_number = buckets_number
         self.list_of_skipped_columns = ['year', 'isin'] + NumMapping.get_targets()
-        self.columns_to_fit = set(NumMapping.get_features()) - set(["revenue"])
+        # self.columns_to_fit = set(NumMapping.get_features()) - set([MAIN_VARIABLE])
         self.fallback_fallback_value = 0
         # TODO: Evaluate based on the entropy of buckets
         self.info = {"bucket_counts": {}}
@@ -25,8 +26,8 @@ class RevenueBucketImputer(BucketImputerBase):
         """
 
         self.lookup_table_ = self._split_in_buckets_per_revenue(X, self.bucket_number)
-        self.fallback_fallback_value = X["revenue"].median()
-
+        self.fallback_fallback_value = X[MAIN_VARIABLE].median()
+        self.columns_to_fit = X.columns[X.columns.str.startswith('ft_fin')]
         # looping over lookup_table -->
         # { bucket_n : {"interval" : (0, 20), "values" : {"column" : column_mean}}}
         # where 0 and 20 are the split points (interval) of the first bucket and value represents the mean which will be used for imputing
@@ -37,8 +38,8 @@ class RevenueBucketImputer(BucketImputerBase):
             interval_overall = self.lookup_table_["default"]["interval"]
 
             # create a filter where the value of revenue falls in between the interval of the bucket
-            filter_ = (X["revenue"].between(interval[0], interval[1], inclusive="both"))
-            filter_overall = (X["revenue"].between(interval_overall[0], interval_overall[1], inclusive="both"))
+            filter_ = (X[MAIN_VARIABLE].between(interval[0], interval[1], inclusive="both"))
+            filter_overall = (X[MAIN_VARIABLE].between(interval_overall[0], interval_overall[1], inclusive="both"))
 
             # Count how many landed in bucket
             if bucket != 'default':
@@ -62,14 +63,14 @@ class RevenueBucketImputer(BucketImputerBase):
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         X_new = X.copy()
-        X_new.loc[np.isnan(X_new["revenue"]), ["revenue"]] = self.fallback_fallback_value
+        X_new.loc[np.isnan(X_new[MAIN_VARIABLE]), [MAIN_VARIABLE]] = self.fallback_fallback_value
         for bucket in self.lookup_table_.keys():
             if bucket == "default":
                 continue  # Skip the default values
             interval = self.lookup_table_[bucket]["interval"]
 
             # check if the data to impute has revenue that falls between the intervals
-            filter_ = (X_new["revenue"].between(interval[0], interval[1], inclusive="both"))
+            filter_ = (X_new[MAIN_VARIABLE].between(interval[0], interval[1], inclusive="both"))
 
             for column in self.columns_to_fit:
 
@@ -95,11 +96,11 @@ class RevenueBucketImputer(BucketImputerBase):
 
         split_points = []
 
-        min_ = data["revenue"].min()  # 20
-        max_ = data["revenue"].max()  # 1000
+        min_ = data[MAIN_VARIABLE].min()  # 20
+        max_ = data[MAIN_VARIABLE].max()  # 1000
         # TODO: Same with quantiles
         # TODO: Same with parabola
-        thresholds = self._get_threshold(buckets_number, min_, max_, data["revenue"].dropna())
+        thresholds = self._get_threshold(buckets_number, min_, max_, data[MAIN_VARIABLE].dropna())
 
         split_points = [-np.inf]
         split_points.extend(list(thresholds))

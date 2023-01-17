@@ -6,12 +6,12 @@ import pandas as pd
 from sklearn.gaussian_process import GaussianProcessRegressor
 import sklearn.gaussian_process.kernels as kernels
 import optuna
-from pmdarima.metrics import smape
 from sklearn import linear_model
 from .linear.helper import PolynomialFeaturesMixin, NormalizedFeaturesMixin
 from base.oxari_types import ArrayLike
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
+from base.metrics import optuna_metric
 
 DEBUG_NUM_TRIALS = True
 NUM_TRIALS = 50 if not DEBUG_NUM_TRIALS else 10
@@ -19,10 +19,10 @@ NUM_STARTUP_TRIALS = 5 if not DEBUG_NUM_TRIALS else 1
 
 
 class LROptimizer(OxariOptimizer):
-    def __init__(self, num_trials=NUM_TRIALS, num_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=NUM_TRIALS, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
-            num_trials=num_trials,
-            num_startup_trials=num_startup_trials,
+            n_trials=n_trials,
+            n_startup_trials=n_startup_trials,
             sampler=sampler,
             **kwargs,
         )
@@ -55,16 +55,16 @@ class LROptimizer(OxariOptimizer):
         # running optimization
         # trials is the full number of iterations
 
-        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.num_trials, show_progress_bar=False)
+        study.optimize(lambda trial: self.score_trial(trial, X_train, y_train, X_val, y_val), n_trials=self.n_trials, show_progress_bar=False)
 
         df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
         return study.best_params, df
 
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        alpha = trial.suggest_float("alpha", 0.01, 5.0)
-        l1_ratio = trial.suggest_float("l1_ratio", 0.01, 1.0)
-        degree = trial.suggest_categorical("degree", list(range(1, 5)))
+        alpha = trial.suggest_float("alpha", 0.1, 5.0)
+        l1_ratio = trial.suggest_float("l1_ratio", 0.1, 1.0)
+        degree = trial.suggest_categorical("degree", list(range(1, 3)))
 
         preprocessor = LinearRegressionEstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
         X_train = preprocessor.transform(X_train)
@@ -73,7 +73,7 @@ class LROptimizer(OxariOptimizer):
         model = linear_model.ElasticNet(alpha=alpha, l1_ratio=l1_ratio).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class LinearRegressionEstimator(OxariScopeEstimator):
@@ -113,10 +113,10 @@ class LinearRegressionEstimator(OxariScopeEstimator):
 
 
 class GLMOptimizer(OxariOptimizer):
-    def __init__(self, num_trials=50, num_startup_trials=NUM_STARTUP_TRIALS, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=50, n_startup_trials=NUM_STARTUP_TRIALS, sampler=None, **kwargs) -> None:
         super().__init__(
-            num_trials=num_trials,
-            num_startup_trials=num_startup_trials,
+            n_trials=n_trials,
+            n_startup_trials=n_startup_trials,
             sampler=sampler,
             **kwargs,
         )
@@ -141,7 +141,7 @@ class GLMOptimizer(OxariOptimizer):
         ).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
-        return smape(y_true=y_val, y_pred=y_pred)
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class GLMEstimator(OxariScopeEstimator):

@@ -6,6 +6,7 @@ from sklearn.linear_model import LinearRegression
 from base.oxari_types import ArrayLike
 
 
+# TODO: Move those into the class
 def _helper(name, isins, years, emissions):
     lr = LinearRegression()
     lr.fit(years.values[:, None], emissions)
@@ -37,7 +38,7 @@ def _compute_lar(base_year, target_year, slope, intercept):
     return percentage_of_change / number_of_years_spanned
 
 
-class OxariLARCalculator(OxariLinearAnnualReduction):
+class OxariUnboundLAR(OxariLinearAnnualReduction):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # self.dataset = dataset
@@ -46,8 +47,6 @@ class OxariLARCalculator(OxariLinearAnnualReduction):
         # make sure that we dont use nan values to calculate LAR
         X = X.dropna()
         years, values = X.iloc[:, 0].values, X.iloc[:, 1].values
-        # values = np.array(values)
-        # year_range = np.array(year_range)
 
         # slope, intercept, r, p, se = stats.linregress(year_range, values_)
         lr = LinearRegression().fit(years[:, None], values)
@@ -76,10 +75,6 @@ class OxariLARCalculator(OxariLinearAnnualReduction):
         # making sure that for each isin we have at least 2 datapoints
         scopes = scopes[scopes.groupby('isin').isin.transform('count') > 1]
 
-        # scopes = scopes[["isin", "year", "scope_1" , "scope_2", "scope_3"]]
-
-        # scopes = scopes.loc[scopes["year"].isin(years_range)]
-
         scope_columns = ["scope_1", "scope_2"]
         scopes = scopes.assign(scope_1_2=scopes[scope_columns].sum(axis=1))
 
@@ -87,30 +82,9 @@ class OxariLARCalculator(OxariLinearAnnualReduction):
 
         print("unique isins", len(isins))
 
-        # data = pd.DataFrame({"isin": isins, "lar1_2": None, "lar_3": None})
-
         grouped = scopes.groupby("isin", sort=False)
-        # grouped.aggregate(self._calculate_aggragated_lar)
-        # np.where()
-
-        # collector_1 = []
-        # self.scope_1_2 = pd.DataFrame()
-
-        # max_years = scopes.groupby("isin").count().max()[0]
-        # padded_nd_array = np.array(list(scopes[["isin", "year", "scope_1_2"]].groupby('isin').apply(pd.DataFrame.to_numpy)
-        #             .apply(lambda x: np.pad(x, ((max_years-len(x), 0), (0, 0)), 'empty'))))
-        # padded_array_masked = np.ma.masked_equal(padded_nd_array, None)
-        # padded_array_masked.data[:,:,0] = 1
-        # x = padded_array_masked[:,:,:2]
-        # y = padded_array_masked[:,:,2]
 
         self.params_1 = grouped.apply(lambda df_group: _helper("scope_1_2", df_group["isin"], df_group["year"], df_group["scope_1_2"])).reset_index(drop=True)
         self.params_2 = grouped.apply(lambda df_group: _helper("scope_3", df_group["isin"], df_group["year"], df_group["scope_3"])).reset_index(drop=True)
 
-        # for group_name, df_group in tqdm(grouped):
-        # self._helper(lr, group_name, df_group)
-        # lr = LinearRegression().fit(df_group["year"], df_group["scope_3"])
-        # collector_1.append(("scope_1_2", group_name, lr.coef_, lr.intercept_, df_group.head(1)["year"].values[0], df_group.tail(1)["year"].values[0]))
-        # data.loc[data["isin"] == group_name, "lar1_2"] = self.predict(df_group[["year", "scope_1+2"]])
-        # data.loc[data["isin"] == group_name, "lar_3"] = self.predict(df_group[["year", "scope_3"]])
         return self

@@ -3,7 +3,7 @@ from base import OxariScopeEstimator, OxariFeatureReducer, OxariPostprocessor, O
 from base import OxariImputer, JacknifeConfidenceEstimator, OxariTransformer, DummyConfidenceEstimator, DummyScaler
 from base.helper import LogarithmScaler
 
-from dataset_loader.csv_loader import CSVDataManager
+from dataset_loader.csv_loader import DefaultDataManager
 from imputers import BaselineImputer
 from feature_reducers import DummyFeatureReducer
 from preprocessors import BaselinePreprocessor
@@ -24,7 +24,7 @@ class DefaultPipeline(OxariPipeline):
             feature_selector=kwargs.pop('feature_reducer', DummyFeatureReducer()),
             scope_estimator= kwargs.pop('scope_estimator', DummyEstimator()),
             ci_estimator = kwargs.pop('ci_estimator', DummyConfidenceEstimator()),
-            scope_transformer = kwargs.pop('scope_transformer', DummyScaler(scope_features=OxariDataManager.DEPENDENT_FEATURES)),
+            scope_transformer = kwargs.pop('scope_transformer', DummyScaler(scope_features=OxariDataManager.DEPENDENT_VARIABLES)),
             **kwargs,
         )
 
@@ -42,6 +42,7 @@ class DefaultPipeline(OxariPipeline):
             
             **super().evaluation_results,
             "optimal_params":self.params,
+            "cfg":self.get_config(),
         }
 
     # TODO: Should be get_config

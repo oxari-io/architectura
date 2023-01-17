@@ -105,7 +105,7 @@ class PartialLoader(abc.ABC):
         return self._data
 
 
-class ScopeLoader(PartialLoader, abc.ABC):
+class ScopeLoader(OxariMixin, PartialLoader, abc.ABC):
     KEYS = ["isin", "year"]
     _COLS = NumMapping.get_targets()
 
@@ -134,6 +134,7 @@ class ScopeLoader(PartialLoader, abc.ABC):
                 f"*** From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes ***"
             )
             
+        self.logger.info(f"*** From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes ***")
         result_data = data
 
         return result_data
@@ -328,6 +329,7 @@ class OxariDataManager(OxariMixin):
         data = self.get_data_by_name(name)
         return SplitScopeDataset(data, self.non_features, split_size_val, split_size_test)
 
+    # where is this called from? Where do we make an API constructor for the object?
     @staticmethod
     def train_test_val_split(X, y, split_size_test, split_size_val):
         """
@@ -359,8 +361,9 @@ class OxariDataManager(OxariMixin):
         selector = ~np.isnan(y)
 
         # verbose
-        print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
-
+        # print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
+        OxariDataManager.logger.debug(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
+        
         X_rem, X_test, y_rem, y_test = train_test_split(X[selector], y[selector], test_size=split_size_test)
 
         # splitting further - train and validation sets will be used for optimization; test set will be used for performance assesment

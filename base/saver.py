@@ -108,7 +108,8 @@ class PartialSaver(abc.ABC):
             return True
         except Exception as e:
             # TODO: Needs local emergency saving in case of exception
-            print(f"ERROR: Something went horribly wrong while saving '{self._name}': {e}")
+            self.logger.error(f"ERROR: Something went horribly wrong while saving '{self._name}': {e}")
+            # print(f"ERROR: Something went horribly wrong while saving '{self._name}': {e}")
             
             return False
 

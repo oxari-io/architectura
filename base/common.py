@@ -6,6 +6,7 @@ import numpy as np
 import optuna
 import pandas as pd
 import sklearn
+import time
 from numbers import Number
 from pmdarima.metrics import smape
 from sklearn.base import (
@@ -222,7 +223,7 @@ class DefaultOptimizer(OxariOptimizer):
         return super().score_trial(trial, X_train, y_train, X_val, y_val, **kwargs)
 
 
-class OxariMixin(abc.ABC):
+class OxariMixin(OxariLoggerMixin, abc.ABC):
     def __init__(self, name=None, **kwargs) -> None:
         super().__init__()
         self._name = name or self.__class__.__name__
@@ -572,34 +573,47 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return self.scope_transformer.reverse_transform(preds)
 
     def fit(self, X, y, **kwargs) -> OxariPipeline:
+        st = time.time()
         self._set_meta(X)
         is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
         y = self._transform_scope(y, **kwargs)
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info('Fit function is completed with execution time: ', elapsed_time, 'seconds')
         return self
 
 
     
     def fit_confidence(self, X,y,**kwargs) -> OxariPipeline:
+        st = time.time()
         is_na = np.isnan(y)
         # X = self._preprocess(X, **kwargs)
         # y = self._transform_scope(y, **kwargs)
         X,y =X[~is_na], y[~is_na] 
         self.ci_estimator = self.ci_estimator.fit(X,y, **kwargs)
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info('Fit_confidence function is completed with execution time: ', elapsed_time, 'seconds')
         return self
 
 
     def optimise(self, X, y, **kwargs) -> OxariPipeline:
+        st = time.time()
         df_processed: pd.DataFrame = self.preprocessor.fit_transform(X,y)
         df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
         y_transformed = self.scope_transformer.fit_transform(X,y)
         X, y = df_reduced, y_transformed
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)        
         self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info('Optimize function is completed with execution time: ', elapsed_time, 'seconds')
         return self
 
     def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
+        st = time.time()
         X_test = self._preprocess(X_test)
         X_train = self._preprocess(X_train)
         y_pred_test = self.estimator.predict(X_test)
@@ -611,6 +625,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._evaluation_results["raw"] = self._evaluator.evaluate(y_test, y_pred_test_reversed, X_test=X_test)
         self._evaluation_results["test"] = self.estimator.evaluate(y_test_transformed, y_pred_test, X_test=X_test)
         self._evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info('Evaluate function is completed with execution time: ', elapsed_time, 'seconds')
         return self
 
     def clone(self) -> OxariPipeline:

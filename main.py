@@ -13,6 +13,7 @@ from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator,
 import base
 from base import helper
 from base.helper import LogarithmScaler
+from base.common import OxariLoggerMixin
 from base import OxariMetaModel
 import pandas as pd
 # import cPickle as
@@ -27,6 +28,7 @@ import matplotlib.pyplot as plt
 DATA_DIR = pathlib.Path('local/data')
 N_TRIALS = 5
 N_STARTUP_TRIALS = 1
+
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
@@ -50,41 +52,48 @@ if __name__ == "__main__":
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
-    dp2 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=SupportVectorEstimator(),
-        ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogarithmScaler(),
-    ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
-    dp3 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=SupportVectorEstimator(),
-        ci_estimator=JacknifeConfidenceEstimator(),
-        scope_transformer=LogarithmScaler(),
-    ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
+    # dp2 = DefaultPipeline(
+    #     preprocessor=IIDPreprocessor(),
+    #     feature_reducer=PCAFeatureSelector(),
+    #     imputer=RevenueQuantileBucketImputer(),
+    #     scope_estimator=SupportVectorEstimator(),
+    #     ci_estimator=BaselineConfidenceEstimator(),
+    #     scope_transformer=LogarithmScaler(),
+    # ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
+    # dp3 = DefaultPipeline(
+    #     preprocessor=IIDPreprocessor(),
+    #     feature_reducer=PCAFeatureSelector(),
+    #     imputer=RevenueQuantileBucketImputer(),
+    #     scope_estimator=SupportVectorEstimator(),
+    #     ci_estimator=JacknifeConfidenceEstimator(),
+    #     scope_transformer=LogarithmScaler(),
+    # ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
 
     model = OxariMetaModel()
     model.add_pipeline(scope=1, pipeline=dp1)
-    model.add_pipeline(scope=2, pipeline=dp2)
-    model.add_pipeline(scope=3, pipeline=dp3)
+    # model.add_pipeline(scope=2, pipeline=dp2)
+    # model.add_pipeline(scope=3, pipeline=dp3)
 
-    print("Parameter Configuration")
+
+    # print("Parameter Configuration")
+    OxariLoggerMixin.logger.info("Parameter Configuration")
     print(dp1.get_config(deep=True))
-    print(dp2.get_config(deep=True))
-    print(dp3.get_config(deep=True))
+    # print(dp2.get_config(deep=True))
+    # print(dp3.get_config(deep=True))
 
     ### EVALUATION RESULTS ###
-    print("Eval results")
+    # print("Eval results")
+    OxariLoggerMixin.logger.info("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
     eval_results.to_csv('local/eval_results/model_pipelines_test.csv')
-    print(eval_results)
+    # print(eval_results)
+    OxariLoggerMixin.logger.info(eval_results)
+    
 
-    print("Predict with Model only SCOPE1")
-    print(model.predict(SPLIT_1.val.X, scope=1))
+    # print("Predict with Model only SCOPE1")
+    # print(model.predict(SPLIT_1.val.X, scope=1))
+    OxariLoggerMixin.logger.info("Predict with Model only SCOPE1")
+    OxariLoggerMixin.logger.info(model.predict(SPLIT_1.val.X, scope=1))
 
 
     print("Impute scopes with Model")

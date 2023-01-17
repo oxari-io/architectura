@@ -101,6 +101,7 @@ class RegressorOptimizer(OxariOptimizer):
             for name, Model in models:
 
                 # print(f"Training {name} ... ")
+                self.logger.debug(f"Traning {name}")
 
                 study = optuna.create_study(
                     study_name=f"regressor_{name}_hp_tuning",

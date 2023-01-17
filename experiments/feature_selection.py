@@ -25,7 +25,7 @@ import time
 if __name__ == "__main__":
     selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
     # print(selection_methods)
-    selection_methods = [DummyFeatureReducer, FeatureAgglomeration]
+    selection_methods = [DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis]
 
     # loads the data just like CSVDataLoader, but a selection of the data
     dataset = FSExperimentDataLoader().run() # run() calls _transform()
@@ -39,6 +39,7 @@ if __name__ == "__main__":
     times = {}
     results = [] # dictionary where key=feature selection method, value = evaluation results
     for selection_method in selection_methods:
+        print("selection_method: ", selection_method)
         start = time.time()
         # if (selection_method == None):
         #     selection_method = FeatureAgglomeration()

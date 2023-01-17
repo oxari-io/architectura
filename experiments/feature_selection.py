@@ -26,14 +26,21 @@ if __name__ == "__main__":
     selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
     # print(selection_methods)
     selection_methods = [DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis]
+    
+    all_results = [] # dictionary where key=feature selection method, value = evaluation results
+    for i in range(10):
+        selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
+        # print(selection_methods)
+        selection_methods = [DummyFeatureReducer, FeatureAgglomeration, PCAFeatureSelector, 
+        GaussRandProjection, SparseRandProjection, Factor_Analysis]
 
-    # loads the data just like CSVDataLoader, but a selection of the data
-    dataset = FSExperimentDataLoader().run() # run() calls _transform()
-    X = dataset.get_features(OxariDataManager.ORIGINAL)
-    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
-    SPLIT_1 = bag.scope_1
-    SPLIT_2 = bag.scope_2
-    SPLIT_3 = bag.scope_3
+        # loads the data just like CSVDataLoader, but a selection of the data
+        dataset = FSExperimentDataLoader().run() 
+        X = dataset.get_features(OxariDataManager.ORIGINAL)
+        bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+        SPLIT_1 = bag.scope_1
+        SPLIT_2 = bag.scope_2
+        SPLIT_3 = bag.scope_3
 
     # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments, by default compare all methods
     times = {}
@@ -43,46 +50,48 @@ if __name__ == "__main__":
         start = time.time()
         # if (selection_method == None):
         #     selection_method = FeatureAgglomeration()
+        # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments, by default compare all methods
+        # times = {}
         
-        ppl = DefaultPipeline(
-            preprocessor=IIDPreprocessor(),
-            feature_reducer=selection_method(),
-            imputer=RevenueQuantileBucketImputer(buckets_number=3),
-            scope_estimator=SupportVectorEstimator(),
-            ci_estimator=BaselineConfidenceEstimator(),
-            scope_transformer=LogarithmScaler(),
-        ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
-        
-        model = OxariMetaModel()
-        model.add_pipeline(scope=1, pipeline=ppl) # make scope variable later
+        for selection_method in selection_methods:
+            start = time.time()
+            # if (selection_method == None):
+            #     selection_method = FeatureAgglomeration()
+            
+            ppl = DefaultPipeline(
+                preprocessor=IIDPreprocessor(),
+                feature_reducer=selection_method(),
+                imputer=RevenueQuantileBucketImputer(buckets_number=3),
+                scope_estimator=SupportVectorEstimator(),
+                ci_estimator=BaselineConfidenceEstimator(),
+                scope_transformer=LogarithmScaler(),
+            ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
+            
+            ### EVALUATION RESULTS ###
+            print("Eval results")
+            # result = pd.json_normalize(ppl._evaluation_results())
+            result2 = pd.json_normalize(ppl.evaluation_results)
+            
+            # print(result) 
+            # print(result2)  
 
-        ### EVALUATION RESULTS ###
-        print("Eval results")
-        result = pd.json_normalize(model.collect_eval_results())
-        # result = pd.json_normalize(ppl._evaluation_results)
-        
-        pd.set_option('display.max_columns', 500)
-        print(result)  
+            # all_results.append(result2)
+            # end = time.time()
+            # times[selection_method] = time.time()-start
+            all_results.append({"time": time.time() - start, "scope": 1, **ppl.evaluation_results})
 
-        # remove irrelevant columns 
-        df_smaller = result[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
-        print(df_smaller)
+        # df_smaller = all_results[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
+        concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
 
-        results.append(df_smaller)
-        end = time.time()
-        timing = end - start
-        times[selection_method] = timing    
+        # concatenated2 = pd.concat(all_results, axis=1) #all_results now is not anymore just a list so it brings up an error when you try to concatenate it
+        # dfs = [df.set_index('feature_selector') for df in results]
+
+        concatenated.to_csv('local/eval_results/test.csv')
+        # concatenated2.to_csv('local/eval_results/test2.csv')
 
 
 
-# dfs = [df.set_index('feature_selector') for df in results]
-concatenated = pd.concat(results, axis=1)
-
-concatenated.to_csv('local/eval_results/test.csv')
-
-
-
-print(times)
+# print(times)
 
 
 # another idea, very similar:

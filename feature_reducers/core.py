@@ -213,6 +213,10 @@ class MDSSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
         new_X = X.copy()
         reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
         new_X_reduced = self.merge(new_X, reduced_features, self._features)
+        # fit_transform will generate a new embedding space instead of projecting new points 
+        # into the same embedding space used for the reference data. 
+        # Plus the doc-page indicates that the output is an ndarray, not an array-like object (tho that's not an issue???)
+        # new_X_reduced = new_X_reduced.reshape(-1)
         return new_X_reduced
 
 

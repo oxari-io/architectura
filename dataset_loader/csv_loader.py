@@ -123,6 +123,7 @@ class DefaultDataManager(OxariDataManager):
         )
 
 class FSExperimentDataLoader(OxariDataManager):
+    # loads the data just like CSVDataLoader, but a selection of the data
     def __init__(self,
                 scope_loader: ScopeLoader = CSVScopeLoader(path=DATA_DIR / "scopes.csv"),
                  financial_loader: FinancialLoader = CSVFinancialLoader(path=DATA_DIR / "financials.csv"),

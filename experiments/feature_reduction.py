@@ -21,20 +21,60 @@ import sys
 import csv
 import seaborn as sns
 import time
+import argparse
+
+def convert_reduction_methods(reduction_methods_string):
+    # if the reduction methods are not strings, they are already in the right format (in that case it was the default argument of parser)
+    if not isinstance(reduction_methods_string[0], str): 
+        return reduction_methods_string 
+    
+    switcher = {
+        "DummyFeatureReducer": DummyFeatureReducer,
+        "FeatureAgglomeration": FeatureAgglomeration,
+        "PCAFeatureSelector": PCAFeatureSelector, 
+        "DropFeatureReducer": DropFeatureReducer, 
+        "GaussRandProjection": GaussRandProjection, 
+        "SparseRandProjection": SparseRandProjection, 
+        "Factor_Analysis": Factor_Analysis,
+        "IsomapFeatureSelector": IsomapFeatureSelector, 
+        "MDSSelector": MDSSelector
+    }
+    
+    reduction_methods = []
+    for method in reduction_methods_string:
+        reduction_methods.append(switcher.get(method))
+        
+    return reduction_methods  
 
 if __name__ == "__main__":
-    selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
-    # print(selection_methods)
-    selection_methods = [DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis]
-    
-    all_results = [] # dictionary where key=feature selection method, value = evaluation results
-    for i in range(10):
-        selection_methods = sys.argv[1:] # I am currently running it with the command line argument FeatureAgglomeration
-        # print(selection_methods)
-        selection_methods = [DummyFeatureReducer, FeatureAgglomeration, PCAFeatureSelector, 
-        GaussRandProjection, SparseRandProjection, Factor_Analysis]
+    parser = argparse.ArgumentParser(description='Process experiment arguments: what feature selection methods to compare, #reps, file to write to, what scope(s) to incorporate')
 
-        # loads the data just like CSVDataLoader, but a selection of the data
+    parser.add_argument('num_reps', nargs='?', default=10, type=int, help='Number of experiment repititions')
+    
+    # TODO: implement True case
+    # TODO: what if only one of file or scope is specified in the command line? how do you know which value belongs to which?
+    parser.add_argument('scope', action='store_false', help='True if you want to include all scopes, False if you only want to include 1, default False')
+
+    # TODO: implement False case
+    parser.add_argument('results_file', action='store_true', help='True if you want to store results an empty results file, False if you want to append results to the existing file, default True')
+    
+    # TODO what if the naming is not exactly a class name, should this be more flexible in accepting names of reduction methods?
+    parser.add_argument('f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis], help='Names of feature reduction methods to compare')
+
+    args = parser.parse_args()
+    num_reps = args.num_reps
+    scope = args.scope
+    results_file = args.results_file
+    reduction_methods = args.f_r_methods
+
+    print("num reps:", num_reps)
+    print("scope: ", scope)
+    print("reduction_methods: ", reduction_methods)
+    print("results file: ", results_file)
+    
+    exit()
+    all_results = [] # dictionary where key=feature selection method, value = evaluation results
+    for i in range(num_reps):
         dataset = FSExperimentDataLoader().run() 
         X = dataset.get_features(OxariDataManager.ORIGINAL)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -42,22 +82,10 @@ if __name__ == "__main__":
         SPLIT_2 = bag.scope_2
         SPLIT_3 = bag.scope_3
 
-    # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments, by default compare all methods
-    times = {}
-    results = [] # dictionary where key=feature selection method, value = evaluation results
-    for selection_method in selection_methods:
-        print("selection_method: ", selection_method)
-        start = time.time()
-        # if (selection_method == None):
-        #     selection_method = FeatureAgglomeration()
-        # this loop runs a pipeline with each of the feature selection methods that were given as command line arguments, by default compare all methods
         # times = {}
-        
-        for selection_method in selection_methods:
+        for selection_method in reduction_methods:
             start = time.time()
-            # if (selection_method == None):
-            #     selection_method = FeatureAgglomeration()
-            
+
             ppl = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
                 feature_reducer=selection_method(),
@@ -86,23 +114,11 @@ if __name__ == "__main__":
         # concatenated2 = pd.concat(all_results, axis=1) #all_results now is not anymore just a list so it brings up an error when you try to concatenate it
         # dfs = [df.set_index('feature_selector') for df in results]
 
-        concatenated.to_csv('local/eval_results/test.csv')
-        # concatenated2.to_csv('local/eval_results/test2.csv')
+        # True if you want to store results an empty results file, False if you want to append results to the existing file
 
-
-
-# print(times)
-
-
-# another idea, very similar:
-# if __name__ == "__main__":
-    # if len(sys.argv)>1:
-    #     results = {}
-    #     for x in sys.argv:
-    #         result = run(x)
-    #         results[x] = result
-              # where x is a feature selection method, and run() is the entire model run with that feature selection method
-
-
-# **** DOn't inherit from class S3Datasource(Datasource)
-# **** Plot results to visualise & analyze
+        if (results_file is True):
+            print("true")
+            concatenated.to_csv('local/eval_results/test.csv')
+        else: 
+            print("False")
+            concatenated.to_csv('local/eval_results/test.csv', mode='a')

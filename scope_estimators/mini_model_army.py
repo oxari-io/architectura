@@ -1,11 +1,12 @@
 from typing import Union
 from base import OxariScopeEstimator, DefaultRegressorEvaluator
-from base.helper import BucketScopeDiscretizer
+from base.helper import BucketScopeDiscretizer, SingleBucketScopeDiscretizer
 import numpy as np
 import pandas as pd
 from scope_estimators.mma.classifier import BucketClassifier, ClassifierOptimizer, BucketClassifierEvauator
 from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer, EvenWeightBucketRegressor
 from base.oxari_types import ArrayLike
+
 
 N_TRIALS = 1
 N_STARTUP_TRIALS = 1
@@ -77,6 +78,10 @@ class EvenWeightMiniModelArmyEstimator(MiniModelArmyEstimator):
         self.bucket_rg: BucketRegressor = EvenWeightBucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials,
                                                                                              n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
 
+class SingleBucketVotingArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, cls={}, rgs={}, **kwargs):
+        super().__init__(1, cls, rgs, **kwargs)
+        self.discretizer = SingleBucketScopeDiscretizer(n_buckets=1)
 
 class MiniModelArmyClusterBucketEstimator(MiniModelArmyEstimator):
     # TODO: instead of classifier uses clustering for bucketing

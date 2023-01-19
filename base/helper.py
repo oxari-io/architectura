@@ -67,6 +67,21 @@ class BucketScopeDiscretizer(OxariScopeTransformer):
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
         return super().reverse_transform(y, **kwargs)
 
+class SingleBucketScopeDiscretizer(BucketScopeDiscretizer):
+    """This is only for experimental purposes"""
+    def __init__(self, n_buckets, prefix="bucket_", **kwargs) -> None:
+        self.n_buckets = n_buckets
+        self.prefix = prefix
+        self.info = {"bucket_counts": {}}
+
+
+    def fit(self, X, y=None):
+        self.info["bucket_counts"][0]=len(y)
+        return self
+
+    def transform(self, y, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        return np.zeros_like(np.array(y)[:, None])
+
 
 # TODO: Checkout TargetTransformer and QuantileTransformer
 class LogarithmScaler(OxariScopeTransformer):

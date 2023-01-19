@@ -28,7 +28,7 @@ class BaselineEstimator(OxariScopeEstimator):
     def predict(self, X) -> ArrayLike:
         return np.random.uniform(self.low, self.high, len(X))
     
-
+# TODO: Maybe implement a bucketed version 
 class PredictMedianEstimator(DummyEstimator):        
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         y_ = np.random.choice(y,len(y)//4, replace=False)

@@ -7,7 +7,7 @@ from postprocessors import ScopeImputerPostprocessor
 from imputers import BaselineImputer, RevenueQuantileBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Latent_Dirichlet_Allocation
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, EvenWeightMiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, SupportVectorEstimator
-from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, ProbablisticConfidenceEstimator
+from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, MAPIEConfidenceEstimator,ProbablisticConfidenceEstimator
 from base.helper import LogarithmScaler
 from dataset_loader.csv_loader import DefaultDataManager
 from scope_estimators import SingleBucketModelEstimator
@@ -25,10 +25,11 @@ if __name__ == "__main__":
     # loads the data just like CSVDataLoader, but a selection of the data
     for i in range(10):
         configurations = [
-            BaselineConfidenceEstimator,
-            JacknifeConfidenceEstimator,
-            DirectLossConfidenceEstimator,
-            PercentileOffsetConfidenceEstimator,
+            # BaselineConfidenceEstimator,
+            # JacknifeConfidenceEstimator,
+            # DirectLossConfidenceEstimator,
+            # PercentileOffsetConfidenceEstimator,
+            MAPIEConfidenceEstimator
         ]
         dataset = DefaultDataManager().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -43,7 +44,7 @@ if __name__ == "__main__":
             preprocessor=IIDPreprocessor(),
             feature_reducer=PCAFeatureSelector(),
             imputer=RevenueQuantileBucketImputer(),
-            scope_estimator=MiniModelArmyEstimator(),
+            scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
             scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
@@ -51,7 +52,7 @@ if __name__ == "__main__":
             preprocessor=IIDPreprocessor(),
             feature_reducer=PCAFeatureSelector(),
             imputer=RevenueQuantileBucketImputer(),
-            scope_estimator=MiniModelArmyEstimator(),
+            scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
             scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
@@ -59,7 +60,7 @@ if __name__ == "__main__":
             preprocessor=IIDPreprocessor(),
             feature_reducer=PCAFeatureSelector(),
             imputer=RevenueQuantileBucketImputer(),
-            scope_estimator=MiniModelArmyEstimator(),
+            scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
             scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)
@@ -77,4 +78,4 @@ if __name__ == "__main__":
             ### EVALUATION RESULTS ###
             concatenated = pd.json_normalize(all_results)
             fname = __loader__.name.split(".")[-1]
-            concatenated.to_csv(f'local/eval_results/{fname}.csv')
+            concatenated.to_csv(f'local/eval_results/{fname}_test.csv')

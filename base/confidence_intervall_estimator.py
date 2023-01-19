@@ -9,6 +9,7 @@ from sklearn.model_selection import KFold
 from base import OxariConfidenceEstimator
 from typing_extensions import Self
 import lightgbm as lgb
+from mapie.regression import MapieRegressor
 
 
 # TODO: Implement evaluator that computes the coverage. https://towardsdatascience.com/prediction-intervals-in-python-64b992317b1a
@@ -156,14 +157,8 @@ class JacknifeConfidenceEstimator(OxariConfidenceEstimator):
 
 class DirectLossConfidenceEstimator(OxariConfidenceEstimator):
     """
-    From here: https://towardsdatascience.com/generating-confidence-intervals-for-regression-models-2dd60026fbce
-    The method follows the Jacknife+ approach but with KFold CV. 
-    The idea is to fit multiple estimators and compute their residuals on unseen data. 
-    Then compute the confidence intervall and by taking the alpha quantile of the residuals. 
-    Then sum and substract them from the predictions on the real prediction.
-
-    The paper simulations show that this method is a little worse than the Jackknife+, however, it is way faster. 
-    In practical terms, this will probably be the method being used in most cases.
+    From here: https://medium.com/towards-data-science/you-cant-predict-the-errors-of-your-model-or-can-you-1a2e4a1f38a0
+    
     """
 
     def __init__(self, n_splits=10, **kwargs) -> None:
@@ -187,5 +182,33 @@ class DirectLossConfidenceEstimator(OxariConfidenceEstimator):
         residuals_pred = self.confidence_estimator.predict(X)
         bottom = preds - residuals_pred
         top = preds + residuals_pred
+        df = self._construct_result(top, bottom, preds)
+        return df
+
+class MAPIEConfidenceEstimator(OxariConfidenceEstimator):
+    """
+    From here: https://medium.com/towards-data-science/you-cant-predict-the-errors-of-your-model-or-can-you-1a2e4a1f38a0
+
+    """
+
+    def __init__(self, n_splits=10, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._all_estimators: List[OxariScopeEstimator] = []
+        self.res = []
+        self.n_splits = n_splits
+        self.confidence_estimator:MapieRegressor = None
+
+    def fit(self, X, y, **kwargs) -> Self:
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
+        self.confidence_estimator = MapieRegressor(estimator=self.pipeline.estimator, cv='prefit').fit(X, y)
+        return self
+
+    def predict(self, X, **kwargs) -> ArrayLike:
+        X = self.pipeline._preprocess(X)
+        preds = self.pipeline.estimator.predict(X)
+        residuals_pred = self.confidence_estimator.predict(X, alpha=.05)[1].reshape(-1,2)
+        bottom = residuals_pred[:, 0]
+        top = residuals_pred[:, 1]
         df = self._construct_result(top, bottom, preds)
         return df

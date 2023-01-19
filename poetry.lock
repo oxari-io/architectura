@@ -1537,6 +1537,27 @@ lingua = ["lingua"]
 testing = ["pytest"]
 
 [[package]]
+name = "mapie"
+version = "0.5.0"
+description = "A scikit-learn-compatible module for estimating prediction intervals."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "MAPIE-0.5.0-py3-none-any.whl", hash = "sha256:4fb86991bdabae939cec1b7067821efcadb9b8912a01f499d816029aeecf58d2"},
+    {file = "MAPIE-0.5.0.tar.gz", hash = "sha256:b561fe53315a566b228979ff91343aebe866c7f35da18450b96f311c90f47431"},
+]
+
+[package.dependencies]
+numpy = ">=1.21"
+packaging = "*"
+scikit-learn = "*"
+
+[package.extras]
+docs = ["matplotlib", "numpydoc", "pandas", "sphinx", "sphinx-gallery", "sphinx-rtd-theme", "typing-extensions"]
+tests = ["flake8", "mypy", "pandas", "pytest", "pytest-cov", "typed-ast"]
+
+[[package]]
 name = "markupsafe"
 version = "2.1.1"
 description = "Safely add untrusted strings to HTML/XML markup."
@@ -3633,4 +3654,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "6951951dada29892de570a09ce3abb14d3509f48eb5e5da7d814fa272d3ff2ac"
+content-hash = "4a3b14d963879b28b42300bc68d4b5a24697fe65d21a3059ee168004f3650144"

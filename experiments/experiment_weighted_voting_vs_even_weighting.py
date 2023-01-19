@@ -79,6 +79,11 @@ if __name__ == "__main__":
                 "test.MAE",
                 "test.RMSE",
                 "test.MAPE",
+                "train.sMAPE",
+                "train.R2",
+                "train.MAE",
+                "train.RMSE",
+                "train.MAPE",
             ]]
             fname = __loader__.name.split(".")[-1]
             concatenated.to_csv(f'local/eval_results/{fname}.csv')

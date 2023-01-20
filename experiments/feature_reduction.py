@@ -62,11 +62,12 @@ if __name__ == "__main__":
     # TODO what if the naming is not exactly a class name, should this be more flexible in accepting names of reduction methods?
     parser.add_argument('-methods', dest='f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis], help='Names of feature reduction methods to compare, use flag -methods before specifying methods')
 
+    # TODO chekc for illegal formats 
     args = parser.parse_args()
     num_reps = args.num_reps
     scope = args.scope
     results_file = args.file
-    reduction_methods = args.f_r_methods
+    reduction_methods = convert_reduction_methods(args.f_r_methods)
 
     print("num reps:", num_reps)
     print("scope: ", scope)

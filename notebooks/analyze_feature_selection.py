@@ -24,3 +24,4 @@ sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="test.MAE", y="feat
 sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="test.RMSE", y="feature_selector")
 # %%
 sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="test.MAPE", y="feature_selector")
+# %%

@@ -49,7 +49,7 @@ def convert_reduction_methods(reduction_methods_string):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (--scope-1 for scope 1 only, --scope-all for all 3 scopes), what file to write to (--append to append to existing file, --new to create new file) and what feature reduction methods to compare (use flag -methods before). Defaults: 10 repititions, --scope-1, --new, all methods.')
 
-    parser.add_argument('num_reps', nargs='?', default=10, type=int, help='Number of experiment repititions (default=10)')
+    parser.add_argument('num_reps', nargs='?', default=2, type=int, help='Number of experiment repititions (default=10)')
     
     parser.add_argument('--scope-1', dest='scope', action='store_false', help='(default) use only scope 1')
     parser.add_argument('--scope-all', dest='scope', action='store_true', help='use scopes 1, 2, 3')
@@ -120,19 +120,34 @@ if __name__ == "__main__":
                 time_elapsed_3 = time.time() - start
 
             all_results.append({"time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results})
+            print(all_results)
+
             if (scope == True):
                 all_results.append({"time": time_elapsed_2, "scope": 2, **ppl2.evaluation_results})
                 all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results})
+            
+            concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
+            # concatenated = pd.DataFrame(concatenated)
+            # print(concatenated.iloc[0])
+            # print(concatenated)
+
+
+            if (results_file is True):
+                print("true")
+                concatenated.to_csv('local/eval_results/test.csv')
+            else: 
+                print("False")
+                # for index, row in concatenated.iterrows():
+                #     print("it goes in the loop")
+                #     print(concatenated["time"].dtype)
+                #     if ((concatenated["time"].str.contains("time")).any()):
+                #         print("we're in here")
+                #         concatenated.drop([index])
+                concatenated.to_csv('local/eval_results/test.csv', header = False, mode='a')
 
         # df_smaller = all_results[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
-        concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
 
         # concatenated2 = pd.concat(all_results, axis=1) #all_results now is not anymore just a list so it brings up an error when you try to concatenate it
         # dfs = [df.set_index('feature_selector') for df in results]
 
-        if (results_file is True):
-            print("true")
-            concatenated.to_csv('local/eval_results/test.csv')
-        else: 
-            print("False")
-            concatenated.to_csv('local/eval_results/test.csv', mode='a')
+        

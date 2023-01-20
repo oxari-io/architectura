@@ -88,7 +88,7 @@ if __name__ == "__main__":
         for selection_method in reduction_methods:
             start = time.time()
 
-            ppl = DefaultPipeline(
+            ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
                 feature_reducer=selection_method(),
                 imputer=RevenueQuantileBucketImputer(buckets_number=3),
@@ -96,8 +96,10 @@ if __name__ == "__main__":
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogarithmScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
+            time_elapsed_1 = time.time() - start
+            start = time.time()
             if (scope == True):
-                ppl = DefaultPipeline(
+                ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=selection_method(),
                     imputer=RevenueQuantileBucketImputer(buckets_number=3),
@@ -105,7 +107,9 @@ if __name__ == "__main__":
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogarithmScaler(),
                 ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
-                ppl = DefaultPipeline(
+                time_elapsed_2 = time.time() - start
+                start = time.time()
+                ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=selection_method(),
                     imputer=RevenueQuantileBucketImputer(buckets_number=3),
@@ -113,20 +117,12 @@ if __name__ == "__main__":
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogarithmScaler(),
                 ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
+                time_elapsed_3 = time.time() - start
 
-            
-            ### EVALUATION RESULTS ###
-            print("Eval results")
-            # result = pd.json_normalize(ppl._evaluation_results())
-            result2 = pd.json_normalize(ppl.evaluation_results)
-            
-            # print(result) 
-            # print(result2)  
-
-            # all_results.append(result2)
-            # end = time.time()
-            # times[selection_method] = time.time()-start
-            all_results.append({"time": time.time() - start, "scope": 1, **ppl.evaluation_results})
+            all_results.append({"time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results})
+            if (scope == True):
+                all_results.append({"time": time_elapsed_2, "scope": 2, **ppl2.evaluation_results})
+                all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results})
 
         # df_smaller = all_results[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
         concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]

@@ -111,6 +111,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
             # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
             "MAPE": mape(y_true, y_pred)
         }
+        self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
         return super().evaluate(y_true, y_pred, **error_metrics)
 

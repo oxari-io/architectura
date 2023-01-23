@@ -13,6 +13,8 @@ df_results = pd.read_csv(cwd.parent/'local/eval_results/results_sequential_02.cs
 df_results["scope_estimator"] = pd.Categorical(df_results["scope_estimator"])
 df_results
 # %%
+list(df_results.columns.values)
+# %%
 sns.boxplot(data=df_results[df_results!="DummyEstimator"], x="sMAPE", y="scope_estimator")
 # %%
 sns.histplot(data=df_results[df_results!="DummyEstimator"], x="sMAPE", hue="scope_estimator", kde=True)

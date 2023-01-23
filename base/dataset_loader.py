@@ -254,6 +254,8 @@ class OxariDataManager(OxariMixin):
     JUMP_RATES = 'jump_rates'
     JUMP_RATES_AGG = 'jump_rates_aggregated'
     IMPUTED_LARS = 'imputed_lars'
+    SHORTENED = 'shortened'
+    
 
     # NON_FEATURES = ["isin", "year"] + ScopeLoader._COLS
     DEPENDENT_VARIABLES = ScopeLoader._COLS
@@ -292,6 +294,7 @@ class OxariDataManager(OxariMixin):
         _df_original = _df_original.merge(categorical_loader.data, on=categorical_loader.KEYS, how="left")
         return _df_original
 
+    #TODO: JUST OVERWRITE THIS ONE
     def _transform(self, df, **kwargs):
         return df
 

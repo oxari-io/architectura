@@ -24,6 +24,13 @@
             "request": "launch",
             "module": "main_test_estimators_sequential",
             "justMyCode": true
+        },
+        {
+            "name": "Run Experiment",
+            "type": "python",
+            "request": "launch",
+            "module": "experiments.${fileBasenameNoExtension}",
+            "justMyCode": true
         }
     ]
 }

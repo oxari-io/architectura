@@ -71,6 +71,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         return combined_results
 
 
+
 class MiniModelArmyClusterBucketEstimator(MiniModelArmyEstimator):
     # TODO: instead of classifier uses clustering for bucketing
     pass

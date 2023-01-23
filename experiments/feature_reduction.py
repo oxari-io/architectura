@@ -5,7 +5,7 @@ from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import BaselineImputer, RevenueQuantileBucketImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Latent_Dirichlet_Allocation, Spectral_Embedding 
+from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapDimensionalityReduction, MDSDimensionalitySelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Latent_Dirichlet_Allocation, Spectral_Embedding 
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, SupportVectorEstimator
 from base import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
@@ -36,8 +36,8 @@ def convert_reduction_methods(reduction_methods_string):
         "GaussRandProjection": GaussRandProjection, 
         "SparseRandProjection": SparseRandProjection, 
         "Factor_Analysis": Factor_Analysis,
-        "IsomapFeatureSelector": IsomapFeatureSelector, 
-        "MDSSelector": MDSSelector
+        "IsomapDimensionalityReduction": IsomapDimensionalityReduction, 
+        "MDSDimensionalitySelector": MDSDimensionalitySelector
     }
     
     reduction_methods = []

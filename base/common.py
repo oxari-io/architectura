@@ -32,6 +32,7 @@ from typing import Any, Dict, List, Tuple
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import seaborn as sns
+from pmdarima.metrics import smape
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
 
@@ -111,7 +112,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
             # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
             "MAPE": mape(y_true, y_pred)
         }
-        self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
+        # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
         return super().evaluate(y_true, y_pred, **error_metrics)
 
@@ -622,6 +623,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._evaluation_results["raw"] = self._evaluator.evaluate(y_test, y_pred_test_reversed, X_test=X_test)
         self._evaluation_results["test"] = self.estimator.evaluate(y_test_transformed, y_pred_test, X_test=X_test)
         self._evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
+        self.logger.info(f'sMAPE value of model evaluation: {smape(y_test_transformed, y_pred_test) / 100}')
         et = time.time()
         elapsed_time = et - st
         self.logger.info(f'Evaluate function is completed with execution time: {elapsed_time} seconds')

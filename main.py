@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # TODO: Check why scope_transformer destroys accuracy.
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_reducer=DummyFeatureReducer(),
+        feature_reducer=PCAFeatureSelector(),
         imputer=RevenueQuantileBucketImputer(buckets_number=3),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),

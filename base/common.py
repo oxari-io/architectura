@@ -360,15 +360,11 @@ class OxariPreprocessor(OxariTransformer, OxariLoggerMixin, abc.ABC):
 
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> ArrayLike:
-        self.logger.debug("Preprocessor is transformed!")
         pass
 
     def set_imputer(self, imputer: OxariImputer) -> "OxariPreprocessor":
         self.imputer = imputer
         return self
-
-    # def debug(self, message):
-    #     return super().debug(message)
 
     # def set_feature_selector(self, feature_selector: OxariFeatureSelector) -> "OxariPreprocessor":
     #     self.feature_selector = feature_selector

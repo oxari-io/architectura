@@ -26,6 +26,7 @@ class DummyPreprocessor(OxariPreprocessor):
 
     def fit(self, X: pd.DataFrame, y, **kwargs) -> "DummyPreprocessor":
         data = X
+        self.logger.info(f'number of original features: {len(data.columns)}')
         self.scope_columns = ["scope_1","scope_2","scope_3"]
         self.financial_columns = X.columns[X.columns.str.startswith('ft_fin')]
         self.categorical_columns = X.columns[X.columns.str.startswith('ft_cat')]
@@ -45,6 +46,7 @@ class DummyPreprocessor(OxariPreprocessor):
         data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
         # encode categorical
         data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=(data[self.scope_columns[0]]))
+        self.logger.info(f'number of features after preprocessing: {len(data.columns)}')
         return data
 
 
@@ -65,6 +67,7 @@ class BaselinePreprocessor(OxariPreprocessor):
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
         data = X
         self.original_features = data.columns
+        self.logger.info(f'number of original features: {len(self.original_features)}')
         self.scope_columns = ["scope_1","scope_2","scope_3"]
         self.financial_columns = X.columns[X.columns.str.startswith('ft_fin')]
         self.categorical_columns = X.columns[X.columns.str.startswith('ft_cat')]        
@@ -92,6 +95,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
         # reduce dimensionality/feature count
         # data = self.feature_selector.transform(data)
+        self.logger.info(f'number of features after preprocessing: {len(X_new.columns)}')
         return X_new
 
     def get_config(self, deep=True):

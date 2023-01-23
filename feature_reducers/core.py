@@ -29,12 +29,13 @@ class DummyFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector does not select any feature. Use this if no feature selection is used."""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)        
-        
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
+        self.logger.info(f'number of features before feature reduction: {len(X.columns)}')
         return self
 
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
+        self.logger.info(f'number of features after feature reduction: {len(X.columns)}')
         return X
 
 
@@ -46,6 +47,7 @@ class PCAFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin)
 
     def fit(self, X, y=None, **kwargs) -> "PCAFeatureSelector":
         self._features = list(kwargs.get('features'))
+        self.logger.info(f'number of features before feature reduction: {len(self._features)}')
         self._dimensionality_reducer.fit(X[self._features], y)
         self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
         return self
@@ -54,8 +56,8 @@ class PCAFeatureSelector(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin)
         X_new = X.copy()
         reduced_features = pd.DataFrame(self._dimensionality_reducer.transform(X_new[self._features]), index=X_new.index)
         new_X_reduced = self.merge(X_new, reduced_features, self._features)
+        self.logger.info(f'number of features after feature reduction: {len(new_X_reduced.columns)}')
         return new_X_reduced
-        #print(new_X_reduced)
 
 
 class ModifiedLocallyLinearEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
@@ -68,6 +70,7 @@ class ModifiedLocallyLinearEmbedding(OxariFeatureReducer, SKlearnFeatureReducerW
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         self._features = list(kwargs.get('features'))
+        self.logger.info(f'number of features before feature reduction: {len(self._features)}')
         self._dimensionality_reducer.fit(X[self._features], y)
         self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
         return self
@@ -88,6 +91,7 @@ class SpectralEmbedding(OxariFeatureReducer, SKlearnFeatureReducerWrapperMixin):
 
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
         self._features = list(kwargs.get('features'))
+        self.logger.info(f'number of features before feature reduction: {len(self._features)}')
         self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
         return self
 

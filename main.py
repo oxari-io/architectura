@@ -7,12 +7,13 @@ from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, II
 from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
 from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
 from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapFeatureSelector, MDSSelector
+from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapDimensionalityReduction, MDSDimensionalitySelector, FeatureAgglomeration, SparseRandProjection, GaussRandProjection
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, SupportVectorEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator, IndependentFeatureVotingRegressionEstimator
 from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator, BaselineConfidenceEstimator
 import base
 from base import helper
 from base.helper import LogarithmScaler
+from base.common import OxariLoggerMixin
 from base import OxariMetaModel
 import pandas as pd
 # import cPickle as
@@ -27,6 +28,7 @@ import matplotlib.pyplot as plt
 DATA_DIR = pathlib.Path('local/data')
 N_TRIALS = 5
 N_STARTUP_TRIALS = 1
+
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
@@ -44,47 +46,52 @@ if __name__ == "__main__":
     # TODO: Check why scope_transformer destroys accuracy.
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_reducer=DummyFeatureReducer(),
+        feature_reducer=FeatureAgglomeration(),
         imputer=RevenueQuantileBucketImputer(buckets_number=3),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
-    dp2 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=SupportVectorEstimator(),
-        ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogarithmScaler(),
-    ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
-    dp3 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
-        imputer=RevenueQuantileBucketImputer(),
-        scope_estimator=SupportVectorEstimator(),
-        ci_estimator=JacknifeConfidenceEstimator(),
-        scope_transformer=LogarithmScaler(),
-    ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
+    # dp2 = DefaultPipeline(
+    #     preprocessor=IIDPreprocessor(),
+    #     feature_reducer=PCAFeatureSelector(),
+    #     imputer=RevenueQuantileBucketImputer(),
+    #     scope_estimator=SupportVectorEstimator(),
+    #     ci_estimator=BaselineConfidenceEstimator(),
+    #     scope_transformer=LogarithmScaler(),
+    # ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
+    # dp3 = DefaultPipeline(
+    #     preprocessor=IIDPreprocessor(),
+    #     feature_reducer=PCAFeatureSelector(),
+    #     imputer=RevenueQuantileBucketImputer(),
+    #     scope_estimator=SupportVectorEstimator(),
+    #     ci_estimator=JacknifeConfidenceEstimator(),
+    #     scope_transformer=LogarithmScaler(),
+    # ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
 
     model = OxariMetaModel()
     model.add_pipeline(scope=1, pipeline=dp1)
-    model.add_pipeline(scope=2, pipeline=dp2)
-    model.add_pipeline(scope=3, pipeline=dp3)
+    # model.add_pipeline(scope=2, pipeline=dp2)
+    # model.add_pipeline(scope=3, pipeline=dp3)
 
-    print("Parameter Configuration")
+    mainlogger = OxariLoggerMixin()
+    # print("Parameter Configuration")
+    mainlogger.logger.info(f"Parameter Configuration: {dp1.get_config(deep=True)}")
     print(dp1.get_config(deep=True))
-    print(dp2.get_config(deep=True))
-    print(dp3.get_config(deep=True))
+    # print(dp2.get_config(deep=True))
+    # print(dp3.get_config(deep=True))
 
     ### EVALUATION RESULTS ###
-    print("Eval results")
+    # print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
     eval_results.to_csv('local/eval_results/model_pipelines_test.csv')
-    print(eval_results)
+    # print(eval_results)
+    mainlogger.logger.info(f"Evaluation results: {eval_results}")
+    
 
-    print("Predict with Model only SCOPE1")
-    print(model.predict(SPLIT_1.val.X, scope=1))
+    # print("Predict with Model only SCOPE1")
+    # print(model.predict(SPLIT_1.val.X, scope=1))
+    mainlogger.logger.info(f"Predict with Model only SCOPE1, Predictions: {model.predict(SPLIT_1.val.X, scope=1)}")
 
 
     print("Impute scopes with Model")

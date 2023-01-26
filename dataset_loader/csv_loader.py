@@ -123,6 +123,7 @@ class DefaultDataManager(OxariDataManager):
         )
 
 class FSExperimentDataLoader(OxariDataManager):
+    # loads the data just like CSVDataLoader, but a selection of the data
     def __init__(self,
                 scope_loader: ScopeLoader = CSVScopeLoader(path=DATA_DIR / "scopes.csv"),
                  financial_loader: FinancialLoader = CSVFinancialLoader(path=DATA_DIR / "financials.csv"),
@@ -153,9 +154,7 @@ class FSExperimentDataLoader(OxariDataManager):
     
     def _transform(self, df, **kwargs):
         # we don't want sampling of the same row more than once
-        print("hi")
         df_reduced = df.sample(n=5000, replace=False, random_state=1)
-        print("hi")
         return df_reduced
     
 

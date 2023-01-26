@@ -78,4 +78,4 @@ if __name__ == "__main__":
             ### EVALUATION RESULTS ###
             concatenated = pd.json_normalize(all_results)
             fname = __loader__.name.split(".")[-1]
-            concatenated.to_csv(f'local/eval_results/{fname}_test.csv')
+            concatenated.to_csv(f'local/eval_results/{fname}.csv')

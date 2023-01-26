@@ -49,17 +49,21 @@ def convert_reduction_methods(reduction_methods_string):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (--scope-1 for scope 1 only, --scope-all for all 3 scopes), what file to write to (--append to append to existing file, --new to create new file) and what feature reduction methods to compare (use flag -methods before). Defaults: 10 repititions, --scope-1, --new, all methods.')
 
+    # TODO: This should be --num_reps with a default of 10
     parser.add_argument('num_reps', nargs='?', default=2, type=int, help='Number of experiment repititions (default=10)')
     
+    # TODO: Optimize code as boolean doesn't need two flags. Keep --scope-all
     parser.add_argument('--scope-1', dest='scope', action='store_false', help='(default) use only scope 1')
     parser.add_argument('--scope-all', dest='scope', action='store_true', help='use scopes 1, 2, 3')
     parser.set_defaults(scope=False)
 
+    # TODO: Optimize code as boolean doesn't need two flags. [in the new argument parser class]
     parser.add_argument('--append', dest='file', action='store_false', help='append results to existing file')
     parser.add_argument('--new', dest='file', action='store_true', help='(default) store results in new file')
     parser.set_defaults(file=True)
     
     # TODO what if the naming is not exactly a class name, should this be more flexible in accepting names of reduction methods?
+    # TODO: Follow CLI conventions with --methods
     parser.add_argument('-methods', dest='f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis], help='Names of feature reduction methods to compare, use flag -methods before specifying methods')
 
     # TODO chekc for illegal formats 
@@ -98,6 +102,7 @@ if __name__ == "__main__":
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
             time_elapsed_1 = time.time() - start
             start = time.time()
+            all_results.append({"time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results})
             if (scope == True):
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
@@ -119,13 +124,10 @@ if __name__ == "__main__":
                 ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
                 time_elapsed_3 = time.time() - start
 
-            all_results.append({"time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results})
-            print(all_results)
-
-            if (scope == True):
                 all_results.append({"time": time_elapsed_2, "scope": 2, **ppl2.evaluation_results})
                 all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results})
             
+            print(all_results)
             concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
             # concatenated = pd.DataFrame(concatenated)
             # print(concatenated.iloc[0])
@@ -134,6 +136,8 @@ if __name__ == "__main__":
 
             if (results_file is True):
                 print("true")
+                # TODO: save into file.csv with the same name as the script
+                # TODO: change name of script into experiment_[SCOMETHING]
                 concatenated.to_csv('local/eval_results/test.csv')
             else: 
                 print("False")

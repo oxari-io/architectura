@@ -79,8 +79,6 @@ class SupportVectorEstimator(OxariScopeEstimator):
         X = pd.DataFrame(X)
         y = pd.DataFrame(y)
         self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
-        # TODO: This line only exists to comply with sklearn check is fitted validation. Better approach is overriding __sklearn_is_fitted__ method which returns a boolean.
-        self.feature_names_in_ = self._estimator.feature_names_in_
         return self
 
     def predict(self, X) -> ArrayLike:

@@ -28,7 +28,7 @@ import pandas as pd
 import numpy as np
 import abc
 from sklearn.model_selection import train_test_split
-from base import OxariMetaModel, OxariDataManager
+from base import OxariMetaModel, OxariDataManager, OxariLoggerMixin
 from os import environ as env
 import boto3
 
@@ -85,7 +85,7 @@ class S3Destination(Destination):
         test = self.session.get_available_resources()
 
 
-class PartialSaver(abc.ABC):
+class PartialSaver(OxariLoggerMixin, abc.ABC):
     
     def __init__(self, time=time.strftime('%d-%m-%Y'), name="noname", verbose=False, **kwargs) -> None:
         super().__init__(**kwargs)

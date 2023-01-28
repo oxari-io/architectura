@@ -48,6 +48,10 @@ os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
 WRITE_TO =  "./logger.log" # "cout" 
 
+# FEEDBACK:
+# - Logger had no formatting
+# - The logging was not really tested
+# - Some of the things logged are of little use
 class OxariLoggerMixin:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
@@ -64,11 +68,12 @@ class OxariLoggerMixin:
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.format = '%(asctime)s | %(name)s | %(levelname)s | %(message)s'
         if WRITE_TO == "cout":
-            logging.basicConfig()
+            logging.basicConfig(format=self.format)
             logging.root.setLevel(LOGLEVEL)
         else:
-            logging.basicConfig(filename=WRITE_TO, level=LOGLEVEL) # level=logging.DEBUG
+            logging.basicConfig(filename=WRITE_TO, level=LOGLEVEL, format=self.format) # level=logging.DEBUG
         
         self.logger_name = self.__class__.__name__
     
@@ -474,11 +479,7 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
 class OxariPostprocessor(OxariMixin, abc.ABC):
 
     def __init__(self, **kwargs):
-        # Only data independant hyperparams.
-        # Hyperparams only as keyword arguments
-        # Does not contain any logic except setting hyperparams immediately as class attributes
-        # Reference: https://scikit-learn.org/stable/developers/develop.html#instantiation
-        pass
+        super().__init__(**kwargs)
 
     @abc.abstractmethod
     def run(self, X, y=None, **kwargs) -> "OxariPostprocessor":
@@ -847,9 +848,9 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
 class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, abc.ABC):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.params = {}
-        pass
 
     @abc.abstractmethod
     def fit(self, X, y=None) -> Self:

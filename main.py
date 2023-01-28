@@ -52,27 +52,27 @@ if __name__ == "__main__":
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
-    # dp2 = DefaultPipeline(
-    #     preprocessor=IIDPreprocessor(),
-    #     feature_reducer=PCAFeatureSelector(),
-    #     imputer=RevenueQuantileBucketImputer(),
-    #     scope_estimator=SupportVectorEstimator(),
-    #     ci_estimator=BaselineConfidenceEstimator(),
-    #     scope_transformer=LogarithmScaler(),
-    # ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
-    # dp3 = DefaultPipeline(
-    #     preprocessor=IIDPreprocessor(),
-    #     feature_reducer=PCAFeatureSelector(),
-    #     imputer=RevenueQuantileBucketImputer(),
-    #     scope_estimator=SupportVectorEstimator(),
-    #     ci_estimator=JacknifeConfidenceEstimator(),
-    #     scope_transformer=LogarithmScaler(),
-    # ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
+    dp2 = DefaultPipeline(
+        preprocessor=IIDPreprocessor(),
+        feature_reducer=PCAFeatureSelector(),
+        imputer=RevenueQuantileBucketImputer(),
+        scope_estimator=SupportVectorEstimator(),
+        ci_estimator=BaselineConfidenceEstimator(),
+        scope_transformer=LogarithmScaler(),
+    ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
+    dp3 = DefaultPipeline(
+        preprocessor=IIDPreprocessor(),
+        feature_reducer=PCAFeatureSelector(),
+        imputer=RevenueQuantileBucketImputer(),
+        scope_estimator=SupportVectorEstimator(),
+        ci_estimator=BaselineConfidenceEstimator(),
+        scope_transformer=LogarithmScaler(),
+    ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
 
     model = OxariMetaModel()
     model.add_pipeline(scope=1, pipeline=dp1)
-    # model.add_pipeline(scope=2, pipeline=dp2)
-    # model.add_pipeline(scope=3, pipeline=dp3)
+    model.add_pipeline(scope=2, pipeline=dp2)
+    model.add_pipeline(scope=3, pipeline=dp3)
 
     mainlogger = OxariLoggerMixin()
     # print("Parameter Configuration")

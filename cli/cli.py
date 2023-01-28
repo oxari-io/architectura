@@ -28,7 +28,7 @@ class FileType(str, Enum):
     csv = "csv"
     json = "json"
 
-
+#  TODO: Add progress bar -> https://typer.tiangolo.com/tutorial/progressbar/
 @app.command(name="predict")
 @logger.catch
 def predict(data_path: pathlib.Path = typer.Argument(..., help="Path to csv with features used to predict the scopes."),

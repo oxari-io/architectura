@@ -34,13 +34,15 @@ typing-extensions = "^4.4.0"
 graphviz = "^0.20.1"
 mapie = "^0.5.0"
 python-fire = "^0.1.0"
-fire = "^0.5.0"
+typer = {extras = ["all"], version = "^0.7.0"}
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"
 yapf = "^0.32.0"
 isort = "^5.11.4"
 pipreqs = "^0.4.11"
+pyinstaller = "^5.7.0"
+auto-py-to-exe = "^2.27.0"
 
 [build-system]
 requires = ["poetry-core"]

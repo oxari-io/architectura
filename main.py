@@ -110,20 +110,20 @@ if __name__ == "__main__":
     print(lar_imputed_data)
     
 
-    print("Explain Effects of features")
-    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
-    fig, ax = explainer0.visualize()
-    fig.savefig(f'local/eval_results/test_importance_explainer{0}.png')
-    explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    for idx, expl in enumerate([explainer1, explainer2, explainer3]):
-        fig, ax = expl.plot_tree()
-        fig.savefig(f'local/eval_results/test_tree_explainer{idx+1}.png')
-        fig, ax = expl.plot_importances()
-        fig.savefig(f'local/eval_results/test_importance_explainer{idx+1}.png')
+    # print("Explain Effects of features")
+    # explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    # fig, ax = explainer0.visualize()
+    # fig.savefig(f'local/eval_results/test_importance_explainer{0}.png')
+    # explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # for idx, expl in enumerate([explainer1, explainer2, explainer3]):
+    #     fig, ax = expl.plot_tree()
+    #     fig.savefig(f'local/eval_results/test_tree_explainer{idx+1}.png')
+    #     fig, ax = expl.plot_importances()
+    #     fig.savefig(f'local/eval_results/test_importance_explainer{idx+1}.png')
 
-    plt.show(block=True)
+    # plt.show(block=True)
     
     
     print("\n", "Predict ALL with Model")

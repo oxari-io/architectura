@@ -1,0 +1,5 @@
+The provisions outlined here determine the terms of use and remain binding to all parties unless agreed otherwise with Oxari. B.V.
+
+You are not allowed to:
+- Redistribution to any third-party is forbidden
+- Reverse engineering is forbidden

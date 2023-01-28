@@ -35,6 +35,10 @@ graphviz = "^0.20.1"
 mapie = "^0.5.0"
 python-fire = "^0.1.0"
 typer = {extras = ["all"], version = "^0.7.0"}
+pyfiglet = "^0.8.post1"
+loguru = "^0.6.0"
+jsonlines = "^3.1.0"
+yapf = "^0.32.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"

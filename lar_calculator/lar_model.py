@@ -80,7 +80,8 @@ class OxariUnboundLAR(OxariLinearAnnualReduction):
 
         isins = pd.unique(scopes["isin"])
 
-        print("unique isins", len(isins))
+        # print("unique isins", len(isins))
+        self.logger.debug("unique isins", len(isins))
 
         grouped = scopes.groupby("isin", sort=False)
 

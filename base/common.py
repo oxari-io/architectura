@@ -6,6 +6,7 @@ import numpy as np
 import optuna
 import pandas as pd
 import sklearn
+import time
 from numbers import Number
 from pmdarima.metrics import smape
 from sklearn.base import (
@@ -31,6 +32,7 @@ from typing import Any, Dict, List, Tuple
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import seaborn as sns
+from pmdarima.metrics import smape
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
 
@@ -39,10 +41,14 @@ import sklearn
 import numpy as np
 import pandas as pd
 from sklearn.utils.estimator_checks import check_estimator
+import logging
 from sklearn.model_selection import train_test_split
 
+os.environ["LOGLEVEL"] = "DEBUG"
+LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
+WRITE_TO =  "./logger.log" # "cout" 
 
-class OxariLogger:
+class OxariLoggerMixin:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
     The logger writes it's outputs to STDOUT or to a FILE if a LOG_FILE environment variable was set.   
@@ -54,10 +60,18 @@ class OxariLogger:
     - In case of production env, the logger should upload the log file of the full pipeline run to digital ocean spaces
     
     """
-    def __init__():
-        # https://docs.python.org/3/howto/logging-cookbook.html
-        pass
+    logger: logging.Logger
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(self.__class__.__name__)
+        if WRITE_TO == "cout":
+            logging.basicConfig()
+            logging.root.setLevel(LOGLEVEL)
+        else:
+            logging.basicConfig(filename=WRITE_TO, level=LOGLEVEL) # level=logging.DEBUG
+        
+        self.logger_name = self.__class__.__name__
+    
 
 class ReducedDataMixin:
     def get_sample_indices(self, X: ArrayLike) -> ArrayLike:
@@ -98,6 +112,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
             # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
             "MAPE": mape(y_true, y_pred)
         }
+        # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
         return super().evaluate(y_true, y_pred, **error_metrics)
 
@@ -210,7 +225,7 @@ class DefaultOptimizer(OxariOptimizer):
         return super().score_trial(trial, X_train, y_train, X_val, y_val, **kwargs)
 
 
-class OxariMixin(abc.ABC):
+class OxariMixin(OxariLoggerMixin, abc.ABC):
     def __init__(self, name=None, **kwargs) -> None:
         super().__init__()
         self._name = name or self.__class__.__name__
@@ -323,15 +338,15 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         pass
 
 
-class OxariPreprocessor(OxariTransformer, abc.ABC):
+class OxariPreprocessor(OxariTransformer, OxariLoggerMixin, abc.ABC):
     def __init__(self, imputer: OxariImputer = None, **kwargs):
         super().__init__(**kwargs)
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
         # Reference:  https://scikit-learn.org/stable/developers/develop.html#instantiation
-        super().__init__(**kwargs)
         self.imputer = imputer
+        self.logger.debug("Preprocessor initialized!")
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariPreprocessor":
@@ -342,6 +357,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
         # When fit is called, any previous call to fit should be ignored.
         # Attributes that have been estimated from the data must always have a name ending with trailing underscore. (e.g.: self.coef_)
         # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
+        self.logger.debug("Preprocessor is fitted!")
         return self
 
     @abc.abstractmethod
@@ -555,34 +571,47 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return self.scope_transformer.reverse_transform(preds)
 
     def fit(self, X, y, **kwargs) -> OxariPipeline:
+        st = time.time()
         self._set_meta(X)
         is_na = np.isnan(y)
         X = self._preprocess(X, **kwargs)
         y = self._transform_scope(y, **kwargs)
         self.estimator = self.estimator.set_params(**self.params).fit(X[~is_na], y[~is_na], **kwargs)
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info(f'Fit function is completed with execution time: {elapsed_time} seconds')
         return self
 
 
     
     def fit_confidence(self, X,y,**kwargs) -> OxariPipeline:
+        st = time.time()
         is_na = np.isnan(y)
         # X = self._preprocess(X, **kwargs)
         # y = self._transform_scope(y, **kwargs)
         X,y =X[~is_na], y[~is_na] 
         self.ci_estimator = self.ci_estimator.fit(X,y, **kwargs)
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info(f'Fit_confidence function is completed with execution time: {elapsed_time} seconds')
         return self
 
 
     def optimise(self, X, y, **kwargs) -> OxariPipeline:
+        st = time.time()
         df_processed: pd.DataFrame = self.preprocessor.fit_transform(X,y)
         df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
         y_transformed = self.scope_transformer.fit_transform(X,y)
         X, y = df_reduced, y_transformed
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)        
         self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info(f'Optimize function is completed with execution time: {elapsed_time} seconds')
         return self
 
     def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
+        st = time.time()
         X_test = self._preprocess(X_test)
         X_train = self._preprocess(X_train)
         y_pred_test = self.estimator.predict(X_test)
@@ -594,6 +623,10 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._evaluation_results["raw"] = self._evaluator.evaluate(y_test, y_pred_test_reversed, X_test=X_test)
         self._evaluation_results["test"] = self.estimator.evaluate(y_test_transformed, y_pred_test, X_test=X_test)
         self._evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
+        self.logger.info(f'sMAPE value of model evaluation: {smape(y_test_transformed, y_pred_test) / 100}')
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info(f'Evaluate function is completed with execution time: {elapsed_time} seconds')
         return self
 
     def clone(self) -> OxariPipeline:
@@ -648,9 +681,12 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def check_scope(self, scope):
         if not isinstance(scope, int):
+            self.logger.error(f"Exception: 'scope' is not an int: {scope}")
             raise Exception(f"'scope' is not an int: {scope}")
         if not ((scope > 0) and (scope < 4)):
+            self.logger.error(f"Exception: 'scope' is not between either 1, 2 or 3: {scope}")
             raise Exception(f"'scope' is not between either 1, 2 or 3: {scope}")
+            
 
     def get_pipeline(self, scope: int) -> OxariPipeline:
         return self.pipelines[f"scope_{scope}"]

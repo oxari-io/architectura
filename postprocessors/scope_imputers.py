@@ -36,7 +36,8 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         # retrieving only the relevant columns
         data = data[["isin", "year", "scope_1", "scope_2", "scope_3", "predicted_s1", "predicted_s2", "predicted_s3"]]
         # how many unique companies?
-        print("Number of unique companies in the data: ", len(data["isin"].unique()))
+        # print("Number of unique companies in the data: ", len(data["isin"].unique()))
+        self.logger.debug("Number of unique companies in the data: ", len(data["isin"].unique()))
         self.data = data
         return self
 

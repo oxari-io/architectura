@@ -68,17 +68,17 @@ class BaselinePreprocessor(OxariPreprocessor):
         data = X
         self.original_features = data.columns
         self.logger.info(f'number of original features: {len(self.original_features)}')
-        self.scope_columns = ["scope_1","scope_2","scope_3"]
-        self.financial_columns = X.columns[X.columns.str.startswith('ft_fin')]
-        self.categorical_columns = X.columns[X.columns.str.startswith('ft_cat')]        
+        self.scope_columns = data.columns[data.columns.str.startswith('tg_num')]
+        self.financial_columns = data.columns[data.columns.str.startswith('ft_num')]
+        self.categorical_columns = data.columns[data.columns.str.startswith('ft_cat')]        
         # # log scaling the scopes
         # self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
         # transform numerical
-        self.fin_transformer = self.fin_transformer.fit(data.iloc[:, data.columns.str.startswith('ft_fin_')])
+        self.fin_transformer = self.fin_transformer.fit(data.loc[:, self.financial_columns])
         # encode categorical
-        self.cat_transformer = self.cat_transformer.fit(X=data.iloc[:, data.columns.str.startswith('ft_cat_')], y=np.array(y))
+        self.cat_transformer = self.cat_transformer.fit(data.loc[:, self.categorical_columns], y=np.array(y))
         # fill missing values
-        self.imputer = self.imputer.fit(data.iloc[:, data.columns.str.startswith('ft_fin_')])
+        self.imputer = self.imputer.fit(data.loc[:, self.financial_columns])
         # reduce dimensionality/feature count
         # self.feature_selector = self.feature_selector.fit(data.drop(columns=self.scope_columns + ["year", "isin"]))
         return self

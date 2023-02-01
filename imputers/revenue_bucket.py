@@ -9,7 +9,7 @@ from base.mappings import NumMapping
 from base.metrics import mape
 from .core import BucketImputerBase
 
-MAIN_VARIABLE = 'ft_fin_revenue'
+MAIN_VARIABLE = 'ft_numc_revenue'
 class RevenueBucketImputer(BucketImputerBase):
     def __init__(self, buckets_number=3, **kwargs):
         super().__init__(**kwargs)

@@ -12,6 +12,13 @@
             "justMyCode": true
         },
         {
+            "name": "TEST Training Pipeline",
+            "type": "python",
+            "request": "launch",
+            "module": "main_test_datasources",
+            "justMyCode": true
+        },
+        {
             "name": "Run Parallel Pipeline",
             "type": "python",
             "request": "launch",

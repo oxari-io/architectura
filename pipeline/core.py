@@ -24,7 +24,7 @@ class DefaultPipeline(OxariPipeline):
             feature_selector=kwargs.pop('feature_reducer', DummyFeatureReducer()),
             scope_estimator= kwargs.pop('scope_estimator', DummyEstimator()),
             ci_estimator = kwargs.pop('ci_estimator', DummyConfidenceEstimator()),
-            scope_transformer = kwargs.pop('scope_transformer', DummyScaler(scope_features=OxariDataManager.DEPENDENT_VARIABLES)),
+            scope_transformer = kwargs.pop('scope_transformer', DummyScaler()),
             **kwargs,
         )
 

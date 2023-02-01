@@ -5,7 +5,7 @@ from typing import Dict, List, Union
 import pandas as pd
 import numpy as np
 import abc
-from base import OxariMixin, OxariTransformer
+from base import OxariMixin, OxariTransformer, OxariLoggerMixin
 # from base.common import OxariMixin
 from base.mappings import CatMapping, NumMapping
 from sklearn.model_selection import train_test_split
@@ -17,7 +17,7 @@ from os import environ as env
 import io
 
 
-class Datasource(abc.ABC):
+class Datasource(OxariLoggerMixin, abc.ABC):
     KEYS: List[str] = None
     _COLS: List[str] = None
     data: pd.DataFrame = None
@@ -81,7 +81,7 @@ class LocalDatasource(Datasource):
     def __init__(self, path: str = "", **kwargs) -> None:
         super().__init__(**kwargs)
         self.path = Path(path)
-        self._check_if_data_exists()
+        # self._check_if_data_exists()
 
     def _check_if_data_exists(self):
         if not self.path.exists():
@@ -96,14 +96,36 @@ class LocalDatasource(Datasource):
 class PartialLoader(abc.ABC):
 
     def __init__(self, verbose=False, **kwargs) -> None:
-        super().__init__(**kwargs)
+        super().__init__()
         self.verbose = verbose
         self._data: pd.DataFrame = None
         self.columns: List[str] = None
+        self.kwargs = kwargs
 
     @property
     def data(self):
         return self._data
+
+    @property
+    def keys(self):
+        return [col for col in self.data.columns if (col.startswith("key_"))]
+
+    # TODO: Add in new
+    def __add__(self, other: PartialLoader):
+        return CombinedLoader(self, other, **self.kwargs)
+
+    # TODO: Add in new
+    @property
+    def name(self):
+        return self.__class__.__name__
+
+class CombinedLoader(PartialLoader):
+    def __init__(self, loader_1:PartialLoader, loader_2:PartialLoader, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._name = f"{loader_1.name} + {loader_2.name} "
+        common_keys = list(set(loader_1.keys).intersection(loader_2.keys))
+        self._data = loader_1.data.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)
+
 
 
 class ScopeLoader(OxariMixin, PartialLoader, abc.ABC):
@@ -114,6 +136,8 @@ class ScopeLoader(OxariMixin, PartialLoader, abc.ABC):
         super().__init__(**kwargs)
         self.threshold = threshold
         self.columns = [f"{col}" for col in ScopeLoader._COLS]
+
+    
 
     @property
     def data(self):
@@ -217,17 +241,17 @@ class SplitScopeDataset():
 
     @property
     def scope_1(self):
-        scope_col = "scope_1"
+        scope_col = "tg_numc_scope_1"
         return self._helper(scope_col)
 
     @property
     def scope_2(self):
-        scope_col = "scope_2"
+        scope_col = "tg_numc_scope_2"
         return self._helper(scope_col)
 
     @property
     def scope_3(self):
-        scope_col = "scope_3"
+        scope_col = "tg_numc_scope_3"
         return self._helper(scope_col)
 
     def _helper(self, scope_col):
@@ -283,16 +307,26 @@ class OxariDataManager(OxariMixin):
         scope_loader = self.scope_loader.load()
         financial_loader = self.financial_loader.load()
         categorical_loader = self.categorical_loader.load()
-        self.non_features = self.scope_loader.KEYS + self.scope_loader.columns
-        _df_merged = self.add_data(OxariDataManager.MERGED, self._merge(scope_loader, financial_loader, categorical_loader), "Dataset with all parts merged.")
+        self.non_features = self.scope_loader.columns
+        merged_loader = scope_loader + financial_loader
+        merged_loader = merged_loader + categorical_loader
+
+        _df_merged = merged_loader.data
+        _df_merged = self.add_data(OxariDataManager.MERGED, _df_merged, "Dataset with all parts merged.")
         _df_original = self.add_data(OxariDataManager.ORIGINAL, self._transform(_df_merged), "Dataset after transformation changes.")
         return self
 
-    def _merge(self, scope_loader:ScopeLoader, financial_loader:FinancialLoader, categorical_loader:CategoricalLoader, **kwargs):
-        _df_original: pd.DataFrame = scope_loader.data.dropna(subset="isin")
-        _df_original = _df_original.merge(financial_loader.data, on=financial_loader.KEYS, how="inner").sort_values(financial_loader.KEYS)
-        _df_original = _df_original.merge(categorical_loader.data, on=categorical_loader.KEYS, how="left")
-        return _df_original
+    def _merge(self, loader_1:PartialLoader, loader_2:PartialLoader):
+        common_keys = list(set([*list(loader_1.keys), *list(loader_2.keys)]))
+        _df_original: pd.DataFrame = loader_1.data.dropna(subset="key_isin")
+        _df_original = _df_original.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)        
+        return 
+
+    # def _merge(self, scope_loader:ScopeLoader, financial_loader:FinancialLoader, categorical_loader:CategoricalLoader, **kwargs):
+    #     _df_original: pd.DataFrame = scope_loader.data.dropna(subset="key_isin")
+    #     _df_original = _df_original.merge(financial_loader.data, on=financial_loader.KEYS, how="inner").sort_values(financial_loader.KEYS)
+    #     _df_original = _df_original.merge(categorical_loader.data, on=categorical_loader.KEYS, how="left")
+    #     return _df_original
 
     #TODO: JUST OVERWRITE THIS ONE
     def _transform(self, df, **kwargs):

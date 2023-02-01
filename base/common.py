@@ -46,7 +46,8 @@ from sklearn.model_selection import train_test_split
 
 os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
-WRITE_TO =  "./logger.log" # "cout" 
+WRITE_TO = "./logger.log"  # "cout"
+
 
 # FEEDBACK:
 # - Logger had no formatting
@@ -66,17 +67,18 @@ class OxariLoggerMixin:
     """
     logger: logging.Logger
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.format = '%(asctime)s | %(name)s | %(levelname)s | %(message)s'
         if WRITE_TO == "cout":
             logging.basicConfig(format=self.format)
             logging.root.setLevel(LOGLEVEL)
         else:
-            logging.basicConfig(filename=WRITE_TO, level=LOGLEVEL, format=self.format) # level=logging.DEBUG
-        
+            logging.basicConfig(filename=WRITE_TO, level=LOGLEVEL, format=self.format)  # level=logging.DEBUG
+
         self.logger_name = self.__class__.__name__
-    
+
 
 class ReducedDataMixin:
 
@@ -271,8 +273,9 @@ class DefaultOptimizer(OxariOptimizer):
 
 
 class OxariMixin(OxariLoggerMixin, abc.ABC):
+
     def __init__(self, name=None, **kwargs) -> None:
-        super().__init__()
+        super().__init__(**kwargs)
         self._name = name or self.__class__.__name__
         self.start_time = None
         self.end_time = None
@@ -531,9 +534,11 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     """
 
     def __init__(self, missing_values=np.nan, verbose: int = 0, copy: bool = False, add_indicator: bool = False, **kwargs):
-        super().__init__(missing_values=missing_values, add_indicator=add_indicator)
+        super().__init__(**kwargs)
         self.verbose = verbose
         self.copy = copy
+        self.missing_values = missing_values
+        self.add_indicator = add_indicator
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -627,7 +632,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # return_raw = kwargs.pop('return_raw', False) #
         if return_std:
             preds = self.ci_estimator.predict(X, **kwargs)
-            return preds # Alread reversed
+            return preds  # Alread reversed
             # return self.scope_transformer.reverse_transform(preds)
         X_new = self._preprocess(X, **kwargs).drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore')
         preds = self.estimator.predict(X_new, **kwargs)
@@ -645,15 +650,13 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self.logger.info(f'Fit function is completed with execution time: {elapsed_time} seconds')
         return self
 
-
-    
-    def fit_confidence(self, X,y,**kwargs) -> Self:
+    def fit_confidence(self, X, y, **kwargs) -> Self:
         st = time.time()
         is_na = np.isnan(y)
         # X = self._preprocess(X, **kwargs)
         # y = self._transform_scope(y, **kwargs)
-        X,y =X[~is_na], y[~is_na] 
-        self.ci_estimator = self.ci_estimator.fit(X,y, **kwargs)
+        X, y = X[~is_na], y[~is_na]
+        self.ci_estimator = self.ci_estimator.fit(X, y, **kwargs)
         et = time.time()
         elapsed_time = et - st
         self.logger.info(f'Fit_confidence function is completed with execution time: {elapsed_time} seconds')
@@ -666,7 +669,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     def optimise(self, X, y, **kwargs) -> Self:
         st = time.time()
-        df_processed: pd.DataFrame = self.preprocessor.fit_transform(X,y)
+        df_processed: pd.DataFrame = self.preprocessor.fit_transform(X, y)
         df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
         y_transformed = self.scope_transformer.fit_transform(X, y)
         X, y = df_reduced, y_transformed
@@ -706,14 +709,17 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
 
 class Test(OxariPipeline):
+
     def evaluate(self, X_train, y_train, X_test, y_test) -> Self:
         self.this_is_a_test = True
         return super().evaluate(X_train, y_train, X_test, y_test)
-    
+
 
 class TestTest(OxariPipeline):
+
     def evaluate(self, X_train, y_train, X_test, y_test) -> Self:
         return super().evaluate(X_train, y_train, X_test, y_test)
+
 
 class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
 
@@ -784,7 +790,6 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         if not ((scope > 0) and (scope < 4)):
             self.logger.error(f"Exception: 'scope' is not between either 1, 2 or 3: {scope}")
             raise Exception(f"'scope' is not between either 1, 2 or 3: {scope}")
-            
 
     def get_pipeline(self, scope: int) -> OxariPipeline:
         return self.pipelines[f"scope_{scope}"]
@@ -855,4 +860,3 @@ class OxariLinearAnnualReduction(OxariRegressor, OxariTransformer, OxariMixin, a
     @abc.abstractmethod
     def fit(self, X, y=None) -> Self:
         return self
-

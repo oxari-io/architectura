@@ -142,7 +142,6 @@ class BucketClassifier(OxariClassifier):
         return self
 
     def predict(self, X, **kwargs):
-        # X = X.drop(columns = ["scope_1", "scope_2", "scope_3"])
         return self._estimator.predict(X)
 
     def set_params(self, **params):

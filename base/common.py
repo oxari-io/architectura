@@ -36,6 +36,7 @@ WRITE_TO = "./logger.log"  # "cout"
 # - The logging was not really tested
 # - Some of the things logged are of little use
 # - WRITE_TO should be handled via environment variable
+# - Many places that had a logging out put did not work
 class OxariLoggerMixin:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
@@ -620,7 +621,8 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
             preds = self.ci_estimator.predict(X, **kwargs)
             return preds  # Alread reversed
             # return self.scope_transformer.reverse_transform(preds)
-        X_new = self._preprocess(X, **kwargs).drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], axis=1, errors='ignore')
+    
+        X_new = self._preprocess(X, **kwargs).filter('^ft_', axis=1)
         preds = self.estimator.predict(X_new, **kwargs)
         return self.scope_transformer.reverse_transform(preds)
 
@@ -794,7 +796,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
-        X = X.drop(columns=["isin", "year", "scope_1", "scope_2", "scope_3"], errors='ignore')
+        X = X.filter('^ft_')
         if scope == "all":
             return self._predict_all(X, **kwargs)
         return self.get_pipeline(scope).predict(X, **kwargs)

@@ -110,8 +110,8 @@ class ImprovedBaselinePreprocessor(BaselinePreprocessor):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
         X_new = X.copy()
-        self.scope_columns = ["scope_1","scope_2","scope_3"]
-        self.financial_columns = X.columns[X.columns.str.startswith('ft_fin')]
+        self.scope_columns = X.columns[X.columns.str.startswith('tg_numc')]
+        self.financial_columns = X.columns[X.columns.str.startswith('ft_num')]
         self.categorical_columns = X.columns[X.columns.str.startswith('ft_cat')]        
         self.cat_transformer = self.cat_transformer.fit(X=X_new[self.categorical_columns], y=y)
         # TODO: Create an ABC for feature transformers. To allow adding full data and maintain a memory of which feature was transformed.

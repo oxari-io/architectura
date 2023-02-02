@@ -11,7 +11,7 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         super().__init__(**kwargs)
         self.estimator = estimator
         self.jump_rate_evaluator = JumpRateEvaluator(self.estimator)
-        self.imputed = {"scope_1": "N/A", "scope_2": "N/A", "scope_3": "N/A"}
+        self.imputed = {"tg_numc_scope_1": "N/A", "tg_numc_scope_2": "N/A", "tg_numc_scope_3": "N/A"}
 
     def run(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # we are only interested in the most recent years

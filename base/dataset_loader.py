@@ -95,7 +95,7 @@ class CombinedLoader(PartialLoader):
         self._data = loader_1.data.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)
 
 
-class ScopeLoader(OxariMixin, PartialLoader):
+class ScopeLoader(OxariLoggerMixin, PartialLoader):
     PATTERN = "tg_num"
 
     def __init__(self, threshold=5, **kwargs) -> None:
@@ -124,7 +124,7 @@ class ScopeLoader(OxariMixin, PartialLoader):
         return result_data
 
 
-class FinancialLoader(PartialLoader):
+class FinancialLoader(OxariLoggerMixin, PartialLoader):
     PATTERN = "ft_num"
 
     def __init__(self, **kwargs) -> None:
@@ -135,7 +135,7 @@ class FinancialLoader(PartialLoader):
         return self._data[self.columns]
 
 
-class CategoricalLoader(PartialLoader):
+class CategoricalLoader(OxariLoggerMixin, PartialLoader):
     KEYS = ["isin"]
     PATTERN = "ft_cat"
 
@@ -145,8 +145,6 @@ class CategoricalLoader(PartialLoader):
     @property
     def data(self):
         return self._data[self.columns]
-
-
 
 
 class SplitBag():
@@ -231,7 +229,6 @@ class OxariDataManager(OxariMixin):
     JUMP_RATES_AGG = 'jump_rates_aggregated'
     IMPUTED_LARS = 'imputed_lars'
     SHORTENED = 'shortened'
-    
 
     # NON_FEATURES = ["isin", "year"] + ScopeLoader._COLS
     INDEPENDENT_VARIABLES = []
@@ -270,8 +267,8 @@ class OxariDataManager(OxariMixin):
     # def _merge(self, loader_1:PartialLoader, loader_2:PartialLoader):
     #     common_keys = list(set([*list(loader_1.keys), *list(loader_2.keys)]))
     #     _df_original: pd.DataFrame = loader_1.data.dropna(subset="key_isin")
-    #     _df_original = _df_original.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)        
-    #     return 
+    #     _df_original = _df_original.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)
+    #     return
 
     # def _merge(self, scope_loader:ScopeLoader, financial_loader:FinancialLoader, categorical_loader:CategoricalLoader, **kwargs):
     #     _df_original: pd.DataFrame = scope_loader.data.dropna(subset="key_isin")
@@ -352,7 +349,7 @@ class OxariDataManager(OxariMixin):
         # verbose
         # print(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
         OxariDataManager.logger.debug(f"Number of datapoints: shape of y {y.shape}, shape of X {X.shape}")
-        
+
         X_rem, X_test, y_rem, y_test = train_test_split(X[selector], y[selector], test_size=split_size_test)
 
         # splitting further - train and validation sets will be used for optimization; test set will be used for performance assesment
@@ -360,5 +357,3 @@ class OxariDataManager(OxariMixin):
 
         # return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
         return X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test
-
-

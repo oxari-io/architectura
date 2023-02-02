@@ -11,6 +11,8 @@ from typing import Generic, TypeVar
 from typing_extensions import Self
 import abc
 from base import OxariMixin
+import boto3
+from os import environ as env
 
 COLS_CATEGORICALS = CatMapping.get_features()
 COLS_FINANCIALS = NumMapping.get_features()
@@ -165,6 +167,38 @@ class LocalDatasource(Datasource):
         self._data = pd.read_csv(self.path)
         return self
 
+
+class S3Datasource(Datasource):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.path = ''
+        self.do_spaces_endpoint = env.get('S3_ENDPOINT')
+        self.do_spaces_folder = env.get('S3_BUCKET')
+        self.do_spaces_key_id = env.get('S3_KEY_ID')
+        self.do_spaces_access_key = env.get('S3_ACCESS_KEY')
+        self.do_spaces_region = env.get('S3_REGION')
+        self.connect()
+
+    def _check_if_data_exists(self) -> bool:
+        self.meta = self.client.head_object(Bucket=self.do_spaces_folder, Key=self.path)
+
+    def _load(self) -> Self:
+        # https://docs.digitalocean.com/reference/api/spaces-api/
+        response = self.client.get_object(Bucket=self.do_spaces_folder, Key=self.path)
+        self._data = pd.read_csv(response['Body'])
+        return self
+
+    def connect(self):
+        self.session: boto3.Session = boto3.Session()
+        self.client = self.session.client(
+            's3',
+            region_name=self.do_spaces_region,
+            endpoint_url=f'{self.do_spaces_endpoint}',
+            aws_access_key_id=self.do_spaces_key_id,
+            aws_secret_access_key=self.do_spaces_access_key,
+        )
+        return self.client
 
 class AutoDiscoveryDataManager(OxariDataManager):
 

@@ -19,8 +19,7 @@ import pandas as pd
 # import cPickle as
 import joblib as pkl
 import io
-from dataset_loader.csv_loader import DefaultDataManager, CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader,S3ScopeLoader, S3CategoricalLoader,S3FinancialLoader
-from dataset_loader.auto_loader import AutoDiscoveryDataManager
+from dataset_loader.auto_loader import AutoDiscoveryDataManager, S3Datasource, LocalDatasource
 import pathlib
 from pprint import pprint
 import numpy as np
@@ -35,7 +34,7 @@ if __name__ == "__main__":
 
     # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
     # dataset = DefaultDataManager().run()
-    dataset = AutoDiscoveryDataManager().run()
+    dataset = AutoDiscoveryDataManager(S3Datasource(path='scopes_auto.csv'),S3Datasource(path='financials_auto.csv'),S3Datasource(path='categoricals_auto.csv')).run()
     # dataset = PreviousScopeFeaturesDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)

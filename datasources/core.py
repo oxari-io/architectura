@@ -69,12 +69,12 @@ class FSExperimentDataLoader(OxariDataManager):
 class PreviousScopeFeaturesDataManager(DefaultDataManager):
 
     def _take_previous_scopes(self, df: pd.DataFrame):
-        df_tmp = df[self.scope_loader._COLS].shift(1)
+        df_tmp = df.iloc[:, df.columns.str.startswith('tg_numc_')].shift(1)
         df_tmp.columns = [f"ft_numc_preyear_{col}" for col in df_tmp.columns]
         df[df_tmp.columns] = df_tmp
         return df
 
     def _transform(self, df: pd.DataFrame):
-        key_cols = df.columns.filter(regex='^key_',axis=1)
+        key_cols = list(df.columns[df.columns.str.startswith('key')])
         df = df.sort_values(key_cols, ascending=[True, True]).groupby('key_isin').apply(self._take_previous_scopes)
         return df

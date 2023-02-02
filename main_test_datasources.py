@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
     # dataset = DefaultDataManager().run()
-    dataset = AutoDiscoveryDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),S3Datasource(path='model-input-data/financials_auto.csv'),S3Datasource(path='model-input-data/categoricals_auto.csv')).run()
+    dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),S3Datasource(path='model-input-data/financials_auto.csv'),S3Datasource(path='model-input-data/categoricals_auto.csv')).run()
     # dataset = PreviousScopeFeaturesDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)

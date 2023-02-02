@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Dict, List
-from base.dataset_loader import CategoricalLoader, Datasource,  OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader, S3Datasource, CombinedLoader
-from datasources.local import CSVCategoricalLoader, CSVFinancialLoader
+from base.dataset_loader import CategoricalLoader, Datasource,  OxariDataManager, PartialLoader, ScopeLoader, FinancialLoader,  CombinedLoader
 from base.mappings import CatMapping, NumMapping
 import pandas as pd
 import numpy as np

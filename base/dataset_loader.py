@@ -238,7 +238,6 @@ class OxariDataManager(OxariMixin):
     
 
     # NON_FEATURES = ["isin", "year"] + ScopeLoader._COLS
-    DEPENDENT_VARIABLES = ScopeLoader._COLS
     INDEPENDENT_VARIABLES = []
 
     def __init__(

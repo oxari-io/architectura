@@ -47,6 +47,7 @@ isort = "^5.11.4"
 pipreqs = "^0.4.11"
 pyinstaller = "^5.7.0"
 auto-py-to-exe = "^2.27.0"
+autoflake = "^2.0.1"
 
 [build-system]
 requires = ["poetry-core"]

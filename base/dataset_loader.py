@@ -5,7 +5,8 @@ import numpy as np
 import abc
 from base import OxariMixin, OxariLoggerMixin
 from sklearn.model_selection import train_test_split
-from base.oxari_types import ArrayLike, Self
+from base.oxari_types import ArrayLike
+from typing_extensions import Self
 
 class Datasource(OxariLoggerMixin, abc.ABC):
     KEYS: List[str] = None

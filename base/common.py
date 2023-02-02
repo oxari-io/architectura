@@ -16,10 +16,7 @@ import sklearn
 from pmdarima.metrics import smape
 from sklearn.base import MetaEstimatorMixin, MultiOutputMixin
 from sklearn.impute import _base
-from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error,
-                             mean_squared_error,
-                             precision_recall_fscore_support, r2_score,
-                             silhouette_score)
+from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, precision_recall_fscore_support, r2_score, silhouette_score)
 from sklearn.model_selection import train_test_split
 from typing_extensions import Self
 
@@ -621,7 +618,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
             preds = self.ci_estimator.predict(X, **kwargs)
             return preds  # Alread reversed
             # return self.scope_transformer.reverse_transform(preds)
-    
+
         X_new = self._preprocess(X, **kwargs).filter('^ft_', axis=1)
         preds = self.estimator.predict(X_new, **kwargs)
         return self.scope_transformer.reverse_transform(preds)
@@ -636,6 +633,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         et = time.time()
         elapsed_time = et - st
         self.logger.info(f'Fit function is completed with execution time: {elapsed_time} seconds')
+        self.time_fit = elapsed_time
         return self
 
     def fit_confidence(self, X, y, **kwargs) -> Self:
@@ -666,6 +664,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         et = time.time()
         elapsed_time = et - st
         self.logger.info(f'Optimize function is completed with execution time: {elapsed_time} seconds')
+        self.time_optimize = elapsed_time
         return self
 
     def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
@@ -693,7 +692,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     @property
     def evaluation_results(self):
-        return {"pipeline": self.name, **self._evaluation_results}
+        return {"pipeline": self.name, "time_to_fit": self.time_fit, "time_to_optimize": self.time_optimize, **self._evaluation_results}
 
 
 class Test(OxariPipeline):

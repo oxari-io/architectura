@@ -8,6 +8,7 @@ import pandas as pd
 from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver,
                   OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
 from base.common import OxariLoggerMixin
+from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
@@ -78,9 +79,9 @@ if __name__ == "__main__":
     ### EVALUATION RESULTS ###
     # print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
-    eval_results.to_csv('local/eval_results/model_pipelines_test.csv')
+    eval_results.T.to_csv('local/eval_results/model_pipelines_test.csv')
     # print(eval_results)
-    mainlogger.logger.info(f"Evaluation results: {eval_results}")
+    mainlogger.logger.info(f"Evaluation results: {eval_results.loc[:, IMPORTANT_EVALUATION_COLUMNS].to_dict('records')}")
     
 
     # print("Predict with Model only SCOPE1")

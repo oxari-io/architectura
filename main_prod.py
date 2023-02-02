@@ -76,7 +76,7 @@ if __name__ == "__main__":
     print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
     print(eval_results)
-    eval_results.to_csv('local/eval_results/model_pipelines.csv')
+    eval_results.T.to_csv('local/eval_results/model_pipelines.csv')
     print("Predict with Pipeline")
     # print(dp1.predict(X))
     print("Predict with Model only SCOPE1")

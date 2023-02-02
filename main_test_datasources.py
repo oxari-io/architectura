@@ -82,7 +82,7 @@ if __name__ == "__main__":
     ### EVALUATION RESULTS ###
     # print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
-    eval_results.to_csv('local/eval_results/model_pipelines_test.csv')
+    eval_results.T.to_csv('local/eval_results/model_pipelines_test.csv')
     # print(eval_results)
     mainlogger.logger.info(f"Evaluation results: {eval_results}")
     

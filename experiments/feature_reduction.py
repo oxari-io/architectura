@@ -1,5 +1,5 @@
 from pipeline.core import DefaultPipeline, FSExperimentPipeline
-from dataset_loader.csv_loader import FSExperimentDataLoader
+from datasources.core import FSExperimentDataLoader, DefaultDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor
@@ -9,7 +9,6 @@ from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatur
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, SupportVectorEstimator
 from base import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
-from dataset_loader.csv_loader import DefaultDataManager
 
 # import base
 # from base import helper

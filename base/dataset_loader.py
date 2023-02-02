@@ -16,11 +16,14 @@ import boto3
 from os import environ as env
 import io
 
-
 class Datasource(OxariLoggerMixin, abc.ABC):
     KEYS: List[str] = None
     _COLS: List[str] = None
-    data: pd.DataFrame = None
+    _data: pd.DataFrame = None
+
+    def __init__(self, path: str = "", **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.path = path
 
     @abc.abstractmethod
     def _check_if_data_exists(self, **kwargs) -> bool:
@@ -42,73 +45,32 @@ class Datasource(OxariLoggerMixin, abc.ABC):
         self._load(**kwargs)
         return self
 
-
-class S3Datasource(Datasource):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.file_name = ''
-        self.do_spaces_endpoint = env.get('S3_ENDPOINT')
-        self.do_spaces_folder = env.get('S3_BUCKET')
-        self.do_spaces_key_id = env.get('S3_KEY_ID')
-        self.do_spaces_access_key = env.get('S3_ACCESS_KEY')
-        self.do_spaces_region = env.get('S3_REGION')
-        self.connect()
-
-    def _check_if_data_exists(self) -> bool:
-        self.meta = self.client.head_object(Bucket=self.do_spaces_folder, Key=self.file_name)
-
-    def _load(self) -> Self:
-        # https://docs.digitalocean.com/reference/api/spaces-api/
-        response = self.client.get_object(Bucket=self.do_spaces_folder, Key=self.file_name)
-        self._data = pd.read_csv(response['Body'])
-        return self
-
-    def connect(self):
-        self.session: boto3.Session = boto3.Session()
-        self.client = self.session.client(
-            's3',
-            region_name=self.do_spaces_region,
-            endpoint_url=f'{self.do_spaces_endpoint}',
-            aws_access_key_id=self.do_spaces_key_id,
-            aws_secret_access_key=self.do_spaces_access_key,
-        )
-        return self.client
-
-
-class LocalDatasource(Datasource):
-
-    def __init__(self, path: str = "", **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.path = Path(path)
-        # self._check_if_data_exists()
-
-    def _check_if_data_exists(self):
-        if not self.path.exists():
-            self.logger.error(f"Exception: Path(s) does not exist! Got {self.path}")
-            raise Exception(f"Path(s) does not exist! Got {self.path}")  
-
-    def _load(self) -> "CategoricalLoader":
-        self._data = pd.read_csv(self.path)
-        return self
+    @property
+    def data(self) -> pd.DataFrame:
+        return self._data
 
 
 class PartialLoader(abc.ABC):
+    PATTERN = ""
 
-    def __init__(self, verbose=False, **kwargs) -> None:
+    def __init__(self, datasource: Datasource = None, verbose=False, **kwargs) -> None:
         super().__init__()
         self.verbose = verbose
         self._data: pd.DataFrame = None
-        self.columns: List[str] = None
         self.kwargs = kwargs
+        self.set_datasource(datasource)
 
     @property
-    def data(self):
+    def data(self) -> pd.DataFrame:
         return self._data
 
     @property
+    def columns(self) -> List[str]:
+        return [col for col in self._data.columns if (col.startswith(self.PATTERN) or col.startswith("key_"))]
+
+    @property
     def keys(self):
-        return [col for col in self.data.columns if (col.startswith("key_"))]
+        return [col for col in self._data.columns if (col.startswith("key_"))]
 
     # TODO: Add in new
     def __add__(self, other: PartialLoader):
@@ -119,82 +81,76 @@ class PartialLoader(abc.ABC):
     def name(self):
         return self.__class__.__name__
 
+    def set_datasource(self, datasource: Datasource) -> Self:
+        self.datasource: Datasource = datasource
+        return self
+
+    def load(self) -> Self:
+        self._data = self.datasource.load().data
+        return self
+
+
 class CombinedLoader(PartialLoader):
-    def __init__(self, loader_1:PartialLoader, loader_2:PartialLoader, **kwargs) -> None:
+
+    def __init__(self, loader_1: PartialLoader, loader_2: PartialLoader, **kwargs) -> None:
         super().__init__(**kwargs)
         self._name = f"{loader_1.name} + {loader_2.name} "
         common_keys = list(set(loader_1.keys).intersection(loader_2.keys))
         self._data = loader_1.data.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)
 
 
-
-class ScopeLoader(OxariMixin, PartialLoader, abc.ABC):
-    KEYS = ["isin", "year"]
-    _COLS = NumMapping.get_targets()
+class ScopeLoader(OxariMixin, PartialLoader):
+    PATTERN = "tg_num"
 
     def __init__(self, threshold=5, **kwargs) -> None:
         super().__init__(**kwargs)
         self.threshold = threshold
-        self.columns = [f"{col}" for col in ScopeLoader._COLS]
-
-    
 
     @property
     def data(self):
         # before logging some scopes have very small values so we discard them
 
-        data = self._data
+        data = self.load()._data
         num_inititial = data.shape[0]
 
         threshold = self.threshold
-
+        tmp_cols = [col for col in self.columns if col.startswith('tg_')]
         # dropping data entries where unlogged scopes are lower than threshold
-        data[self.columns] = np.where((data[self.columns] < threshold), np.nan, data[self.columns])
+        data[tmp_cols] = np.where((data[tmp_cols] < threshold), np.nan, data[tmp_cols])
         # dropping datapoints that have no scopes
         data = data.dropna(how="all", subset=self.columns)
 
-        # if self.verbose:
-        #     num_remaining = data.shape[0]
-        #     print(
-        #         f"*** From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes ***"
-        #     )
         num_remaining = data.shape[0]
-        self.logger.info(f"From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes")
+        self.logger.info(
+            f"From {num_inititial} initial data points, {num_remaining} are complete data points and {num_inititial - num_remaining} data points have missing or invalid scopes")
         result_data = data
 
         return result_data
 
 
-class FinancialLoader(PartialLoader, abc.ABC):
-    KEYS = ["isin", "year"]
-    _COLS = NumMapping.get_features()
+class FinancialLoader(PartialLoader):
+    PATTERN = "ft_num"
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.columns = [f"ft_fin_{col}" for col in FinancialLoader._COLS]
 
     @property
     def data(self):
-        result_data = self._data[self.KEYS + self._COLS]
-        result_data[self.columns] = result_data[self._COLS]
-        result_data = result_data.drop(self._COLS, axis=1)
-        return result_data
+        return self._data[self.columns]
 
 
-class CategoricalLoader(PartialLoader, abc.ABC):
+class CategoricalLoader(PartialLoader):
     KEYS = ["isin"]
-    _COLS = CatMapping.get_features()
+    PATTERN = "ft_cat"
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.columns = [f"ft_cat_{col}" for col in CategoricalLoader._COLS]
 
     @property
     def data(self):
-        result_data = self._data[self.KEYS + self._COLS]
-        result_data[self.columns] = result_data[self._COLS]
-        result_data = result_data.drop(self._COLS, axis=1)
-        return result_data
+        return self._data[self.columns]
+
+
 
 
 class SplitBag():
@@ -409,3 +365,5 @@ class OxariDataManager(OxariMixin):
 
         # return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
         return X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test
+
+

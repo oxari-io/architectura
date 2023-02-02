@@ -3,7 +3,7 @@ from base import  OxariPipeline
 from base import DummyConfidenceEstimator, DummyScaler
 from base.helper import LogarithmScaler
 
-from dataset_loader.csv_loader import DefaultDataManager
+from datasources.core import DefaultDataManager
 from imputers import BaselineImputer
 from feature_reducers import DummyFeatureReducer
 from preprocessors import BaselinePreprocessor

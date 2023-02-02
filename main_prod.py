@@ -1,7 +1,7 @@
 import time
 from datetime import date
 from pipeline.core import DefaultPipeline, CVPipeline
-from dataset_loader.csv_loader import DefaultDataManager, PreviousScopeFeaturesDataManager
+from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
 from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
 from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
@@ -18,7 +18,7 @@ import pandas as pd
 # import cPickle as
 import joblib as pkl
 import io
-from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader,S3ScopeLoader, S3CategoricalLoader,S3FinancialLoader
+from datasources.local import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader,S3ScopeLoader, S3CategoricalLoader,S3FinancialLoader
 import pathlib
 from pprint import pprint
 import numpy as np

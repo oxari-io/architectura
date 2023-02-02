@@ -1,5 +1,5 @@
 from pipeline.core import DefaultPipeline
-from dataset_loader.csv_loader import DefaultDataManager
+from datasources.core import DefaultDataManager
 from base import OxariDataManager, OxariPipeline
 from preprocessors import BaselinePreprocessor, IIDPreprocessor, ImprovedBaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor

@@ -1,9 +1,12 @@
-from base import DefaultRegressorEvaluator
-from scope_estimators import MiniModelArmyEstimator
-from scope_estimators.mma.classifier import BucketClassifier, ClassifierOptimizer, BucketClassifierEvauator
-from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer
-from base.helper import BucketScopeDiscretizer
 import xgboost as xgb
+
+from base import DefaultRegressorEvaluator
+from base.helper import BucketScopeDiscretizer
+from scope_estimators import MiniModelArmyEstimator
+from scope_estimators.mma.classifier import (BucketClassifier,
+                                             BucketClassifierEvauator,
+                                             ClassifierOptimizer)
+from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer
 
 
 class SingleBucketModelRegressorOptimizer(RegressorOptimizer):

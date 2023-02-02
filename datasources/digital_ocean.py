@@ -1,10 +1,11 @@
-from base.dataset_loader import Datasource
-import pandas as pd
-from typing_extensions import Self
-import boto3
-import botocore
 from os import environ as env
 
+import boto3
+import botocore
+import pandas as pd
+from typing_extensions import Self
+
+from base.dataset_loader import Datasource
 
 
 # TODO: The internet loaders need a progressbar

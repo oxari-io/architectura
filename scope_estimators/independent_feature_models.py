@@ -1,7 +1,9 @@
-from base import OxariScopeEstimator, DefaultRegressorEvaluator, DefaultOptimizer
 import numpy as np
-from base.oxari_types import ArrayLike
 from sklearn.linear_model import RidgeCV
+
+from base import (DefaultOptimizer, DefaultRegressorEvaluator,
+                  OxariScopeEstimator)
+from base.oxari_types import ArrayLike
 
 N_TRIALS = 1
 N_STARTUP_TRIALS = 1

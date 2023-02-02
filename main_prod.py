@@ -1,23 +1,27 @@
-import time
-from pipeline.core import DefaultPipeline
-from datasources.core import PreviousScopeFeaturesDataManager
-from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
-from preprocessors import BaselinePreprocessor
-from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
-from imputers import RevenueQuantileBucketImputer
-from feature_reducers import DummyFeatureReducer
-from scope_estimators import MiniModelArmyEstimator
-from base.confidence_intervall_estimator import BaselineConfidenceEstimator
-from base import helper
-from base.helper import LogarithmScaler
-from base import OxariMetaModel
-import pandas as pd
 import pathlib
-import numpy as np
+import time
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver,
+                  OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
+from base.confidence_intervall_estimator import BaselineConfidenceEstimator
+from base.helper import LogarithmScaler
+from datasources.core import PreviousScopeFeaturesDataManager
+from feature_reducers import DummyFeatureReducer
+from imputers import RevenueQuantileBucketImputer
+from pipeline.core import DefaultPipeline
+from postprocessors import (DecisionExplainer, JumpRateExplainer,
+                            ResidualExplainer, ScopeImputerPostprocessor,
+                            ShapExplainer)
+from preprocessors import BaselinePreprocessor
+from scope_estimators import MiniModelArmyEstimator
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.lar_model import OxariUnboundLAR
+
 N_TRIALS = 40
 N_STARTUP_TRIALS = 10
 

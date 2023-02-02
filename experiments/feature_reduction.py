@@ -1,16 +1,23 @@
-from pipeline.core import DefaultPipeline
+import argparse
+import time
+
+import pandas as pd
+
+from base import BaselineConfidenceEstimator, OxariDataManager
+from base.helper import LogarithmScaler
 from datasources.core import FSExperimentDataLoader
-from base import OxariDataManager
-from preprocessors import IIDPreprocessor
+from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
+                              Factor_Analysis, FeatureAgglomeration,
+                              GaussRandProjection,
+                              IsomapDimensionalityReduction,
+                              MDSDimensionalitySelector, PCAFeatureSelector,
+                              SparseRandProjection)
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapDimensionalityReduction, MDSDimensionalitySelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis 
+from pipeline.core import DefaultPipeline
+from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator
-from base import BaselineConfidenceEstimator
-from base.helper import LogarithmScaler
-import pandas as pd
-import time
-import argparse
+
 
 def convert_reduction_methods(reduction_methods_string):
     # if the reduction methods are not strings, they are already in the right format (in that case it was the default argument of parser)

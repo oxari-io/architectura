@@ -1,18 +1,20 @@
-import pandas as pd
-import numpy as np
-from base import OxariScopeEstimator, OxariPipeline
-import shap
-from xgboost import XGBRegressor, XGBClassifier, XGBModel
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
-import seaborn as sns
-from base.metrics import smape
-import matplotlib.pyplot as plt
-from sklearn.metrics import classification_report
-from xgboost import plot_tree
 import abc
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import shap
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import classification_report
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+from xgboost import XGBClassifier, XGBModel, XGBRegressor, plot_tree
+
+from base import OxariPipeline, OxariScopeEstimator
+from base.metrics import smape
 from base.oxari_types import ArrayLike
+
 
 def get_jump_rate(y_pre, y_post):
     result = np.maximum(y_pre, y_post) / np.minimum(y_pre, y_post)

@@ -1,9 +1,15 @@
 from __future__ import annotations
+
 from typing import Dict
-from base.dataset_loader import OxariDataManager, Datasource, ScopeLoader, PartialLoader, FinancialLoader, CategoricalLoader
-from datasources.local import LocalDatasource
+
+import pandas as pd
+
 from base.constants import DATA_DIR
-import pandas as pd 
+from base.dataset_loader import (CategoricalLoader, Datasource,
+                                 FinancialLoader, OxariDataManager,
+                                 PartialLoader, ScopeLoader)
+from datasources.local import LocalDatasource
+
 
 class DefaultDataManager(OxariDataManager):
 

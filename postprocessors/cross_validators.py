@@ -1,11 +1,14 @@
-from base import OxariMetaModel
+from typing import Callable, List, Union
+
 import pandas as pd
-from typing import Union, Callable, List
-from base.oxari_types import ArrayLike
-from sklearn.base import MultiOutputMixin, BaseEstimator
-from sklearn.model_selection import cross_validate
-from base.metrics import smape
+from sklearn.base import BaseEstimator, MultiOutputMixin
 from sklearn.metrics import r2_score
+from sklearn.model_selection import cross_validate
+
+from base import OxariMetaModel
+from base.metrics import smape
+from base.oxari_types import ArrayLike
+
 
 class BaselineCrossValidator(BaseEstimator, MultiOutputMixin):
 

@@ -1,12 +1,15 @@
 from typing import Union
+
+import numpy as np
+import optuna
+import pandas as pd
+import sklearn.gaussian_process.kernels as kernels
+from sklearn.gaussian_process import GaussianProcessRegressor
+
 from base import OxariScopeEstimator, ReducedDataMixin
 from base.common import OxariOptimizer
-import numpy as np
-import pandas as pd
-from sklearn.gaussian_process import GaussianProcessRegressor
-import sklearn.gaussian_process.kernels as kernels
-import optuna
 from base.metrics import optuna_metric
+
 STANDARD_KERNEL = kernels.DotProduct() + kernels.WhiteKernel()
 
 

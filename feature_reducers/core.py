@@ -1,12 +1,17 @@
 from typing import Union
-from base import OxariFeatureReducer
+
 import numpy as np
 import pandas as pd
 from sklearn import cluster
-from sklearn.decomposition import PCA
-from sklearn.random_projection import GaussianRandomProjection, SparseRandomProjection
-from sklearn.manifold import Isomap, MDS, SpectralEmbedding, LocallyLinearEmbedding
-from sklearn.decomposition import FactorAnalysis, LatentDirichletAllocation
+from sklearn.decomposition import (PCA, FactorAnalysis,
+                                   LatentDirichletAllocation)
+from sklearn.manifold import (MDS, Isomap, LocallyLinearEmbedding,
+                              SpectralEmbedding)
+from sklearn.random_projection import (GaussianRandomProjection,
+                                       SparseRandomProjection)
+
+from base import OxariFeatureReducer
+
 
 # from factor_analyzer import FactorAnalyzer
 # from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity, calculate_kmo

@@ -1,11 +1,12 @@
-from base import OxariScopeEstimator
-from base.common import OxariOptimizer
 import numpy as np
+import optuna
 import pandas as pd
 from sklearn.svm import SVR
-import optuna
-from base.oxari_types import ArrayLike
+
+from base import OxariScopeEstimator
+from base.common import OxariOptimizer
 from base.metrics import optuna_metric
+from base.oxari_types import ArrayLike
 
 
 class SVROptimizer(OxariOptimizer):

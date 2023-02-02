@@ -1,6 +1,8 @@
-from base import OxariScopeEstimator
 import numpy as np
+
+from base import OxariScopeEstimator
 from base.oxari_types import ArrayLike
+
 
 class DummyEstimator(OxariScopeEstimator):
     def __init__(self, **kwargs):

@@ -1,8 +1,9 @@
 from pathlib import Path
-from base.dataset_loader import Datasource
+
 import pandas as pd
 from typing_extensions import Self
 
+from base.dataset_loader import Datasource
 
 
 class LocalDatasource(Datasource):

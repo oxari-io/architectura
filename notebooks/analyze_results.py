@@ -1,10 +1,12 @@
 # %%
-import pandas as pd
+import pathlib
+
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-import seaborn as sns
-import pathlib
+
 # %%
 cwd = pathlib.Path(__file__).parent
 df_results = pd.read_csv(cwd.parent/'local/eval_results/results_sequential_02.csv', index_col=0)

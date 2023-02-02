@@ -1,7 +1,8 @@
-from base import OxariPostprocessor, OxariMetaModel
-import pandas as pd
 import numpy as np
+import pandas as pd
 from typing_extensions import Self
+
+from base import OxariMetaModel, OxariPostprocessor
 
 
 class ScopeImputerPostprocessor(OxariPostprocessor):

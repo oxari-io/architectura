@@ -1,6 +1,7 @@
 
 import cpuinfo
 from dotenv import load_dotenv
+
 load_dotenv()
 try:
     processor_type = cpuinfo.get_cpu_info()['brand_raw']
@@ -19,6 +20,6 @@ except Exception as e:
     pass
             
 from .common import *
+from .confidence_intervall_estimator import *
 from .dataset_loader import *
 from .saver import *
-from .confidence_intervall_estimator import *

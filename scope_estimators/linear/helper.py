@@ -1,4 +1,5 @@
-from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, PolynomialFeatures
+
 
 class PolynomialFeaturesMixin:
     # TODO: Introduce a feature transformer that adds non-polynomial features

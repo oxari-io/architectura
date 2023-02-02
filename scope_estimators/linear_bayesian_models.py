@@ -1,14 +1,17 @@
 from typing import Union
-from base import OxariScopeEstimator, OxariTransformer, ReducedDataMixin
-from base.common import OxariOptimizer
+
 import numpy as np
+import optuna
 import pandas as pd
 import sklearn.gaussian_process.kernels as kernels
-import optuna
 from sklearn import linear_model
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
+
+from base import OxariScopeEstimator, OxariTransformer, ReducedDataMixin
+from base.common import OxariOptimizer
 from base.metrics import optuna_metric
+
 
 class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):
     def __init__(self, n_trials=50, n_startup_trials=1, sampler=None, **kwargs) -> None:

@@ -1,35 +1,30 @@
 from __future__ import annotations
+
 import abc
+import copy
+import logging
 import os
-import optuna
 import time
 from numbers import Number
-from sklearn.base import (
-    MetaEstimatorMixin,
-    MultiOutputMixin
-)
-import copy
-from sklearn.impute import _base
-from sklearn.metrics import (
-    balanced_accuracy_score,
-    mean_absolute_error,
-    mean_squared_error,
-    precision_recall_fscore_support,
-    r2_score,
-    silhouette_score
-)
 from typing import Any, Dict, List, Tuple
-from typing_extensions import Self
+
 import matplotlib.pyplot as plt
+import numpy as np
+import optuna
+import pandas as pd
+import sklearn
 from pmdarima.metrics import smape
+from sklearn.base import MetaEstimatorMixin, MultiOutputMixin
+from sklearn.impute import _base
+from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error,
+                             mean_squared_error,
+                             precision_recall_fscore_support, r2_score,
+                             silhouette_score)
+from sklearn.model_selection import train_test_split
+from typing_extensions import Self
+
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
-
-import sklearn
-import numpy as np
-import pandas as pd
-import logging
-from sklearn.model_selection import train_test_split
 
 os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()

@@ -1,11 +1,13 @@
 # %%
-import pandas as pd
+import pathlib
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-import numpy as np
-import seaborn as sns
-import pathlib
+
 sns.set_palette('viridis')
 
 # %%

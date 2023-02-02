@@ -1,13 +1,16 @@
 from typing import Union
-from base.common import OxariImputer
+
+import kmedoids
 import numpy as np
 import pandas as pd
-from sklearn.impute import SimpleImputer
-from base.mappings import NumMapping
 from sklearn import cluster
-import kmedoids
-from base.common import DefaultClusterEvaluator
+from sklearn.impute import SimpleImputer
+
+from base.common import DefaultClusterEvaluator, OxariImputer
+from base.mappings import NumMapping
+
 from .core import BucketImputerBase
+
 
 class KMeansBucketImputer(BucketImputerBase):
     def __init__(self, buckets_number=3, **kwargs):

@@ -1,15 +1,18 @@
-from pipeline.core import DefaultPipeline
-from datasources.core import DefaultDataManager
-from base import OxariDataManager, OxariPipeline
-from preprocessors import BaselinePreprocessor
-from imputers import RevenueQuantileBucketImputer
-from feature_reducers.core import DummyFeatureReducer
-from scope_estimators import MiniModelArmyEstimator
+import random
+from itertools import product
+
 import pandas as pd
 import sklearn
-from itertools import product
-import random
 import tqdm
+
+from base import OxariDataManager, OxariPipeline
+from datasources.core import DefaultDataManager
+from feature_reducers.core import DummyFeatureReducer
+from imputers import RevenueQuantileBucketImputer
+from pipeline.core import DefaultPipeline
+from preprocessors import BaselinePreprocessor
+from scope_estimators import MiniModelArmyEstimator
+
 
 # NOTE: IIDPreprocessor seems like a much better for most models
 class Runner(object):

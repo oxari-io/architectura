@@ -1,15 +1,16 @@
-from typing import Union, Tuple
-from base import OxariScopeEstimator
-from base import OxariOptimizer, OxariTransformer
+from typing import Tuple, Union
+
 import numpy as np
+import optuna
 import pandas as pd
 import sklearn.gaussian_process.kernels as kernels
-import optuna
 from sklearn import linear_model
-from base.oxari_types import ArrayLike
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, PolynomialFeatures
+
+from base import OxariOptimizer, OxariScopeEstimator, OxariTransformer
 from base.metrics import optuna_metric
+from base.oxari_types import ArrayLike
 
 DEBUG_NUM_TRIALS = True
 NUM_TRIALS = 50 if not DEBUG_NUM_TRIALS else 10

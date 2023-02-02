@@ -1,11 +1,12 @@
-from base import  OxariPipeline
-from base import DummyConfidenceEstimator, DummyScaler
-from imputers import BaselineImputer
-from feature_reducers import DummyFeatureReducer
-from preprocessors import BaselinePreprocessor
-from scope_estimators import DummyEstimator
 import numpy as np
 from sklearn import model_selection as ms
+
+from base import DummyConfidenceEstimator, DummyScaler, OxariPipeline
+from feature_reducers import DummyFeatureReducer
+from imputers import BaselineImputer
+from preprocessors import BaselinePreprocessor
+from scope_estimators import DummyEstimator
+
 
 class DefaultPipeline(OxariPipeline):
     def __init__(

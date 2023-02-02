@@ -1,9 +1,12 @@
 import itertools
 from typing import Union
-from base.common import OxariImputer
+
 import numpy as np
 import pandas as pd
+
+from base.common import OxariImputer
 from base.mappings import NumMapping
+
 
 class ScopeBucketImputer(OxariImputer):
     def __init__(self, buckets_number = 3, **kwargs):

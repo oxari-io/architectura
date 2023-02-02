@@ -1,15 +1,17 @@
 # import fire
-import typer
-import cloudpickle as pickle
 import io
-import pandas
-from base import OxariMetaModel
+import pathlib
 from enum import Enum
 from typing import Optional
-from pyfiglet import Figlet
-import pathlib
-from loguru import logger
+
+import cloudpickle as pickle
 import jsonlines
+import pandas
+import typer
+from loguru import logger
+from pyfiglet import Figlet
+
+from base import OxariMetaModel
 
 app = typer.Typer(name="oxari-cli")
 f = Figlet(font='slant')

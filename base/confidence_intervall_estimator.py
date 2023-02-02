@@ -1,14 +1,15 @@
-from base import OxariScopeEstimator
-import pandas as pd
-from tqdm import tqdm
-import numpy as np
 from typing import List
-from base.oxari_types import ArrayLike
-from sklearn.model_selection import KFold
-from base import OxariConfidenceEstimator
-from typing_extensions import Self
+
 import lightgbm as lgb
+import numpy as np
+import pandas as pd
 from mapie.regression import MapieRegressor
+from sklearn.model_selection import KFold
+from tqdm import tqdm
+from typing_extensions import Self
+
+from base import OxariConfidenceEstimator, OxariScopeEstimator
+from base.oxari_types import ArrayLike
 
 
 # TODO: Implement evaluator that computes the coverage. https://towardsdatascience.com/prediction-intervals-in-python-64b992317b1a

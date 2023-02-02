@@ -1,23 +1,27 @@
-import time
-from pipeline.core import DefaultPipeline
-from datasources.core import DefaultDataManager
-from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
-from preprocessors import IIDPreprocessor
-from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
-from imputers import RevenueQuantileBucketImputer
-from feature_reducers import PCAFeatureSelector, FeatureAgglomeration
-from scope_estimators import SupportVectorEstimator
-from base.confidence_intervall_estimator import BaselineConfidenceEstimator
-from base import helper
-from base.helper import LogarithmScaler
-from base.common import OxariLoggerMixin
-from base import OxariMetaModel
-import pandas as pd
-from datasources.digital_ocean import S3Datasource
 import pathlib
-import numpy as np
-from lar_calculator.lar_model import OxariUnboundLAR
+import time
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver,
+                  OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
+from base.common import OxariLoggerMixin
+from base.confidence_intervall_estimator import BaselineConfidenceEstimator
+from base.helper import LogarithmScaler
+from datasources.core import DefaultDataManager
+from datasources.digital_ocean import S3Datasource
+from feature_reducers import FeatureAgglomeration, PCAFeatureSelector
+from imputers import RevenueQuantileBucketImputer
+from lar_calculator.lar_model import OxariUnboundLAR
+from pipeline.core import DefaultPipeline
+from postprocessors import (DecisionExplainer, JumpRateExplainer,
+                            ResidualExplainer, ScopeImputerPostprocessor,
+                            ShapExplainer)
+from preprocessors import IIDPreprocessor
+from scope_estimators import SupportVectorEstimator
+
 DATA_DIR = pathlib.Path('local/data')
 N_TRIALS = 5
 N_STARTUP_TRIALS = 1

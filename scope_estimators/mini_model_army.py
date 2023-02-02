@@ -1,9 +1,12 @@
-from base import OxariScopeEstimator, DefaultRegressorEvaluator
+from base import DefaultRegressorEvaluator, OxariScopeEstimator
 from base.helper import BucketScopeDiscretizer, SingleBucketScopeDiscretizer
-from scope_estimators.mma.classifier import BucketClassifier, ClassifierOptimizer, BucketClassifierEvauator
-from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer, EvenWeightBucketRegressor
 from base.oxari_types import ArrayLike
-
+from scope_estimators.mma.classifier import (BucketClassifier,
+                                             BucketClassifierEvauator,
+                                             ClassifierOptimizer)
+from scope_estimators.mma.regressor import (BucketRegressor,
+                                            EvenWeightBucketRegressor,
+                                            RegressorOptimizer)
 
 N_TRIALS = 1
 N_STARTUP_TRIALS = 1

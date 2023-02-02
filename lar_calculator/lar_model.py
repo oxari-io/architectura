@@ -1,6 +1,7 @@
 import pandas as pd
-from base import OxariLinearAnnualReduction
 from sklearn.linear_model import LinearRegression
+
+from base import OxariLinearAnnualReduction
 from base.oxari_types import ArrayLike
 
 

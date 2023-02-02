@@ -1,9 +1,10 @@
 # Script tries to emulate this command line command
 # pyreverse -s1 -A -o dot base/common -d junk -p test --colorized -my
 # %%
-from pylint.pyreverse.main import Run
-import pydot
 import pathlib
+
+import pydot
+from pylint.pyreverse.main import Run
 
 for pkgname in ["base.common", "base.saver", "base.dataset_loader"]:
 

@@ -1,6 +1,7 @@
-from base.dataset_loader import  OxariDataManager
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from base.dataset_loader import OxariDataManager
 
 
 def mock_entry():

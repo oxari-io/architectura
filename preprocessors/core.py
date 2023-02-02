@@ -1,10 +1,12 @@
 from typing import Union
-from base import OxariPreprocessor
-import sklearn.preprocessing as prep
+
 import category_encoders as ce
-from base.common import DummyScaler
 import numpy as np
 import pandas as pd
+import sklearn.preprocessing as prep
+
+from base import OxariPreprocessor
+from base.common import DummyScaler
 
 
 class DummyPreprocessor(OxariPreprocessor):

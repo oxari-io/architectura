@@ -1,13 +1,15 @@
 import io
+
 import cloudpickle as pkl
+
 import base
+import feature_reducers
+import imputers
+import lar_calculator
 import pipeline
+import postprocessors
 import preprocessors
 import scope_estimators
-import postprocessors
-import imputers
-import feature_reducers
-import lar_calculator
 
 MODULES_TO_PICKLE = [
     base,
@@ -19,13 +21,15 @@ MODULES_TO_PICKLE = [
     feature_reducers,
     lar_calculator,
 ]
+import abc
 import time
+from os import environ as env
 from pathlib import Path
 from typing import Dict
-import abc
-from base import OxariMetaModel, OxariDataManager, OxariLoggerMixin
-from os import environ as env
+
 import boto3
+
+from base import OxariDataManager, OxariLoggerMixin, OxariMetaModel
 
 ROOT_LOCAL = "local"
 ROOT_REMOTE = "remote"

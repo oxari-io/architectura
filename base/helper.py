@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from typing import Union
+
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import KBinsDiscretizer
+
 from base.common import OxariScopeTransformer
 from base.oxari_types import ArrayLike
-from sklearn.preprocessing import KBinsDiscretizer
 
 
 def mock_data():

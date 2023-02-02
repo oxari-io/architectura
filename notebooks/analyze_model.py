@@ -1,13 +1,15 @@
 # %%
-import pandas as pd
-import matplotlib.pyplot as plt
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
+import inspect
 import pathlib
 import pickle
 # from memory_profiler import profile
 import pickletools
-import inspect
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
 # https://towardsdatascience.com/the-power-of-pickletools-handling-large-model-pickle-files-7f9037b9086b
 # %%
 cwd = pathlib.Path(__file__).parent

@@ -1,12 +1,16 @@
 from __future__ import annotations
-from typing import Dict, List
-import pandas as pd
-import numpy as np
+
 import abc
-from base import OxariMixin, OxariLoggerMixin
+from typing import Dict, List
+
+import numpy as np
+import pandas as pd
 from sklearn.model_selection import train_test_split
-from base.oxari_types import ArrayLike
 from typing_extensions import Self
+
+from base import OxariLoggerMixin, OxariMixin
+from base.oxari_types import ArrayLike
+
 
 class Datasource(OxariLoggerMixin, abc.ABC):
     KEYS: List[str] = None

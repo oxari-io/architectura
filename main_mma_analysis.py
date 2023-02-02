@@ -1,15 +1,19 @@
-from pipeline.core import DefaultPipeline
-from datasources.core import DefaultDataManager
-from base import OxariDataManager, OxariPipeline, DummyScaler
-from preprocessors import BaselinePreprocessor, IIDPreprocessor, ImprovedBaselinePreprocessor
-from imputers import KMeansBucketImputer, RevenueQuantileBucketImputer
-from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector
-from scope_estimators import MiniModelArmyEstimator, BaselineEstimator, SupportVectorEstimator
-from base.helper import LogarithmScaler
+import random
+from itertools import product
+
 import pandas as pd
 import sklearn
-from itertools import product
-import random
+
+from base import DummyScaler, OxariDataManager, OxariPipeline
+from base.helper import LogarithmScaler
+from datasources.core import DefaultDataManager
+from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector
+from imputers import KMeansBucketImputer, RevenueQuantileBucketImputer
+from pipeline.core import DefaultPipeline
+from preprocessors import (BaselinePreprocessor, IIDPreprocessor,
+                           ImprovedBaselinePreprocessor)
+from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator,
+                              SupportVectorEstimator)
 
 
 # NOTE: IIDPreprocessor seems like a much better for most models

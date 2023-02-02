@@ -1,18 +1,19 @@
-from pipeline.core import DefaultPipeline
-from base import OxariDataManager
-from preprocessors import IIDPreprocessor
-# from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import RevenueQuantileBucketImputer
-from feature_reducers import PCAFeatureSelector
-from scope_estimators import MiniModelArmyEstimator, BaselineEstimator
-from base import BaselineConfidenceEstimator
-from base.helper import LogarithmScaler
-from datasources.local import DefaultDataManager
-from scope_estimators import MiniModelPartyEstimator
-import pandas as pd
 # import joblib as pkl
 # from dataset_loader.csv_loader import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader
 import time
+
+import pandas as pd
+
+from base import BaselineConfidenceEstimator, OxariDataManager
+from base.helper import LogarithmScaler
+from datasources.local import DefaultDataManager
+from feature_reducers import PCAFeatureSelector
+# from imputers.revenue_bucket import RevenueBucketImputer
+from imputers import RevenueQuantileBucketImputer
+from pipeline.core import DefaultPipeline
+from preprocessors import IIDPreprocessor
+from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator,
+                              MiniModelPartyEstimator)
 
 if __name__ == "__main__":
 

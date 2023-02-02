@@ -27,7 +27,7 @@ class RevenueBucketImputer(BucketImputerBase):
 
         self.lookup_table_ = self._split_in_buckets_per_revenue(X, self.bucket_number)
         self.fallback_fallback_value = X[MAIN_VARIABLE].median()
-        self.columns_to_fit = X.columns[X.columns.str.startswith('ft_fin')]
+        self.columns_to_fit = X.columns[X.columns.str.startswith('ft_num')]
         # looping over lookup_table -->
         # { bucket_n : {"interval" : (0, 20), "values" : {"column" : column_mean}}}
         # where 0 and 20 are the split points (interval) of the first bucket and value represents the mean which will be used for imputing

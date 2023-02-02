@@ -70,7 +70,7 @@ class PreviousScopeFeaturesDataManager(DefaultDataManager):
 
     def _take_previous_scopes(self, df: pd.DataFrame):
         df_tmp = df[self.scope_loader._COLS].shift(1)
-        df_tmp.columns = [f"ft_fin_preyear_{col}" for col in df_tmp.columns]
+        df_tmp.columns = [f"ft_numc_preyear_{col}" for col in df_tmp.columns]
         df[df_tmp.columns] = df_tmp
         return df
 

@@ -1,10 +1,9 @@
 from __future__ import annotations
-import pandas as pd
 
 from typing import Union
 import numpy as np
 import pandas as pd
-from base.common import OxariTransformer, OxariMixin, OxariScopeTransformer
+from base.common import OxariScopeTransformer
 from base.oxari_types import ArrayLike
 from sklearn.preprocessing import KBinsDiscretizer
 

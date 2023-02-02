@@ -1,12 +1,7 @@
-from typing import Union
 from base import OxariScopeEstimator, DefaultRegressorEvaluator, DefaultOptimizer
-from base.helper import BucketScopeDiscretizer
 import numpy as np
-import pandas as pd
-from scope_estimators.mma.classifier import BucketClassifier, ClassifierOptimizer, BucketClassifierEvauator
-from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer
 from base.oxari_types import ArrayLike
-from sklearn.linear_model import RidgeCV, Ridge
+from sklearn.linear_model import RidgeCV
 
 N_TRIALS = 1
 N_STARTUP_TRIALS = 1

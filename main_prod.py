@@ -1,28 +1,19 @@
 import time
-from datetime import date
-from pipeline.core import DefaultPipeline, CVPipeline
-from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
-from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
-from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
+from pipeline.core import DefaultPipeline
+from datasources.core import PreviousScopeFeaturesDataManager
+from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
+from preprocessors import BaselinePreprocessor
 from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
-from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
-from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapDimensionalityReduction, MDSDimensionalitySelector
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, SupportVectorEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator, IndependentFeatureVotingRegressionEstimator
-from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator, BaselineConfidenceEstimator
-import base
+from imputers import RevenueQuantileBucketImputer
+from feature_reducers import DummyFeatureReducer
+from scope_estimators import MiniModelArmyEstimator
+from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base import helper
 from base.helper import LogarithmScaler
 from base import OxariMetaModel
 import pandas as pd
-# import cPickle as
-import joblib as pkl
-import io
-from datasources.local import CSVScopeLoader, CSVFinancialLoader, CSVCategoricalLoader,S3ScopeLoader, S3CategoricalLoader,S3FinancialLoader
 import pathlib
-from pprint import pprint
 import numpy as np
-from lar_calculator.lar_model import OxariUnboundLAR
 import matplotlib.pyplot as plt
 
 DATA_DIR = pathlib.Path('local/data')

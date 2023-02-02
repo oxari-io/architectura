@@ -1,12 +1,9 @@
 import itertools
 from typing import Union
 from base.common import OxariImputer
-from base.dataset_loader import OxariDataManager
 import numpy as np
 import pandas as pd
-from sklearn.impute import SimpleImputer
 from base.mappings import NumMapping
-from base.metrics import mape
 
 class ScopeBucketImputer(OxariImputer):
     def __init__(self, buckets_number = 3, **kwargs):

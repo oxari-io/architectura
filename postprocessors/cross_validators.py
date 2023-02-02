@@ -1,7 +1,5 @@
-from base import OxariPostprocessor, OxariScopeEstimator, OxariDataManager, OxariMetaModel, OxariRegressor, OxariTransformer
+from base import OxariMetaModel
 import pandas as pd
-from tqdm import tqdm
-import numpy as np
 from typing import Union, Callable, List
 from base.oxari_types import ArrayLike
 from sklearn.base import MultiOutputMixin, BaseEstimator

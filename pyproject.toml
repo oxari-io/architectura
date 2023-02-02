@@ -48,6 +48,7 @@ pipreqs = "^0.4.11"
 pyinstaller = "^5.7.0"
 auto-py-to-exe = "^2.27.0"
 autoflake = "^2.0.1"
+unimport = "^0.13.0"
 
 [build-system]
 requires = ["poetry-core"]

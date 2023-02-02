@@ -3,11 +3,9 @@ from base import OxariScopeEstimator
 from base import OxariOptimizer, OxariTransformer
 import numpy as np
 import pandas as pd
-from sklearn.gaussian_process import GaussianProcessRegressor
 import sklearn.gaussian_process.kernels as kernels
 import optuna
 from sklearn import linear_model
-from .linear.helper import PolynomialFeaturesMixin, NormalizedFeaturesMixin
 from base.oxari_types import ArrayLike
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler

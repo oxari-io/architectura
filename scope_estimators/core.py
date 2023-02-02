@@ -1,7 +1,5 @@
-from typing import Union
 from base import OxariScopeEstimator
 import numpy as np
-import pandas as pd
 from base.oxari_types import ArrayLike
 
 class DummyEstimator(OxariScopeEstimator):

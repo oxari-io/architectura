@@ -4,7 +4,7 @@ import cloudpickle as pickle
 import io
 import pandas
 from base import OxariMetaModel
-from enum import IntEnum, Enum
+from enum import Enum
 from typing import Optional
 from pyfiglet import Figlet
 import pathlib

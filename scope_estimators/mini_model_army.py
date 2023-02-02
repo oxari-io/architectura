@@ -1,8 +1,5 @@
-from typing import Union
 from base import OxariScopeEstimator, DefaultRegressorEvaluator
 from base.helper import BucketScopeDiscretizer, SingleBucketScopeDiscretizer
-import numpy as np
-import pandas as pd
 from scope_estimators.mma.classifier import BucketClassifier, ClassifierOptimizer, BucketClassifierEvauator
 from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer, EvenWeightBucketRegressor
 from base.oxari_types import ArrayLike

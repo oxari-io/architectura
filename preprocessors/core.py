@@ -1,14 +1,10 @@
-import abc
-from typing import Any, Union
+from typing import Union
 from base import OxariPreprocessor
 import sklearn.preprocessing as prep
 import category_encoders as ce
-import sklearn
-from base.common import OxariMixin, OxariTransformer, DummyScaler
-from base.dataset_loader import OxariDataManager, FinancialLoader, CategoricalLoader
+from base.common import DummyScaler
 import numpy as np
 import pandas as pd
-from base.mappings import CatMapping, NumMapping
 
 
 class DummyPreprocessor(OxariPreprocessor):

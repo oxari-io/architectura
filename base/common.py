@@ -1,38 +1,26 @@
 from __future__ import annotations
 import abc
-import csv
 import os
-import numpy as np
 import optuna
-import pandas as pd
-import sklearn
 import time
 from numbers import Number
-from pmdarima.metrics import smape
 from sklearn.base import (
-    BaseEstimator,
     MetaEstimatorMixin,
-    MultiOutputMixin,
-    RegressorMixin,
-    TransformerMixin,
+    MultiOutputMixin
 )
 import copy
-from sklearn.impute import SimpleImputer, _base
+from sklearn.impute import _base
 from sklearn.metrics import (
     balanced_accuracy_score,
     mean_absolute_error,
-    mean_absolute_percentage_error as mape,
     mean_squared_error,
     precision_recall_fscore_support,
     r2_score,
-    silhouette_score,
+    silhouette_score
 )
-from sklearn.utils.estimator_checks import check_estimator
 from typing import Any, Dict, List, Tuple
 from typing_extensions import Self
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
-import seaborn as sns
 from pmdarima.metrics import smape
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
@@ -40,7 +28,6 @@ from .oxari_types import ArrayLike
 import sklearn
 import numpy as np
 import pandas as pd
-from sklearn.utils.estimator_checks import check_estimator
 import logging
 from sklearn.model_selection import train_test_split
 

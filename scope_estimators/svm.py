@@ -1,4 +1,3 @@
-from typing import Union
 from base import OxariScopeEstimator
 from base.common import OxariOptimizer
 import numpy as np

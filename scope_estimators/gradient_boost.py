@@ -1,9 +1,7 @@
-from typing import Union
 from base import OxariScopeEstimator
 import numpy as np
 import pandas as pd
 from base.oxari_types import ArrayLike
-import xgboost as xgb
 
 
 class SupportVectorEstimator(OxariScopeEstimator):
@@ -45,17 +43,6 @@ class XGBEstimator(OxariScopeEstimator):
     
     def check_conformance(self):
         pass
-
-
-
-
-
-
-
-
-
-
-from typing import Union
 from base import OxariScopeEstimator
 from base.common import OxariOptimizer
 import numpy as np

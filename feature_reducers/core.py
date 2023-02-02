@@ -6,12 +6,6 @@ from sklearn import cluster
 from sklearn.decomposition import PCA
 from sklearn.random_projection import GaussianRandomProjection, SparseRandomProjection
 from sklearn.manifold import Isomap, MDS, SpectralEmbedding, LocallyLinearEmbedding
-
-# from factor_analyzer import FactorAnalyzer
-# from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity, calculate_kmo
-from sklearn.decomposition import FactorAnalysis, LatentDirichletAllocation
-
-from sklearn.base import BaseEstimator
 from sklearn.decomposition import FactorAnalysis, LatentDirichletAllocation
 
 # from factor_analyzer import FactorAnalyzer

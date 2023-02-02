@@ -1,23 +1,12 @@
-from typing import Union
-import pandas as pd
-import pickle
 import numpy as np
-import joblib
 import optuna
-import xgboost as xgb
-from sklearn.metrics import accuracy_score, r2_score, roc_auc_score, f1_score, balanced_accuracy_score, precision_recall_fscore_support, classification_report
-from tqdm import tqdm
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split, cross_val_score, RandomizedSearchCV
 # from model.abstract_base_class import MLModelInterface
 # from model.misc.hyperparams_tuning import tune_hps_classifier
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
-from base.metrics import optuna_metric, classification_metric
+from base.metrics import classification_metric
 import lightgbm as lgb
 
-from pathlib import Path
-
-from base import OxariClassifier, OxariEvaluator, OxariMixin, OxariOptimizer, OxariTransformer, DefaultClassificationEvaluator
+from base import OxariClassifier, OxariOptimizer, DefaultClassificationEvaluator
 
 
 class BucketClassifierEvauator(DefaultClassificationEvaluator):

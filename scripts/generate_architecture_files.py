@@ -4,7 +4,6 @@
 from pylint.pyreverse.main import Run
 import pydot
 import pathlib
-import networkx as nx
 
 for pkgname in ["base.common", "base.saver", "base.dataset_loader"]:
 

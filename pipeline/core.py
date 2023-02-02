@@ -1,15 +1,10 @@
-from base.dataset_loader import OxariDataManager
 from base import  OxariPipeline
 from base import DummyConfidenceEstimator, DummyScaler
-from base.helper import LogarithmScaler
-
-from datasources.core import DefaultDataManager
 from imputers import BaselineImputer
 from feature_reducers import DummyFeatureReducer
 from preprocessors import BaselinePreprocessor
 from scope_estimators import DummyEstimator
 import numpy as np
-import pandas as pd
 from sklearn import model_selection as ms
 
 class DefaultPipeline(OxariPipeline):

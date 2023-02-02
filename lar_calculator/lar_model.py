@@ -1,7 +1,5 @@
-import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from base import OxariLinearAnnualReduction, OxariDataManager
+from base import OxariLinearAnnualReduction
 from sklearn.linear_model import LinearRegression
 from base.oxari_types import ArrayLike
 

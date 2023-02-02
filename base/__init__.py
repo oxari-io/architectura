@@ -1,5 +1,4 @@
 
-import platform
 import cpuinfo
 from dotenv import load_dotenv
 load_dotenv()
@@ -19,8 +18,6 @@ except Exception as e:
     # print("Then choose the installed python package with command: 'poetry use env <PATH-TO-INTEL-PYTHON-BINARY>'")
     pass
             
-
-import sklearn
 from .common import *
 from .dataset_loader import *
 from .saver import *

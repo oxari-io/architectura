@@ -1,5 +1,4 @@
 from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
-from sklearn.pipeline import make_pipeline, Pipeline
 
 class PolynomialFeaturesMixin:
     # TODO: Introduce a feature transformer that adds non-polynomial features

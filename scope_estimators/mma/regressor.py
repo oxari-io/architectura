@@ -1,24 +1,14 @@
-import re
-import json
-import numpy as np
 import pandas as pd
-import pickle
-import functools
-import operator
-import shap
 import xgboost as xgb
 import lightgbm as lgb
-import io
-import warnings
 import optuna
-import joblib
 import matplotlib.pyplot as plt
 from collections import defaultdict
-from sklearn.ensemble import GradientBoostingRegressor, AdaBoostRegressor, RandomForestRegressor, VotingRegressor, ExtraTreesRegressor
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor, VotingRegressor, ExtraTreesRegressor
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import cross_val_score
 from typing import Dict
-from base.common import OxariEvaluator, OxariMixin, OxariOptimizer, OxariRegressor
+from base.common import OxariOptimizer, OxariRegressor
 from base.metrics import optuna_metric, cv_metric
 import numpy as np
 # from sklearn.metrics import root_mean_squared_error as rmse
@@ -32,7 +22,6 @@ import numpy as np
 # from pprint import pprint
 
 from tqdm import tqdm
-from pmdarima.metrics import smape
 
 # from model.misc.mappings import NumMapping as Mapping
 # from model.misc.metrics import adjusted_r_squared

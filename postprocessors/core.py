@@ -1,30 +1,18 @@
-import itertools
 import pandas as pd
 import numpy as np
-from shap import KernelExplainer, Explainer
-from base import OxariMetaModel, OxariScopeEstimator, OxariPipeline
+from base import OxariScopeEstimator, OxariPipeline
 import shap
-# from shap.explainers import maskers
-from base.metrics import smape
 from xgboost import XGBRegressor, XGBClassifier, XGBModel
-# TODO: Implement versions of explainers that use simple decision tree instead of XGB
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from base.mappings import CatMapping, NumMapping
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder
+from sklearn.preprocessing import OneHotEncoder
 import seaborn as sns
 from base.metrics import smape
-import category_encoders as ce
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 from xgboost import plot_tree
-import io
-import tempfile
 import abc
 from base.oxari_types import ArrayLike
-from sklearn.feature_selection import RFECV, RFE
-from typing_extensions import Self
 
 def get_jump_rate(y_pre, y_post):
     result = np.maximum(y_pre, y_post) / np.minimum(y_pre, y_post)

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy import spatial
-from sklearn.metrics import mean_absolute_error, log_loss, balanced_accuracy_score, mean_squared_log_error
+from sklearn.metrics import mean_absolute_error, balanced_accuracy_score
 from pmdarima.metrics import smape
 
 def optuna_metric(y_true, y_pred) -> float:

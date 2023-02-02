@@ -1,22 +1,15 @@
 from pipeline.core import DefaultPipeline
 from datasources.core import DefaultDataManager
 from base import OxariDataManager, OxariPipeline
-from preprocessors import BaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor, ImprovedBaselinePreprocessor
-from postprocessors import ScopeImputerPostprocessor
+from preprocessors import BaselinePreprocessor, IIDPreprocessor, ImprovedBaselinePreprocessor
 from imputers.revenue_bucket import RevenueBucketImputer
-from imputers import BaselineImputer, KMeansBucketImputer, RevenueQuantileBucketImputer
-from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, LinearRegressionEstimator, BaselineEstimator, BayesianRegressionEstimator, GLMEstimator
-import base
-from base import OxariMetaModel
+from imputers import KMeansBucketImputer, RevenueQuantileBucketImputer
+from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector
+from scope_estimators import LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator
 import pandas as pd
-# import cPickle as
-import joblib as pkl
-import io
 
 # import multiprocessing as mp
 from concurrent import futures
-import csv
 
 def run_model(optimize_data, fit_data, eval_data, model):
     return model.optimise(*optimize_data).fit(*fit_data).evaluate(*eval_data)

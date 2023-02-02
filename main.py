@@ -1,27 +1,19 @@
 import time
-from datetime import date
-from pipeline.core import DefaultPipeline, CVPipeline
-from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
-from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver,S3MetaModelSaver, S3DataSaver, S3LARModelSaver
-from preprocessors import BaselinePreprocessor, ImprovedBaselinePreprocessor, IIDPreprocessor, NormalizedIIDPreprocessor
-from postprocessors import ScopeImputerPostprocessor, ShapExplainer, ResidualExplainer, JumpRateExplainer, DecisionExplainer
-from base import BaselineConfidenceEstimator, JacknifeConfidenceEstimator
-from imputers import BaselineImputer, KMeansBucketImputer, RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer, RevenueParabolaBucketImputer
-from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapDimensionalityReduction, MDSDimensionalitySelector, FeatureAgglomeration, SparseRandProjection, GaussRandProjection
-from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, SupportVectorEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator, LinearRegressionEstimator, BayesianRegressionEstimator, GLMEstimator, IndependentFeatureVotingRegressionEstimator
-from base.confidence_intervall_estimator import ProbablisticConfidenceEstimator, BaselineConfidenceEstimator
-import base
+from pipeline.core import DefaultPipeline
+from datasources.core import DefaultDataManager
+from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
+from preprocessors import IIDPreprocessor
+from postprocessors import ScopeImputerPostprocessor
+from imputers import RevenueQuantileBucketImputer
+from feature_reducers import PCAFeatureSelector, FeatureAgglomeration
+from scope_estimators import SupportVectorEstimator
+from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base import helper
 from base.helper import LogarithmScaler
 from base.common import OxariLoggerMixin
 from base import OxariMetaModel
 import pandas as pd
-# import cPickle as
-import joblib as pkl
-import io
-from datasources.local import  CSVFinancialLoader, CSVCategoricalLoader
 import pathlib
-from pprint import pprint
 import numpy as np
 from lar_calculator.lar_model import OxariUnboundLAR
 import matplotlib.pyplot as plt

@@ -3,15 +3,11 @@ from base import OxariScopeEstimator, OxariTransformer, ReducedDataMixin
 from base.common import OxariOptimizer
 import numpy as np
 import pandas as pd
-from sklearn.gaussian_process import GaussianProcessRegressor
 import sklearn.gaussian_process.kernels as kernels
 import optuna
-from pmdarima.metrics import smape
-from sklearn.metrics import mean_tweedie_deviance, mean_absolute_error
 from sklearn import linear_model
-from .linear.helper import PolynomialFeaturesMixin
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import PolynomialFeatures, MinMaxScaler
+from sklearn.preprocessing import PolynomialFeatures
 from base.metrics import optuna_metric
 
 class BayesianRegressorOptimizer(ReducedDataMixin, OxariOptimizer):

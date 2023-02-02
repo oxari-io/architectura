@@ -1,20 +1,11 @@
 from __future__ import annotations
-from os import PathLike
-from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List
 import pandas as pd
 import numpy as np
 import abc
-from base import OxariMixin, OxariTransformer, OxariLoggerMixin
-# from base.common import OxariMixin
-from base.mappings import CatMapping, NumMapping
+from base import OxariMixin, OxariLoggerMixin
 from sklearn.model_selection import train_test_split
-from base.helper import LogarithmScaler
 from base.oxari_types import ArrayLike, Self
-from collections import namedtuple
-import boto3
-from os import environ as env
-import io
 
 class Datasource(OxariLoggerMixin, abc.ABC):
     KEYS: List[str] = None

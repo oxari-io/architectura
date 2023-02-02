@@ -267,11 +267,11 @@ class OxariDataManager(OxariMixin):
         _df_original = self.add_data(OxariDataManager.ORIGINAL, self._transform(_df_merged), "Dataset after transformation changes.")
         return self
 
-    def _merge(self, loader_1:PartialLoader, loader_2:PartialLoader):
-        common_keys = list(set([*list(loader_1.keys), *list(loader_2.keys)]))
-        _df_original: pd.DataFrame = loader_1.data.dropna(subset="key_isin")
-        _df_original = _df_original.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)        
-        return 
+    # def _merge(self, loader_1:PartialLoader, loader_2:PartialLoader):
+    #     common_keys = list(set([*list(loader_1.keys), *list(loader_2.keys)]))
+    #     _df_original: pd.DataFrame = loader_1.data.dropna(subset="key_isin")
+    #     _df_original = _df_original.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)        
+    #     return 
 
     # def _merge(self, scope_loader:ScopeLoader, financial_loader:FinancialLoader, categorical_loader:CategoricalLoader, **kwargs):
     #     _df_original: pd.DataFrame = scope_loader.data.dropna(subset="key_isin")

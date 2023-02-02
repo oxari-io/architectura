@@ -35,6 +35,7 @@ WRITE_TO = "./logger.log"  # "cout"
 # - Logger had no formatting
 # - The logging was not really tested
 # - Some of the things logged are of little use
+# - WRITE_TO should be handled via environment variable
 class OxariLoggerMixin:
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
@@ -51,15 +52,18 @@ class OxariLoggerMixin:
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.format = '%(asctime)s | %(name)s | %(levelname)s | %(message)s'
-        if WRITE_TO == "cout":
-            logging.basicConfig(format=self.format)
-            logging.root.setLevel(LOGLEVEL)
-        else:
-            logging.basicConfig(filename=WRITE_TO, level=LOGLEVEL, format=self.format)  # level=logging.DEBUG
-
         self.logger_name = self.__class__.__name__
+        formatter = logging.Formatter(self.format)
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        if not WRITE_TO == "cout":
+            fhandler = logging.FileHandler(WRITE_TO)
+            fhandler.setFormatter(formatter)
+            self.logger.addHandler(fhandler)
+        logging.root.setLevel(LOGLEVEL)
 
 
 class ReducedDataMixin:

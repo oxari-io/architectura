@@ -10,7 +10,7 @@ from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver,
 from base.common import OxariLoggerMixin
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
-from datasources.core import DefaultDataManager
+from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from feature_reducers import FeatureAgglomeration, PCAFeatureSelector
 from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
@@ -27,8 +27,8 @@ if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
     # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-    dataset = DefaultDataManager().run()
-    # dataset = PreviousScopeFeaturesDataManager().run()
+    # dataset = DefaultDataManager().run()
+    dataset = PreviousScopeFeaturesDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

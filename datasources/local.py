@@ -22,11 +22,4 @@ class LocalDatasource(Datasource):
         return self
 
 
-class ReducedCSVDatasource(LocalDatasource):
-    def _load(self) -> Self:
-        super()._load()
-        self._data = self._data.sample(0.25)
-        return self
-
-
 

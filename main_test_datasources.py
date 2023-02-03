@@ -12,7 +12,7 @@ from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
 from datasources.core import DefaultDataManager
 from datasources.digital_ocean import S3Datasource
-from feature_reducers import FeatureAgglomeration, PCAFeatureReducer, FactorAnalysisFeatureReducer, MDSDimensionalityFeatureReducer
+from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer, FactorAnalysisFeatureReducer, MDSDimensionalityFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
 from pipeline.core import DefaultPipeline
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     # TODO: Check why scope_transformer destroys accuracy.
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_reducer=FeatureAgglomeration(),
+        feature_reducer=AgglomerateFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(buckets_number=3),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),

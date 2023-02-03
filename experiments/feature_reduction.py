@@ -7,7 +7,7 @@ from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogarithmScaler
 from datasources.core import FSExperimentDataLoader
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
-                              FactorAnalysisFeatureReducer, FeatureAgglomeration,
+                              FactorAnalysisFeatureReducer, AgglomerateFeatureReducer,
                               GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer,
                               MDSDimensionalityFeatureReducer, PCAFeatureReducer,
@@ -26,7 +26,7 @@ def convert_reduction_methods(reduction_methods_string):
     
     switcher = {
         "DummyFeatureReducer": DummyFeatureReducer,
-        "FeatureAgglomeration": FeatureAgglomeration,
+        "FeatureAgglomeration": AgglomerateFeatureReducer,
         "PCAFeatureSelector": PCAFeatureReducer, 
         "DropFeatureReducer": DropFeatureReducer, 
         "GaussRandProjection": GaussRandProjectionFeatureReducer, 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     
     # TODO what if the naming is not exactly a class name, should this be more flexible in accepting names of reduction methods?
     # TODO: Follow CLI conventions with --methods
-    parser.add_argument('-methods', dest='f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, FeatureAgglomeration, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -methods before specifying methods')
+    parser.add_argument('-methods', dest='f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -methods before specifying methods')
 
     # TODO chekc for illegal formats 
     args = parser.parse_args()

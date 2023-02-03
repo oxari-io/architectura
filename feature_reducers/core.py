@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from sklearn import cluster
+from sklearn.cluster import FeatureAgglomeration
 from sklearn.decomposition import (PCA, FactorAnalysis, LatentDirichletAllocation)
 from sklearn.manifold import (MDS, Isomap, LocallyLinearEmbedding, SpectralEmbedding)
 from sklearn.random_projection import (GaussianRandomProjection, SparseRandomProjection)
@@ -13,26 +13,7 @@ from sklearn.base import BaseEstimator
 from logging import Logger
 
 # TODO: Issue with unknown attributes can be solved using Generics[T]
-class SKlearnFeatureReducerWrapperBase(OxariFeatureReducer):
-    _dimensionality_reducer:BaseEstimator 
-
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
-        self.logger.info(f'Number of features before feature reduction: {len(self.feature_names_in_)}')
-        self._dimensionality_reducer.fit(X[self.feature_names_in_], y)
-        self.n_components_ = self._dimensionality_reducer._n_features_out
-        return self
-
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
-        # Ensures correct order
-        X_new = X[self.feature_names_in_]
-        X_reduced = pd.DataFrame(self._dimensionality_reducer.transform(X_new), index=X_new.index)
-        X_new_reduced = self.merge(X_new, X_reduced)
-        self.logger.info(f'Number of features after feature reduction: {len(X_new_reduced.columns)}')
-        return X_new_reduced
-
-    def get_params(self, deep=False):
-        return {**self._dimensionality_reducer.get_params(deep)}
+# Let inherit from OxariFeatureReducer and specialise the others
 
 
 # https://datascience.stackexchange.com/questions/29572/is-it-possible-to-do-feature-selection-for-unsupervised-machine-learning-problem
@@ -44,12 +25,12 @@ class DummyFeatureReducer(OxariFeatureReducer):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.logger.info(f'number of features before feature reduction: {len(X.columns)}')
-        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)        
+        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
         self.n_components_ = X.shape[1]
         return self
 
     def transform(self, X, **kwargs) -> ArrayLike:
-        self.logger.info(f'number of features after feature reduction: {len(X.columns)}')
+        self.logger.info(f'Number of features: {self.n_components_} -> {self.n_components_}')
         return X
 
 
@@ -65,43 +46,52 @@ class DropFeatureReducer(OxariFeatureReducer):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.logger.info(f'number of features before feature reduction: {len(X.columns)}')
-        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)        
+        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
         self.n_components_ = len(X.columns) - len(self._features)
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         new_X = X.drop(columns=self._features)
-        self.logger.info(f'Number of features after feature reduction: {len(new_X.columns)}')
+        self.logger.info(f'Number of features: {len(X[self.feature_names_in_].columns)} -> {self.n_components_}')
         return new_X
 
+
 # TODO: Align names
-class PCAFeatureReducer(SKlearnFeatureReducerWrapperBase):
+class PCAFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector uses PCA to reduce the dimensionality of the features first"""
 
     def __init__(self, n_components=5, **kwargs):
         super().__init__(**kwargs)
         self.n_components_ = n_components
-        self._dimensionality_reducer:PCA = PCA(n_components=n_components)
+        self._dimensionality_reducer: PCA = PCA(n_components=n_components)
 
-    def fit(self, X, y=None, **kwargs) -> Self:
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
         self.logger.info(f'Number of features before feature reduction: {len(self.feature_names_in_)}')
-        self._dimensionality_reducer.fit(X[self.feature_names_in_], y) 
+        self._dimensionality_reducer.fit(X[self.feature_names_in_], y)
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
-        return super().transform(X, **kwargs)
+        # Ensures correct order
+        X_new = X[self.feature_names_in_]
+        X_reduced = pd.DataFrame(self._dimensionality_reducer.transform(X_new), index=X_new.index)
+        X_new_reduced = self.merge(X_new, X_reduced)
+        self.logger.info(f'Number of features: {len(X[self.feature_names_in_].columns)} -> {len(X_new_reduced.columns)}')
+        return X_new_reduced
+
+    def get_params(self, deep=False):
+        return {**self._dimensionality_reducer.get_params(deep)}
 
 
-
-class FeatureAgglomeration(SKlearnFeatureReducerWrapperBase):
+class AgglomerateFeatureReducer(PCAFeatureReducer):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._dimensionality_reducer = cluster.FeatureAgglomeration(n_clusters=17)
+        self._dimensionality_reducer:FeatureAgglomeration = FeatureAgglomeration(n_clusters=17)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         super().fit(X, y, **kwargs)
+        self.n_components_ = self._dimensionality_reducer._n_features_out
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
@@ -109,7 +99,7 @@ class FeatureAgglomeration(SKlearnFeatureReducerWrapperBase):
 
 
 #The SKlearnFeatureReducerWrapperMixin was not an argument in the original iteration of this
-class ModifiedLocallyLinearEmbeddingFeatureReducer(SKlearnFeatureReducerWrapperBase):
+class ModifiedLocallyLinearEmbeddingFeatureReducer(AgglomerateFeatureReducer):
     """This Feature Selector results in a lower-dimensional projection of the data 
     which preserves distances within local neighborhoods. It additionally uses multiple 
     weight vectors in each neighborhood to solve the LLE regularisation problem"""
@@ -118,15 +108,8 @@ class ModifiedLocallyLinearEmbeddingFeatureReducer(SKlearnFeatureReducerWrapperB
         super().__init__(**kwargs)
         self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method)
 
-    def fit(self, X, y=None, **kwargs) -> Self:
-        super().fit(X, y, **kwargs)
-        return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
-        return super().transform(X, **kwargs)
-
-
-class FactorAnalysisFeatureReducer(SKlearnFeatureReducerWrapperBase):
+class FactorAnalysisFeatureReducer(AgglomerateFeatureReducer):
     """This Feature Selector creates factors from the observed variables to represent the common variance 
     i.e. variance due to correlation among the observed variables."""
 
@@ -136,15 +119,8 @@ class FactorAnalysisFeatureReducer(SKlearnFeatureReducerWrapperBase):
         super().__init__(**kwargs)
         self._dimensionality_reducer = FactorAnalysis(n_components=n_components, rotation=rotation)
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        super().fit(X, y, **kwargs)
-        return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
-        return super().transform(X, **kwargs)
-
-
-class LDAFeatureReducer(SKlearnFeatureReducerWrapperBase):
+class LDAFeatureReducer(AgglomerateFeatureReducer):
     """This Feature Selector is a statistical technique that can extract underlying themes/topics 
     from a corpus."""
 
@@ -154,99 +130,58 @@ class LDAFeatureReducer(SKlearnFeatureReducerWrapperBase):
         super().__init__(**kwargs)
         self._dimensionality_reducer = LatentDirichletAllocation(n_components=n_components, learning_method=learning_method)
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        super().fit(X, y, **kwargs)
-        return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
-        return super().transform(X, **kwargs)
-
-
-class IsomapDimensionalityFeatureReducer(SKlearnFeatureReducerWrapperBase):
+class IsomapDimensionalityFeatureReducer(AgglomerateFeatureReducer):
     """ This Feature Selector uses Isomap manifold learning to reduce the dimensionality of the features"""
 
     def __init__(self, n_components=10, **kwargs):
         super().__init__(**kwargs)
         self._dimensionality_reducer = Isomap(n_components=n_components)
 
-    # "Compute the embedding vectors for data X."
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        super().fit(X, y, **kwargs)
-        return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
-        return super().transform(X, **kwargs)
-
-
-class GaussRandProjectionFeatureReducer(OxariFeatureReducer):
+class GaussRandProjectionFeatureReducer(AgglomerateFeatureReducer):
 
     def __init__(self, n_components=10, **kwargs):
         super().__init__(**kwargs)
         self._dimensionality_reducer = GaussianRandomProjection(n_components=n_components)
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        super().fit(X, y, **kwargs)
-        return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
-        return super().transform(X, **kwargs)
-
-
-class SparseRandProjectionFeatureReducer(OxariFeatureReducer):
+class SparseRandProjectionFeatureReducer(AgglomerateFeatureReducer):
 
     def __init__(self, n_components=10, **kwargs):
         super().__init__(**kwargs)
         self._dimensionality_reducer = SparseRandomProjection(n_components=n_components)
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        super().fit(X, y, **kwargs)
-        return self
-
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
-        return super().transform(X, **kwargs)
 
 
 class MDSDimensionalityFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector uses Multidimensional Scaling
-    
     You can find an explanation here: https://www.statisticshowto.com/multidimensional-scaling/ 
     """
 
     def __init__(self, n_components=10, **kwargs):
         super().__init__(**kwargs)
-        self._dimensionality_reducer = MDS(n_components=n_components)
+        self._dimensionality_reducer = MDS(n_components=n_components, normalized_stress='auto')
 
-    "Compute the embedding vectors for data X."
-
+    # "Compute the embedding vectors for data X."
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        # self._features = list(kwargs.get('features'))
-        # self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
+        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
+        self.n_components_ = self._dimensionality_reducer.n_components
+        self.logger.info(f'Number of components before dimensionality reduction: {len(self.feature_names_in_)}')
         return self
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs):
-        # new_X = X.copy()
-        # reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
-        # new_X_reduced = self.merge(new_X, reduced_features, self._features)
-        return self
-
-    def fit_transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
-        self._features = list(kwargs.get('features'))
-        self.logger.info(f'Number of components before dimensionality reduction: {len(self._features)}')
-        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
-
-        new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
-        new_X_reduced = self.merge(new_X, reduced_features, self._features)
-        self.logger.info(f'Number of components after dimensionality reduction: {len(new_X_reduced.columns)}')
+        X_new = X.copy()
+        X_reduced = pd.DataFrame(self._dimensionality_reducer.fit_transform(X_new[self.feature_names_in_]), index=X_new.index)
+        X_new_reduced = self.merge(X_new, X_reduced)
+        self.logger.info(f'Number of components after dimensionality reduction: {len(X_new_reduced.columns)}')
         # fit_transform will generate a new embedding space instead of projecting new points
         # into the same embedding space used for the reference data.
         # Plus the doc-page indicates that the output is an ndarray, not an array-like object (tho that's not an issue???)
-        # new_X_reduced = new_X_reduced.reshape(-1)
-        return new_X_reduced
+        return X_new_reduced
 
 
-#The SKlearnFeatureReducerWrapperMixin was not an argument in the original iteration of this
-class SpectralEmbeddingFeatureReducer(OxariFeatureReducer):
+class SpectralEmbeddingFeatureReducer(MDSDimensionalityFeatureReducer):
     """This Feature Selector finds a low dimensional representation of the data using 
     a spectral decomposition of the graph Laplacian"""
 
@@ -254,24 +189,3 @@ class SpectralEmbeddingFeatureReducer(OxariFeatureReducer):
         super().__init__(**kwargs)
         self._dimensionality_reducer = SpectralEmbedding(n_components=n_components)
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        return self
-
-    def transform(self, X, y=None, **kwargs) -> ArrayLike:
-        return self
-
-    def fit_transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
-        self._features = list(kwargs.get('features'))
-        self.logger.info(f'Number of components before dimensionality reduction: {len(self._features)}')
-        # self._dimensionality_reducer.fit(X[self._features], y)
-        self.reduced_feature_columns = [f"ft_{i}" for i in range(self._dimensionality_reducer.n_components)]
-
-        new_X = X.copy()
-        reduced_features = pd.DataFrame(self._dimensionality_reducer.fit_transform(new_X[self._features]), index=new_X.index)
-        new_X_reduced = self.merge(new_X, reduced_features, self._features)
-        self.logger.info(f'Number of components after dimensionality reduction: {len(new_X_reduced.columns)}')
-        # fit_transform will generate a new embedding space instead of projecting new points
-        # into the same embedding space used for the reference data.
-        # Plus the doc-page indicates that the output is an ndarray, not an array-like object (tho that's not an issue???)
-        # new_X_reduced = new_X_reduced.reshape(-1)
-        return new_X_reduced

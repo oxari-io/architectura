@@ -64,6 +64,7 @@ class OxariLoggerMixin:
         logging.root.setLevel(LOGLEVEL)
 
 
+
 class ReducedDataMixin:
 
     def get_sample_indices(self, X: ArrayLike) -> ArrayLike:
@@ -517,12 +518,8 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
     """
 
-    def __init__(self, missing_values=np.nan, verbose: int = 0, copy: bool = False, add_indicator: bool = False, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.verbose = verbose
-        self.copy = copy
-        self.missing_values = missing_values
-        self.add_indicator = add_indicator
         self.n_components_ = None
 
     @abc.abstractmethod
@@ -565,10 +562,8 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         return old_data.filter(regex='^!ft', axis=1).merge(new_data, left_index=True, right_index=True)
 
     def get_config(self, deep=True):
-        return {
-            "n_components": self.n_components_,
-            **super().get_config(deep),
-        }
+        return {'n_components_':self.n_components_, **super().get_config(deep)}
+
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
 class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
@@ -595,6 +590,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         self._end_time = None
         self.features = None
         self._evaluator = DefaultRegressorEvaluator()
+        self.stats = {}
         # self.resources_postprocessor = database_deployer
 
     def _preprocess(self, X, **kwargs) -> ArrayLike:
@@ -640,7 +636,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         et = time.time()
         elapsed_time = et - st
         self.logger.info(f'Fit function is completed with execution time: {elapsed_time} seconds')
-        self.time_fit = elapsed_time
+        self.stats["fit"] = self._gather_stats(X, elapsed_time)
         return self
 
     def fit_confidence(self, X, y, **kwargs) -> Self:
@@ -671,8 +667,11 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         et = time.time()
         elapsed_time = et - st
         self.logger.info(f'Optimize function is completed with execution time: {elapsed_time} seconds')
-        self.time_optimize = elapsed_time
+        self.stats["optimise"] = self._gather_stats(X, elapsed_time)
         return self
+
+    def _gather_stats(self, X_train, elapsed_time):
+        return {"time":elapsed_time, "num_datapoints":len(X_train)}
 
     def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
         st = time.time()
@@ -699,7 +698,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     @property
     def evaluation_results(self):
-        return {"pipeline": self.name, "time_to_fit": self.time_fit, "time_to_optimize": self.time_optimize, **self._evaluation_results}
+        return {"pipeline": self.name, "stats":self.stats , **self._evaluation_results}
 
 
 class Test(OxariPipeline):

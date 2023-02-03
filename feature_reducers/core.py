@@ -82,12 +82,15 @@ class PCAFeatureReducer(OxariFeatureReducer):
     def get_params(self, deep=False):
         return {**self._dimensionality_reducer.get_params(deep)}
 
+    def get_config(self, deep=True):
+        return {'estimator': self._dimensionality_reducer.get_params(deep), **super().get_config(deep)}
+
 
 class AgglomerateFeatureReducer(PCAFeatureReducer):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._dimensionality_reducer:FeatureAgglomeration = FeatureAgglomeration(n_clusters=17)
+        self._dimensionality_reducer: FeatureAgglomeration = FeatureAgglomeration(n_clusters=17)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         super().fit(X, y, **kwargs)
@@ -114,6 +117,7 @@ class ModifiedLocallyLinearEmbeddingFeatureReducer(AgglomerateFeatureReducer):
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         return super().transform(X, **kwargs)
 
+
 class FactorAnalysisFeatureReducer(AgglomerateFeatureReducer):
     """This Feature Selector creates factors from the observed variables to represent the common variance 
     i.e. variance due to correlation among the observed variables."""
@@ -129,6 +133,7 @@ class FactorAnalysisFeatureReducer(AgglomerateFeatureReducer):
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         return super().transform(X, **kwargs)
+
 
 class LDAFeatureReducer(AgglomerateFeatureReducer):
     """This Feature Selector is a statistical technique that can extract underlying themes/topics 
@@ -146,6 +151,7 @@ class LDAFeatureReducer(AgglomerateFeatureReducer):
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         return super().transform(X, **kwargs)
 
+
 class IsomapDimensionalityFeatureReducer(AgglomerateFeatureReducer):
     """ This Feature Selector uses Isomap manifold learning to reduce the dimensionality of the features"""
 
@@ -159,6 +165,7 @@ class IsomapDimensionalityFeatureReducer(AgglomerateFeatureReducer):
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         return super().transform(X, **kwargs)
 
+
 class GaussRandProjectionFeatureReducer(AgglomerateFeatureReducer):
 
     def __init__(self, n_components=10, **kwargs):
@@ -171,6 +178,7 @@ class GaussRandProjectionFeatureReducer(AgglomerateFeatureReducer):
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         return super().transform(X, **kwargs)
 
+
 class SparseRandProjectionFeatureReducer(AgglomerateFeatureReducer):
 
     def __init__(self, n_components=10, **kwargs):
@@ -182,7 +190,3 @@ class SparseRandProjectionFeatureReducer(AgglomerateFeatureReducer):
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         return super().transform(X, **kwargs)
-
-
-
-

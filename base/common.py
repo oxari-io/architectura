@@ -400,7 +400,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
         return self
 
     @abc.abstractmethod
-    def transform(self, X, **kwargs) -> ArrayLike:
+    def transform(self, X, y=None, **kwargs) -> ArrayLike:
         pass
 
     def set_imputer(self, imputer: OxariImputer) -> "OxariPreprocessor":
@@ -547,13 +547,18 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
 
-    def visualize(self, X, **kwargs):
+    def visualize(self, X, y, **kwargs):
         figsize = kwargs.pop('figsize', (15, 15))
         fig = plt.subplots(figsize=figsize)
-        reduced_X = X[self.reduced_feature_columns].values
-        x, y, z = reduced_X[:, :3].T
         ax = plt.axes(projection='3d')
-        ax.scatter3D(x, y, z)
+        X_reduced = self.transform(X).values
+        y = y.flatten()
+        print(X_reduced.shape)
+        for g in np.unique(y):
+            ix = y == g
+            xc, yc, zc = X_reduced[ix, :3].T
+            ax.scatter3D(xc, yc, zc, label = g, s = 100)        
+            ax.legend()
         plt.show()
 
     # TODO: Needs to be optimized for automatic feature detection.

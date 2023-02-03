@@ -31,7 +31,7 @@ class DummyPreprocessor(OxariPreprocessor):
         self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=(data[self.scope_columns][0]))
         return data
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
+    def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         data = X
         # transform numerical
         data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
@@ -69,7 +69,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         self.logger.info(f'{len(self.financial_columns)} numerical, {len(self.categorical_columns)} categorical columns')
         return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
+    def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_new = pd.DataFrame(X, columns=self.original_features)
         # impute all the missing columns
         X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
@@ -99,7 +99,7 @@ class ImprovedBaselinePreprocessor(BaselinePreprocessor):
         self.fin_transformer = self.fin_transformer.fit(X_new)
         return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
+    def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_new = X.copy()
         X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
         X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
@@ -123,7 +123,7 @@ class IIDPreprocessor(BaselinePreprocessor):
         self.overall_scaler.fit(X_new)
         return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
+    def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_new = super().transform(X, **kwargs)
         X_new = pd.DataFrame(self.overall_scaler.transform(X_new), index=X_new.index, columns=X_new.columns)
         return X_new
@@ -145,7 +145,7 @@ class NormalizedIIDPreprocessor(IIDPreprocessor):
         self.overall_scaler_2.fit(X_new)
         return self
 
-    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
+    def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_new = super().transform(X, **kwargs)
         X_new = pd.DataFrame(self.overall_scaler_2.transform(X_new, **kwargs), index=X_new.index, columns=X_new.columns)
         return X_new

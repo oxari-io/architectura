@@ -523,6 +523,7 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         self.copy = copy
         self.missing_values = missing_values
         self.add_indicator = add_indicator
+        self.n_components_ = None
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -558,10 +559,16 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         ax.scatter3D(x, y, z)
         plt.show()
 
-    def merge(self, old_data: pd.DataFrame, reduced_feature_data: pd.DataFrame, feature_columns: List[str]):
-        reduced_feature_data.columns = self.reduced_feature_columns
-        return old_data.merge(reduced_feature_data, left_index=True, right_index=True).drop(feature_columns, axis=1)
+    # TODO: Needs to be optimized for automatic feature detection.
+    def merge(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
+        new_data.columns = [f"ft_{i}" for i in range(new_data.columns)]
+        return old_data.filter(regex='^!ft', axis=1).merge(new_data, left_index=True, right_index=True)
 
+    def get_config(self, deep=True):
+        return {
+            "n_components": self.n_components_,
+            **super().get_config(deep),
+        }
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
 class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
@@ -619,7 +626,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
             return preds  # Alread reversed
             # return self.scope_transformer.reverse_transform(preds)
 
-        X_new = self._preprocess(X, **kwargs).filter('^ft_', axis=1)
+        X_new = self._preprocess(X, **kwargs).filter(regex='^ft', axis=1)
         preds = self.estimator.predict(X_new, **kwargs)
         return self.scope_transformer.reverse_transform(preds)
 
@@ -656,7 +663,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def optimise(self, X, y, **kwargs) -> Self:
         st = time.time()
         df_processed: pd.DataFrame = self.preprocessor.fit_transform(X, y)
-        df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed, features=df_processed.columns)
+        df_reduced: pd.DataFrame = self.feature_selector.fit_transform(df_processed)
         y_transformed = self.scope_transformer.fit_transform(X, y)
         X, y = df_reduced, y_transformed
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
@@ -795,10 +802,10 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
-        X = X.filter('^ft_')
+        X_new = X.filter(regex='^ft', axis=1)
         if scope == "all":
-            return self._predict_all(X, **kwargs)
-        return self.get_pipeline(scope).predict(X, **kwargs)
+            return self._predict_all(X_new, **kwargs)
+        return self.get_pipeline(scope).predict(X_new, **kwargs)
 
     def _predict_all(self, X, **kwargs) -> ArrayLike:
         result = pd.DataFrame()

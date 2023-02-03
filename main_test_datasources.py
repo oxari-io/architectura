@@ -12,7 +12,7 @@ from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
 from datasources.core import DefaultDataManager
 from datasources.digital_ocean import S3Datasource
-from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer, FactorAnalysisFeatureReducer, MDSDimensionalityFeatureReducer
+from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer, FactorAnalysisFeatureReducer, GaussRandProjectionFeatureReducer, IsomapDimensionalityFeatureReducer, SparseRandProjectionFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
 from pipeline.core import DefaultPipeline
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     # TODO: Check why scope_transformer destroys accuracy.
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_reducer=AgglomerateFeatureReducer(),
+        feature_reducer=GaussRandProjectionFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(buckets_number=3),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_reducer=FactorAnalysisFeatureReducer(),
+        feature_reducer=SparseRandProjectionFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_reducer=MDSDimensionalityFeatureReducer(),
+        feature_reducer=ModifiedLocallyLinearEmbeddingFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
@@ -108,20 +108,20 @@ if __name__ == "__main__":
     print(lar_imputed_data)
     
 
-    print("Explain Effects of features")
-    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
-    fig, ax = explainer0.visualize()
-    fig.savefig(f'local/eval_results/test_importance_explainer{0}.png')
-    explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    for idx, expl in enumerate([explainer1, explainer2, explainer3]):
-        fig, ax = expl.plot_tree()
-        fig.savefig(f'local/eval_results/test_tree_explainer{idx+1}.png')
-        fig, ax = expl.plot_importances()
-        fig.savefig(f'local/eval_results/test_importance_explainer{idx+1}.png')
+    # print("Explain Effects of features")
+    # explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    # fig, ax = explainer0.visualize()
+    # fig.savefig(f'local/eval_results/test_importance_explainer{0}.png')
+    # explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # for idx, expl in enumerate([explainer1, explainer2, explainer3]):
+    #     fig, ax = expl.plot_tree()
+    #     fig.savefig(f'local/eval_results/test_tree_explainer{idx+1}.png')
+    #     fig, ax = expl.plot_importances()
+    #     fig.savefig(f'local/eval_results/test_importance_explainer{idx+1}.png')
 
-    plt.show(block=True)
+    # plt.show(block=True)
     
     
     print("\n", "Predict ALL with Model")

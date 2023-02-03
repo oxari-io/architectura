@@ -7,7 +7,7 @@ from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogarithmScaler
 from datasources.core import FSExperimentDataLoader
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
-                              Factor_Analysis, FeatureAgglomeration,
+                              FactorAnalysisFeatureReducer, FeatureAgglomeration,
                               GaussRandProjection,
                               IsomapDimensionalityReduction,
                               MDSDimensionalitySelector, PCAFeatureSelector,
@@ -31,7 +31,7 @@ def convert_reduction_methods(reduction_methods_string):
         "DropFeatureReducer": DropFeatureReducer, 
         "GaussRandProjection": GaussRandProjection, 
         "SparseRandProjection": SparseRandProjection, 
-        "Factor_Analysis": Factor_Analysis,
+        "Factor_Analysis": FactorAnalysisFeatureReducer,
         "IsomapDimensionalityReduction": IsomapDimensionalityReduction, 
         "MDSDimensionalitySelector": MDSDimensionalitySelector
     }
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     
     # TODO what if the naming is not exactly a class name, should this be more flexible in accepting names of reduction methods?
     # TODO: Follow CLI conventions with --methods
-    parser.add_argument('-methods', dest='f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis], help='Names of feature reduction methods to compare, use flag -methods before specifying methods')
+    parser.add_argument('-methods', dest='f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -methods before specifying methods')
 
     # TODO chekc for illegal formats 
     args = parser.parse_args()

@@ -561,7 +561,7 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
 
     # TODO: Needs to be optimized for automatic feature detection.
     def merge(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
-        new_data.columns = [f"ft_{i}" for i in range(new_data.columns)]
+        new_data.columns = [f"ft_{i}" for i in range(len(new_data.columns))]
         return old_data.filter(regex='^!ft', axis=1).merge(new_data, left_index=True, right_index=True)
 
     def get_config(self, deep=True):

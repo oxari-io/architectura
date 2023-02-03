@@ -110,7 +110,7 @@ class ScopeLoader(OxariLoggerMixin, PartialLoader):
         num_inititial = data.shape[0]
 
         threshold = self.threshold
-        tmp_cols = [col for col in self.columns if col.startswith('tg_')]
+        tmp_cols = [col for col in self.columns if col.startswith(self.PATTERN)]
         # dropping data entries where unlogged scopes are lower than threshold
         data[tmp_cols] = np.where((data[tmp_cols] < threshold), np.nan, data[tmp_cols])
         # dropping datapoints that have no scopes
@@ -235,9 +235,9 @@ class OxariDataManager(OxariMixin):
 
     def __init__(
         self,
-        scope_loader: ScopeLoader = None,
-        financial_loader: FinancialLoader = None,
-        categorical_loader: CategoricalLoader = None,
+        scope_loader: Datasource = None,
+        financial_loader: Datasource = None,
+        categorical_loader: Datasource = None,
         other_loaders: Dict[str, Datasource] = None,
         verbose=False,
         **kwargs,

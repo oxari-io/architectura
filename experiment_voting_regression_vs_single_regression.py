@@ -7,7 +7,7 @@ import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogarithmScaler
 from datasources.local import DefaultDataManager
-from feature_reducers import PCAFeatureSelector
+from feature_reducers import PCAFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureSelector(),
+                feature_reducer=PCAFeatureReducer(),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -42,7 +42,7 @@ if __name__ == "__main__":
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
             ppl2 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureSelector(),
+                feature_reducer=PCAFeatureReducer(),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
             ppl3 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureSelector(),
+                feature_reducer=PCAFeatureReducer(),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),

@@ -5,7 +5,7 @@ import pandas as pd
 
 from base import OxariDataManager, OxariPipeline
 from datasources.core import DefaultDataManager
-from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector
+from feature_reducers.core import DummyFeatureReducer, PCAFeatureReducer
 from imputers import KMeansBucketImputer, RevenueQuantileBucketImputer
 from imputers.revenue_bucket import RevenueBucketImputer
 from pipeline.core import DefaultPipeline
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         KMeansBucketImputer,
     ]
     all_feature_reducers = [
-        PCAFeatureSelector,
+        PCAFeatureReducer,
         DummyFeatureReducer,
     ]
     all_preprocessors = [

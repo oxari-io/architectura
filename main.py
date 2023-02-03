@@ -12,7 +12,7 @@ from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
-from feature_reducers import FeatureAgglomeration, PCAFeatureSelector
+from feature_reducers import FeatureAgglomeration, PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
 from pipeline.core import DefaultPipeline
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
+        feature_reducer=PCAFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
-        feature_reducer=PCAFeatureSelector(),
+        feature_reducer=PCAFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),

@@ -7,7 +7,7 @@ import sklearn
 from base import DummyScaler, OxariDataManager, OxariPipeline
 from base.helper import LogarithmScaler
 from datasources.core import DefaultDataManager
-from feature_reducers.core import DummyFeatureReducer, PCAFeatureSelector
+from feature_reducers.core import DummyFeatureReducer, PCAFeatureReducer
 from imputers import KMeansBucketImputer, RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import (BaselinePreprocessor, IIDPreprocessor,
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         KMeansBucketImputer,
     ]
     all_feature_reducers = [
-        PCAFeatureSelector,
+        PCAFeatureReducer,
         DummyFeatureReducer,
     ]
     all_preprocessors = [

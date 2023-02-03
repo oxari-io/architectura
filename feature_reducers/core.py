@@ -43,8 +43,9 @@ class DummyFeatureReducer(OxariFeatureReducer):
         super().__init__(**kwargs)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        self.n_components_ = X.shape[1]
         self.logger.info(f'number of features before feature reduction: {len(X.columns)}')
+        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)        
+        self.n_components_ = X.shape[1]
         return self
 
     def transform(self, X, **kwargs) -> ArrayLike:
@@ -63,8 +64,9 @@ class DropFeatureReducer(OxariFeatureReducer):
         self._features = features
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        self.logger.info(f"Number of features before feature reduction: {len(list(kwargs.get('features')))}")
-        self.logger.info(f"Number of features before feature reduction: {len(self._features)}")
+        self.logger.info(f'number of features before feature reduction: {len(X.columns)}')
+        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)        
+        self.n_components_ = len(X.columns) - len(self._features)
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
@@ -73,7 +75,7 @@ class DropFeatureReducer(OxariFeatureReducer):
         return new_X
 
 # TODO: Align names
-class PCAFeatureSelector(SKlearnFeatureReducerWrapperBase):
+class PCAFeatureReducer(SKlearnFeatureReducerWrapperBase):
     """ This Feature Selector uses PCA to reduce the dimensionality of the features first"""
 
     def __init__(self, n_components=5, **kwargs):
@@ -94,7 +96,7 @@ class PCAFeatureSelector(SKlearnFeatureReducerWrapperBase):
 
 class FeatureAgglomeration(SKlearnFeatureReducerWrapperBase):
 
-    def __init__(self, features=[], **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._dimensionality_reducer = cluster.FeatureAgglomeration(n_clusters=17)
 
@@ -160,7 +162,7 @@ class LDAFeatureReducer(SKlearnFeatureReducerWrapperBase):
         return super().transform(X, **kwargs)
 
 
-class IsomapDimensionalityReduction(SKlearnFeatureReducerWrapperBase):
+class IsomapDimensionalityFeatureReducer(SKlearnFeatureReducerWrapperBase):
     """ This Feature Selector uses Isomap manifold learning to reduce the dimensionality of the features"""
 
     def __init__(self, n_components=10, **kwargs):
@@ -176,7 +178,7 @@ class IsomapDimensionalityReduction(SKlearnFeatureReducerWrapperBase):
         return super().transform(X, **kwargs)
 
 
-class GaussRandProjection(OxariFeatureReducer):
+class GaussRandProjectionFeatureReducer(OxariFeatureReducer):
 
     def __init__(self, n_components=10, **kwargs):
         super().__init__(**kwargs)
@@ -190,7 +192,7 @@ class GaussRandProjection(OxariFeatureReducer):
         return super().transform(X, **kwargs)
 
 
-class SparseRandProjection(OxariFeatureReducer):
+class SparseRandProjectionFeatureReducer(OxariFeatureReducer):
 
     def __init__(self, n_components=10, **kwargs):
         super().__init__(**kwargs)
@@ -204,7 +206,7 @@ class SparseRandProjection(OxariFeatureReducer):
         return super().transform(X, **kwargs)
 
 
-class MDSDimensionalitySelector(OxariFeatureReducer):
+class MDSDimensionalityFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector uses Multidimensional Scaling
     
     You can find an explanation here: https://www.statisticshowto.com/multidimensional-scaling/ 
@@ -244,7 +246,7 @@ class MDSDimensionalitySelector(OxariFeatureReducer):
 
 
 #The SKlearnFeatureReducerWrapperMixin was not an argument in the original iteration of this
-class Spectral_Embedding(OxariFeatureReducer):
+class SpectralEmbeddingFeatureReducer(OxariFeatureReducer):
     """This Feature Selector finds a low dimensional representation of the data using 
     a spectral decomposition of the graph Laplacian"""
 

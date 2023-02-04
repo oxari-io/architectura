@@ -46,7 +46,7 @@ class Datasource(OxariLoggerMixin, abc.ABC):
         return self._data
 
 
-class PartialLoader(abc.ABC):
+class PartialLoader(OxariLoggerMixin, abc.ABC):
     PATTERN = ""
 
     def __init__(self, datasource: Datasource = None, verbose=False, **kwargs) -> None:
@@ -95,7 +95,7 @@ class CombinedLoader(PartialLoader):
         self._data = loader_1.data.merge(loader_2.data, on=common_keys, how="inner").sort_values(common_keys)
 
 
-class ScopeLoader(OxariLoggerMixin, PartialLoader):
+class ScopeLoader(PartialLoader):
     PATTERN = "tg_num"
 
     def __init__(self, threshold=5, **kwargs) -> None:
@@ -124,7 +124,7 @@ class ScopeLoader(OxariLoggerMixin, PartialLoader):
         return result_data
 
 
-class FinancialLoader(OxariLoggerMixin, PartialLoader):
+class FinancialLoader(PartialLoader):
     PATTERN = "ft_num"
 
     def __init__(self, **kwargs) -> None:
@@ -135,7 +135,7 @@ class FinancialLoader(OxariLoggerMixin, PartialLoader):
         return self._data[self.columns]
 
 
-class CategoricalLoader(OxariLoggerMixin, PartialLoader):
+class CategoricalLoader(PartialLoader):
     KEYS = ["isin"]
     PATTERN = "ft_cat"
 

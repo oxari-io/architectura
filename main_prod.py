@@ -16,7 +16,7 @@ from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer,
                             ResidualExplainer, ScopeImputerPostprocessor,
                             ShapExplainer)
-from preprocessors import BaselinePreprocessor
+from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
 
 DATA_DIR = pathlib.Path('local/data')
@@ -38,29 +38,29 @@ if __name__ == "__main__":
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
-        preprocessor=BaselinePreprocessor(),
+        preprocessor=IIDPreprocessor(),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        imputer=RevenueQuantileBucketImputer(buckets_number=5),
         scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
-        preprocessor=BaselinePreprocessor(),
+        preprocessor=IIDPreprocessor(),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        imputer=RevenueQuantileBucketImputer(buckets_number=5),
         scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
-    ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_1.train)
+    ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
-        preprocessor=BaselinePreprocessor(),
+        preprocessor=IIDPreprocessor(),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        imputer=RevenueQuantileBucketImputer(buckets_number=5),
         scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogarithmScaler(),
-    ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_1.train)
+    ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
 
     model = OxariMetaModel()
     model.add_pipeline(scope=1, pipeline=dp1)
@@ -88,8 +88,8 @@ if __name__ == "__main__":
     dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
     dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
     
-    scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
-    scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
+    scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates.csv')
+    scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg.csv')
 
     print("\n", "Predict LARs on Mock data")
     lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))

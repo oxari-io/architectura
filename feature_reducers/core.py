@@ -24,13 +24,12 @@ class DummyFeatureReducer(OxariFeatureReducer):
         super().__init__(**kwargs)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        self.logger.info(f'number of features before feature reduction: {len(X.columns)}')
         self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
         self.n_components_ = X.shape[1]
+        self.logger.info(f'Reduces features from {self.n_components_} to {self.n_components_} columns. ')
         return self
 
     def transform(self, X, **kwargs) -> ArrayLike:
-        self.logger.info(f'Number of features: {self.n_components_} -> {self.n_components_}')
         return X
 
 
@@ -45,14 +44,13 @@ class DropFeatureReducer(OxariFeatureReducer):
         self._features = features
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        self.logger.info(f'number of features before feature reduction: {len(X.columns)}')
         self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
         self.n_components_ = len(X.columns) - len(self._features)
+        self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} to {self.n_components_} columns.')
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         new_X = X.drop(columns=self._features)
-        self.logger.info(f'Number of features: {len(X[self.feature_names_in_].columns)} -> {self.n_components_}')
         return new_X
 
 
@@ -67,8 +65,8 @@ class PCAFeatureReducer(OxariFeatureReducer):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
-        self.logger.info(f'Number of features before feature reduction: {len(self.feature_names_in_)}')
         self._dimensionality_reducer.fit(X[self.feature_names_in_], y)
+        self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} columns to {len(self.n_components_)} columns.')
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
@@ -76,7 +74,6 @@ class PCAFeatureReducer(OxariFeatureReducer):
         X_new = X[self.feature_names_in_]
         X_reduced = pd.DataFrame(self._dimensionality_reducer.transform(X_new), index=X_new.index)
         X_new_reduced = self.merge(X_new, X_reduced)
-        self.logger.info(f'Number of features: {len(X[self.feature_names_in_].columns)} -> {len(X_new_reduced.columns)}')
         return X_new_reduced
 
     def get_params(self, deep=False):

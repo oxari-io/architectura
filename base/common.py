@@ -34,7 +34,7 @@ WRITE_TO = "./logger.log"  # "cout"
 # - Some of the things logged are of little use
 # - WRITE_TO should be handled via environment variable
 # - Many places that had a logging out put did not work
-class OxariLoggerMixin:
+class OxariLoggerMixin(abc.ABC):
     """
     This is the Oxari Logger class, which handles the output of any official print statement.
     The logger writes it's outputs to STDOUT or to a FILE if a LOG_FILE environment variable was set.   
@@ -49,7 +49,7 @@ class OxariLoggerMixin:
     logger: logging.Logger
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+        # super().__init__(**kwargs)
         self.format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger_name = self.__class__.__name__
@@ -194,7 +194,7 @@ class DefaultClassificationEvaluator(OxariEvaluator):
 
 
 # TODO: Integrate optuna visualisation as method
-class OxariOptimizer(abc.ABC):
+class OxariOptimizer(OxariLoggerMixin, abc.ABC):
 
     def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__()

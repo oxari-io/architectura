@@ -1,43 +1,51 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Run Training Pipeline",
-            "type": "python",
-            "request": "launch",
-            "module": "main",
-            "justMyCode": true
-        },
-        {
-            "name": "TEST Training Pipeline",
-            "type": "python",
-            "request": "launch",
-            "module": "main_test_datasources",
-            "justMyCode": true
-        },
-        {
-            "name": "Run Parallel Pipeline",
-            "type": "python",
-            "request": "launch",
-            "module": "main_test_estimators_parallel",
-            "justMyCode": true
-        },
-        {
-            "name": "Run Sequential Pipeline",
-            "type": "python",
-            "request": "launch",
-            "module": "main_test_estimators_sequential",
-            "justMyCode": true
-        },
-        {
-            "name": "Run Experiment",
-            "type": "python",
-            "request": "launch",
-            "module": "experiments.${fileBasenameNoExtension}",
-            "justMyCode": true
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Module",
+      "type": "python",
+      "request": "launch",
+      "module": "experiments.feature_reduction",
+      "justMyCode": true
+    },
+
+    {
+      "name": "Run Training Pipeline",
+      "type": "python",
+      "request": "launch",
+      "module": "main",
+      "justMyCode": true
+    },
+    {
+      "name": "TEST Training Pipeline",
+      "type": "python",
+      "request": "launch",
+      "module": "main_test_datasources",
+      "justMyCode": true
+    },
+    {
+      "name": "Run Parallel Pipeline",
+      "type": "python",
+      "request": "launch",
+      "module": "main_test_estimators_parallel",
+      "justMyCode": true
+    },
+    {
+      "name": "Run Sequential Pipeline",
+      "type": "python",
+      "request": "launch",
+      "module": "main_test_estimators_sequential",
+      "justMyCode": true
+    },
+    {
+      "name": "Run Experiment",
+      "type": "python",
+      "request": "launch",
+      "module": "experiments.${fileBasenameNoExtension}",
+      "justMyCode": true
+    }
+  ]
 }

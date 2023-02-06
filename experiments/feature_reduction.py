@@ -17,7 +17,7 @@ from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator
-
+from experiment_argument_parser import FeatureReductionExperimentCommandLineParser
 
 def convert_reduction_methods(reduction_methods_string):
     # if the reduction methods are not strings, they are already in the right format (in that case it was the default argument of parser)
@@ -43,24 +43,7 @@ def convert_reduction_methods(reduction_methods_string):
     return reduction_methods  
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (--scope-1 for scope 1 only, --scope-all for all 3 scopes), what file to write to (--append to append to existing file, --new to create new file) and what feature reduction methods to compare (use flag -methods before). Defaults: 10 repititions, --scope-1, --new, all methods.')
-
-    # TODO: This should be --num_reps with a default of 10
-    parser.add_argument('num_reps', nargs='?', default=2, type=int, help='Number of experiment repititions (default=10)')
-    
-    # TODO: Optimize code as boolean doesn't need two flags. Keep --scope-all
-    parser.add_argument('--scope-1', dest='scope', action='store_false', help='(default) use only scope 1')
-    parser.add_argument('--scope-all', dest='scope', action='store_true', help='use scopes 1, 2, 3')
-    parser.set_defaults(scope=False)
-
-    # TODO: Optimize code as boolean doesn't need two flags. [in the new argument parser class]
-    parser.add_argument('--append', dest='file', action='store_false', help='append results to existing file')
-    parser.add_argument('--new', dest='file', action='store_true', help='(default) store results in new file')
-    parser.set_defaults(file=True)
-    
-    # TODO what if the naming is not exactly a class name, should this be more flexible in accepting names of reduction methods?
-    # TODO: Follow CLI conventions with --methods
-    parser.add_argument('-methods', dest='f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -methods before specifying methods')
+    parser = FeatureReductionExperimentCommandLineParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (--scope-1 for scope 1 only, --scope-all for all 3 scopes), what file to write to (--append to append to existing file, --new to create new file) and what feature reduction methods to compare (use flag -methods before). Defaults: 10 repititions, --scope-1, --new, all methods.')
 
     # TODO chekc for illegal formats 
     args = parser.parse_args()

@@ -7,37 +7,62 @@ from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
 import xgboost as xgb
 import sklearn
-#do I want that? I do, right?
-from xgboost import XGBRegressor
 
-""" Relatively useful in hyperparameter tuning: 
-https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
-"""
+from sklearn.linear_model import SGDRegressor
+# import tensorflow as tf
+# from tensorflow import keras
+# from tensorflow.keras.optimizers import SGD
 
-class XGBOptimizer(OxariOptimizer):
-    # n_estimators: The number of trees in the ensemble, often increased until no further improvements are seen.
-    # max_depth: The maximum depth of each tree, often values are between 1 and 10.
-    # eta: The learning rate used to weight each model, often set to small values such as 0.3, 0.1, 0.01, or smaller.
-    # gamma = 0 : A smaller value like 0.1-0.2 can also be chosen for starting. This will anyways be tuned later.
-    # subsample: The number of samples (rows) used in each tree, set to a value between 0 and 1, often 1.0 to use all samples.
-    # colsample_bytree: Number of features (columns) used in each tree, set to a value between 0 and 1, often 1.0 to use all features.
-    # objective: determines the loss function to be used
-    def __init__(self, n_estimators=1000, max_depth=5, eta=0.1, min_child_weight=1, gamma=0, subsample=0.8, 
-                 colsample_bytree=0.8, objective= 'reg:squarederror', scale_pos_weight=1, seed=27, **kwargs) -> None:
+class SGDOptimizer(OxariOptimizer):
+
+    def __init__(self, base_learning_rate=0.01, policy='fixed', momentum=0.0, nesterov=1, sparse_dedup_aggregator=None, 
+                 lars=None, **kwargs) -> None:
         super().__init__(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            eta=eta,
-            subsample=subsample,
-            colsample_bytree=colsample_bytree,
-            min_child_weight=min_child_weight, #this may need to be readjusted if this is not a highly imbalanced class problem
-            gamma=gamma,
-            objective=objective,
-            scale_pos_weight=scale_pos_weight,
-            seed=seed,
-            **kwargs,
+            base_learning_rate = base_learning_rate,
+            policy = policy,
+            momentum = momentum,
+            nesterov = nesterov,
+            sparse_dedup_aggregator = sparse_dedup_aggregator,
+            lars = lars,
+            init_kwargs = kwargs,
         )
-    
+
+    """ Alternatively, : """
+
+    """ Parameters are set to default for now but:
+        The penalty/regularization term 'l2' is the standard regularizer for linear SVM models.
+        alpha: The higher the value, the stronger the regularization
+        l1_ratio: only used if 'penalty' is "elasticnet".
+        fit_intercept: If False, the data is assumed to be already centered.
+        epsilon: Epsilon in the epsilon-insensitive loss functions
+        validation_fraction and n_iter_no_change and tol: used only if EarlyStopping = True
+    """
+    def __init__(self, loss='squared_error', *, penalty='l2', alpha=0.0001, l1_ratio=0.15, fit_intercept=True, max_iter=1000, 
+    tol=0.001, shuffle=True, verbose=0, epsilon=0.1, random_state=None, learning_rate='invscaling', eta0=0.01, power_t=0.25, 
+    early_stopping=False, validation_fraction=0.1, n_iter_no_change=5, warm_start=False, average=False, **kwargs) -> None:
+        super().__init__(
+            loss=loss,
+            penalty=penalty,
+            alpha=alpha,
+            l1_ratio=l1_ratio,
+            fit_intercept=fit_intercept,
+            max_iter=max_iter,
+            tol=tol,
+            shuffle=shuffle,
+            verbose=verbose,
+            epsilon=epsilon,
+            random_state=random_state,
+            learning_rate=learning_rate,
+            eta0=eta0,
+            power_t=power_t,
+            early_stopping=early_stopping,
+            validation_fraction=validation_fraction,
+            n_iter_no_change=n_iter_no_change,
+            warm_start=warm_start,
+            average=average,
+            init_kwargs = kwargs,
+        )
+
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
         Explore the hyperparameter tning space with optuna.
@@ -58,7 +83,7 @@ class XGBOptimizer(OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"xgboost_process_hp_tuning",
+            study_name=f"sgd_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
         )
@@ -71,6 +96,7 @@ class XGBOptimizer(OxariOptimizer):
 
         return study.best_params, df
 
+
     # TODO: Find better optimization ranges for the GaussianProcessEstimator
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
@@ -80,7 +106,7 @@ class XGBOptimizer(OxariOptimizer):
         max_size = len(X_train)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)
-        model = XGBRegressor(epsilon=epsilon, C=C).fit(X_train.iloc[indices], y_train.iloc[indices])
+        model = SGDRegressor(epsilon=epsilon, C=C).fit(X_train.iloc[indices], y_train.iloc[indices])
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
@@ -88,13 +114,13 @@ class XGBOptimizer(OxariOptimizer):
 
 
 
-class XGBEstimator(OxariScopeEstimator):
+class SGDEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = XGBRegressor()
-        self._optimizer = optimizer or XGBOptimizer()
+        self._estimator = SGDRegressor()
+        self._optimizer = optimizer or SGDOptimizer()
 
-    def fit(self, X, y, **kwargs) -> "XGBEstimator":
+    def fit(self, X, y, **kwargs) -> "SGDEstimator":
         max_size = len(X)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)   

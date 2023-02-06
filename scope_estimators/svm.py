@@ -8,7 +8,6 @@ import optuna
 from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
 
-
 class SVROptimizer(OxariOptimizer):
     def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(

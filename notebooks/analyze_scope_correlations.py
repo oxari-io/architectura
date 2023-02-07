@@ -38,28 +38,31 @@ dataset = PreviousScopeFeaturesDataManager(
     LocalDatasource(path=cwd.parent/'local/data/categoricals_auto.csv'),
 ).run()
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-DATA
+
+X = DATA.copy()
+X.loc[np.random.randint(0, len(DATA), size=len(DATA)//2), "tg_numc_scope_1"] = None
+X.loc[np.random.randint(0, len(DATA), size=len(DATA)//2), "tg_numc_scope_2"] = None
+X 
 # %%
 print("Impute scopes with Model")
-scope_imputer = ScopeImputerPostprocessor(estimator=meta_model).run(X=DATA).evaluate()
+scope_imputer = ScopeImputerPostprocessor(estimator=meta_model).run(X=X).evaluate()
 scope_imputer
 # %%
-data_merged_with_input = scope_imputer.data.merge(DATA, on=["key_year", "key_isin"])
+data_merged_with_input = scope_imputer.data.merge(X, on=["key_year", "key_isin"])
 data_merged_with_input
 
 # %% [markdown]
 # ## Dataset
 # ### Description of the training Dataset 
 # This table describes key characteristics of the dataset used for training. 
-display(Markdown(f"The data contained {DATA.shape[0]} data points with {DATA.shape[1]} columns."))
-display(Markdown(f"Of the seventeen columns {DATA.columns.str.startswith('tg_').sum()} acted as dependent variables, {DATA.columns.str.startswith('ft_').sum()} as independent variables and {DATA.columns.str.startswith('key_').sum()} as columns with meta information."))
+display(Markdown(f"The data contained {X.shape[0]} data points with {X.shape[1]} columns."))
+display(Markdown(f"Of the seventeen columns {X.columns.str.startswith('tg_').sum()} acted as dependent variables, {DATA.columns.str.startswith('ft_').sum()} as independent variables and {DATA.columns.str.startswith('key_').sum()} as columns with meta information."))
 display(DATA.describe().T)
 # %% [markdown]
 # ### Description of the Dataset imputed
 display(Markdown("ATTENTION: This correlation analysis is based on a subset of data."))
-display(Markdown("The data was selected based on two criteria."))
-display(Markdown("1. Data without information about any of the 3 scope targets where removed."))
-display(Markdown("2. Data from years prior 2016 where removed."))
+display(Markdown("The data was selected based on one criteria."))
+display(Markdown("1. Data from years prior 2016 where removed."))
 display(data_merged_with_input.describe().T)
 # %% [markdown]
 # ### Amount of imputed data counts
@@ -92,3 +95,4 @@ display("Scope 2 Correlation (overall)")
 display(data_merged_with_input[["tg_numc_scope_2_x", "ft_numc_revenue"]].corr())
 display("Scope 3 Correlation (overall)")
 display(data_merged_with_input[["tg_numc_scope_3_x", "ft_numc_revenue"]].corr())
+# %%

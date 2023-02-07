@@ -5,19 +5,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver,
-                  OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
+from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver, OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
 from datasources.core import PreviousScopeFeaturesDataManager
 from feature_reducers import DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
-from postprocessors import (DecisionExplainer, JumpRateExplainer,
-                            ResidualExplainer, ScopeImputerPostprocessor,
-                            ShapExplainer)
+from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
+from datasources.digital_ocean import S3Datasource
+from datasources.local import LocalDatasource
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.lar_model import OxariUnboundLAR
@@ -28,7 +27,11 @@ N_STARTUP_TRIALS = 10
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
-    dataset = PreviousScopeFeaturesDataManager().run()
+    dataset = PreviousScopeFeaturesDataManager(
+        S3Datasource(path='model-input-data/scopes_auto.csv'),
+        LocalDatasource(path=DATA_DIR / 'financials_auto.csv'),
+        S3Datasource(path='model-input-data/categoricals_auto.csv'),
+    ).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -87,7 +90,7 @@ if __name__ == "__main__":
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
     dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
-    
+
     scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates.csv')
     scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg.csv')
 

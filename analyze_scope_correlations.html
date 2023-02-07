@@ -14590,7 +14590,21 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
     </script>
     <!-- End of mathjax configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>Python 3.10.8 | packaged by conda-forge | (main, Nov 24 2022, 14:07:00) [MSC v.1916 64 bit (AMD64)]<br />
+Type 'copyright', 'credits' or 'license' for more information<br />
+IPython 8.7.0 -- An enhanced Interactive Python. Type '?' for help.</p>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -14598,7 +14612,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<div class=" highlight hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
 
@@ -14630,6 +14644,853 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 </div>
 
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>c:\Users\ohund\workspace\project_oxari\architectura\.venv\lib\site-packages\tqdm\auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-python"><pre><span></span><span class="n">cwd</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+<span class="n">meta_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">((</span><span class="n">cwd</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;local/objects/meta_model/snapshot-03-02-2023.pkl&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;rb&#39;</span><span class="p">))</span>
+<span class="n">meta_model</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<style>#sk-container-id-1 {color: black;background-color: white;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>OxariMetaModel(params={})</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label sk-toggleable__label-arrow">OxariMetaModel</label><div class="sk-toggleable__content"><pre>OxariMetaModel(params={})</pre></div></div></div></div></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-python"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">PreviousScopeFeaturesDataManager</span><span class="p">(</span>
+    <span class="n">LocalDatasource</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">cwd</span><span class="o">.</span><span class="n">parent</span><span class="o">/</span><span class="s1">&#39;local/data/scopes_auto.csv&#39;</span><span class="p">),</span>
+    <span class="n">LocalDatasource</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">cwd</span><span class="o">.</span><span class="n">parent</span><span class="o">/</span><span class="s1">&#39;local/data/financials_auto.csv&#39;</span><span class="p">),</span>
+    <span class="n">LocalDatasource</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">cwd</span><span class="o">.</span><span class="n">parent</span><span class="o">/</span><span class="s1">&#39;local/data/categoricals_auto.csv&#39;</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">DATA</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_data_by_name</span><span class="p">(</span><span class="n">OxariDataManager</span><span class="o">.</span><span class="n">ORIGINAL</span><span class="p">)</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">DATA</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">DATA</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">DATA</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;tg_numc_scope_1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">DATA</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">DATA</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;tg_numc_scope_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">X</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>2023-02-07 14:33:21,434 - ScopeLoader - INFO - From 21583 initial data points, 21583 are complete data points and 0 data points have missing or invalid scopes
+Not prepending group keys to the result index of transform-like apply. In the future, the group keys will be included in the index, regardless of whether the applied function returns a like-indexed object.
+To preserve the previous behavior, use
+
+	&gt;&gt;&gt; .groupby(..., group_keys=False)
+
+To adopt the future behavior and silence this warning, use 
+
+	&gt;&gt;&gt; .groupby(..., group_keys=True)
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ft_cat_company_name</th>
+      <th>ft_cat_country_code</th>
+      <th>ft_cat_country_name</th>
+      <th>ft_cat_industry_name</th>
+      <th>ft_cat_sector_name</th>
+      <th>ft_numc_cash</th>
+      <th>ft_numc_equity</th>
+      <th>ft_numc_inventories</th>
+      <th>ft_numc_market_cap</th>
+      <th>ft_numc_net_income</th>
+      <th>...</th>
+      <th>ft_numc_roe</th>
+      <th>ft_numc_stock_return</th>
+      <th>ft_numc_total_assets</th>
+      <th>ft_numc_total_liab</th>
+      <th>ft_numd_employees</th>
+      <th>key_isin</th>
+      <th>key_year</th>
+      <th>tg_numc_scope_1</th>
+      <th>tg_numc_scope_2</th>
+      <th>tg_numc_scope_3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>16375</th>
+      <td>Abu Dhabi Islamic Bank PJSC</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Banks</td>
+      <td>Financials</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>AEA000801018</td>
+      <td>2020</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>131.00000</td>
+    </tr>
+    <tr>
+      <th>15317</th>
+      <td>Dubai Investments PJSC</td>
+      <td>ARE</td>
+      <td>United Arab Emirates</td>
+      <td>Conglomerates</td>
+      <td>Industrials</td>
+      <td>217.30946</td>
+      <td>3244.61239</td>
+      <td>667.88046</td>
+      <td>NaN</td>
+      <td>177.38080</td>
+      <td>...</td>
+      <td>5.46693</td>
+      <td>-0.02080</td>
+      <td>5324.49204</td>
+      <td>1979.27624</td>
+      <td>NaN</td>
+      <td>AED000601016</td>
+      <td>2018</td>
+      <td>24259.00000</td>
+      <td>123944.00000</td>
+      <td>917.00000</td>
+    </tr>
+    <tr>
+      <th>15318</th>
+      <td>Dubai Investments PJSC</td>
+      <td>ARE</td>
+      <td>United Arab Emirates</td>
+      <td>Conglomerates</td>
+      <td>Industrials</td>
+      <td>206.48441</td>
+      <td>3261.02982</td>
+      <td>727.20000</td>
+      <td>NaN</td>
+      <td>179.01130</td>
+      <td>...</td>
+      <td>5.48941</td>
+      <td>0.00299</td>
+      <td>5706.52280</td>
+      <td>2382.87270</td>
+      <td>NaN</td>
+      <td>AED000601016</td>
+      <td>2019</td>
+      <td>26483.00000</td>
+      <td>NaN</td>
+      <td>1032.00000</td>
+    </tr>
+    <tr>
+      <th>15319</th>
+      <td>Dubai Investments PJSC</td>
+      <td>ARE</td>
+      <td>United Arab Emirates</td>
+      <td>Conglomerates</td>
+      <td>Industrials</td>
+      <td>241.48999</td>
+      <td>3217.00694</td>
+      <td>679.22097</td>
+      <td>NaN</td>
+      <td>94.63581</td>
+      <td>...</td>
+      <td>2.94173</td>
+      <td>0.00929</td>
+      <td>5925.54037</td>
+      <td>2644.78176</td>
+      <td>NaN</td>
+      <td>AED000601016</td>
+      <td>2020</td>
+      <td>8386.00000</td>
+      <td>NaN</td>
+      <td>977.00000</td>
+    </tr>
+    <tr>
+      <th>14149</th>
+      <td>Emirates Integrated Telecommunications Company...</td>
+      <td>ARE</td>
+      <td>United Arab Emirates</td>
+      <td>Telecom Services</td>
+      <td>Communication</td>
+      <td>NaN</td>
+      <td>2138.36728</td>
+      <td>10.77595</td>
+      <td>7716.75173</td>
+      <td>477.14658</td>
+      <td>...</td>
+      <td>22.36602</td>
+      <td>0.27992</td>
+      <td>5012.75909</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>AEE000701012</td>
+      <td>2016</td>
+      <td>NaN</td>
+      <td>277777.31000</td>
+      <td>2127.87000</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>16374</th>
+      <td>Tsogo Sun Hotels Ltd</td>
+      <td>ZAF</td>
+      <td>South Africa</td>
+      <td>Lodging</td>
+      <td>Consumer Discretionary</td>
+      <td>67.35266</td>
+      <td>333.50346</td>
+      <td>3.04954</td>
+      <td>NaN</td>
+      <td>-47.11006</td>
+      <td>...</td>
+      <td>-14.12581</td>
+      <td>-1.26713</td>
+      <td>808.75773</td>
+      <td>351.59036</td>
+      <td>NaN</td>
+      <td>ZAE000272522</td>
+      <td>2020</td>
+      <td>NaN</td>
+      <td>83187.00000</td>
+      <td>69019.00000</td>
+    </tr>
+    <tr>
+      <th>14145</th>
+      <td>Tsogo Sun Gaming Ltd</td>
+      <td>ZAF</td>
+      <td>South Africa</td>
+      <td>Resorts &amp; Casinos</td>
+      <td>Consumer Discretionary</td>
+      <td>NaN</td>
+      <td>581.50179</td>
+      <td>8.91365</td>
+      <td>1638.55256</td>
+      <td>130.78663</td>
+      <td>...</td>
+      <td>23.44980</td>
+      <td>-0.13227</td>
+      <td>1745.10462</td>
+      <td>NaN</td>
+      <td>9285.50000</td>
+      <td>ZAE000273116</td>
+      <td>2015</td>
+      <td>NaN</td>
+      <td>212337.00000</td>
+      <td>81804.00000</td>
+    </tr>
+    <tr>
+      <th>14146</th>
+      <td>Tsogo Sun Gaming Ltd</td>
+      <td>ZAF</td>
+      <td>South Africa</td>
+      <td>Resorts &amp; Casinos</td>
+      <td>Consumer Discretionary</td>
+      <td>NaN</td>
+      <td>802.62599</td>
+      <td>8.57649</td>
+      <td>2257.05147</td>
+      <td>83.84508</td>
+      <td>...</td>
+      <td>10.07068</td>
+      <td>-0.07639</td>
+      <td>2850.92950</td>
+      <td>NaN</td>
+      <td>26014.00000</td>
+      <td>ZAE000273116</td>
+      <td>2017</td>
+      <td>NaN</td>
+      <td>216516.00000</td>
+      <td>103504.00000</td>
+    </tr>
+    <tr>
+      <th>14147</th>
+      <td>Tsogo Sun Gaming Ltd</td>
+      <td>ZAF</td>
+      <td>South Africa</td>
+      <td>Resorts &amp; Casinos</td>
+      <td>Consumer Discretionary</td>
+      <td>223.15674</td>
+      <td>919.27986</td>
+      <td>10.04324</td>
+      <td>1709.71879</td>
+      <td>105.07088</td>
+      <td>...</td>
+      <td>13.52237</td>
+      <td>-0.03575</td>
+      <td>2432.31333</td>
+      <td>1573.34341</td>
+      <td>25844.00000</td>
+      <td>ZAE000273116</td>
+      <td>2018</td>
+      <td>NaN</td>
+      <td>217394.00000</td>
+      <td>103516.00000</td>
+    </tr>
+    <tr>
+      <th>14148</th>
+      <td>Tsogo Sun Gaming Ltd</td>
+      <td>ZAF</td>
+      <td>South Africa</td>
+      <td>Resorts &amp; Casinos</td>
+      <td>Consumer Discretionary</td>
+      <td>177.37534</td>
+      <td>724.73675</td>
+      <td>5.20066</td>
+      <td>931.65516</td>
+      <td>137.52401</td>
+      <td>...</td>
+      <td>0.14882</td>
+      <td>-0.37745</td>
+      <td>2422.02658</td>
+      <td>1503.04837</td>
+      <td>10935.50000</td>
+      <td>ZAE000273116</td>
+      <td>2019</td>
+      <td>4302.00000</td>
+      <td>NaN</td>
+      <td>22991.00000</td>
+    </tr>
+  </tbody>
+</table>
+<p>16488 rows × 27 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-python"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Impute scopes with Model&quot;</span><span class="p">)</span>
+<span class="n">scope_imputer</span> <span class="o">=</span> <span class="n">ScopeImputerPostprocessor</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">meta_model</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+<span class="n">scope_imputer</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Impute scopes with Model
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>2023-02-07 14:33:34,139 - ScopeImputerPostprocessor - DEBUG - Number of unique companies in the data: 2778
+[&#39;year_transition&#39;] did not aggregate successfully. If any error is raised this will raise in a future version of pandas. Drop these columns/ops to avoid this warning.
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>@ScopeImputerPostprocessor[ Count of imputed {&#39;tg_numc_scope_1&#39;: 3297, &#39;tg_numc_scope_2&#39;: 3417, &#39;tg_numc_scope_3&#39;: 3700} ]</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-python"><pre><span></span><span class="n">data_merged_with_input</span> <span class="o">=</span> <span class="n">scope_imputer</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;key_year&quot;</span><span class="p">,</span> <span class="s2">&quot;key_isin&quot;</span><span class="p">])</span>
+<span class="n">data_merged_with_input</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>key_isin</th>
+      <th>key_year</th>
+      <th>tg_numc_scope_1_x</th>
+      <th>tg_numc_scope_2_x</th>
+      <th>tg_numc_scope_3_x</th>
+      <th>predicted_s1</th>
+      <th>predicted_s2</th>
+      <th>predicted_s3</th>
+      <th>ft_cat_company_name</th>
+      <th>ft_cat_country_code</th>
+      <th>...</th>
+      <th>ft_numc_revenue</th>
+      <th>ft_numc_roa</th>
+      <th>ft_numc_roe</th>
+      <th>ft_numc_stock_return</th>
+      <th>ft_numc_total_assets</th>
+      <th>ft_numc_total_liab</th>
+      <th>ft_numd_employees</th>
+      <th>tg_numc_scope_1_y</th>
+      <th>tg_numc_scope_2_y</th>
+      <th>tg_numc_scope_3_y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>AEA000801018</td>
+      <td>2020</td>
+      <td>1341.05534</td>
+      <td>4595.18681</td>
+      <td>131.00000</td>
+      <td>True</td>
+      <td>True</td>
+      <td>False</td>
+      <td>Abu Dhabi Islamic Bank PJSC</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>131.00000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>AED000601016</td>
+      <td>2018</td>
+      <td>24259.00000</td>
+      <td>123944.00000</td>
+      <td>917.00000</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>Dubai Investments PJSC</td>
+      <td>ARE</td>
+      <td>...</td>
+      <td>773.36882</td>
+      <td>0.03331</td>
+      <td>5.46693</td>
+      <td>-0.02080</td>
+      <td>5324.49204</td>
+      <td>1979.27624</td>
+      <td>NaN</td>
+      <td>24259.00000</td>
+      <td>123944.00000</td>
+      <td>917.00000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>AED000601016</td>
+      <td>2019</td>
+      <td>26483.00000</td>
+      <td>126451.31490</td>
+      <td>1032.00000</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>Dubai Investments PJSC</td>
+      <td>ARE</td>
+      <td>...</td>
+      <td>733.36447</td>
+      <td>0.03137</td>
+      <td>5.48941</td>
+      <td>0.00299</td>
+      <td>5706.52280</td>
+      <td>2382.87270</td>
+      <td>NaN</td>
+      <td>26483.00000</td>
+      <td>NaN</td>
+      <td>1032.00000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>AED000601016</td>
+      <td>2020</td>
+      <td>8386.00000</td>
+      <td>129082.22230</td>
+      <td>977.00000</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>Dubai Investments PJSC</td>
+      <td>ARE</td>
+      <td>...</td>
+      <td>753.62914</td>
+      <td>0.01597</td>
+      <td>2.94173</td>
+      <td>0.00929</td>
+      <td>5925.54037</td>
+      <td>2644.78176</td>
+      <td>NaN</td>
+      <td>8386.00000</td>
+      <td>NaN</td>
+      <td>977.00000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>AEE000701012</td>
+      <td>2016</td>
+      <td>1702.11242</td>
+      <td>277777.31000</td>
+      <td>2127.87000</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>Emirates Integrated Telecommunications Company...</td>
+      <td>ARE</td>
+      <td>...</td>
+      <td>3464.92583</td>
+      <td>0.09642</td>
+      <td>22.36602</td>
+      <td>0.27992</td>
+      <td>5012.75909</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>277777.31000</td>
+      <td>2127.87000</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>8294</th>
+      <td>ZAE000272522</td>
+      <td>2019</td>
+      <td>1350.96553</td>
+      <td>89236.95105</td>
+      <td>76101.00000</td>
+      <td>True</td>
+      <td>True</td>
+      <td>False</td>
+      <td>Tsogo Sun Hotels Ltd</td>
+      <td>ZAF</td>
+      <td>...</td>
+      <td>306.37559</td>
+      <td>-0.00672</td>
+      <td>-1.40200</td>
+      <td>NaN</td>
+      <td>1018.18054</td>
+      <td>325.08342</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>76101.00000</td>
+    </tr>
+    <tr>
+      <th>8295</th>
+      <td>ZAE000272522</td>
+      <td>2020</td>
+      <td>1966.93817</td>
+      <td>83187.00000</td>
+      <td>69019.00000</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>Tsogo Sun Hotels Ltd</td>
+      <td>ZAF</td>
+      <td>...</td>
+      <td>235.28740</td>
+      <td>-0.05825</td>
+      <td>-14.12581</td>
+      <td>-1.26713</td>
+      <td>808.75773</td>
+      <td>351.59036</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>83187.00000</td>
+      <td>69019.00000</td>
+    </tr>
+    <tr>
+      <th>8296</th>
+      <td>ZAE000273116</td>
+      <td>2017</td>
+      <td>5083.98706</td>
+      <td>216516.00000</td>
+      <td>103504.00000</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>Tsogo Sun Gaming Ltd</td>
+      <td>ZAF</td>
+      <td>...</td>
+      <td>940.89520</td>
+      <td>0.10478</td>
+      <td>10.07068</td>
+      <td>-0.07639</td>
+      <td>2850.92950</td>
+      <td>NaN</td>
+      <td>26014.00000</td>
+      <td>NaN</td>
+      <td>216516.00000</td>
+      <td>103504.00000</td>
+    </tr>
+    <tr>
+      <th>8297</th>
+      <td>ZAE000273116</td>
+      <td>2018</td>
+      <td>5070.09088</td>
+      <td>217394.00000</td>
+      <td>103516.00000</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>Tsogo Sun Gaming Ltd</td>
+      <td>ZAF</td>
+      <td>...</td>
+      <td>757.06720</td>
+      <td>0.04518</td>
+      <td>13.52237</td>
+      <td>-0.03575</td>
+      <td>2432.31333</td>
+      <td>1573.34341</td>
+      <td>25844.00000</td>
+      <td>NaN</td>
+      <td>217394.00000</td>
+      <td>103516.00000</td>
+    </tr>
+    <tr>
+      <th>8298</th>
+      <td>ZAE000273116</td>
+      <td>2019</td>
+      <td>4302.00000</td>
+      <td>144802.14856</td>
+      <td>22991.00000</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>Tsogo Sun Gaming Ltd</td>
+      <td>ZAF</td>
+      <td>...</td>
+      <td>844.85714</td>
+      <td>0.04883</td>
+      <td>0.14882</td>
+      <td>-0.37745</td>
+      <td>2422.02658</td>
+      <td>1503.04837</td>
+      <td>10935.50000</td>
+      <td>4302.00000</td>
+      <td>NaN</td>
+      <td>22991.00000</td>
+    </tr>
+  </tbody>
+</table>
+<p>8299 rows × 33 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
 </div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -14650,8 +15511,8 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The data contained </span><span class="si">{</span><span class="n">DATA</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> data points with </span><span class="si">{</span><span class="n">DATA</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns.&quot;</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Of the seventeen columns </span><span class="si">{</span><span class="n">DATA</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;tg_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> acted as dependent variables, </span><span class="si">{</span><span class="n">DATA</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;ft_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> as independent variables and </span><span class="si">{</span><span class="n">DATA</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;key_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> as columns with meta information.&quot;</span><span class="p">))</span>
+<div class=" highlight hl-python"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The data contained </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> data points with </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns.&quot;</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Of the seventeen columns </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;tg_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> acted as dependent variables, </span><span class="si">{</span><span class="n">DATA</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;ft_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> as independent variables and </span><span class="si">{</span><span class="n">DATA</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;key_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2"> as columns with meta information.&quot;</span><span class="p">))</span>
 <span class="n">display</span><span class="p">(</span><span class="n">DATA</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
 
@@ -14989,10 +15850,9 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;ATTENTION: This correlation analysis is based on a subset of data.&quot;</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;The data was selected based on two criteria.&quot;</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;1. Data without information about any of the 3 scope targets where removed.&quot;</span><span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;2. Data from years prior 2016 where removed.&quot;</span><span class="p">))</span>
+<div class=" highlight hl-python"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;ATTENTION: This correlation analysis is based on a subset of data.&quot;</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;The data was selected based on one criteria.&quot;</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s2">&quot;1. Data from years prior 2016 where removed.&quot;</span><span class="p">))</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data_merged_with_input</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 </pre></div>
 
@@ -15028,7 +15888,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 
 <div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
-<p>The data was selected based on two criteria.</p>
+<p>The data was selected based on one criteria.</p>
 
 </div>
 
@@ -15042,21 +15902,6 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 <div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
 <ol>
-<li>Data without information about any of the 3 scope targets where removed.</li>
-</ol>
-
-</div>
-
-</div>
-<div class="jp-OutputArea-child">
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-
-
-<div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-OutputArea-output " data-mime-type="text/markdown">
-<ol start="2">
 <li>Data from years prior 2016 where removed.</li>
 </ol>
 
@@ -15113,23 +15958,23 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
     <tr>
       <th>tg_numc_scope_1_x</th>
       <td>8299.00000</td>
-      <td>3355589.04040</td>
-      <td>16657296.09221</td>
+      <td>3176587.61791</td>
+      <td>14239581.02191</td>
       <td>5.00000</td>
-      <td>7057.00000</td>
-      <td>52996.20305</td>
-      <td>548500.00000</td>
-      <td>619271085.00000</td>
+      <td>7500.50000</td>
+      <td>55000.00000</td>
+      <td>540933.74691</td>
+      <td>348105100.00000</td>
     </tr>
     <tr>
       <th>tg_numc_scope_2_x</th>
       <td>8299.00000</td>
-      <td>645352.06698</td>
-      <td>2795484.37174</td>
+      <td>624246.58390</td>
+      <td>2638485.95943</td>
       <td>6.50000</td>
-      <td>19961.39550</td>
-      <td>93364.00000</td>
-      <td>372046.51000</td>
+      <td>20007.13220</td>
+      <td>95741.46949</td>
+      <td>368906.58500</td>
       <td>68647841.00000</td>
     </tr>
     <tr>
@@ -15332,24 +16177,24 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
     </tr>
     <tr>
       <th>tg_numc_scope_1_y</th>
-      <td>8254.00000</td>
-      <td>3372994.01805</td>
-      <td>16700894.15046</td>
+      <td>5002.00000</td>
+      <td>3278947.87135</td>
+      <td>14665529.34421</td>
       <td>5.00000</td>
-      <td>7259.92500</td>
-      <td>53862.50000</td>
-      <td>552750.00000</td>
-      <td>619271085.00000</td>
+      <td>7125.75000</td>
+      <td>54865.50000</td>
+      <td>590806.50000</td>
+      <td>348105100.00000</td>
     </tr>
     <tr>
       <th>tg_numc_scope_2_y</th>
-      <td>8026.00000</td>
-      <td>652531.69174</td>
-      <td>2839099.23956</td>
+      <td>4882.00000</td>
+      <td>667293.29379</td>
+      <td>3063064.39386</td>
       <td>6.50000</td>
-      <td>20869.25000</td>
-      <td>94068.00000</td>
-      <td>372000.00000</td>
+      <td>20987.25000</td>
+      <td>97147.44400</td>
+      <td>371193.22500</td>
       <td>68647841.00000</td>
     </tr>
     <tr>
@@ -15394,7 +16239,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">scope_imputer</span><span class="o">.</span><span class="n">data</span><span class="p">[[</span><span class="s2">&quot;predicted_s1&quot;</span><span class="p">,</span> <span class="s2">&quot;predicted_s2&quot;</span><span class="p">,</span> <span class="s2">&quot;predicted_s3&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<div class=" highlight hl-python"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">scope_imputer</span><span class="o">.</span><span class="n">data</span><span class="p">[[</span><span class="s2">&quot;predicted_s1&quot;</span><span class="p">,</span> <span class="s2">&quot;predicted_s2&quot;</span><span class="p">,</span> <span class="s2">&quot;predicted_s3&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 </pre></div>
 
      </div>
@@ -15416,8 +16261,8 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 
 <div class="jp-RenderedText jp-OutputArea-output " data-mime-type="text/plain">
-<pre>predicted_s1      45
-predicted_s2     273
+<pre>predicted_s1    3297
+predicted_s2    3417
 predicted_s3    3700
 dtype: int64</pre>
 </div>
@@ -15447,7 +16292,7 @@ dtype: int64</pre>
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 1 Correlation (no predictions)&quot;</span><span class="p">)</span>
+<div class=" highlight hl-python"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 1 Correlation (no predictions)&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data_merged_with_input</span><span class="p">[</span><span class="n">data_merged_with_input</span><span class="p">[</span><span class="s2">&quot;predicted_s1&quot;</span><span class="p">]</span><span class="o">==</span><span class="kc">False</span><span class="p">][[</span><span class="s2">&quot;tg_numc_scope_1_x&quot;</span><span class="p">,</span> <span class="s2">&quot;ft_numc_revenue&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">())</span>
 <span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 2 Correlation (no predictions)&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data_merged_with_input</span><span class="p">[</span><span class="n">data_merged_with_input</span><span class="p">[</span><span class="s2">&quot;predicted_s2&quot;</span><span class="p">]</span><span class="o">==</span><span class="kc">False</span><span class="p">][[</span><span class="s2">&quot;tg_numc_scope_2_x&quot;</span><span class="p">,</span> <span class="s2">&quot;ft_numc_revenue&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">())</span>
@@ -15511,11 +16356,11 @@ dtype: int64</pre>
     <tr>
       <th>tg_numc_scope_1_x</th>
       <td>1.00000</td>
-      <td>0.00690</td>
+      <td>0.00880</td>
     </tr>
     <tr>
       <th>ft_numc_revenue</th>
-      <td>0.00690</td>
+      <td>0.00880</td>
       <td>1.00000</td>
     </tr>
   </tbody>
@@ -15569,11 +16414,11 @@ dtype: int64</pre>
     <tr>
       <th>tg_numc_scope_2_x</th>
       <td>1.00000</td>
-      <td>0.01390</td>
+      <td>0.01357</td>
     </tr>
     <tr>
       <th>ft_numc_revenue</th>
-      <td>0.01390</td>
+      <td>0.01357</td>
       <td>1.00000</td>
     </tr>
   </tbody>
@@ -15664,7 +16509,7 @@ dtype: int64</pre>
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 1 Correlation (only predictions)&quot;</span><span class="p">)</span>
+<div class=" highlight hl-python"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 1 Correlation (only predictions)&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data_merged_with_input</span><span class="p">[</span><span class="n">data_merged_with_input</span><span class="p">[</span><span class="s2">&quot;predicted_s1&quot;</span><span class="p">]</span><span class="o">==</span><span class="kc">True</span><span class="p">][[</span><span class="s2">&quot;tg_numc_scope_1_x&quot;</span><span class="p">,</span> <span class="s2">&quot;ft_numc_revenue&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">())</span>
 <span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 2 Correlation (only predictions)&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data_merged_with_input</span><span class="p">[</span><span class="n">data_merged_with_input</span><span class="p">[</span><span class="s2">&quot;predicted_s2&quot;</span><span class="p">]</span><span class="o">==</span><span class="kc">True</span><span class="p">][[</span><span class="s2">&quot;tg_numc_scope_2_x&quot;</span><span class="p">,</span> <span class="s2">&quot;ft_numc_revenue&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">())</span>
@@ -15728,11 +16573,11 @@ dtype: int64</pre>
     <tr>
       <th>tg_numc_scope_1_x</th>
       <td>1.00000</td>
-      <td>-0.06304</td>
+      <td>0.00658</td>
     </tr>
     <tr>
       <th>ft_numc_revenue</th>
-      <td>-0.06304</td>
+      <td>0.00658</td>
       <td>1.00000</td>
     </tr>
   </tbody>
@@ -15786,11 +16631,11 @@ dtype: int64</pre>
     <tr>
       <th>tg_numc_scope_2_x</th>
       <td>1.00000</td>
-      <td>0.37948</td>
+      <td>0.01668</td>
     </tr>
     <tr>
       <th>ft_numc_revenue</th>
-      <td>0.37948</td>
+      <td>0.01668</td>
       <td>1.00000</td>
     </tr>
   </tbody>
@@ -15881,7 +16726,7 @@ dtype: int64</pre>
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 1 Correlation (overall)&quot;</span><span class="p">)</span>
+<div class=" highlight hl-python"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 1 Correlation (overall)&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data_merged_with_input</span><span class="p">[[</span><span class="s2">&quot;tg_numc_scope_1_x&quot;</span><span class="p">,</span> <span class="s2">&quot;ft_numc_revenue&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">())</span>
 <span class="n">display</span><span class="p">(</span><span class="s2">&quot;Scope 2 Correlation (overall)&quot;</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">data_merged_with_input</span><span class="p">[[</span><span class="s2">&quot;tg_numc_scope_2_x&quot;</span><span class="p">,</span> <span class="s2">&quot;ft_numc_revenue&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">())</span>
@@ -15945,11 +16790,11 @@ dtype: int64</pre>
     <tr>
       <th>tg_numc_scope_1_x</th>
       <td>1.00000</td>
-      <td>0.00696</td>
+      <td>0.00760</td>
     </tr>
     <tr>
       <th>ft_numc_revenue</th>
-      <td>0.00696</td>
+      <td>0.00760</td>
       <td>1.00000</td>
     </tr>
   </tbody>
@@ -16003,11 +16848,11 @@ dtype: int64</pre>
     <tr>
       <th>tg_numc_scope_2_x</th>
       <td>1.00000</td>
-      <td>0.01431</td>
+      <td>0.01428</td>
     </tr>
     <tr>
       <th>ft_numc_revenue</th>
-      <td>0.01431</td>
+      <td>0.01428</td>
       <td>1.00000</td>
     </tr>
   </tbody>

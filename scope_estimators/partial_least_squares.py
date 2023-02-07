@@ -1,12 +1,3 @@
-import numpy as np
-import optuna
-import pandas as pd
-from sklearn.svm import SVR
-
-from base import OxariScopeEstimator
-from base.common import OxariOptimizer
-from base.metrics import optuna_metric
-from base.oxari_types import ArrayLike
 from typing import Union
 from base import OxariScopeEstimator, OxariRegressor, OxariMixin, OxariOptimizer
 import numpy as np
@@ -16,14 +7,12 @@ from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
 import xgboost as xgb
 import sklearn
-#do I want that? I do, right?
-from xgboost import XGBRegressor
 
-""" Relatively useful in hyperparameter tuning: 
-https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
-"""
+from sklearn.cross_decomposition import PLSRegression
 
-class XGBOptimizer(OxariOptimizer):
+
+
+class PLSOptimizer(OxariOptimizer):
 
     def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
@@ -53,7 +42,7 @@ class XGBOptimizer(OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"xgboost_process_hp_tuning",
+            study_name=f"pls_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
         )
@@ -66,41 +55,26 @@ class XGBOptimizer(OxariOptimizer):
 
         return study.best_params, df
 
-    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        
-        # max_depth: The maximum depth of each tree, often values are between 1 and 10.
-        # colsample_bytree: Number of features (columns) used in each tree, set to a value between 0 and 1, often 1.0 to use all features.
-        # gamma = 0 : A smaller value like 0.1-0.2 can also be chosen for starting. This will anyways be tuned later.
-        # subsample: The number of samples (rows) used in each tree, set to a value between 0 and 1, often 1.0 to use all samples.
-        # objective: determines the loss function to be used
-        # eta: The learning rate used to weight each model, often set to small values such as 0.3, 0.1, 0.01, or smaller.
-        # n_estimators: The number of trees in the ensemble, often increased until no further improvements are seen.
 
-        param_space = {
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
-                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
-                'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
-                'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
-                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
-            }
-        
-            
-        model = XGBRegressor(**param_space).fit(X_train, y_train)
-        y_pred = model.predict(X_val)
+    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
+        num_samples, num_features = X_train.shape
+        n_components = trial.suggest_int("n_components", 2, min(num_samples, num_features), 1)
+        scale = trial.suggest_categorical(scale, [True, False])
+       
+        model = PLSRegression(n_components=n_components, scale=scale).fit(X_train, y_train)
+        y_pred = model.predict(X_val).flatten()
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 
-
-class XGBEstimator(OxariScopeEstimator):
+class PLSEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = XGBRegressor()
-        self._optimizer = optimizer or XGBOptimizer()
+        self._estimator = PLSRegression()
+        self._optimizer = optimizer or PLSOptimizer()
 
-    def fit(self, X, y, **kwargs) -> "XGBEstimator":
+    def fit(self, X, y, **kwargs) -> "PLSEstimator":
         max_size = len(X)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)   
@@ -111,7 +85,7 @@ class XGBEstimator(OxariScopeEstimator):
         return self
        
     def predict(self, X) -> ArrayLike:
-        return self._estimator.predict(X)
+        return self._estimator.predict(X).flatten()
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)

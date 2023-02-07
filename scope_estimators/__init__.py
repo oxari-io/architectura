@@ -6,3 +6,6 @@ from .linear_models import *
 from .mini_model_army import *
 from .single_bucket_model_party import *
 from .svm import *
+from .gradient_boost import *
+from .partial_least_squares import *
+from .stochastic_gradient import *

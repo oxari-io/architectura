@@ -73,14 +73,16 @@ class XGBOptimizer(OxariOptimizer):
 
     # TODO: Find better optimization ranges for the GaussianProcessEstimator
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
-        C = trial.suggest_float("C", 0.01, 2.0)
+        # epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
+        # C = trial.suggest_float("C", 0.01, 2.0)
+        eta = trial.suggest_float("eta", 0.01, 0.2)
+        reg_alpha = trial.suggest_float("reg_alpha", 0.01, 0.2)
         
             
         max_size = len(X_train)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)
-        model = XGBRegressor(epsilon=epsilon, C=C).fit(X_train.iloc[indices], y_train.iloc[indices])
+        model = XGBRegressor(eta=eta, reg_alpha=reg_alpha).fit(X_train.iloc[indices], y_train.iloc[indices])
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)

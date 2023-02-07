@@ -37,31 +37,31 @@ class SGDOptimizer(OxariOptimizer):
         epsilon: Epsilon in the epsilon-insensitive loss functions
         validation_fraction and n_iter_no_change and tol: used only if EarlyStopping = True
     """
-    def __init__(self, loss='squared_error', *, penalty='l2', alpha=0.0001, l1_ratio=0.15, fit_intercept=True, max_iter=1000, 
-    tol=0.001, shuffle=True, verbose=0, epsilon=0.1, random_state=None, learning_rate='invscaling', eta0=0.01, power_t=0.25, 
-    early_stopping=False, validation_fraction=0.1, n_iter_no_change=5, warm_start=False, average=False, **kwargs) -> None:
-        super().__init__(
-            loss=loss,
-            penalty=penalty,
-            alpha=alpha,
-            l1_ratio=l1_ratio,
-            fit_intercept=fit_intercept,
-            max_iter=max_iter,
-            tol=tol,
-            shuffle=shuffle,
-            verbose=verbose,
-            epsilon=epsilon,
-            random_state=random_state,
-            learning_rate=learning_rate,
-            eta0=eta0,
-            power_t=power_t,
-            early_stopping=early_stopping,
-            validation_fraction=validation_fraction,
-            n_iter_no_change=n_iter_no_change,
-            warm_start=warm_start,
-            average=average,
-            init_kwargs = kwargs,
-        )
+    # def __init__(self, loss='squared_error', *, penalty='l2', alpha=0.0001, l1_ratio=0.15, fit_intercept=True, max_iter=1000, 
+    # tol=0.001, shuffle=True, verbose=0, epsilon=0.1, random_state=None, learning_rate='invscaling', eta0=0.01, power_t=0.25, 
+    # early_stopping=False, validation_fraction=0.1, n_iter_no_change=5, warm_start=False, average=False, **kwargs) -> None:
+    #     super().__init__(
+    #         loss=loss,
+    #         penalty=penalty,
+    #         alpha=alpha,
+    #         l1_ratio=l1_ratio,
+    #         fit_intercept=fit_intercept,
+    #         max_iter=max_iter,
+    #         tol=tol,
+    #         shuffle=shuffle,
+    #         verbose=verbose,
+    #         epsilon=epsilon,
+    #         random_state=random_state,
+    #         learning_rate=learning_rate,
+    #         eta0=eta0,
+    #         power_t=power_t,
+    #         early_stopping=early_stopping,
+    #         validation_fraction=validation_fraction,
+    #         n_iter_no_change=n_iter_no_change,
+    #         warm_start=warm_start,
+    #         average=average,
+    #         init_kwargs = kwargs,
+    #     )
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
@@ -100,13 +100,13 @@ class SGDOptimizer(OxariOptimizer):
     # TODO: Find better optimization ranges for the GaussianProcessEstimator
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
-        C = trial.suggest_float("C", 0.01, 2.0)
+        alpha = trial.suggest_float("alpha", 0.0001, 0.1)
         
             
         max_size = len(X_train)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)
-        model = SGDRegressor(epsilon=epsilon, C=C).fit(X_train.iloc[indices], y_train.iloc[indices])
+        model = SGDRegressor(epsilon=epsilon, alpha=alpha).fit(X_train.iloc[indices], y_train.iloc[indices])
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)

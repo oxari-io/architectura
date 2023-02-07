@@ -14,14 +14,13 @@ from sklearn.cross_decomposition import PLSRegression
 
 class PLSOptimizer(OxariOptimizer):
 
-    def __init__(self, n_components=2, scale=True, copy=True, **kwargs) -> None:
+    def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
-            n_components=n_components,
-            scale=scale,
-            copy=copy,
-            init_kwargs = kwargs,
+            n_trials=n_trials,
+            n_startup_trials=n_startup_trials,
+            sampler=sampler,
+            **kwargs,
         )
-
     
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
@@ -57,19 +56,13 @@ class PLSOptimizer(OxariOptimizer):
         return study.best_params, df
 
 
-    # TODO: Find better optimization ranges for the GaussianProcessEstimator
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        # epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
-        # C = trial.suggest_float("C", 0.01, 2.0)
-        tol = trial.suggest_float("tol", 1e-06, 1e-04)
-
-        
-            
-        max_size = len(X_train)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)
-        model = PLSRegression(tol=tol).fit(X_train.iloc[indices], y_train.iloc[indices])
-        y_pred = model.predict(X_val)
+        num_samples, num_features = X_train.shape
+        n_components = trial.suggest_int("n_components", 2, min(num_samples, num_features), 1)
+        scale = trial.suggest_categorical(scale, [True, False])
+       
+        model = PLSRegression(n_components=n_components, scale=scale).fit(X_train, y_train)
+        y_pred = model.predict(X_val).flatten()
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
@@ -92,7 +85,7 @@ class PLSEstimator(OxariScopeEstimator):
         return self
        
     def predict(self, X) -> ArrayLike:
-        return self._estimator.predict(X)
+        return self._estimator.predict(X).flatten()
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)

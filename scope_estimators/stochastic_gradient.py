@@ -15,53 +15,14 @@ from sklearn.linear_model import SGDRegressor
 
 class SGDOptimizer(OxariOptimizer):
 
-    def __init__(self, base_learning_rate=0.01, policy='fixed', momentum=0.0, nesterov=1, sparse_dedup_aggregator=None, 
-                 lars=None, **kwargs) -> None:
+    def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
-            base_learning_rate = base_learning_rate,
-            policy = policy,
-            momentum = momentum,
-            nesterov = nesterov,
-            sparse_dedup_aggregator = sparse_dedup_aggregator,
-            lars = lars,
-            init_kwargs = kwargs,
+            n_trials=n_trials,
+            n_startup_trials=n_startup_trials,
+            sampler=sampler,
+            **kwargs,
         )
 
-    """ Alternatively, : """
-
-    """ Parameters are set to default for now but:
-        The penalty/regularization term 'l2' is the standard regularizer for linear SVM models.
-        alpha: The higher the value, the stronger the regularization
-        l1_ratio: only used if 'penalty' is "elasticnet".
-        fit_intercept: If False, the data is assumed to be already centered.
-        epsilon: Epsilon in the epsilon-insensitive loss functions
-        validation_fraction and n_iter_no_change and tol: used only if EarlyStopping = True
-    """
-    # def __init__(self, loss='squared_error', *, penalty='l2', alpha=0.0001, l1_ratio=0.15, fit_intercept=True, max_iter=1000, 
-    # tol=0.001, shuffle=True, verbose=0, epsilon=0.1, random_state=None, learning_rate='invscaling', eta0=0.01, power_t=0.25, 
-    # early_stopping=False, validation_fraction=0.1, n_iter_no_change=5, warm_start=False, average=False, **kwargs) -> None:
-    #     super().__init__(
-    #         loss=loss,
-    #         penalty=penalty,
-    #         alpha=alpha,
-    #         l1_ratio=l1_ratio,
-    #         fit_intercept=fit_intercept,
-    #         max_iter=max_iter,
-    #         tol=tol,
-    #         shuffle=shuffle,
-    #         verbose=verbose,
-    #         epsilon=epsilon,
-    #         random_state=random_state,
-    #         learning_rate=learning_rate,
-    #         eta0=eta0,
-    #         power_t=power_t,
-    #         early_stopping=early_stopping,
-    #         validation_fraction=validation_fraction,
-    #         n_iter_no_change=n_iter_no_change,
-    #         warm_start=warm_start,
-    #         average=average,
-    #         init_kwargs = kwargs,
-    #     )
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
@@ -99,14 +60,17 @@ class SGDOptimizer(OxariOptimizer):
 
     # TODO: Find better optimization ranges for the GaussianProcessEstimator
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
-        alpha = trial.suggest_float("alpha", 0.0001, 0.1)
         
+        param_space = {
+                "loss": trial.suggest_categorical("loss", ["squared_error", "huber", "epsilon_insensitive"]),
+                "epsilon": trial.suggest_float("epsilon", 0.01, 0.2) if not ("loss" is "squared_error") else 0.0,
+                "penalty": trial.suggest_categorical("penalty", ["l1", "l2", "elasticnet", None]),
+                "alpha": trial.suggest_float("alpha", 0.0001, 0.1),
+                "shuffle": trial.suggest_categorical("shuffle", [True, False])
+            }
             
-        max_size = len(X_train)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)
-        model = SGDRegressor(epsilon=epsilon, alpha=alpha).fit(X_train.iloc[indices], y_train.iloc[indices])
+        
+        model = SGDRegressor(**param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)

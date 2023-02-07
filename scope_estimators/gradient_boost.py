@@ -15,26 +15,12 @@ https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgb
 """
 
 class XGBOptimizer(OxariOptimizer):
-    # n_estimators: The number of trees in the ensemble, often increased until no further improvements are seen.
-    # max_depth: The maximum depth of each tree, often values are between 1 and 10.
-    # eta: The learning rate used to weight each model, often set to small values such as 0.3, 0.1, 0.01, or smaller.
-    # gamma = 0 : A smaller value like 0.1-0.2 can also be chosen for starting. This will anyways be tuned later.
-    # subsample: The number of samples (rows) used in each tree, set to a value between 0 and 1, often 1.0 to use all samples.
-    # colsample_bytree: Number of features (columns) used in each tree, set to a value between 0 and 1, often 1.0 to use all features.
-    # objective: determines the loss function to be used
-    def __init__(self, n_estimators=1000, max_depth=5, eta=0.1, min_child_weight=1, gamma=0, subsample=0.8, 
-                 colsample_bytree=0.8, objective= 'reg:squarederror', scale_pos_weight=1, seed=27, **kwargs) -> None:
+
+    def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            eta=eta,
-            subsample=subsample,
-            colsample_bytree=colsample_bytree,
-            min_child_weight=min_child_weight, #this may need to be readjusted if this is not a highly imbalanced class problem
-            gamma=gamma,
-            objective=objective,
-            scale_pos_weight=scale_pos_weight,
-            seed=seed,
+            n_trials=n_trials,
+            n_startup_trials=n_startup_trials,
+            sampler=sampler,
             **kwargs,
         )
     
@@ -71,18 +57,27 @@ class XGBOptimizer(OxariOptimizer):
 
         return study.best_params, df
 
-    # TODO: Find better optimization ranges for the GaussianProcessEstimator
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        # epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
-        # C = trial.suggest_float("C", 0.01, 2.0)
-        eta = trial.suggest_float("eta", 0.01, 0.2)
-        reg_alpha = trial.suggest_float("reg_alpha", 0.01, 0.2)
+        
+        # max_depth: The maximum depth of each tree, often values are between 1 and 10.
+        # colsample_bytree: Number of features (columns) used in each tree, set to a value between 0 and 1, often 1.0 to use all features.
+        # gamma = 0 : A smaller value like 0.1-0.2 can also be chosen for starting. This will anyways be tuned later.
+        # subsample: The number of samples (rows) used in each tree, set to a value between 0 and 1, often 1.0 to use all samples.
+        # objective: determines the loss function to be used
+        # eta: The learning rate used to weight each model, often set to small values such as 0.3, 0.1, 0.01, or smaller.
+        # n_estimators: The number of trees in the ensemble, often increased until no further improvements are seen.
+
+        param_space = {
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
+                'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
+                'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
+                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
+            }
         
             
-        max_size = len(X_train)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)
-        model = XGBRegressor(eta=eta, reg_alpha=reg_alpha).fit(X_train.iloc[indices], y_train.iloc[indices])
+        model = XGBRegressor(**param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)

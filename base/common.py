@@ -26,7 +26,7 @@ from .oxari_types import ArrayLike
 os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
 WRITE_TO = "./logger.log"  # "cout"
-
+logging.root.setLevel(LOGLEVEL)
 
 # FEEDBACK:
 # - Logger had no formatting
@@ -53,6 +53,8 @@ class OxariLoggerMixin(abc.ABC):
         self.format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger_name = self.__class__.__name__
+        if len(self.logger.handlers) > 0:
+            return None
         formatter = logging.Formatter(self.format)
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
@@ -61,7 +63,8 @@ class OxariLoggerMixin(abc.ABC):
             fhandler = logging.FileHandler(WRITE_TO)
             fhandler.setFormatter(formatter)
             self.logger.addHandler(fhandler)
-        logging.root.setLevel(LOGLEVEL)
+        return None
+        
 
 
 

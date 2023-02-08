@@ -46,7 +46,7 @@ class DropFeatureReducer(OxariFeatureReducer):
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
         self.n_components_ = len(X.columns) - len(self._features)
-        self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} to {self.n_components_} columns.')
+        self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} columns to {self.n_components_} columns.')
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
@@ -66,7 +66,7 @@ class PCAFeatureReducer(OxariFeatureReducer):
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
         self._dimensionality_reducer.fit(X[self.feature_names_in_], y)
-        self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} columns to {len(self.n_components_)} columns.')
+        self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} columns to {self.n_components_} columns.')
         return self
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:

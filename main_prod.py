@@ -15,7 +15,7 @@ from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
-from datasources.digital_ocean import S3Datasource
+from datasources.online import S3Datasource
 from datasources.local import LocalDatasource
 
 DATA_DIR = pathlib.Path('local/data')

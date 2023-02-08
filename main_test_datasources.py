@@ -5,22 +5,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver,
-                  OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
+from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver, OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
 from base.common import OxariLoggerMixin
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogarithmScaler
 from datasources.core import DefaultDataManager
-from datasources.digital_ocean import S3Datasource
+from datasources.online import S3Datasource, OnlineExcelDatasource
+from datasources.local import LocalDatasource
+
 from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer, FactorAnalysisFeatureReducer, GaussRandProjectionFeatureReducer, IsomapDimensionalityFeatureReducer, SparseRandProjectionFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
 from pipeline.core import DefaultPipeline
-from postprocessors import (DecisionExplainer, JumpRateExplainer,
-                            ResidualExplainer, ScopeImputerPostprocessor,
-                            ShapExplainer)
+from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
 from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator
+from datasources.loaders import NetZeroIndexLoader
 
 DATA_DIR = pathlib.Path('local/data')
 N_TRIALS = 5
@@ -28,10 +28,17 @@ N_STARTUP_TRIALS = 1
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
-
+    # netzero =
+    # tmp = netzero.load()
+    # print(tmp)
     # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
     # dataset = DefaultDataManager().run()
-    dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),S3Datasource(path='model-input-data/financials_auto.csv'),S3Datasource(path='model-input-data/categoricals_auto.csv')).run()
+    dataset = DefaultDataManager(
+        S3Datasource(path='model-input-data/scopes_auto.csv'),
+        S3Datasource(path='model-input-data/financials_auto.csv'),
+        S3Datasource(path='model-input-data/categoricals_auto.csv'),
+        other_loaders=[NetZeroIndexLoader()],
+    ).run()
     # dataset = PreviousScopeFeaturesDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
@@ -85,19 +92,17 @@ if __name__ == "__main__":
     eval_results.T.to_csv('local/eval_results/model_pipelines_test.csv')
     # print(eval_results)
     mainlogger.logger.info(f"Evaluation results: {eval_results}")
-    
 
     # print("Predict with Model only SCOPE1")
     # print(model.predict(SPLIT_1.val.X, scope=1))
     mainlogger.logger.info(f"Predict with Model only SCOPE1, Predictions: {model.predict(SPLIT_1.val.X, scope=1)}")
-
 
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
     dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
-    
+
     scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
     scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
 
@@ -106,7 +111,6 @@ if __name__ == "__main__":
     lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
     dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
     print(lar_imputed_data)
-    
 
     # print("Explain Effects of features")
     # explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
@@ -122,8 +126,7 @@ if __name__ == "__main__":
     #     fig.savefig(f'local/eval_results/test_importance_explainer{idx+1}.png')
 
     # plt.show(block=True)
-    
-    
+
     print("\n", "Predict ALL with Model")
     print(model.predict(SPLIT_1.val.X))
 
@@ -137,12 +140,10 @@ if __name__ == "__main__":
     result = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
     result["true_scope"] = SPLIT_1.test.y.values
     result["absolute_difference"] = np.abs(result["pred"] - result["true_scope"])
-    result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"]) 
-    result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values 
+    result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"])
+    result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
     result.to_csv('local/eval_results/model_training_test.csv')
     print(result)
-
-
 
     tmp_pipeline = model.get_pipeline(1)
 

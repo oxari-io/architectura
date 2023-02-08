@@ -2,16 +2,17 @@ import argparse
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
                               FactorAnalysisFeatureReducer, AgglomerateFeatureReducer,
                               GaussRandProjectionFeatureReducer,
-                              IsomapDimensionalityFeatureReducer,
-                              MDSDimensionalityFeatureReducer, PCAFeatureReducer,
+                              IsomapDimensionalityFeatureReducer, PCAFeatureReducer,
                               SparseRandProjectionFeatureReducer)
+from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator
+
 
 
 class ExperimentCommandLineParser():
     def __init__(self, description) -> None:
         self.parser = argparse.ArgumentParser(description=description)
 
-        self.parser.add_argument('num_reps', nargs='?', default=2, type=int, help='Number of experiment repititions (default=10)')
+        self.parser.add_argument('num_reps', nargs='?', default=10, type=int, help='Number of experiment repititions (default=10)')
         
         self.parser.add_argument('--scope-all', dest='scope', action='store_true', help='use scopes 1, 2, 3')
         self.parser.set_defaults(scope=False)
@@ -32,5 +33,28 @@ class ExperimentCommandLineParser():
 class FeatureReductionExperimentCommandLineParser(ExperimentCommandLineParser):
     def set_experiment_specific_arguments(self):
         # TODO what if the naming is not exactly a class name, should this be more flexible in accepting names of reduction methods?
-        self.parser.add_argument('-methods', dest='f_r_methods', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -methods before specifying methods')
+        self.parser.add_argument('-methods', dest='configurations', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -methods before specifying')
+        return super().set_experiment_specific_arguments()
+
+class ConfidenceEstimatorPerformanceExperimentCommandLineParser(ExperimentCommandLineParser):
+    def set_experiment_specific_arguments(self):
+        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, MAPIEConfidenceEstimator], help='Names of feature estimators to compare, use flag -config before specifying')
+        return super().set_experiment_specific_arguments()
+    
+class BucketingExperimentCommandLineParser(ExperimentCommandLineParser):
+    def set_experiment_specific_arguments(self):
+
+        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -config before specifying')
+        return super().set_experiment_specific_arguments()
+
+class VotingVsSingleExperimentCommandLineParser(ExperimentCommandLineParser):
+    def set_experiment_specific_arguments(self):
+
+        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -config before specifying')
+        return super().set_experiment_specific_arguments()
+
+class WeightedVotingExperimentCommandLineParser(ExperimentCommandLineParser):
+    def set_experiment_specific_arguments(self):
+
+        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -config before specifying')
         return super().set_experiment_specific_arguments()

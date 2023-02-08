@@ -10,14 +10,13 @@ from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
                               FactorAnalysisFeatureReducer, AgglomerateFeatureReducer,
                               GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer,
-                              MDSDimensionalityFeatureReducer, PCAFeatureReducer,
-                              SparseRandProjectionFeatureReducer)
+                              PCAFeatureReducer, SparseRandProjectionFeatureReducer)
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator
-from experiment_argument_parser import FeatureReductionExperimentCommandLineParser
+from experiments.experiment_argument_parser import FeatureReductionExperimentCommandLineParser
 
 def convert_reduction_methods(reduction_methods_string):
     # if the reduction methods are not strings, they are already in the right format (in that case it was the default argument of parser)
@@ -32,8 +31,7 @@ def convert_reduction_methods(reduction_methods_string):
         "GaussRandProjection": GaussRandProjectionFeatureReducer, 
         "SparseRandProjection": SparseRandProjectionFeatureReducer, 
         "Factor_Analysis": FactorAnalysisFeatureReducer,
-        "IsomapDimensionalityReduction": IsomapDimensionalityFeatureReducer, 
-        "MDSDimensionalitySelector": MDSDimensionalityFeatureReducer
+        "IsomapDimensionalityReduction": IsomapDimensionalityFeatureReducer
     }
     
     reduction_methods = []
@@ -45,7 +43,6 @@ def convert_reduction_methods(reduction_methods_string):
 if __name__ == "__main__":
     parser = FeatureReductionExperimentCommandLineParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (--scope-1 for scope 1 only, --scope-all for all 3 scopes), what file to write to (--append to append to existing file, --new to create new file) and what feature reduction methods to compare (use flag -methods before). Defaults: 10 repititions, --scope-1, --new, all methods.')
 
-    # TODO chekc for illegal formats 
     args = parser.parse_args()
     num_reps = args.num_reps
     scope = args.scope
@@ -108,29 +105,10 @@ if __name__ == "__main__":
             
             print(all_results)
             concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
-            # concatenated = pd.DataFrame(concatenated)
-            # print(concatenated.iloc[0])
-            # print(concatenated)
-
+            
+            fname = __loader__.name.split(".")[-1]
 
             if (results_file is True):
-                print("true")
-                # TODO: save into file.csv with the same name as the script
-                # TODO: change name of script into experiment_[SCOMETHING]
-                concatenated.to_csv('local/eval_results/test.csv')
+                concatenated.to_csv(f'local/eval_results/{fname}.csv')
             else: 
-                print("False")
-                # for index, row in concatenated.iterrows():
-                #     print("it goes in the loop")
-                #     print(concatenated["time"].dtype)
-                #     if ((concatenated["time"].str.contains("time")).any()):
-                #         print("we're in here")
-                #         concatenated.drop([index])
-                concatenated.to_csv('local/eval_results/test.csv', header = False, mode='a')
-
-        # df_smaller = all_results[["imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
-
-        # concatenated2 = pd.concat(all_results, axis=1) #all_results now is not anymore just a list so it brings up an error when you try to concatenate it
-        # dfs = [df.set_index('feature_selector') for df in results]
-
-        
+                concatenated.to_csv(f'local/eval_results/{fname}.csv', header = False, mode='a')

@@ -8,19 +8,19 @@ from base.common import OxariImputer
 
 
 class BaselineImputer(OxariImputer):
-    def __init__(self, strategy="median", missing_values=np.nan, verbose=0, copy=True, add_indicator=False, **kwargs):
+    def __init__(self, strategy="median", missing_values=np.nan, copy=True, add_indicator=False, **kwargs):
         super().__init__(**kwargs)
         self._imputer = SimpleImputer(
             missing_values=missing_values,
             strategy=strategy,
-            verbose=verbose,
+            # verbose=verbose,
             copy=copy,
             add_indicator=add_indicator,
             **kwargs,
         )
 
     def fit(self, X, y=None, **kwargs) -> "OxariImputer":
-        self.log("Started imputing")
+        self.logger.info("Started imputing")
         self._imputer.fit(X, y, **kwargs)
         return self
 

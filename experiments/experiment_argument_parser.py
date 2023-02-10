@@ -5,8 +5,12 @@ from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer,
                               SparseRandProjectionFeatureReducer)
 from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator
-
-
+from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator,
+                              PredictMedianEstimator,
+                              SingleBucketModelEstimator, SingleBucketVotingArmyEstimator)
+from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator,
+                              PredictMedianEstimator,
+                              EvenWeightMiniModelArmyEstimator)
 
 class ExperimentCommandLineParser():
     def __init__(self, description) -> None:
@@ -38,23 +42,23 @@ class FeatureReductionExperimentCommandLineParser(ExperimentCommandLineParser):
 
 class ConfidenceEstimatorPerformanceExperimentCommandLineParser(ExperimentCommandLineParser):
     def set_experiment_specific_arguments(self):
-        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, MAPIEConfidenceEstimator], help='Names of feature estimators to compare, use flag -config before specifying')
+        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, MAPIEConfidenceEstimator], help='Names of estimators to compare, use flag -config before specifying')
         return super().set_experiment_specific_arguments()
     
 class BucketingExperimentCommandLineParser(ExperimentCommandLineParser):
     def set_experiment_specific_arguments(self):
 
-        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -config before specifying')
+        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[SingleBucketVotingArmyEstimator, MiniModelArmyEstimator, BaselineEstimator, PredictMedianEstimator], help='Names of estimators to compare, use flag -config before specifying')
         return super().set_experiment_specific_arguments()
 
 class VotingVsSingleExperimentCommandLineParser(ExperimentCommandLineParser):
     def set_experiment_specific_arguments(self):
 
-        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -config before specifying')
+        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[MiniModelArmyEstimator, SingleBucketModelEstimator, BaselineEstimator, PredictMedianEstimator], help='Names of estimators to compare, use flag -config before specifying')
         return super().set_experiment_specific_arguments()
 
 class WeightedVotingExperimentCommandLineParser(ExperimentCommandLineParser):
     def set_experiment_specific_arguments(self):
 
-        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], help='Names of feature reduction methods to compare, use flag -config before specifying')
+        self.parser.add_argument('-config', dest='configurations', nargs='*', type=str, default=[BaselineEstimator, MiniModelArmyEstimator,PredictMedianEstimator, EvenWeightMiniModelArmyEstimator], help='Names of estimators to compare, use flag -config before specifying')
         return super().set_experiment_specific_arguments()

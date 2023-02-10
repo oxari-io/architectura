@@ -47,7 +47,7 @@ if __name__ == "__main__":
     num_reps = args.num_reps
     scope = args.scope
     results_file = args.file
-    reduction_methods = convert_reduction_methods(args.f_r_methods)
+    reduction_methods = convert_reduction_methods(args.configurations)
 
     print("num reps:", num_reps)
     print("scope: ", scope)
@@ -112,3 +112,4 @@ if __name__ == "__main__":
                 concatenated.to_csv(f'local/eval_results/{fname}.csv')
             else: 
                 concatenated.to_csv(f'local/eval_results/{fname}.csv', header = False, mode='a')
+

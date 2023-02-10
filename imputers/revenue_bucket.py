@@ -53,7 +53,7 @@ class RevenueBucketImputer(BucketImputerBase):
             for column in self.columns_to_fit:
                 # This is the fallback in case the median is NaN (One company in the bucket)
                 lookup_columns_mean[column] = data_grouped_by_revenue_overall[column].median()
-                lookup_columns_mean_overall[column] = data_grouped_by_revenue[column].median()
+                lookup_columns_mean_overall[column] = np.nan if np.all(np.isnan(data_grouped_by_revenue[column])) else data_grouped_by_revenue[column].median()
 
             self.lookup_table_["default"]["values"] = lookup_columns_mean
             self.lookup_table_[bucket]["values"] = lookup_columns_mean_overall

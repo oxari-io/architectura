@@ -9,3 +9,5 @@ from .mini_model_party import *
 from .gradient_boost import *
 from .partial_least_squares import *
 from .stochastic_gradient import *
+from .k_neighbors import *
+from .radius_neighbor import *

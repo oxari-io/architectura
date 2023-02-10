@@ -44,6 +44,8 @@ pygraphviz = "^1.10"
 cdt = "^0.6.0"
 torch = "^1.13.1"
 pgmpy = "^0.1.21"
+autoimpute = "^0.13.0"
+missingno = "^0.5.1"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"

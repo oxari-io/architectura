@@ -20,7 +20,6 @@ class BaselineImputer(OxariImputer):
         )
 
     def fit(self, X, y=None, **kwargs) -> "OxariImputer":
-        self.logger.info("Started imputing")
         self._imputer.fit(X, y, **kwargs)
         return self
 

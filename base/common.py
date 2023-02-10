@@ -16,10 +16,10 @@ import sklearn
 from pmdarima.metrics import smape
 from sklearn.base import MetaEstimatorMixin, MultiOutputMixin
 from sklearn.impute import _base
-from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, precision_recall_fscore_support, r2_score, silhouette_score)
+from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, precision_recall_fscore_support, r2_score, silhouette_score, median_absolute_error)
 from sklearn.model_selection import train_test_split
 from typing_extensions import Self
-
+from sklearn.preprocessing import minmax_scale
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
 
@@ -27,6 +27,7 @@ os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
 WRITE_TO = "./logger.log"  # "cout"
 logging.root.setLevel(LOGLEVEL)
+
 
 # FEEDBACK:
 # - Logger had no formatting
@@ -64,8 +65,6 @@ class OxariLoggerMixin(abc.ABC):
             fhandler.setFormatter(formatter)
             self.logger.addHandler(fhandler)
         return None
-        
-
 
 
 class ReducedDataMixin:
@@ -108,7 +107,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         error_metrics = {
             "sMAPE": smape(y_true, y_pred) / 100,
             "R2": r2_score(y_true, y_pred),
-            "MAE": mean_absolute_error(y_true, y_pred),
+            "MAE": median_absolute_error(y_true, y_pred),
             "RMSE": mean_squared_error(y_true, y_pred, squared=False),
             # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
             "MAPE": mape(y_true, y_pred) / 100,
@@ -276,17 +275,17 @@ class OxariMixin(OxariLoggerMixin, abc.ABC):
     #     """
     #     return self
 
-    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> OxariMixin:
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Self:
         return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
 
-    def evaluate(self, y_true, y_pred, **kwargs) -> OxariMixin:
+    def evaluate(self, y_true, y_pred, **kwargs) -> Self:
         return self._evaluator.evaluate(y_true, y_pred, **kwargs)
 
-    def set_evaluator(self, evaluator: OxariEvaluator) -> OxariMixin:
+    def set_evaluator(self, evaluator: OxariEvaluator) -> Self:
         self._evaluator = evaluator
         return self
 
-    def set_optimizer(self, optimizer: OxariOptimizer) -> OxariMixin:
+    def set_optimizer(self, optimizer: OxariOptimizer) -> Self:
         self._optimizer = optimizer
         return self
 
@@ -358,13 +357,26 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     Handles imputation of missing values for values that are zero. Fit and Transform have to be implemented accordingly.
     """
 
+    class DefaultImputerEvaluator(OxariEvaluator):
+
+        def evaluate(self, y_true, y_pred, **kwargs):
+            error_metrics = {
+                "sMAPE": smape(y_true, y_pred) / 100,
+                # "R2": r2_score(y_true, y_pred),
+                # "MAE": mean_absolute_error(y_true, y_pred),
+                "MAE": median_absolute_error(y_true, y_pred),
+            }
+            return super().evaluate(y_true, y_pred, **error_metrics)
+
     def __init__(self, missing_values=np.nan, verbose: int = 0, copy: bool = False, add_indicator: bool = False, **kwargs):
         super().__init__(missing_values=missing_values, add_indicator=add_indicator)
         self.verbose = verbose
         self.copy = copy
+        evaluator = kwargs.pop('evaluator', OxariImputer.DefaultImputerEvaluator())
+        self.set_evaluator(evaluator)
 
     @abc.abstractmethod
-    def fit(self, X, y=None, **kwargs) -> "OxariImputer":
+    def fit(self, X, y=None, **kwargs) -> Self:
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f�X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})�).
         # Set self.n_features_in_ = X.shape[1]
@@ -377,6 +389,28 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     @abc.abstractmethod
     def transform(self, X, **kwargs) -> ArrayLike:
         pass
+
+    def evaluate(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
+        # TODO: also include supervised methods R² into eval
+        p = kwargs.pop('p', 0.3)
+        
+        X_true = X.dropna(how='any')
+
+        mask = np.random.rand(*X_true.shape) < p
+        X_eval = X_true.where(~mask, np.nan)
+        X_pred = self.transform(X_eval, **kwargs)
+
+        y_true = np.array(X_true)[mask]
+        y_pred = np.array(X_pred)[mask]
+
+        self._evaluation_results = {}
+        self._evaluation_results["overall"] = self._evaluator.evaluate(y_true, y_pred)
+        return self
+
+    @property
+    def evaluation_results(self):
+        return {"imputer": self.name, **self._evaluation_results}
+        # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
 
 class OxariPreprocessor(OxariTransformer, abc.ABC):
@@ -560,7 +594,7 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         for g in np.unique(y):
             ix = y == g
             xc, yc, zc = X_reduced[ix, :3].T
-            ax.scatter3D(xc, yc, zc, label = g, s = 100)        
+            ax.scatter3D(xc, yc, zc, label=g, s=100)
             ax.legend()
         plt.show()
 
@@ -570,7 +604,7 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         return old_data.filter(regex='^!ft', axis=1).merge(new_data, left_index=True, right_index=True)
 
     def get_config(self, deep=True):
-        return {'n_components_':self.n_components_, **super().get_config(deep)}
+        return {'n_components_': self.n_components_, **super().get_config(deep)}
 
 
 # https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
@@ -679,7 +713,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         return self
 
     def _gather_stats(self, X_train, elapsed_time):
-        return {"time":elapsed_time, "num_datapoints":len(X_train)}
+        return {"time": elapsed_time, "num_datapoints": len(X_train)}
 
     def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
         st = time.time()
@@ -706,7 +740,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     @property
     def evaluation_results(self):
-        return {"pipeline": self.name, "stats":self.stats , **self._evaluation_results}
+        return {"pipeline": self.name, "stats": self.stats, **self._evaluation_results}
 
 
 class Test(OxariPipeline):

@@ -10,7 +10,7 @@ from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
                               FactorAnalysisFeatureReducer, AgglomerateFeatureReducer,
                               GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer,
-                              MDSDimensionalityFeatureReducer, PCAFeatureReducer,
+                              PCAFeatureReducer,
                               SparseRandProjectionFeatureReducer)
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer

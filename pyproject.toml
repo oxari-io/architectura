@@ -40,6 +40,10 @@ loguru = "^0.6.0"
 jsonlines = "^3.1.0"
 yapf = "^0.32.0"
 openpyxl = "^3.1.0"
+pygraphviz = "^1.10"
+cdt = "^0.6.0"
+torch = "^1.13.1"
+pgmpy = "^0.1.21"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"
@@ -50,6 +54,7 @@ pyinstaller = "^5.7.0"
 auto-py-to-exe = "^2.27.0"
 autoflake = "^2.0.1"
 unimport = "^0.13.0"
+
 
 [build-system]
 requires = ["poetry-core"]

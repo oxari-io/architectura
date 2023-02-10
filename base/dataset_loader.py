@@ -275,7 +275,7 @@ class OxariDataManager(OxariMixin):
         scope_loader: PartialLoader = None,
         financial_loader: PartialLoader = None,
         categorical_loader: PartialLoader = None,
-        other_loaders: List[PartialLoader] = None,
+        other_loaders: List[PartialLoader] = [],
         verbose=False,
         **kwargs,
     ):

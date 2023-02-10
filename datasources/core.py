@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict
+from typing import Dict, List
 
 import pandas as pd
 
@@ -17,7 +17,7 @@ class DefaultDataManager(OxariDataManager):
                  scope_loader: Datasource = LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
                  financial_loader: Datasource = LocalDatasource(path=DATA_DIR / "financials_auto.csv"),
                  categorical_loader: Datasource = LocalDatasource(path=DATA_DIR / "categoricals_auto.csv"),
-                 other_loaders: Dict[str, PartialLoader] = {},
+                 other_loaders: List[PartialLoader] = [],
                  verbose=False,
                  **kwargs):
         super().__init__(
@@ -31,34 +31,6 @@ class DefaultDataManager(OxariDataManager):
 
 
 class FSExperimentDataLoader(OxariDataManager):
-    # loads the data just like CSVDataLoader, but a selection of the data
-    def __init__(self,
-                 scope_loader: Datasource = LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
-                 financial_loader: Datasource = LocalDatasource(path=DATA_DIR / "financials_auto.csv"),
-                 categorical_loader: Datasource = LocalDatasource(path=DATA_DIR / "categoricals_auto.csv"),
-                 other_loaders: Dict[str, PartialLoader] = {},
-                 verbose=False,
-                 **kwargs):
-        super().__init__(
-            scope_loader,
-            financial_loader,
-            categorical_loader,
-            other_loaders,
-            verbose,
-            **kwargs,
-        )
-
-    # TODO ask why this run function is different from the run function of OxariDataManager.
-    # if answered remove this function because the super funtion is fine
-    # def run(self, **kwargs) -> "OxariDataManager":
-    #     print("running shortened dataset function")
-    #     self.scope_loader = self.scope_loader.run()
-    #     self.financial_loader = self.financial_loader.run()
-    #     self.categorical_loader = self.categorical_loader.run()
-    #     _df_original = self.scope_loader.data.merge(self.financial_loader.data, on=["isin", "year"], how="inner").sort_values(["isin", "year"])
-    #     _df_original = _df_original.merge(self.categorical_loader.data, on="isin", how="left")
-    #     self.add_data(OxariDataManager.SHORTENED, _df_original, "Dataset without changes.")
-    #     return self
 
     def _transform(self, df, **kwargs):
         # we don't want sampling of the same row more than once

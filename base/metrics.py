@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from pmdarima.metrics import smape
+from pmdarima.utils import check_endog
 from scipy import spatial
 from sklearn.metrics import balanced_accuracy_score, mean_absolute_error
 
@@ -21,28 +22,77 @@ def cv_metric(estimator, X, y) -> float:
     return smape(y, y_hat)
 
 
-def calculate_smape(actual, predicted) -> float:
-
-    # Convert actual and predicted to numpy
-    # array data type if not already
-    if not all([isinstance(actual, np.ndarray), isinstance(predicted, np.ndarray)]):
-        actual, predicted = np.array(actual), np.array(predicted)
-
-    return round(np.mean(np.abs(predicted - actual) / ((np.abs(predicted) + np.abs(actual)) / 2)) * 100, 2)
-
-
-# def smape(a, f):
-#     """
-#     a --> actual (y_true)
-#     f --> forecast (y_pred)
-#     """
-#     return 1 / len(a) * np.sum(2 * np.abs(f - a) / (np.abs(a) + np.abs(f)) * 100)
-
-# TODO: Implement median versions of this metric (MdAPE & sMdAPE): https://support.numxl.com/hc/en-us/articles/115001223503-MdAPE-Median-Absolute-Percentage-Error
 def mape(A, F):
     tmp = np.abs(A - F) / np.abs(A)
     len_ = len(tmp)
     return 100 * np.sum(tmp) / len_
+
+
+# TODO: Use (MdAPE & sMdAPE): https://support.numxl.com/hc/en-us/articles/115001223503-MdAPE-Median-Absolute-Percentage-Error
+def mdape(y_true, y_pred):
+    r"""Compute the Median Absolute Percentage Error.
+
+    sMdAPE is less intuitive, for example an MdAPE of 8% does not mean that the average absolute percentage error is 8%. 
+    Instead it means that half of the absolute percentage errors are less than 8% and half are over 8%. 
+    Defined as follows:
+
+        :math:`\mathrm{sMdAPE} = \mathrm{median}(s_1,s_2,\cdots,s_N)}`
+
+    Parameters
+    ----------
+    y_true : array-like, shape=(n_samples,)
+        The true test values of y.
+
+    y_pred : array-like, shape=(n_samples,)
+        The forecasted values of y.
+
+
+    References
+    ----------
+    .. [1] https://support.numxl.com/hc/en-us/articles/115001223503-MdAPE-Median-Absolute-Percentage-Error
+    """    # noqa: E501
+    y_true = check_endog(
+        y_true,
+        copy=False,
+        preserve_series=False,
+    )
+    y_pred = check_endog(
+        y_pred,
+        copy=False,
+        preserve_series=False,
+    )
+    abs_diff = np.abs(y_pred - y_true)
+    return np.median((abs_diff * 100 / np.abs(y_true)))
+
+
+def smdape(y_true, y_pred):
+    r"""Compute the Symmetric Median Absolute Percentage Error.
+
+    Parameters
+    ----------
+    y_true : array-like, shape=(n_samples,)
+        The true test values of y.
+
+    y_pred : array-like, shape=(n_samples,)
+        The forecasted values of y.
+
+
+    References
+    ----------
+    .. [1] https://support.numxl.com/hc/en-us/articles/115001223503-MdAPE-Median-Absolute-Percentage-Error
+    """    # noqa: E501
+    y_true = check_endog(
+        y_true,
+        copy=False,
+        preserve_series=False,
+    )
+    y_pred = check_endog(
+        y_pred,
+        copy=False,
+        preserve_series=False,
+    )
+    abs_diff = np.abs(y_pred - y_true)
+    return np.median((abs_diff * 200 / (np.abs(y_pred) + np.abs(y_true))))
 
 
 def adjusted_r_squared(X, Y, r2):

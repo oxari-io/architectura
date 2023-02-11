@@ -8,7 +8,7 @@ from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 from sklearn.ensemble import RandomForestRegressor
 from base.common import DefaultClusterEvaluator, OxariImputer
 from base.mappings import NumMapping
-from sklearn.linear_model import BayesianRidge, Ridge
+from sklearn.linear_model import BayesianRidge, Ridge, GammaRegressor
 from sklearn.kernel_approximation import Nystroem
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.ensemble import RandomForestRegressor
@@ -16,6 +16,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from .core import BucketImputerBase
 from enum import Enum
 from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import MinMaxScaler
 
 
 class MVEImputer(OxariImputer):
@@ -52,3 +53,11 @@ class OldOxariImputer(MVEImputer):
 
     def __init__(self, **kwargs):
         super().__init__(sub_estimator=RandomForestRegressor(), **kwargs)
+
+
+class GammaImputer(MVEImputer):
+
+    def __init__(self, **kwargs):
+
+        sub_estimator = make_pipeline([MinMaxScaler(), GammaRegressor()])
+        super().__init__(sub_estimator=sub_estimator, **kwargs)

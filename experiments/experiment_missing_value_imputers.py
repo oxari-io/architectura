@@ -23,6 +23,7 @@ if __name__ == "__main__":
         S3Datasource(path='model-input-data/categoricals_auto.csv'),
     ).run()
     configurations: list[OxariImputer] = [
+        # AutoImputer(),
         RevenueQuantileBucketImputer(),
         KMeansBucketImputer(),
         # KMedianBucketImputer,
@@ -30,7 +31,6 @@ if __name__ == "__main__":
         RevenueBucketImputer(),
         *[MVEImputer(sub_estimator=m.value, verbose=True) for m in MVEImputer.strategies],
         OldOxariImputer(verbose=True),
-        AutoImputer(),
         # AutoImputer('pmm')
     ]
     repeats = range(10)

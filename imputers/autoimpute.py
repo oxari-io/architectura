@@ -20,9 +20,8 @@ class AutoImputer(BucketImputerBase):
         LINEAR = "linear"
         BAYES = "bayesian least squares"
         INTERPOLATE = "interpolate"
-        MEAN = "univariate default"
-        DEFAULT = None
-        P_DEFAULT = "predictive default"
+        MEAN = "default univariate"
+        DEFAULT = "default predictive"
         PMM = "pmm"
         LRD = "lrd"
 

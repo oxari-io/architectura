@@ -38,7 +38,7 @@ def calculate_smape(actual, predicted) -> float:
 #     """
 #     return 1 / len(a) * np.sum(2 * np.abs(f - a) / (np.abs(a) + np.abs(f)) * 100)
 
-
+# TODO: Implement median versions of this metric (MdAPE & sMdAPE): https://support.numxl.com/hc/en-us/articles/115001223503-MdAPE-Median-Absolute-Percentage-Error
 def mape(A, F):
     tmp = np.abs(A - F) / np.abs(A)
     len_ = len(tmp)

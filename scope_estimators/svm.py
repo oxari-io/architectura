@@ -7,6 +7,8 @@ from base import OxariScopeEstimator
 from base.common import OxariOptimizer
 from base.metrics import optuna_metric
 from base.oxari_types import ArrayLike
+from sklearn.kernel_approximation import Nystroem
+from sklearn.pipeline import make_pipeline
 
 class SVROptimizer(OxariOptimizer):
     def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
@@ -70,6 +72,7 @@ class SupportVectorEstimator(OxariScopeEstimator):
         super().__init__(**kwargs)
         self._estimator = SVR()
         self._optimizer = optimizer or SVROptimizer()
+        self.logger.warning("Better use FastSVROptimizer! It's much faster.")
 
     def fit(self, X, y, **kwargs) -> "SupportVectorEstimator":
         max_size = len(X)
@@ -94,3 +97,20 @@ class SupportVectorEstimator(OxariScopeEstimator):
 
     def get_config(self, deep=True):
         return {**self._estimator.get_params(), **super().get_config(deep)}
+
+    
+
+class FastSVROptimizer(SVROptimizer):
+    def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
+        epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
+        C = trial.suggest_float("C", 0.01, 2.0)
+        model = make_pipeline(Nystroem(), SVR(epsilon=epsilon, C=C)).fit(X_train, y_train)
+        y_pred = model.predict(X_val)
+
+        return optuna_metric(y_true=y_val, y_pred=y_pred)
+        
+class FastSupportVectorEstimator(SupportVectorEstimator):
+    def __init__(self, optimizer=None, **kwargs):
+        super().__init__(optimizer, **kwargs)
+        self._estimator = make_pipeline(Nystroem(), SVR())
+        self._optimizer = optimizer or FastSVROptimizer()  

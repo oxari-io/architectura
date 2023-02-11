@@ -10,21 +10,22 @@ from base.common import DefaultClusterEvaluator, OxariImputer
 from base.mappings import NumMapping
 from sklearn.linear_model import BayesianRidge, Ridge
 from sklearn.kernel_approximation import Nystroem
+from sklearn.kernel_ridge import KernelRidge
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from .core import BucketImputerBase
 from enum import Enum
+from sklearn.pipeline import make_pipeline
 
 
 class MVEImputer(OxariImputer):
 
     class strategies(Enum):
         BAYESRIDGE = BayesianRidge()
-        RIDGE = Ridge()
-        NYSTROEM = Nystroem()
+        RIDGE = KernelRidge(kernel='rbf')
         KNN = KNeighborsRegressor()
 
-    def __init__(self, sub_estimator = strategies.RIDGE.value, verbose=False, max_iter=10, **kwargs):
+    def __init__(self, sub_estimator=strategies.RIDGE.value, verbose=False, max_iter=10, **kwargs):
         super().__init__(**kwargs)
         self.sub_estimator = sub_estimator
         self.verbose = verbose
@@ -44,7 +45,7 @@ class MVEImputer(OxariImputer):
         return super().evaluate(X, y, **kwargs)
 
     def get_config(self):
-        return {"strategy": self.sub_estimator.__class__.__name__, **super().get_config()}
+        return {"strategy": self.sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self.sub_estimator.__class__.__name__}", **super().get_config()}
 
 
 class OldOxariImputer(MVEImputer):

@@ -32,8 +32,10 @@ import missingno as msno
 from datasources.loaders import NetZeroIndexLoader
 # %%
 # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'), S3Datasource(path='model-input-data/financials_auto.csv'),
-                             S3Datasource(path='model-input-data/categoricals_auto.csv'), other_loaders=[NetZeroIndexLoader()]).run()
+dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),
+                             S3Datasource(path='model-input-data/financials_auto.csv'),
+                             S3Datasource(path='model-input-data/categoricals_auto.csv'),
+                             other_loaders=[NetZeroIndexLoader()]).run()
 # dataset = PreviousScopeFeaturesDataManager().run()
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -43,6 +45,9 @@ SPLIT_3 = bag.scope_3
 # %%
 X, y = SPLIT_1.train
 X
+# %%
+X_numeric = X.filter(regex="ft_num", axis=1)
+X_numeric
 # %% [markdown]
 # ## Missing Values within the Features
 # ### Matrix of missing values
@@ -62,8 +67,18 @@ msno.heatmap(X)
 # %% [markdown]
 # ### Matrix of missing values
 # The dendrogram allows you to more fully correlate variable completion, revealing trends deeper than the pairwise ones visible in the correlation heatmap.
-# To interpret this graph, read it from a top-down perspective. Cluster leaves which linked together at a distance of zero fully predict one another's presence—one variable might always be empty when another is filled, or they might always both be filled or both empty, and so on. 
+# To interpret this graph, read it from a top-down perspective. Cluster leaves which linked together at a distance of zero fully predict one another's presence—one variable might always be empty when another is filled, or they might always both be filled or both empty, and so on.
 msno.dendrogram(X)
 # %% [markdown]
 # ## Features of the dataset
-sns.pairplot(X)
+sns.pairplot(X_numeric.sample(frac=0.05), dropna=True, kind='scatter', corner=True)
+
+# %%
+df_melted = X_numeric.melt(var_name='column')
+g = sns.FacetGrid(df_melted, col='column', col_wrap=2, sharex=False, sharey=False, height=6)
+g.map(sns.kdeplot, 'value')
+# %%
+df_melted = X_numeric.melt(var_name='column')
+g = sns.FacetGrid(df_melted, col='column', col_wrap=2, sharex=False, sharey=False, height=6)
+g.map(sns.histplot, 'value')
+# %%

@@ -29,7 +29,7 @@ class AutoImputer(BucketImputerBase):
     def __init__(self, strategy:strategies=strategies.DEFAULT, **kwargs):
         super().__init__(**kwargs)
         self.strategy = strategy
-        self._estimator = MultipleImputer(strategy==self.strategy)
+        self._estimator = MultipleImputer(strategy=self.strategy.value)
 
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:

@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # loads the data just like CSVDataLoader, but a selection of the data
     for i in range(1):
         # configurations = [MiniModelArmyEstimator(), MiniModelPartyEstimator(), BaselineEstimator(), PredictMedianEstimator()]
-        configurations = [ RNEstimator()]
+        configurations = [ KNEstimator()]
         # configurations = [SupportVectorEstimator(), XGBEstimator(), SGDEstimator(), DummyEstimator()]
         dataset = DefaultDataManager().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

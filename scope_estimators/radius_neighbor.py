@@ -53,19 +53,20 @@ class RNOptimizer(OxariOptimizer):
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         
         param_space = {
-                "weights": trial.suggest_categorical("weights", ["uniform", "distance"]),
-            }
+            "weights": trial.suggest_categorical("weights", ["uniform", "distance"]),
+        }
         
-        model = RadiusNeighborsRegressor(**param_space).fit(X_train, y_train)
+        model = RadiusNeighborsRegressor(radius=10000, **param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
+        # ATTENTION: doesn't work because of NaN values in y_pred
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
 class RNEstimator(OxariScopeEstimator):
-    def __init__(self, radius=1000000, optimizer=None, **kwargs):
+    def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = RadiusNeighborsRegressor(radius=radius, algorithm="auto")
+        self._estimator = RadiusNeighborsRegressor(algorithm="auto")
         self._optimizer = optimizer or RNOptimizer()
 
     def fit(self, X, y, **kwargs) -> "RNEstimator":

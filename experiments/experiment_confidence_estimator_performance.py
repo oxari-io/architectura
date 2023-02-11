@@ -64,23 +64,24 @@ if __name__ == "__main__":
             scope_estimator=MiniModelArmyEstimator(),
             ci_estimator=None,
             scope_transformer=LogarithmScaler(),
-        ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)      
-        ppl2 = DefaultPipeline(
-            preprocessor=IIDPreprocessor(),
-            feature_reducer=PCAFeatureReducer(),
-            imputer=RevenueQuantileBucketImputer(),
-            scope_estimator=MiniModelArmyEstimator(),
-            ci_estimator=None,
-            scope_transformer=LogarithmScaler(),
-        ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
-        ppl3 = DefaultPipeline(
-            preprocessor=IIDPreprocessor(),
-            feature_reducer=PCAFeatureReducer(),
-            imputer=RevenueQuantileBucketImputer(),
-            scope_estimator=MiniModelArmyEstimator(),
-            ci_estimator=None,
-            scope_transformer=LogarithmScaler(),
-        ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)
+        ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val) 
+        if (scope == True):     
+            ppl2 = DefaultPipeline(
+                preprocessor=IIDPreprocessor(),
+                feature_reducer=PCAFeatureReducer(),
+                imputer=RevenueQuantileBucketImputer(),
+                scope_estimator=MiniModelArmyEstimator(),
+                ci_estimator=None,
+                scope_transformer=LogarithmScaler(),
+            ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
+            ppl3 = DefaultPipeline(
+                preprocessor=IIDPreprocessor(),
+                feature_reducer=PCAFeatureReducer(),
+                imputer=RevenueQuantileBucketImputer(),
+                scope_estimator=MiniModelArmyEstimator(),
+                ci_estimator=None,
+                scope_transformer=LogarithmScaler(),
+            ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)
 
         for Estimator in estimators:
             start = time.time()

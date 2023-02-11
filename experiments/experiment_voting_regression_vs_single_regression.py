@@ -23,7 +23,8 @@ def convert_estimators(estimators_string):
         return estimators_string 
     
     switcher = {
-        "SingleBucketVotingArmyEstimator": SingleBucketModelEstimator, "MiniModelArmyEstimator": MiniModelArmyEstimator, 
+        "SingleBucketVotingArmyEstimator": SingleBucketModelEstimator, 
+        "MiniModelArmyEstimator": MiniModelArmyEstimator, 
         "BaselineEstimator": BaselineEstimator, 
         "PredictMedianEstimator": PredictMedianEstimator
     }

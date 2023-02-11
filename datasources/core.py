@@ -40,11 +40,11 @@ class FSExperimentDataLoader(OxariDataManager):
                  verbose=False,
                  **kwargs):
         super().__init__(
-            scope_loader,
-            financial_loader,
-            categorical_loader,
-            other_loaders,
-            verbose,
+            scope_loader=ScopeLoader(datasource=scope_loader),
+            financial_loader=FinancialLoader(datasource=financial_loader),
+            categorical_loader=CategoricalLoader(datasource=categorical_loader),
+            other_loaders=other_loaders,
+            verbose=verbose,
             **kwargs,
         )
 

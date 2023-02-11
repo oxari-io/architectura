@@ -194,7 +194,7 @@ class DefaultClassificationEvaluator(OxariEvaluator):
 
 
 # TODO: Integrate optuna visualisation as method
-class OxariOptimizer(abc.ABC):
+class OxariOptimizer(abc.ABC, OxariLoggerMixin):
 
     def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__()

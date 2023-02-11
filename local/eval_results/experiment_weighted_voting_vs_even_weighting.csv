@@ -1,0 +1,2 @@
+,repetition,time,scope,imputer,preprocessor,feature_selector,scope_estimator,test.evaluator,test.sMAPE,test.R2,test.MAE,test.RMSE,test.MAPE,train.sMAPE,train.R2,train.MAE,train.RMSE,train.MAPE
+0,1,0.5240368843078613,1,RevenueQuantileBucketImputer,IIDPreprocessor,PCAFeatureReducer,BaselineEstimator,DefaultRegressorEvaluator,0.5117464319435121,-2.9351429530572095,5.146424574353823,6.2007696843709805,0.49867309376683083,0.5055052645286776,-2.8752526206361253,5.18140307946996,6.2331395434549295,0.5074426552928639

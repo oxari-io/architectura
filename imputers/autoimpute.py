@@ -48,4 +48,4 @@ class AutoImputer(BucketImputerBase):
         return super().evaluate(X, y, **kwargs)
 
     def get_config(self):
-        return {"strategy": self.strategy, **super().get_config()}
+        return {"strategy": self.strategy.value, "imputer": f"{self.name}:{self.strategy.value}", **super().get_config()}

@@ -30,18 +30,22 @@ def convert_reduction_methods(reduction_methods_string):
         "DropFeatureReducer": DropFeatureReducer, 
         "GaussRandProjection": GaussRandProjectionFeatureReducer, 
         "SparseRandProjection": SparseRandProjectionFeatureReducer, 
-        "Factor_Analysis": FactorAnalysisFeatureReducer,
-        "IsomapDimensionalityReduction": IsomapDimensionalityFeatureReducer
+        "FactorAnalysis": FactorAnalysisFeatureReducer
     }
     
     reduction_methods = []
     for method in reduction_methods_string:
-        reduction_methods.append(switcher.get(method))
+        m = switcher.get(method)
+        if (m != None):
+            reduction_methods.append(m)
+        else:
+            print("invalid method")
+            exit()
         
     return reduction_methods  
 
 if __name__ == "__main__":
-    parser = FeatureReductionExperimentCommandLineParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (--scope-1 for scope 1 only, --scope-all for all 3 scopes), what file to write to (--append to append to existing file, --new to create new file) and what feature reduction methods to compare (use flag -methods before). Defaults: 10 repititions, --scope-1, --new, all methods.')
+    parser = FeatureReductionExperimentCommandLineParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (-s for all 3 scopes), what file to write to (-a to append to existing file) and what feature reduction methods to compare (write -c before specifying). Defaults: 10 repititions, scope 1 only, new file, all reduction methods (DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer).')
 
     args = parser.parse_args()
     num_reps = args.num_reps

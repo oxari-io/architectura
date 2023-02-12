@@ -36,7 +36,7 @@ def convert_estimators(estimators_string):
     return estimators 
 
 if __name__ == "__main__":
-    parser = VotingVsSingleExperimentCommandLineParser(description='...')
+    parser = VotingVsSingleExperimentCommandLineParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (-s for all 3 scopes), what file to write to (-a to append to existing file) and what estimators to compare (write -c before specifying). Defaults: 10 repititions, scope 1 only, new file, estimators: MiniModelArmyEstimator, SingleBucketModelEstimator, BaselineEstimator, PredictMedianEstimator.')
 
     args = parser.parse_args()
     num_reps = args.num_reps
@@ -48,6 +48,8 @@ if __name__ == "__main__":
     print("scope: ", scope)
     print("results file: ", results_file)
     print("estimators: ", estimators)
+
+    exit()
 
     all_results = []
     for i in range(num_reps):

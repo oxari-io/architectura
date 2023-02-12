@@ -24,7 +24,8 @@ def convert_estimators(estimators_string):
         return estimators_string 
     
     switcher = {
-        "EvenWeightMiniModelArmyEstimator": EvenWeightMiniModelArmyEstimator, "MiniModelArmyEstimator": MiniModelArmyEstimator, 
+        "EvenWeightMiniModelArmyEstimator": EvenWeightMiniModelArmyEstimator, 
+        "MiniModelArmyEstimator": MiniModelArmyEstimator, 
         "BaselineEstimator": BaselineEstimator, 
         "PredictMedianEstimator": PredictMedianEstimator
     }
@@ -36,7 +37,7 @@ def convert_estimators(estimators_string):
     return estimators 
 
 if __name__ == "__main__":
-    parser = WeightedVotingExperimentCommandLineParser(description='...')
+    parser = WeightedVotingExperimentCommandLineParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (-s for all 3 scopes), what file to write to (-a to append to existing file) and what estimators to compare (write -c before specifying). Defaults: 10 repititions, scope 1 only, new file, estimators: BaselineEstimator, MiniModelArmyEstimator, PredictMedianEstimator, EvenWeightMiniModelArmyEstimator')
 
     args = parser.parse_args()
     num_reps = args.num_reps

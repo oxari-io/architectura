@@ -34,11 +34,6 @@ class FeatureReductionExperimentCommandLineParser(ExperimentCommandLineParser):
     def set_experiment_specific_arguments(self):
         self.parser.add_argument('-c', default=[DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer], dest='configurations', help='Names of feature reduction methods to compare', nargs='*', type=str)
         return super().set_experiment_specific_arguments()
-
-class ConfidenceEstimatorPerformanceExperimentCommandLineParser(ExperimentCommandLineParser):
-    def set_experiment_specific_arguments(self):
-        self.parser.add_argument('-c', default=[BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, MAPIEConfidenceEstimator], dest='configurations', help='Names of confidence estimators to compare', nargs='*', type=str)
-        return super().set_experiment_specific_arguments()
     
 class BucketingExperimentCommandLineParser(ExperimentCommandLineParser):
     def set_experiment_specific_arguments(self):

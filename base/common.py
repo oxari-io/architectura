@@ -123,28 +123,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         return super().evaluate(y_true, y_pred, **error_metrics)
 
 
-class DefaultConfidenceEvaluator(OxariEvaluator):
 
-    def evaluate(self, y_true: pd.Series, y_pred: pd.DataFrame, **kwargs):
-        # TODO: add docstring here
-
-        # compute metrics of interest
-        # https://www.statisticshowto.com/coverage-probability/
-        y_hat, y_lower, y_upper = y_pred["pred"], y_pred["lower"].values, y_pred["upper"].values
-        coverage_pred = y_hat.between(y_lower, y_upper, inclusive='both').mean()
-        coverage = y_true.between(y_lower, y_upper, inclusive='both').mean()
-        mean_range = np.median(y_upper - y_lower)
-
-        error_metrics = {
-            "evaluator": self.name,
-            "mean_coverage_model_prediction": coverage_pred,
-            "mean_coverage_ground_truth": coverage,
-            "median_range": mean_range,
-            # "90th_percentile_deviation": percentile_deviation,
-            # "mean_deviation": mean_deviation,
-        }
-
-        return error_metrics
 
 
 class DefaultClusterEvaluator(OxariEvaluator):
@@ -758,12 +737,32 @@ class TestTest(OxariPipeline):
 
 
 class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
+    class DefaultConfidenceEvaluator(OxariEvaluator):
+
+        def evaluate(self, y_true: pd.Series, y_pred: pd.DataFrame, **kwargs):
+            # TODO: add docstring here
+
+            # compute metrics of interest
+            # https://www.statisticshowto.com/coverage-probability/
+            y_hat, y_lower, y_upper = y_pred["pred"], y_pred["lower"].values, y_pred["upper"].values
+            coverage_pred = y_hat.between(y_lower, y_upper, inclusive='both').mean()
+            coverage = y_true.between(y_lower, y_upper, inclusive='both').mean()
+            mean_range = np.median(y_upper - y_lower)
+            # Ideas for other metrics:
+            # - Fraction between range and possible intervall. https://link.springer.com/article/10.1007/s10994-014-5453-0
+            error_metrics = {
+                "evaluator": self.name,
+                "mean_coverage_model_prediction": coverage_pred,
+                "mean_coverage_ground_truth": coverage,
+                "median_range": mean_range,
+            }
+            return error_metrics
 
     def __init__(self, pipeline: OxariPipeline = None, alpha=0.05, **kwargs) -> None:
         super().__init__(**kwargs)
         self.alpha = alpha
         self.pipeline = pipeline
-        self.evaluator = kwargs.pop('evaluator', DefaultConfidenceEvaluator())
+        self.evaluator = kwargs.pop('evaluator', OxariConfidenceEstimator.DefaultConfidenceEvaluator())
 
     def set_pipeline(self, pipeline: OxariPipeline) -> Self:
         self.pipeline = pipeline
@@ -801,9 +800,7 @@ class DummyConfidenceEstimator(OxariConfidenceEstimator):
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
         mean_ = self.pipeline.predict(X)
-        df['lower'] = mean_
-        df['pred'] = mean_
-        df['upper'] = mean_
+        df = self._construct_result(mean_, mean_, mean_)
         return df
 
 

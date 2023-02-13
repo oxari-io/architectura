@@ -4,7 +4,7 @@ import time
 
 import pandas as pd
 
-from base import MAPIEConfidenceEstimator, OxariDataManager
+from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, DummyConfidenceEstimator
 from base.helper import LogarithmScaler
 from datasources.core import DefaultDataManager
 from feature_reducers import PCAFeatureReducer
@@ -20,10 +20,11 @@ if __name__ == "__main__":
     # loads the data just like CSVDataLoader, but a selection of the data
     for i in range(10):
         configurations = [
-            # BaselineConfidenceEstimator,
+            DummyConfidenceEstimator,
+            BaselineConfidenceEstimator,
             # JacknifeConfidenceEstimator,
-            # DirectLossConfidenceEstimator,
-            # PercentileOffsetConfidenceEstimator,
+            DirectLossConfidenceEstimator,
+            PercentileOffsetConfidenceEstimator,
             MAPIEConfidenceEstimator
         ]
         dataset = DefaultDataManager().run()  # run() calls _transform()

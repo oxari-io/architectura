@@ -94,7 +94,6 @@ class ProbablisticConfidenceEstimator(OxariConfidenceEstimator):
     def predict(self, X, **kwargs) -> ArrayLike:
         X = self.pipeline._preprocess(X)
         mean_, std_ = self.pipeline.predict(X, return_std=True)
-        df = pd.DataFrame()
         bottom = mean_ - std_
         preds = mean_
         top = mean_ + std_

@@ -11,3 +11,4 @@ from .partial_least_squares import *
 from .stochastic_gradient import *
 from .k_neighbors import *
 from .radius_neighbor import *
+from .linear_svr import *

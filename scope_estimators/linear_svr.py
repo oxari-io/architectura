@@ -54,10 +54,9 @@ class LinearSVROptimizer(OxariOptimizer):
         
         param_space = {
                 "epsilon": trial.suggest_float("epsilon", 1.0, 20.24), # depends on scale of target value, range: [0, 20.24 (y_train_max)]
-                "c": trial.suggest_float("c", 0.1, 1000, log=True),
+                "C": trial.suggest_float("C", 0.1, 1000, log=True),
                 "loss": trial.suggest_categorical("loss", ["epsilon_insensitive", "squared_epsilon_insensitive"]),
-                "intercept_scaling": trial.suggest_float("intercept_scaling", 0.1, 1000),
-
+                "intercept_scaling": trial.suggest_float("intercept_scaling", 1.0, 150.0, step=0.5)
             }
         
         model = LinearSVR(**param_space).fit(X_train, y_train)
@@ -86,8 +85,9 @@ class LinearSVREstimator(OxariScopeEstimator):
         return self._estimator.predict(X)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
-
+        best_params = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        return best_params
+    
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred, **kwargs)     
 

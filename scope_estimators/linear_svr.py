@@ -4,6 +4,10 @@ import pandas as pd
 import optuna
 from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
+from base import OxariTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures
+
 
 from sklearn.svm import LinearSVR
 
@@ -53,17 +57,21 @@ class LinearSVROptimizer(OxariOptimizer):
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         
         param_space = {
-                "epsilon": trial.suggest_float("epsilon", 1.0, 20.24), # depends on scale of target value, range: [0, 20.24 (y_train_max)]
-                "C": trial.suggest_float("C", 0.1, 1000, log=True),
-                "loss": trial.suggest_categorical("loss", ["epsilon_insensitive", "squared_epsilon_insensitive"]),
-                "intercept_scaling": trial.suggest_float("intercept_scaling", 1.0, 150.0, step=0.5)
-            }
+            "epsilon": trial.suggest_float("epsilon", 1.0, 20.24), # depends on scale of target value, range: [0, 20.24 (y_train_max)]
+            "C": trial.suggest_float("C", 0.1, 1000, log=True),
+            "loss": trial.suggest_categorical("loss", ["epsilon_insensitive", "squared_epsilon_insensitive"]),
+            "intercept_scaling": trial.suggest_float("intercept_scaling", 1.0, 150.0, step=0.5),
+        }
         
+        degree = trial.suggest_int("degree", 1, 10)
+
+        preprocessor = LinearSVREstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
+        X_train = preprocessor.transform(X_train)
+        X_val = preprocessor.transform(X_val)        
         model = LinearSVR(**param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
-
 
 class LinearSVREstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
@@ -71,15 +79,23 @@ class LinearSVREstimator(OxariScopeEstimator):
         self._estimator = LinearSVR()
         self._optimizer = optimizer or LinearSVROptimizer()
 
-    def fit(self, X, y, **kwargs) -> "LinearSVREstimator":
+    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        degree = self.params.pop("degree", 1)
+        self._sub_preprocessor = LinearSVREstimator._make_model_specific_preprocessor(X, y, degree=degree)
+        X_ = self._sub_preprocessor.transform(X)
         max_size = len(X)
         sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)   
-        X = pd.DataFrame(X)
+        indices = np.random.randint(0, max_size, sample_size)
+        X_ = pd.DataFrame(X_)
         y = pd.DataFrame(y)
         self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
-        # self.coef_ = self._estimator.coef_
         return self
+    
+    @staticmethod
+    def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
+        return Pipeline([
+            ('polinomial', PolynomialFeatures(degree=kwargs.pop("degree"), include_bias=False)),
+        ]).fit(X, y, **kwargs)
        
     def predict(self, X) -> ArrayLike:
         return self._estimator.predict(X)

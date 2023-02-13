@@ -81,6 +81,7 @@ class BayesianRegressionEstimator(ReducedDataMixin, OxariScopeEstimator):
         self._optimizer = kwargs.pop("optimizer",BayesianRegressorOptimizer())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        self.n_features_in_ = X.shape[1]        
         degree = self.params.pop("degree", 1)
         self._sub_preprocessor = BayesianRegressionEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)

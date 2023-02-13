@@ -22,7 +22,7 @@ class IndependentFeatureVotingRegressionEstimator(OxariScopeEstimator):
         self.set_optimizer(DefaultOptimizer())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        self.feature_names_in_ = X.columns  # TODO: If pandas dataframe else numeric columns
+        self.n_features_in_ = X.shape[1]
         self.n_features_in_ = len(self.feature_names_in_)
         for idx, c in enumerate(self.feature_names_in_):
             x = np.array(X)[:, idx, None]

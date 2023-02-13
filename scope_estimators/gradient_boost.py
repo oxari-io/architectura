@@ -101,6 +101,7 @@ class XGBEstimator(OxariScopeEstimator):
         self._optimizer = optimizer or XGBOptimizer()
 
     def fit(self, X, y, **kwargs) -> "XGBEstimator":
+        self.n_features_in_ = X.shape[1]
         max_size = len(X)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)   

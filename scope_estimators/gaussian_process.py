@@ -84,6 +84,7 @@ class GaussianProcessEstimator(ReducedDataMixin, OxariScopeEstimator):
         self.set_optimizer(kwargs.pop("optimizer",  GPOptimizer()))
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        self.n_features_in_ = X.shape[1]
         outer_alpha = self.params.pop('outer_alpha')
         kernel = GaussianProcessEstimator._compose_kernel(**self.params)
         indices = self.get_sample_indices(X)

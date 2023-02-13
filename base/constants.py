@@ -8,8 +8,6 @@ IMPORTANT_EVALUATION_COLUMNS = [
     "preprocessor",
     "feature_selector",
     "scope_estimator",
-    "time_to_fit",
-    "time_to_optimize",
     "scope",
     "test.evaluator",
     "test.sMAPE",

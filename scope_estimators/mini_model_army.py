@@ -23,6 +23,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
                                                                                              n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        self.n_features_in_ = X.shape[1]
         y_binned = self.discretizer.fit_transform(X, y)
         self.bucket_cl: BucketClassifier = self.bucket_cl.set_params(**self.params.get("cls", {})).fit(X, y_binned)
         groups = self.bucket_cl.predict(X)

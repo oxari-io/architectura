@@ -7,7 +7,7 @@ from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
 import xgboost as xgb
 import sklearn
-
+from typing_extensions import Self
 from sklearn.cross_decomposition import PLSRegression
 
 
@@ -74,13 +74,11 @@ class PLSEstimator(OxariScopeEstimator):
         self._estimator = PLSRegression()
         self._optimizer = optimizer or PLSOptimizer()
 
-    def fit(self, X, y, **kwargs) -> "PLSEstimator":
-        max_size = len(X)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)   
+    def fit(self, X, y, **kwargs) -> Self:
+        self.n_features_in_ = X.shape[1]        
         X = pd.DataFrame(X)
         y = pd.DataFrame(y)
-        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
+        self._estimator = self._estimator.set_params(**self.params).fit(X, y.values.ravel())
         # self.coef_ = self._estimator.coef_
         return self
        

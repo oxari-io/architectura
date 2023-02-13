@@ -150,6 +150,7 @@ class GLMEstimator(OxariScopeEstimator):
         self.set_optimizer(kwargs.pop('optimizer', GLMOptimizer()))
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        self.n_features_in_ = X.shape[1]        
         degree = self.params.pop("degree", 1)
         self._sub_preprocessor = GLMEstimator._make_model_specific_preprocessor(X, y, degree=degree)
         X_ = self._sub_preprocessor.transform(X)

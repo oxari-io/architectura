@@ -691,6 +691,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         et = time.time()
         elapsed_time = et - st
         self.logger.info(f'Fit_confidence function is completed with execution time: {elapsed_time} seconds')
+        self.stats["fit_confidence"] = self._gather_stats(X, elapsed_time)
         return self
 
     # TODO: Implement this function

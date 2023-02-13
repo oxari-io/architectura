@@ -6,46 +6,53 @@ import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogarithmScaler
 from datasources.core import FSExperimentDataLoader
-from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
-                              FactorAnalysisFeatureReducer, AgglomerateFeatureReducer,
-                              GaussRandProjectionFeatureReducer,
-                              IsomapDimensionalityFeatureReducer,
-                              PCAFeatureReducer, SparseRandProjectionFeatureReducer)
+from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAnalysisFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer,
+                              IsomapDimensionalityFeatureReducer, PCAFeatureReducer, SparseRandProjectionFeatureReducer)
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator
 from experiments.experiment_argument_parser import FeatureReductionExperimentCommandLineParser
+import textdistance
+import numpy as np
 
-def convert_reduction_methods(reduction_methods_string):
+
+def convert_reduction_methods(reduction_methods_str_list):
     # if the reduction methods are not strings, they are already in the right format (in that case it was the default argument of parser)
-    if not isinstance(reduction_methods_string[0], str): 
-        return reduction_methods_string 
-    
+    if not isinstance(reduction_methods_str_list[0], str):
+        return reduction_methods_str_list
+
     switcher = {
         "DummyFeatureReducer": DummyFeatureReducer,
         "FeatureAgglomeration": AgglomerateFeatureReducer,
-        "PCAFeatureSelector": PCAFeatureReducer, 
-        "DropFeatureReducer": DropFeatureReducer, 
-        "GaussRandProjection": GaussRandProjectionFeatureReducer, 
-        "SparseRandProjection": SparseRandProjectionFeatureReducer, 
+        "PCAFeatureSelector": PCAFeatureReducer,
+        "DropFeatureReducer": DropFeatureReducer,
+        "GaussRandProjection": GaussRandProjectionFeatureReducer,
+        "SparseRandProjection": SparseRandProjectionFeatureReducer,
         "FactorAnalysis": FactorAnalysisFeatureReducer
     }
-    
+
     reduction_methods = []
-    for method in reduction_methods_string:
+    for method in reduction_methods_str_list:
         m = switcher.get(method)
         if (m != None):
             reduction_methods.append(m)
         else:
-            print("invalid method")
+            argmin = np.argmin([textdistance.damerau_levenshtein.distance(method, other) for other in switcher.keys()])
+            list_of_str_methd_pairs = [l for l in switcher.items()]
+
+            print(f"Invalid method. Did you mean {list_of_str_methd_pairs[argmin]}?")
             exit()
-        
-    return reduction_methods  
+
+    return reduction_methods
+
 
 if __name__ == "__main__":
-    parser = FeatureReductionExperimentCommandLineParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (-s for all 3 scopes), what file to write to (-a to append to existing file) and what feature reduction methods to compare (write -c before specifying). Defaults: 10 repititions, scope 1 only, new file, all reduction methods (DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer).')
+    parser = FeatureReductionExperimentCommandLineParser(
+        description=
+        'Experiment arguments: number of repetitions, what scopes to incorporate (-s for all 3 scopes), what file to write to (-a to append to existing file) and what feature reduction methods to compare (write -c before specifying). Defaults: 10 repititions, scope 1 only, new file, all reduction methods (DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer).'
+    )
 
     args = parser.parse_args()
     num_reps = args.num_reps
@@ -57,10 +64,10 @@ if __name__ == "__main__":
     print("scope: ", scope)
     print("results file: ", results_file)
     print("reduction_methods: ", reduction_methods)
-    
-    all_results = [] # dictionary where key=feature selection method, value = evaluation results
+
+    all_results = []  # dictionary where key=feature selection method, value = evaluation results
     for i in range(num_reps):
-        dataset = FSExperimentDataLoader().run() 
+        dataset = FSExperimentDataLoader().run()
         X = dataset.get_features(OxariDataManager.ORIGINAL)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
@@ -106,14 +113,15 @@ if __name__ == "__main__":
 
                 all_results.append({"time": time_elapsed_2, "scope": 2, **ppl2.evaluation_results})
                 all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results})
-            
+
             print(all_results)
-            concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
-            
+            concatenated = pd.json_normalize(all_results)[[
+                "time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"
+            ]]
+
             fname = __loader__.name.split(".")[-1]
 
             if (results_file is True):
                 concatenated.to_csv(f'local/eval_results/{fname}.csv')
-            else: 
-                concatenated.to_csv(f'local/eval_results/{fname}.csv', header = False, mode='a')
-
+            else:
+                concatenated.to_csv(f'local/eval_results/{fname}.csv', header=False, mode='a')

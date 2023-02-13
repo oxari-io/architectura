@@ -46,6 +46,7 @@ torch = "^1.13.1"
 pgmpy = "^0.1.21"
 autoimpute = "^0.13.0"
 missingno = "^0.5.1"
+textdistance = "^4.5.0"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"

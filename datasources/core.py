@@ -30,7 +30,7 @@ class DefaultDataManager(OxariDataManager):
         )
 
 
-class FSExperimentDataLoader(OxariDataManager):
+class FSExperimentDataLoader(DefaultDataManager):
 
     def _transform(self, df, **kwargs):
         # we don't want sampling of the same row more than once

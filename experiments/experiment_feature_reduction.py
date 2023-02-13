@@ -41,8 +41,8 @@ def convert_reduction_methods(reduction_methods_str_list):
         else:
             argmin = np.argmin([textdistance.damerau_levenshtein.distance(method, other) for other in switcher.keys()])
             list_of_str_methd_pairs = [l for l in switcher.items()]
-
-            print(f"Invalid method. Did you mean {list_of_str_methd_pairs[argmin]}?")
+            s,c = list_of_str_methd_pairs[argmin]
+            print(f"Invalid method. Did you mean {s} ({c})?")
             exit()
 
     return reduction_methods

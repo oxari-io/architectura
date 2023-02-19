@@ -47,6 +47,7 @@ pgmpy = "^0.1.21"
 autoimpute = "^0.13.0"
 missingno = "^0.5.1"
 textdistance = "^4.5.0"
+pydot = "^1.4.2"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"

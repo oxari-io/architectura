@@ -4,7 +4,7 @@ import time
 
 import pandas as pd
 
-from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, DummyConfidenceEstimator
+from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, DummyConfidenceEstimator, ConformalKNNConfidenceEstimator, JacknifeConfidenceEstimator
 from base.helper import LogarithmScaler
 from datasources.core import DefaultDataManager
 from feature_reducers import PCAFeatureReducer
@@ -12,7 +12,7 @@ from feature_reducers import PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
-from scope_estimators import MiniModelArmyEstimator
+from scope_estimators import MiniModelArmyEstimator, SupportVectorEstimator
 
 if __name__ == "__main__":
 
@@ -20,9 +20,10 @@ if __name__ == "__main__":
     # loads the data just like CSVDataLoader, but a selection of the data
     for i in range(10):
         configurations = [
+            ConformalKNNConfidenceEstimator,
             DummyConfidenceEstimator,
             BaselineConfidenceEstimator,
-            # JacknifeConfidenceEstimator,
+            JacknifeConfidenceEstimator,
             DirectLossConfidenceEstimator,
             PercentileOffsetConfidenceEstimator,
             MAPIEConfidenceEstimator
@@ -40,7 +41,7 @@ if __name__ == "__main__":
             preprocessor=IIDPreprocessor(),
             feature_reducer=PCAFeatureReducer(),
             imputer=RevenueQuantileBucketImputer(),
-            scope_estimator=MiniModelArmyEstimator(),
+            scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
             scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
@@ -48,7 +49,7 @@ if __name__ == "__main__":
             preprocessor=IIDPreprocessor(),
             feature_reducer=PCAFeatureReducer(),
             imputer=RevenueQuantileBucketImputer(),
-            scope_estimator=MiniModelArmyEstimator(),
+            scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
             scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
@@ -56,7 +57,7 @@ if __name__ == "__main__":
             preprocessor=IIDPreprocessor(),
             feature_reducer=PCAFeatureReducer(),
             imputer=RevenueQuantileBucketImputer(),
-            scope_estimator=MiniModelArmyEstimator(),
+            scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
             scope_transformer=LogarithmScaler(),
         ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)

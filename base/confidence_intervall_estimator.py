@@ -10,7 +10,7 @@ from typing_extensions import Self
 
 from base import OxariConfidenceEstimator, OxariScopeEstimator
 from base.oxari_types import ArrayLike
-
+from scipy import spatial
 
 # TODO: Implement evaluator that computes the coverage. https://towardsdatascience.com/prediction-intervals-in-python-64b992317b1a
 class BaselineConfidenceEstimator(OxariConfidenceEstimator):
@@ -200,7 +200,7 @@ class MAPIEConfidenceEstimator(OxariConfidenceEstimator):
     def fit(self, X, y, **kwargs) -> Self:
         X = self.pipeline._preprocess(X)
         y = self.pipeline._transform_scope(y)
-        self.confidence_estimator = MapieRegressor(estimator=self.pipeline.estimator, cv='prefit').fit(X, y)
+        self.confidence_estimator = MapieRegressor(estimator=self.pipeline.estimator).fit(X, y)
         return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
@@ -211,3 +211,52 @@ class MAPIEConfidenceEstimator(OxariConfidenceEstimator):
         top = residuals_pred[:, 1]
         df = self._construct_result(top, bottom, preds)
         return df
+
+# TODO: Idea for conformal predictions based on similar instances
+# 1. Find a group of size K of nearest neighbors
+# 2. Predict conformity scores |y-y_pred| for all neighbors
+# 3. Quantile order by the conformity score
+# 4. Compute the 1-eps quantile of these neighbors alpha
+# 5. Assign boundary based on the chosen eps -> y_pred_new +/- alpha
+# 
+
+class ConformalKNNConfidenceEstimator(OxariConfidenceEstimator):
+    """
+    From here: https://medium.com/towards-data-science/you-cant-predict-the-errors-of-your-model-or-can-you-1a2e4a1f38a0
+
+    """
+
+    def __init__(self, k=10, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._all_estimators: List[OxariScopeEstimator] = []
+        self.res = []
+        self.k = k
+        self.confidence_estimator:MapieRegressor = None
+
+    def fit(self, X, y, **kwargs) -> Self:
+        X = self.pipeline._preprocess(X)
+        y = self.pipeline._transform_scope(y)
+        self.grouper = spatial.KDTree(X)
+        # q_estimations = self.pipeline.estimator.predict(X)
+        y_pred = self.pipeline.estimator.fit(X, y)
+        return self
+
+    def predict(self, X, **kwargs) -> ArrayLike:
+        X = self.pipeline._preprocess(X)
+        # https://stackoverflow.com/a/32446753/4162265
+        k_closest_idx = self.grouper.query(X, self.k)[1]
+        k_closest = self.grouper.data[k_closest_idx]
+        num_sample, num_neighbors, num_ft = k_closest.shape
+        k_closest_reshaped = pd.DataFrame(k_closest.reshape(-1, num_ft), columns=X.columns)
+        y_pred = self.pipeline.estimator.predict(k_closest_reshaped).reshape(num_sample, num_neighbors)
+        # y_pred_sorted = np.sort(y_pred, axis=1)
+        quantiles = pd.DataFrame(np.quantile(y_pred, q=[0.05, 0.5 ,0.95], axis=1).T, columns=["bottom","median","top"])
+        bottom = quantiles["bottom"]
+        top = quantiles["top"]
+        preds = quantiles["median"]
+        df = self._construct_result(top, bottom, preds)
+        return df
+
+# TODO: Implement conformalized quantile regression
+# 1. https://github.com/yromano/cqr/blob/master/cqr_real_data_example.ipynb
+# 2. https://towardsdatascience.com/how-to-predict-risk-proportional-intervals-with-conformal-quantile-regression-175775840dc4   

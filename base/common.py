@@ -123,9 +123,6 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         return super().evaluate(y_true, y_pred, **error_metrics)
 
 
-
-
-
 class DefaultClusterEvaluator(OxariEvaluator):
 
     def __init__(self, **kwargs) -> None:
@@ -372,7 +369,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     def evaluate(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # TODO: also include supervised methods R² into eval
         p = kwargs.pop('p', 0.3)
-        
+
         X_true = X.dropna(how='any')
 
         mask = np.random.rand(*X_true.shape) < p
@@ -737,6 +734,7 @@ class TestTest(OxariPipeline):
 
 
 class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
+
     class DefaultConfidenceEvaluator(OxariEvaluator):
 
         def evaluate(self, y_true: pd.Series, y_pred: pd.DataFrame, **kwargs):
@@ -745,16 +743,22 @@ class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
             # compute metrics of interest
             # https://www.statisticshowto.com/coverage-probability/
             y_hat, y_lower, y_upper = y_pred["pred"], y_pred["lower"].values, y_pred["upper"].values
+
             coverage_pred = y_hat.between(y_lower, y_upper, inclusive='both').mean()
             coverage = y_true.between(y_lower, y_upper, inclusive='both').mean()
-            mean_range = np.median(y_upper - y_lower)
+
+            ranges = y_upper - y_lower
+            quantiles = [.1, .25, .5, .75, .90, .95, .99]
+            percentile_ranges = np.quantile(ranges, quantiles)
+            q_dict = {f"{int(q*100)}%": v for q, v in zip(quantiles, percentile_ranges)}
+
             # Ideas for other metrics:
             # - Fraction between range and possible intervall. https://link.springer.com/article/10.1007/s10994-014-5453-0
             error_metrics = {
                 "evaluator": self.name,
                 "mean_coverage_model_prediction": coverage_pred,
                 "mean_coverage_ground_truth": coverage,
-                "median_range": mean_range,
+                "percentile_range": q_dict,
             }
             return error_metrics
 
@@ -795,12 +799,15 @@ class DummyConfidenceEstimator(OxariConfidenceEstimator):
         super().__init__(**kwargs)
 
     def fit(self, X, y, **kwargs) -> "OxariRegressor":
+        self.max_ = np.max(y)
+        self.min_ = np.min(y)
         return super().fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
         mean_ = self.pipeline.predict(X)
-        df = self._construct_result(mean_, mean_, mean_)
+        
+        df = self._construct_result(self.max_, self.min_, mean_)
         return df
 
 

@@ -61,7 +61,7 @@ class LinearSVROptimizer(OxariOptimizer):
             "C": trial.suggest_float("C", 0.1, 1000, log=True),
             "loss": trial.suggest_categorical("loss", ["epsilon_insensitive", "squared_epsilon_insensitive"]),
             "intercept_scaling": trial.suggest_float("intercept_scaling", 1.0, 150.0, step=0.5),
-            "max_iter": trial.suggest_int("max_iter", 7000, 7001)
+            "max_iter": trial.suggest_categorical("max_iter", [7000])
         }
         
         degree = trial.suggest_int("degree", 1, 10)

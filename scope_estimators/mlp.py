@@ -5,9 +5,9 @@ import optuna
 from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
 
-from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neural_network import MLPRegressor
 
-class KNOptimizer(OxariOptimizer):
+class MLPOptimizer(OxariOptimizer):
 
     def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
@@ -37,7 +37,7 @@ class KNOptimizer(OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"kn_process_hp_tuning",
+            study_name=f"mlp_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
         )
@@ -51,35 +51,42 @@ class KNOptimizer(OxariOptimizer):
         return study.best_params, df
 
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        
+        num_hidden_layers = trial.suggest_int("num_hidden_layers", 0, 5)
         param_space = {
-            "n_neighbors": trial.suggest_int("n_neighbors", 1, 15),
-            "weights": trial.suggest_categorical("weights", ["uniform", "distance"]),
+            # "hidden_layer_sizes": trial.suggest_categorical("hidden_layer_sizes", [sizes]),
+            "alpha": trial.suggest_float("alpha", 0.0001, 1, log=True),
+            "batch_size": trial.suggest_categorical("batch_size", [400, 600, 800, 1000]),
+            "learning_rate_init": trial.suggest_float("learning_rate_init", 0.0001, 1, log=True),
+            "max_iter": trial.suggest_categorical("max_iter", [2000]),
+            "tol": trial.suggest_float("tol", 0.00001, 0.1, log=True),
+            "early_stopping": trial.suggest_categorical("early_stopping", [True]),
+           
         }
+        hidden_layers = [trial.suggest_int("hidden_layers", 1, 5) for i in range(num_hidden_layers)]
         
-        model = KNeighborsRegressor(**param_space).fit(X_train, y_train)
+        model = MLPRegressor(hidden_layer_sizes=hidden_layers, **param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
-class KNEstimator(OxariScopeEstimator):
+class MLPEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = KNeighborsRegressor()
-        self._optimizer = optimizer or KNOptimizer()
+        self._estimator = MLPRegressor()
+        self._optimizer = optimizer or MLPOptimizer()
 
-    def fit(self, X, y, **kwargs) -> "KNEstimator":
-        max_size = len(X)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)   
+    def fit(self, X, y, **kwargs) -> "MLPEstimator":
         X = pd.DataFrame(X)
         y = pd.DataFrame(y)
-        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
+        self.params.pop("num_hidden_layers")
+        self.params.pop("hidden_layers")
+        self._estimator = self._estimator.set_params(**self.params).fit(X, y)
         # self.coef_ = self._estimator.coef_
         return self
        
     def predict(self, X) -> ArrayLike:
+        X = pd.DataFrame(X)
         return self._estimator.predict(X)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):

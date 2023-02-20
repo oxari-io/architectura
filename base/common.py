@@ -14,7 +14,7 @@ import optuna
 import pandas as pd
 import sklearn
 from pmdarima.metrics import smape
-from sklearn.base import MetaEstimatorMixin, MultiOutputMixin
+from sklearn.base import MetaEstimatorMixin, MultiOutputMixin, BaseEstimator, TransformerMixin, OneToOneFeatureMixin
 from sklearn.impute import _base
 from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, precision_recall_fscore_support, r2_score, silhouette_score, median_absolute_error)
 from sklearn.model_selection import train_test_split
@@ -499,6 +499,22 @@ class DefaultPostprocessor(OxariPostprocessor):
     def run(self, X, y=None, **kwargs) -> "OxariPostprocessor":
         return X
 
+class OxariFeatureTransformer(OneToOneFeatureMixin, OxariTransformer):
+
+    def fit(self, X, y=None, **kwargs) -> Self:
+        return self
+
+    def fit_transform(self, X, y=None, **fit_params):
+        return self.fit(X, y).transform(y, **fit_params)
+
+    @abc.abstractmethod
+    def transform(self, X, y=None, **kwargs) -> ArrayLike:
+        return X.copy()
+
+    @abc.abstractmethod
+    def reverse_transform(self, X, **kwargs) -> ArrayLike:
+        return X.copy()
+
 
 class OxariScopeTransformer(OxariTransformer):
 
@@ -509,21 +525,13 @@ class OxariScopeTransformer(OxariTransformer):
         return self.fit(X, y).transform(y, **fit_params)
 
     @abc.abstractmethod
-    def transform(self, y, **kwargs) -> ArrayLike:
+    def transform(self, y=None, **kwargs) -> ArrayLike:
         return y.copy()
 
     @abc.abstractmethod
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
         return y.copy()
 
-
-class DummyScaler(OxariScopeTransformer):
-
-    def transform(self, y, **kwargs) -> ArrayLike:
-        return super().transform(y, **kwargs)
-
-    def reverse_transform(self, y, **kwargs) -> ArrayLike:
-        return super().reverse_transform(y, **kwargs)
 
 
 class OxariFeatureReducer(OxariTransformer, abc.ABC):

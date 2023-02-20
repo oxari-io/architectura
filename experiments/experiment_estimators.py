@@ -9,7 +9,7 @@ from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatur
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
 from scope_estimators import SupportVectorEstimator, XGBEstimator, SGDEstimator, PLSEstimator, GaussianProcessEstimator, DummyEstimator
 from base import BaselineConfidenceEstimator
-from base.helper import LogarithmScaler
+from base.helper import LogTargetScaler
 from dataset_loader.csv_loader import DefaultDataManager
 from scope_estimators import MiniModelPartyEstimator
 # import base
@@ -45,7 +45,7 @@ if __name__ == "__main__":
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
-                scope_transformer=LogarithmScaler(),
+                scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
             ppl2 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
-                scope_transformer=LogarithmScaler(),
+                scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
             ppl3 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
-                scope_transformer=LogarithmScaler(),
+                scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
 
             all_results.append({"time": time.time() - start, "scope": 1, **ppl1.evaluation_results})

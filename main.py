@@ -10,7 +10,7 @@ from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver,
 from base.common import OxariLoggerMixin
 from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
-from base.helper import LogarithmScaler
+from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         imputer=RevenueQuantileBucketImputer(buckets_number=3),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogarithmScaler(),
+        scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogarithmScaler(),
+        scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         imputer=RevenueQuantileBucketImputer(),
         scope_estimator=SupportVectorEstimator(),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogarithmScaler(),
+        scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
 
     model = OxariMetaModel()

@@ -5,7 +5,7 @@ import time
 import pandas as pd
 
 from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, DummyConfidenceEstimator, ConformalKNNConfidenceEstimator, JacknifeConfidenceEstimator
-from base.helper import LogarithmScaler
+from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager
 from feature_reducers import PCAFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
@@ -43,7 +43,7 @@ if __name__ == "__main__":
             imputer=RevenueQuantileBucketImputer(),
             scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
-            scope_transformer=LogarithmScaler(),
+            scope_transformer=LogTargetScaler(),
         ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
         ppl2 = DefaultPipeline(
             preprocessor=IIDPreprocessor(),
@@ -51,7 +51,7 @@ if __name__ == "__main__":
             imputer=RevenueQuantileBucketImputer(),
             scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
-            scope_transformer=LogarithmScaler(),
+            scope_transformer=LogTargetScaler(),
         ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val)
         ppl3 = DefaultPipeline(
             preprocessor=IIDPreprocessor(),
@@ -59,7 +59,7 @@ if __name__ == "__main__":
             imputer=RevenueQuantileBucketImputer(),
             scope_estimator=SupportVectorEstimator(),
             ci_estimator=None,
-            scope_transformer=LogarithmScaler(),
+            scope_transformer=LogTargetScaler(),
         ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val)
 
         for Estimator in configurations:

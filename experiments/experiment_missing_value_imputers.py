@@ -3,7 +3,7 @@ import time
 
 import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
-from base.helper import LogarithmScaler
+from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager
 from feature_reducers import PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer

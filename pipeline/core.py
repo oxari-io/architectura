@@ -1,7 +1,8 @@
 import numpy as np
 from sklearn import model_selection as ms
 
-from base import DummyConfidenceEstimator, DummyScaler, OxariPipeline
+from base import DummyConfidenceEstimator, OxariPipeline
+from base.helper import DummyTargetScaler
 from feature_reducers import DummyFeatureReducer
 from imputers import BaselineImputer
 from preprocessors import BaselinePreprocessor
@@ -20,7 +21,7 @@ class DefaultPipeline(OxariPipeline):
             feature_selector=kwargs.pop('feature_reducer', DummyFeatureReducer()),
             scope_estimator= kwargs.pop('scope_estimator', DummyEstimator()),
             ci_estimator = kwargs.pop('ci_estimator', DummyConfidenceEstimator()),
-            scope_transformer = kwargs.pop('scope_transformer', DummyScaler()),
+            scope_transformer = kwargs.pop('scope_transformer', DummyTargetScaler()),
             **kwargs,
         )
 
@@ -29,6 +30,9 @@ class DefaultPipeline(OxariPipeline):
         # return {**super().evaluation_results}
         return {
             "imputer": self.preprocessor.imputer.name,
+            "fin_transformer": self.preprocessor.fin_transformer.__class__.__name__,
+            "cat_transformer": self.preprocessor.cat_transformer.__class__.__name__,
+            "scope_transformer": self.scope_transformer.__class__.__name__,
             "preprocessor": self.preprocessor.name,
             "feature_selector": self.feature_selector.name,
             "scope_estimator": self.estimator.name,

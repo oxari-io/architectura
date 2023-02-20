@@ -4,7 +4,7 @@ import time
 import pandas as pd
 
 from base import BaselineConfidenceEstimator, OxariDataManager
-from base.helper import LogarithmScaler
+from base.helper import LogTargetScaler
 from datasources.core import FSExperimentDataLoader
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAnalysisFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer, SparseRandProjectionFeatureReducer)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                 imputer=RevenueQuantileBucketImputer(buckets_number=3),
                 scope_estimator=SupportVectorEstimator(),
                 ci_estimator=BaselineConfidenceEstimator(),
-                scope_transformer=LogarithmScaler(),
+                scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
             time_elapsed_1 = time.time() - start
             start = time.time()
@@ -97,7 +97,7 @@ if __name__ == "__main__":
                     imputer=RevenueQuantileBucketImputer(buckets_number=3),
                     scope_estimator=SupportVectorEstimator(),
                     ci_estimator=BaselineConfidenceEstimator(),
-                    scope_transformer=LogarithmScaler(),
+                    scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
                 time_elapsed_2 = time.time() - start
                 start = time.time()
@@ -107,7 +107,7 @@ if __name__ == "__main__":
                     imputer=RevenueQuantileBucketImputer(buckets_number=3),
                     scope_estimator=SupportVectorEstimator(),
                     ci_estimator=BaselineConfidenceEstimator(),
-                    scope_transformer=LogarithmScaler(),
+                    scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
                 time_elapsed_3 = time.time() - start
 

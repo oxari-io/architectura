@@ -5,8 +5,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import KBinsDiscretizer
-
-from base.common import OxariScopeTransformer
+from base.common import OxariScopeTransformer, OxariFeatureTransformer
 from base.oxari_types import ArrayLike
 
 
@@ -44,6 +43,7 @@ def mock_data():
 
 
 class BucketScopeDiscretizer(OxariScopeTransformer):
+
     def __init__(self, n_buckets, prefix="bucket_", **kwargs) -> None:
         super().__init__()
         self.n_buckets = n_buckets
@@ -68,16 +68,17 @@ class BucketScopeDiscretizer(OxariScopeTransformer):
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
         return super().reverse_transform(y, **kwargs)
 
+
 class SingleBucketScopeDiscretizer(BucketScopeDiscretizer):
     """This is only for experimental purposes"""
+
     def __init__(self, n_buckets, prefix="bucket_", **kwargs) -> None:
         self.n_buckets = n_buckets
         self.prefix = prefix
         self.info = {"bucket_counts": {}}
 
-
     def fit(self, X, y=None):
-        self.info["bucket_counts"][0]=len(y)
+        self.info["bucket_counts"][0] = len(y)
         return self
 
     def transform(self, y, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
@@ -85,12 +86,41 @@ class SingleBucketScopeDiscretizer(BucketScopeDiscretizer):
 
 
 # TODO: Checkout TargetTransformer and QuantileTransformer
-class LogarithmScaler(OxariScopeTransformer):
-    def __init__(self, name=None, **kwargs) -> None:
-        super().__init__(name, **kwargs)
+class LogTargetScaler(OxariScopeTransformer):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
     def transform(self, y, **kwargs) -> ArrayLike:
         return np.log1p(y.copy())
 
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
         return np.expm1(y.copy())
+
+class DummyTargetScaler(OxariScopeTransformer):
+
+    def transform(self, y, **kwargs) -> ArrayLike:
+        return super().transform(y, **kwargs)
+
+    def reverse_transform(self, y, **kwargs) -> ArrayLike:
+        return super().reverse_transform(y, **kwargs)
+
+class ArcSinhScaler(OxariFeatureTransformer):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def transform(self, X, y=None, **kwargs) -> ArrayLike:
+        return np.arcsinh(X.copy())
+
+    def reverse_transform(self, X, **kwargs) -> ArrayLike:
+        return np.sinh(X.copy())
+
+
+class DummyFeatureScaler(OxariFeatureTransformer):
+
+    def transform(self, X, y=None, **kwargs) -> ArrayLike:
+        return super().transform(X, **kwargs)
+
+    def reverse_transform(self, X, **kwargs) -> ArrayLike:
+        return super().reverse_transform(X, **kwargs)

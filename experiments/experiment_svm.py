@@ -6,7 +6,7 @@ from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
 from pipeline import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator, FastSupportVectorEstimator
-from base.helper import LogarithmScaler
+from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager
 from feature_reducers import PCAFeatureReducer, DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
@@ -44,7 +44,7 @@ if __name__ == "__main__":
                         imputer=RevenueQuantileBucketImputer(buckets_number=5),
                         scope_estimator=imputer,
                         ci_estimator=BaselineConfidenceEstimator(),
-                        scope_transformer=LogarithmScaler(),
+                        scope_transformer=LogTargetScaler(),
                     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
                 
                 all_results.append(dp1.evaluation_results)

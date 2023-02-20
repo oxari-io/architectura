@@ -22,7 +22,7 @@ from sklearn.preprocessing import KBinsDiscretizer
 from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver, OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
 from base.common import OxariLoggerMixin
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
-from base.helper import LogarithmScaler
+from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager
 from datasources.online import S3Datasource
 from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer, FactorAnalysisFeatureReducer, GaussRandProjectionFeatureReducer, IsomapDimensionalityFeatureReducer, SparseRandProjectionFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer
@@ -47,7 +47,7 @@ dp1 = DefaultPipeline(
     imputer=RevenueQuantileBucketImputer(buckets_number=5),
     scope_estimator=SupportVectorEstimator(),
     ci_estimator=BaselineConfidenceEstimator(),
-    scope_transformer=LogarithmScaler(),
+    scope_transformer=LogTargetScaler(),
 ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
 
 # %%

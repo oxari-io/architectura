@@ -4,8 +4,8 @@ from itertools import product
 import pandas as pd
 import sklearn
 
-from base import DummyScaler, OxariDataManager, OxariPipeline
-from base.helper import LogarithmScaler
+from base import DummyTargetScaler, OxariDataManager, OxariPipeline
+from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureReducer
 from imputers import KMeansBucketImputer, RevenueQuantileBucketImputer
@@ -63,8 +63,8 @@ if __name__ == "__main__":
         ImprovedBaselinePreprocessor,
     ]
     all_scope_scalers = [
-        LogarithmScaler(),
-        DummyScaler(),
+        LogTargetScaler(),
+        DummyTargetScaler(),
     ]
 
     all_combinations = list(product(model_list, all_preprocessors, all_imputers, all_feature_reducers, all_scope_scalers, range(5)))

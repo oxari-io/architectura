@@ -7,7 +7,7 @@ import pandas as pd
 import sklearn.preprocessing as prep
 
 from base import OxariPreprocessor
-from base.common import DummyScaler
+from base.helper import DummyTargetScaler
 
 
 class DummyPreprocessor(OxariPreprocessor):
@@ -15,7 +15,7 @@ class DummyPreprocessor(OxariPreprocessor):
     def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(**kwargs)
         self.cat_transformer = cat_transformer or ce.OrdinalEncoder()
-        self.fin_transformer = fin_transformer or DummyScaler()
+        self.fin_transformer = fin_transformer or DummyTargetScaler()
 
     def fit(self, X: pd.DataFrame, y, **kwargs) -> Self:
         data = X
@@ -80,7 +80,15 @@ class BaselinePreprocessor(OxariPreprocessor):
         return X_new
 
     def get_config(self, deep=True):
-        return {**self.fin_transformer.get_params(deep), **self.cat_transformer.get_params(deep), **self.imputer.get_config(deep), **super().get_config(deep)}
+        return {
+            "fin_transformer": self.fin_transformer.__class__.__name__,
+            "cat_transformer": self.cat_transformer.__class__.__name__,
+            "imputer": self.imputer.__class__.__name__,
+            **self.fin_transformer.get_params(deep),
+            **self.cat_transformer.get_params(deep),
+            **self.imputer.get_config(deep),
+            **super().get_config(deep)
+        }
 
 
 class ImprovedBaselinePreprocessor(BaselinePreprocessor):

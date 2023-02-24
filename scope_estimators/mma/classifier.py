@@ -150,3 +150,30 @@ class BucketClassifier(OxariClassifier):
     
     def get_config(self, deep=True):
         return {**self.params}
+    
+
+class BadPerformanceBucketClassifier(OxariClassifier):
+    def __init__(self, n_buckets=10, **kwargs):
+        self.n_buckets = n_buckets
+        self._estimator = lgb.LGBMClassifier(**kwargs)
+
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
+        best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        return best_params, info
+
+    def evaluate(self, y_true, y_pred, **kwargs):
+        return self._evaluator.evaluate(y_true, y_pred)
+
+    def fit(self, X, y, **kwargs) -> "OxariClassifier":
+        self._estimator.set_params(**self.params).fit(X, y.ravel())
+        return self
+
+    def predict(self, X, **kwargs):
+        return self._estimator.predict(X)
+
+    def set_params(self, **params):
+        self.params = params
+        return self
+    
+    def get_config(self, deep=True):
+        return {**self.params}

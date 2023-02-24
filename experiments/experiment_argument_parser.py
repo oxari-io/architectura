@@ -1,12 +1,15 @@
 import argparse
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
                               FactorAnalysisFeatureReducer, AgglomerateFeatureReducer,
-                              GaussRandProjectionFeatureReducer, PCAFeatureReducer,
+                              GaussRandProjectionFeatureReducer,
+                              IsomapDimensionalityFeatureReducer, PCAFeatureReducer,
                               SparseRandProjectionFeatureReducer)
-from base import MAPIEConfidenceEstimator, BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator
+from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator
 from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator,
                               PredictMedianEstimator,
-                              SingleBucketModelEstimator, SingleBucketVotingArmyEstimator,
+                              SingleBucketModelEstimator, SingleBucketVotingArmyEstimator)
+from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator,
+                              PredictMedianEstimator,
                               EvenWeightMiniModelArmyEstimator)
 
 class ExperimentCommandLineParser():

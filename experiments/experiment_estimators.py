@@ -7,7 +7,7 @@ from postprocessors import ScopeImputerPostprocessor
 from imputers import BaselineImputer, RevenueQuantileBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapDimensionalityReduction, MDSDimensionalitySelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Latent_Dirichlet_Allocation
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
-from scope_estimators import SupportVectorEstimator, XGBEstimator, SGDEstimator, PLSEstimator, GaussianProcessEstimator, DummyEstimator
+from scope_estimators import SupportVectorEstimator, XGBEstimator, SGDEstimator, PLSEstimator, GaussianProcessEstimator, DummyEstimator, KNEstimator, RNEstimator, LinearSVREstimator, BayesianRegressionEstimator, MLPEstimator
 from base import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
 from dataset_loader.csv_loader import DefaultDataManager
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # loads the data just like CSVDataLoader, but a selection of the data
     for i in range(1):
         # configurations = [MiniModelArmyEstimator(), MiniModelPartyEstimator(), BaselineEstimator(), PredictMedianEstimator()]
-        configurations = [ PLSEstimator(), DummyEstimator()]
+        configurations = [ MLPEstimator()]
         # configurations = [SupportVectorEstimator(), XGBEstimator(), SGDEstimator(), DummyEstimator()]
         dataset = DefaultDataManager().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

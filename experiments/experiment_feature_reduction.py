@@ -116,4 +116,3 @@ if __name__ == "__main__":
                 concatenated.to_csv(f'local/eval_results/{fname}.csv')
             else: 
                 concatenated.to_csv(f'local/eval_results/{fname}.csv', header = False, mode='a')
-

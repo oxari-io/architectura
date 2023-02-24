@@ -1,14 +1,14 @@
+from base import OxariScopeEstimator, OxariOptimizer
 import numpy as np
-import optuna
 import pandas as pd
-from sklearn.svm import SVR
-
-from base import OxariScopeEstimator
-from base.common import OxariOptimizer
-from base.metrics import optuna_metric
+import optuna
 from base.oxari_types import ArrayLike
+from base.metrics import optuna_metric
 
-class SVROptimizer(OxariOptimizer):
+from sklearn.neural_network import MLPRegressor
+
+class MLPOptimizer(OxariOptimizer):
+
     def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
             n_trials=n_trials,
@@ -37,7 +37,7 @@ class SVROptimizer(OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"svm_process_hp_tuning",
+            study_name=f"mlp_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
         )
@@ -50,41 +50,48 @@ class SVROptimizer(OxariOptimizer):
 
         return study.best_params, df
 
-    # TODO: Find better optimization ranges for the GaussianProcessEstimator
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
-        C = trial.suggest_float("C", 0.01, 2.0)
+        num_hidden_layers = trial.suggest_int("num_hidden_layers", 0, 5)
+        param_space = {
+            # "hidden_layer_sizes": trial.suggest_categorical("hidden_layer_sizes", [sizes]),
+            "alpha": trial.suggest_float("alpha", 0.0001, 1, log=True),
+            "batch_size": trial.suggest_categorical("batch_size", [400, 600, 800, 1000]),
+            "learning_rate_init": trial.suggest_float("learning_rate_init", 0.0001, 1, log=True),
+            "max_iter": trial.suggest_categorical("max_iter", [2000]),
+            "tol": trial.suggest_float("tol", 0.00001, 0.1, log=True),
+            "early_stopping": trial.suggest_categorical("early_stopping", [True]),
+           
+        }
+        hidden_layers = [trial.suggest_int("hidden_layers", 1, 5) for i in range(num_hidden_layers)]
         
-            
-        max_size = len(X_train)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)
-        model = SVR(epsilon=epsilon, C=C).fit(X_train.iloc[indices], y_train.iloc[indices])
+        model = MLPRegressor(hidden_layer_sizes=hidden_layers, **param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
-class SupportVectorEstimator(OxariScopeEstimator):
+class MLPEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = SVR()
-        self._optimizer = optimizer or SVROptimizer()
+        self._estimator = MLPRegressor()
+        self._optimizer = optimizer or MLPOptimizer()
 
-    def fit(self, X, y, **kwargs) -> "SupportVectorEstimator":
-        max_size = len(X)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)   
+    def fit(self, X, y, **kwargs) -> "MLPEstimator":
         X = pd.DataFrame(X)
         y = pd.DataFrame(y)
-        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
+        self.params.pop("num_hidden_layers")
+        self.params.pop("hidden_layers")
+        self._estimator = self._estimator.set_params(**self.params).fit(X, y)
+        # self.coef_ = self._estimator.coef_
         return self
-
+       
     def predict(self, X) -> ArrayLike:
+        X = pd.DataFrame(X)
         return self._estimator.predict(X)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        best_params = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        return best_params
 
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred, **kwargs)     
@@ -94,3 +101,4 @@ class SupportVectorEstimator(OxariScopeEstimator):
 
     def get_config(self, deep=True):
         return {**self._estimator.get_params(), **super().get_config(deep)}
+        

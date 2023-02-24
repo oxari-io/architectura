@@ -1,0 +1,4 @@
+,time,scope,imputer,preprocessor,feature_selector,scope_estimator,test.evaluator,test.sMAPE,test.R2,test.MAE,test.RMSE,test.MAPE
+0,197.8208839893341,1,RevenueQuantileBucketImputer,IIDPreprocessor,PCAFeatureSelector,MLPEstimator,DefaultRegressorEvaluator,0.1556323958071232,0.5754851454707968,1.614050824436201,2.044950932542069,17.327842707520492
+1,197.82203102111816,2,RevenueQuantileBucketImputer,IIDPreprocessor,PCAFeatureSelector,MLPEstimator,DefaultRegressorEvaluator,0.10833011686542125,0.5026493233120526,1.171420235883017,1.5694965870016815,11.758716872588257
+2,197.82280325889587,3,RevenueQuantileBucketImputer,IIDPreprocessor,PCAFeatureSelector,MLPEstimator,DefaultRegressorEvaluator,0.18672487896403542,0.20247682678085754,2.0488584692778526,3.0081396100999687,20.470423284313554

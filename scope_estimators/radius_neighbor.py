@@ -1,20 +1,13 @@
-from typing import Union
-from base import OxariScopeEstimator, OxariRegressor, OxariMixin, OxariOptimizer
+from base import OxariScopeEstimator, OxariOptimizer
 import numpy as np
 import pandas as pd
 import optuna
 from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
-import xgboost as xgb
-import sklearn
-#do I want that? I do, right?
-from xgboost import XGBRegressor
 
-""" Relatively useful in hyperparameter tuning: 
-https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/
-"""
+from sklearn.neighbors import RadiusNeighborsRegressor
 
-class XGBOptimizer(OxariOptimizer):
+class RNOptimizer(OxariOptimizer):
 
     def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
@@ -23,7 +16,7 @@ class XGBOptimizer(OxariOptimizer):
             sampler=sampler,
             **kwargs,
         )
-    
+
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         """
         Explore the hyperparameter tning space with optuna.
@@ -44,7 +37,7 @@ class XGBOptimizer(OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"xgboost_process_hp_tuning",
+            study_name=f"rn_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
         )
@@ -59,39 +52,24 @@ class XGBOptimizer(OxariOptimizer):
 
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         
-        # max_depth: The maximum depth of each tree, often values are between 1 and 10.
-        # colsample_bytree: Number of features (columns) used in each tree, set to a value between 0 and 1, often 1.0 to use all features.
-        # gamma = 0 : A smaller value like 0.1-0.2 can also be chosen for starting. This will anyways be tuned later.
-        # subsample: The number of samples (rows) used in each tree, set to a value between 0 and 1, often 1.0 to use all samples.
-        # objective: determines the loss function to be used
-        # eta: The learning rate used to weight each model, often set to small values such as 0.3, 0.1, 0.01, or smaller.
-        # n_estimators: The number of trees in the ensemble, often increased until no further improvements are seen.
-
         param_space = {
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
-                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
-                'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
-                'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
-                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
-            }
+            "weights": trial.suggest_categorical("weights", ["uniform", "distance"]),
+        }
         
-            
-        model = XGBRegressor(**param_space).fit(X_train, y_train)
+        model = RadiusNeighborsRegressor(radius=10000, **param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
+        # ATTENTION: doesn't work because of NaN values in y_pred
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
-
-
-class XGBEstimator(OxariScopeEstimator):
+class RNEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = XGBRegressor()
-        self._optimizer = optimizer or XGBOptimizer()
+        self._estimator = RadiusNeighborsRegressor(algorithm="auto")
+        self._optimizer = optimizer or RNOptimizer()
 
-    def fit(self, X, y, **kwargs) -> "XGBEstimator":
+    def fit(self, X, y, **kwargs) -> "RNEstimator":
         max_size = len(X)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)   
@@ -116,16 +94,3 @@ class XGBEstimator(OxariScopeEstimator):
     def get_config(self, deep=True):
         return {**self._estimator.get_params(), **super().get_config(deep)}
         
-       
-
-    # # we can add more parameters if we want
-    # def fit(self, X, y, **kwargs) -> "OxariRegressor":
-    #     return self.fit(X, y)
-    
-    # def predict(self, X:ArrayLike, **kwargs) -> ArrayLike:
-    #     return self.predict(X)
-
-    # # alternative to "def _set_meta"
-    # def set_params(self, X:ArrayLike, **kwargs) -> ArrayLike:
-    #     self.feature_names_in_ = list(X.columns)
-    #     self.n_features_in_ = len(self.feature_names_in_)

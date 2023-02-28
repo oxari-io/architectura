@@ -8,14 +8,14 @@
       "name": "Run Training Pipeline",
       "type": "python",
       "request": "launch",
-      "module": "main",
+      "module": "main_prod",
       "justMyCode": true
     },
     {
       "name": "TEST Training Pipeline",
       "type": "python",
       "request": "launch",
-      "module": "main_test_datasources",
+      "module": "main",
       "justMyCode": true
     },
     {

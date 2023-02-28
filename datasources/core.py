@@ -39,10 +39,10 @@ class FSExperimentDataLoader(DefaultDataManager):
 
 
 class PreviousScopeFeaturesDataManager(DefaultDataManager):
-
+    PREFIX = "ft_numc_prior_"
     def _take_previous_scopes(self, df: pd.DataFrame):
         df_tmp = df.iloc[:, df.columns.str.startswith('tg_numc_')].shift(1)
-        df_tmp.columns = [f"ft_numc_preyear_{col}" for col in df_tmp.columns]
+        df_tmp.columns = [f"{self.PREFIX}{col}" for col in df_tmp.columns]
         df[df_tmp.columns] = df_tmp
         return df
 

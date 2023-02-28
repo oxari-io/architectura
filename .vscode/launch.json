@@ -19,6 +19,13 @@
       "justMyCode": true
     },
     {
+      "name": "DEV Saver",
+      "type": "python",
+      "request": "launch",
+      "module": "development.run_saver",
+      "justMyCode": true
+    },
+    {
       "name": "Run Parallel Pipeline",
       "type": "python",
       "request": "launch",

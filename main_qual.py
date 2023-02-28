@@ -142,7 +142,6 @@ if __name__ == "__main__":
     ### SAVE OBJECTS ###
 
     local_model_saver = PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(LocalDestination())
-    local_model_saver = PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(LocalDestination())
 
     # local_model_saver = LocalMetaModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=model)
     # local_lar_saver = LocalLARModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)

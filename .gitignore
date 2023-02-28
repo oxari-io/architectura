@@ -10,7 +10,7 @@ __pycache__/
 
 # data
 local/data/*
-# model-data/*
+model-data/*
 # objects
 local/objects/**/*
 !**/.gitkeep

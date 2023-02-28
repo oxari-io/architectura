@@ -10,8 +10,8 @@ from base.common import OxariLoggerMixin
 from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
-from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
-from datastores.saver import PickleSaver
+from datasources import DefaultDataManager, PreviousScopeFeaturesDataManager, S3Datasource, LocalDatasource
+from datastores.saver import PickleSaver, S3Destination
 from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
@@ -30,7 +30,11 @@ if __name__ == "__main__":
 
     # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
     # dataset = DefaultDataManager().run()
-    dataset = PreviousScopeFeaturesDataManager().run()
+    dataset = PreviousScopeFeaturesDataManager(
+        S3Datasource(path='model-data/input/scopes_auto.csv'),
+        LocalDatasource(path='model-data/input/financials_auto.csv'),
+        S3Datasource(path='model-data/input/categoricals_auto.csv'),
+    ).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -88,20 +92,20 @@ if __name__ == "__main__":
     # print(model.predict(SPLIT_1.val.X, scope=1))
     mainlogger.logger.info(f"Predict with Model only SCOPE1, Predictions: {model.predict(SPLIT_1.val.X, scope=1)}")
 
-    print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
-    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
-    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
+    # print("Impute scopes with Model")
+    # scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    # dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    # dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
+    # dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
 
-    scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
-    scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
+    # scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
+    # scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
 
-    print("\n", "Predict LARs on Mock data")
-    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
-    print(lar_imputed_data)
+    # print("\n", "Predict LARs on Mock data")
+    # lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    # lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    # dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
+    # print(lar_imputed_data)
 
     # print("Explain Effects of features")
     # explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
@@ -118,35 +122,31 @@ if __name__ == "__main__":
 
     # plt.show(block=True)
 
-    print("\n", "Predict ALL with Model")
-    print(model.predict(SPLIT_1.val.X))
+    # print("\n", "Predict ALL with Model")
+    # print(model.predict(SPLIT_1.val.X))
 
-    print("\n", "Predict ALL on Mock data")
-    print(model.predict(helper.mock_data()))
+    # print("\n", "Predict ALL on Mock data")
+    # print(model.predict(helper.mock_data()))
 
-    print("\n", "Compute Confidences")
-    print(model.predict(SPLIT_1.val.X, return_ci=True))
+    # print("\n", "Compute Confidences")
+    # print(model.predict(SPLIT_1.val.X, return_ci=True))
 
-    print("\n", "DIRECT COMPARISON")
-    result = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
-    result["true_scope"] = SPLIT_1.test.y.values
-    result["absolute_difference"] = np.abs(result["pred"] - result["true_scope"])
-    result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"])
-    result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
-    result.to_csv('local/eval_results/model_training_test.csv')
-    print(result)
+    # print("\n", "DIRECT COMPARISON")
+    # result = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
+    # result["true_scope"] = SPLIT_1.test.y.values
+    # result["absolute_difference"] = np.abs(result["pred"] - result["true_scope"])
+    # result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"])
+    # result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
+    # result.to_csv('local/eval_results/model_training_test.csv')
+    # print(result)
 
     tmp_pipeline = model.get_pipeline(1)
 
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
 
-    local_model_saver = PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(LocalDestination())
-    local_model_saver = PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(LocalDestination())
-
-    # local_model_saver = LocalMetaModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=model)
-    # local_lar_saver = LocalLARModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
-    # local_data_saver = LocalDataSaver(time=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)
-
-    SavingManager = OxariSavingManager(local_model_saver)
+    SavingManager = OxariSavingManager(
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model_scope").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model_scope").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
+    )
     SavingManager.run()

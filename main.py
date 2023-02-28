@@ -11,7 +11,7 @@ from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
-from datastores.saver import PickleSaver
+from datastores.saver import PickleSaver, S3Destination
 from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
@@ -141,12 +141,8 @@ if __name__ == "__main__":
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
 
-    local_model_saver = PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(LocalDestination())
-    local_model_saver = PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(LocalDestination())
-
-    # local_model_saver = LocalMetaModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=model)
-    # local_lar_saver = LocalLARModelSaver(time=time.strftime('%d-%m-%Y'), name="test").set(model=lar_model)
-    # local_data_saver = LocalDataSaver(time=time.strftime('%d-%m-%Y'), name="test").set(dataset=dataset)
-
-    SavingManager = OxariSavingManager(local_model_saver)
+    SavingManager = OxariSavingManager(
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(LocalDestination()),
+        # PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(S3Destination()),
+    )
     SavingManager.run()

@@ -25,11 +25,14 @@ MODULES_TO_PICKLE = [
 ]
 import abc
 import time
-from os import environ as env
+from os import PathLike, environ as env
 from pathlib import Path
 from typing import Dict, List
 
 import boto3
+import botocore
+from mypy_boto3_s3 import S3Client
+
 from typing_extensions import Self
 from base import OxariDataManager, OxariLoggerMixin, OxariMetaModel
 
@@ -39,9 +42,9 @@ ROOT_REMOTE = "remote"
 
 class DataTarget(OxariLoggerMixin, abc.ABC):
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, path:PathLike=None, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.destination_path = Path('.')
+        self._path = path
 
     @abc.abstractmethod
     def _check_if_destination_accessible(self, **kwargs) -> bool:
@@ -52,7 +55,7 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
 
     @abc.abstractmethod
     def _save(self, obj, name, **kwargs) -> bool:
-        target_destination = self.destination_path / name
+        target_destination = self._path / name
         with io.open(target_destination, "wb") as file:
             obj_to_save = pkl.dumps(obj)
             file.write(obj_to_save)
@@ -65,12 +68,10 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
 
 class PartialSaver(OxariLoggerMixin, abc.ABC):
 
-    def __init__(self, time=time.strftime('%d-%m-%Y'), name="noname", verbose=False, **kwargs) -> None:
+    def __init__(self, verbose=False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.verbose = verbose
         self._store = None
-        self._time = time
-        self._name = name
 
     def set_datatarget(self, datatarget: DataTarget) -> Self:
         self.datatarget: DataTarget = datatarget
@@ -82,6 +83,10 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
 
     def set_name(self, name: str) -> Self:
         self._name = name
+        return self
+
+    def set_path(self, path: str) -> Self:
+        self._path = path
         return self
 
     def set_time(self, time: str) -> Self:
@@ -107,15 +112,15 @@ class LocalDestination(DataTarget):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.destination_path = Path(ROOT_LOCAL)
+        self._path = Path(self._path) if self._path else Path('.')
 
     def _check_if_destination_accessible(self):
-        if not self.destination_path.exists():
-            self.logger.error(f"Exception: Path(s) do/does not exist! Got {self.destination_path.absolute()}")
-            raise Exception(f"Path(s) do/does not exist! Got {self.destination_path.absolute()}")
+        if not self._path.exists():
+            self.logger.error(f"Exception: Path(s) do/does not exist! Got {self._path.absolute()}")
+            raise Exception(f"Path(s) do/does not exist! Got {self._path.absolute()}")
 
     def _create_path(self):
-        self.destination_path.mkdir(parents=True, exist_ok=True)
+        self._path.mkdir(parents=True, exist_ok=True)
 
     def _save(self, obj, name, **kwargs) -> bool:
         return super()._save(obj, name, **kwargs)
@@ -125,19 +130,20 @@ class S3Destination(DataTarget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.do_spaces_endpoint = env.get('S3_ENDPOINT')
-        self.do_spaces_folder = env.get('S3_BUCKET')
         self.do_spaces_key_id = env.get('S3_KEY_ID')
         self.do_spaces_access_key = env.get('S3_ACCESS_KEY')
-        self.do_spaces_region = env.get('S3_REGION')
+        self.do_spaces_endpoint = env.get('S3_ENDPOINT')  # Endpoint ${REGION}.digitaloceanspaces.com
+        self.do_spaces_bucket = env.get('S3_BUCKET')  # DO-Space
+        self.do_spaces_region = env.get('S3_REGION')  # Repetition of ${REGION}
         self.connect()
 
-    def connect(self):
+    def connect(self) -> S3Client:
         self.session: boto3.Session = boto3.Session()
         self.client = self.session.client(
             's3',
+            config=botocore.config.Config(s3={'addressing_style': 'virtual'}),
             region_name=self.do_spaces_region,
-            endpoint_url=f'{self.do_spaces_endpoint}',
+            endpoint_url=self.do_spaces_endpoint,
             aws_access_key_id=self.do_spaces_key_id,
             aws_secret_access_key=self.do_spaces_access_key,
         )
@@ -146,6 +152,11 @@ class S3Destination(DataTarget):
     def _check_if_destination_accessible(self):
         # TODO: Construct a proper check
         test = self.session.get_available_resources()
+
+    def _save(self, obj, name, **kwargs):
+        pkl_stream = pkl.dumps(obj)
+        self.client.put_object(Body=pkl_stream, Bucket=self.do_spaces_bucket, Key=self._path / f"{name}.pkl")
+        return True
 
 
 class PickleSaver(PartialSaver, abc.ABC):

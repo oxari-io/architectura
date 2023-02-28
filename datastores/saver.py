@@ -36,6 +36,7 @@ from base import OxariDataManager, OxariLoggerMixin, OxariMetaModel
 ROOT_LOCAL = "local/objects"
 ROOT_REMOTE = "remote"
 
+
 class DataTarget(OxariLoggerMixin, abc.ABC):
 
     def __init__(self, **kwargs) -> None:
@@ -51,7 +52,7 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
 
     @abc.abstractmethod
     def _save(self, obj, name, **kwargs) -> bool:
-        target_destination = self.destination_path/name
+        target_destination = self.destination_path / name
         with io.open(target_destination, "wb") as file:
             obj_to_save = pkl.dumps(obj)
             file.write(obj_to_save)
@@ -61,8 +62,9 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
     # def _save_fallback(self, **kwargs) -> bool:
     #     return False
 
+
 class PartialSaver(OxariLoggerMixin, abc.ABC):
-    
+
     def __init__(self, time=time.strftime('%d-%m-%Y'), name="noname", verbose=False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.verbose = verbose
@@ -78,6 +80,14 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
         self.object = obj
         return self
 
+    def set_name(self, name: str) -> Self:
+        self._name = name
+        return self
+
+    def set_time(self, time: str) -> Self:
+        self._time = time
+        return self
+
     @property
     def name(self):
         return f"{self._name}_{self._time}"
@@ -89,28 +99,23 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
             return True
         except Exception as e:
             # TODO: Needs local emergency saving in case of exception
-            self.logger.error(f"ERROR: Something went horribly wrong while saving '{self._name}': {e}")            
+            self.logger.error(f"ERROR: Something went horribly wrong while saving '{self._name}': {e}")
             return False
-
-
-
-
 
 
 class LocalDestination(DataTarget):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.destination_path = Path(ROOT_LOCAL) 
+        self.destination_path = Path(ROOT_LOCAL)
 
-        
     def _check_if_destination_accessible(self):
         if not self.destination_path.exists():
             self.logger.error(f"Exception: Path(s) do/does not exist! Got {self.destination_path.absolute()}")
             raise Exception(f"Path(s) do/does not exist! Got {self.destination_path.absolute()}")
 
     def _create_path(self):
-        self.destination_path.mkdir(parents=True, exist_ok=True)        
+        self.destination_path.mkdir(parents=True, exist_ok=True)
 
     def _save(self, obj, name, **kwargs) -> bool:
         return super()._save(obj, name, **kwargs)
@@ -118,7 +123,7 @@ class LocalDestination(DataTarget):
 
 class S3Destination(DataTarget):
 
-    def __init__(self,  **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.do_spaces_endpoint = env.get('S3_ENDPOINT')
         self.do_spaces_folder = env.get('S3_BUCKET')
@@ -143,11 +148,8 @@ class S3Destination(DataTarget):
         test = self.session.get_available_resources()
 
 
-
-
-
 class PickleSaver(PartialSaver, abc.ABC):
-    
+
     @property
     def name(self):
         return f"{self._name}_{self._time}.pkl"
@@ -164,7 +166,6 @@ class PickleSaver(PartialSaver, abc.ABC):
 #     def name(self):
 #         return f"estimates_{self._name}_{self._time}"
 
-
 # class LARModelSaver(PartialSaver, abc.ABC):
 #     SUB_FOLDER = Path("objects/lar_model")
 
@@ -179,15 +180,13 @@ class PickleSaver(PartialSaver, abc.ABC):
 # class LocalMetaModelSaver(LocalDestination, BlobSaver):
 
 #     def _save(self, **kwargs) -> bool:
-        
-#         return pkl.dump(self._store, io.open(self.destination_path / f"{self.name}.pkl", 'wb'))
 
+#         return pkl.dump(self._store, io.open(self.destination_path / f"{self.name}.pkl", 'wb'))
 
 # class LocalLARModelSaver(LocalDestination, LARModelSaver):
 
 #     def _save(self, **kwargs) -> bool:
 #         return pkl.dump(self._store, io.open(self.destination_path / f"{self.name}.pkl", 'wb'))
-
 
 # class LocalDataSaver(LocalDestination, DataSaver):
 
@@ -222,7 +221,7 @@ class PickleSaver(PartialSaver, abc.ABC):
 #         lar_imputed = self._store.get_data_by_name(OxariDataManager.IMPUTED_LARS)
 #         self.client.put_object(Body=scope_imputed.to_csv(index=False), Bucket='remote', Key=str(self.SUB_FOLDER / f"{csv_name_1}.csv"))
 #         self.client.put_object(Body=lar_imputed.to_csv(index=False), Bucket='remote', Key=str(self.SUB_FOLDER / f"{csv_name_2}.csv"))
-        
+
 
 class OxariSavingManager():
     """
@@ -242,7 +241,6 @@ class OxariSavingManager():
     def run(self, **kwargs) -> Self:
         for saver in self.savers:
             saver.save(**kwargs)
-
 
     def _register_all_modules_to_pickle(self):
         # https://oegedijk.github.io/blog/pickle/dill/python/2020/11/10/serializing-dill-references.html

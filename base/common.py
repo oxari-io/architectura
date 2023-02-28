@@ -177,8 +177,8 @@ class OxariOptimizer(OxariLoggerMixin, abc.ABC):
     def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__()
         self.n_trials = n_trials
-        self.n_startup_trials = n_startup_trials
-        self.sampler = sampler or optuna.samplers.TPESampler(n_startup_trials=self.n_startup_trials)
+        self.sampler = sampler or optuna.samplers.TPESampler()
+        self.sampler._n_startup_trials = n_startup_trials
 
     @abc.abstractmethod
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, pd.DataFrame]:
@@ -200,6 +200,7 @@ class OxariOptimizer(OxariLoggerMixin, abc.ABC):
 
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
+        
         study = optuna.create_study(
             study_name=f"{self.__class__.__name__}_process_hp_tuning",
             direction="minimize",
@@ -427,18 +428,18 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
 
 class OxariScopeEstimator(OxariRegressor, abc.ABC):
 
-    def __init__(self, **kwargs):
+    def __init__(self, n_trials=1, n_startup_trials=1, **kwargs):
         super().__init__(**kwargs)
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
         # Does not contain any logic except setting hyperparams immediately as class attributes
         # Reference: https://scikit-learn.org/stable/developers/develop.html#instantiation
+        self.n_trials = n_trials
+        self.n_startup_trials = n_startup_trials
         evaluator = kwargs.pop('evaluator', DefaultRegressorEvaluator())
         self.set_evaluator(evaluator)
-        optimizer = kwargs.pop('optimizer', DefaultOptimizer())
+        optimizer = kwargs.pop('optimizer', DefaultOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials))
         self.set_optimizer(optimizer)
-        self.n_trials = kwargs.get("n_trials", 5)
-        self.n_startup_trials = kwargs.get("n_startup_trials", 1)
         # This is a model specific preprocessor
         self._sub_preprocessor: OxariTransformer = None
 
@@ -465,6 +466,11 @@ class OxariScopeEstimator(OxariRegressor, abc.ABC):
     @staticmethod
     def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
         return None
+
+    # def set_optuna_params(self, n_trials=2, n_startup_trials=1) -> Self:
+    #     self._optimizer.n_startup_trials = n_startup_trials
+    #     self._optimizer.n_trials = n_trials
+    #     return self
 
     # @abc.abstractmethod
     def check_conformance(self, ) -> bool:
@@ -499,6 +505,7 @@ class DefaultPostprocessor(OxariPostprocessor):
     def run(self, X, y=None, **kwargs) -> "OxariPostprocessor":
         return X
 
+
 class OxariFeatureTransformer(OneToOneFeatureMixin, OxariTransformer):
 
     def fit(self, X, y=None, **kwargs) -> Self:
@@ -531,7 +538,6 @@ class OxariScopeTransformer(OxariTransformer):
     @abc.abstractmethod
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
         return y.copy()
-
 
 
 class OxariFeatureReducer(OxariTransformer, abc.ABC):
@@ -690,7 +696,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         y_transformed = self.scope_transformer.fit_transform(X, y)
         X, y = df_reduced, y_transformed
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33)
-        self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test)
+        self.params, self.info = self.estimator.optimize(X_train, y_train, X_test, y_test, **kwargs)
         et = time.time()
         elapsed_time = et - st
         self.logger.info(f'Optimize function is completed with execution time: {elapsed_time} seconds')
@@ -814,7 +820,7 @@ class DummyConfidenceEstimator(OxariConfidenceEstimator):
     def predict(self, X, **kwargs) -> ArrayLike:
         df = pd.DataFrame()
         mean_ = self.pipeline.predict(X)
-        
+
         df = self._construct_result(self.max_, self.min_, mean_)
         return df
 

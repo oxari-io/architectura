@@ -1,3 +1,4 @@
+from typing_extensions import Self
 import numpy as np
 import optuna
 import pandas as pd
@@ -71,10 +72,10 @@ class SupportVectorEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
         self._estimator = SVR()
-        self._optimizer = optimizer or SVROptimizer()
-        self.logger.warning("Better use FastSVROptimizer! It's much faster.")
+        self._optimizer = optimizer or SVROptimizer(**kwargs)
+        self.logger.warning(f"Better use {FastSupportVectorEstimator}! It's much faster.")
 
-    def fit(self, X, y, **kwargs) -> "SupportVectorEstimator":
+    def fit(self, X, y, **kwargs) -> Self:
         max_size = len(X)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)   

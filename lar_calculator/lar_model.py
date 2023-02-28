@@ -3,7 +3,8 @@ from sklearn.linear_model import LinearRegression
 
 from base import OxariLinearAnnualReduction
 from base.oxari_types import ArrayLike
-
+import tqdm
+tqdm.tqdm.pandas()
 
 # TODO: Move those into the class
 def _helper(name, isins, years, emissions):
@@ -83,8 +84,9 @@ class OxariUnboundLAR(OxariLinearAnnualReduction):
         self.logger.debug(f"unique isins: {len(isins)}")
 
         grouped = scopes.groupby("key_isin", sort=False)
-
-        self.params_1 = grouped.apply(lambda df_group: _helper("tg_numc_scope_1_2", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_1_2"])).reset_index(drop=True)
-        self.params_2 = grouped.apply(lambda df_group: _helper("tg_numc_scope_3", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_3"])).reset_index(drop=True)
+        self.logger.info('Compute scope 1 and 2 lars')
+        self.params_1 = grouped.progress_apply(lambda df_group: _helper("tg_numc_scope_1_2", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_1_2"])).reset_index(drop=True)
+        self.logger.info('Compute scope 3 lars')
+        self.params_2 = grouped.progress_apply(lambda df_group: _helper("tg_numc_scope_3", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_3"])).reset_index(drop=True)
 
         return self

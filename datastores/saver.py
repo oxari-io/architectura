@@ -12,6 +12,7 @@ import postprocessors
 import preprocessors
 import scope_estimators
 import tempfile
+import tqdm
 
 MODULES_TO_PICKLE = [
     base,
@@ -278,7 +279,7 @@ class MongoSaver(PartialSaver, abc.ABC):
 #         self.client.put_object(Body=lar_imputed.to_csv(index=False), Bucket='remote', Key=str(self.SUB_FOLDER / f"{csv_name_2}.csv"))
 
 
-class OxariSavingManager():
+class OxariSavingManager(OxariLoggerMixin):
     """
     Saves the files into the appropriate location
     """
@@ -294,7 +295,8 @@ class OxariSavingManager():
         self._register_all_modules_to_pickle()
 
     def run(self, **kwargs) -> Self:
-        for saver in self.savers:
+        for saver in tqdm.tqdm(self.savers):
+            self.logger.info(f"Saved {saver.name} via {saver.__class__}")
             saver.save(**kwargs)
 
     def _register_all_modules_to_pickle(self):

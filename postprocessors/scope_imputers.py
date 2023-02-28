@@ -3,7 +3,10 @@ import pandas as pd
 from typing_extensions import Self
 
 from base import OxariMetaModel, OxariPostprocessor
+import tqdm
 
+from base.common import OxariLoggerMixin
+tqdm.tqdm.pandas()
 
 class ScopeImputerPostprocessor(OxariPostprocessor):
 
@@ -50,9 +53,10 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         return f"@{self.__class__.__name__}[ Count of imputed {self.imputed} ]"
 
 
-class JumpRateEvaluator():
+class JumpRateEvaluator(OxariLoggerMixin):
 
-    def __init__(self, estimator: OxariMetaModel) -> None:
+    def __init__(self, estimator: OxariMetaModel, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.estimator = estimator
         self.metrics = []
 
@@ -78,8 +82,10 @@ class JumpRateEvaluator():
 
     def evaluate(self, X: pd.DataFrame) -> Self:
         companies = X.groupby('key_isin', group_keys=True)
-        jump_rates: pd.DataFrame = companies.apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
-        estimation_stats: pd.DataFrame = companies.apply(self._compute_estimate_to_fact_ratio).reset_index()
+        self.logger.info("Compute Jump Rates")
+        jump_rates: pd.DataFrame = companies.progress_apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
+        self.logger.info("Compute Jump Ratios")
+        estimation_stats: pd.DataFrame = companies.progress_apply(self._compute_estimate_to_fact_ratio).reset_index()
         self.jump_rates = jump_rates.merge(estimation_stats, left_on="key_isin", right_on="key_isin").drop('index', axis=1)
         # self.jump_rates = self.jump_rates.drop('level_1', axis=1)
         self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('key_isin').agg(['median', 'mean', 'std', 'max', 'min'])

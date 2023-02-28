@@ -130,6 +130,7 @@ class S3Destination(DataTarget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._path = Path(self._path) if self._path else Path('')
         self.do_spaces_key_id = env.get('S3_KEY_ID')
         self.do_spaces_access_key = env.get('S3_ACCESS_KEY')
         self.do_spaces_endpoint = env.get('S3_ENDPOINT')  # Endpoint ${REGION}.digitaloceanspaces.com
@@ -155,7 +156,8 @@ class S3Destination(DataTarget):
 
     def _save(self, obj, name, **kwargs):
         pkl_stream = pkl.dumps(obj)
-        self.client.put_object(Body=pkl_stream, Bucket=self.do_spaces_bucket, Key=self._path / f"{name}.pkl")
+        _key = self._path / f"{name}.pkl"
+        self.client.put_object(Body=pkl_stream, Bucket=self.do_spaces_bucket, Key=_key.as_posix())
         return True
 
 

@@ -11,7 +11,7 @@ from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
 from datasources import DefaultDataManager, PreviousScopeFeaturesDataManager, S3Datasource, LocalDatasource
-from datastores.saver import PickleSaver, S3Destination
+from datastores.saver import MongoDestination, MongoSaver, PickleSaver, S3Destination
 from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
@@ -92,11 +92,11 @@ if __name__ == "__main__":
     # print(model.predict(SPLIT_1.val.X, scope=1))
     mainlogger.logger.info(f"Predict with Model only SCOPE1, Predictions: {model.predict(SPLIT_1.val.X, scope=1)}")
 
-    # print("Impute scopes with Model")
-    # scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
-    # dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    # dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
-    # dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
+    print("Impute scopes with Model")
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
+    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
+    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
 
     # scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates_test.csv')
     # scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg_test.csv')
@@ -146,7 +146,8 @@ if __name__ == "__main__":
     ### SAVE OBJECTS ###
 
     SavingManager = OxariSavingManager(
-        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model_scope").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model_scope").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
+        # PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model_scope").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
+        # PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model_scope").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model_scope").set_object(dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)).set_datatarget(MongoDestination(path="model-data/output")),
     )
     SavingManager.run()

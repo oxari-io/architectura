@@ -53,7 +53,8 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
     def _save(self, obj, name, **kwargs) -> bool:
         target_destination = self.destination_path/name
         with io.open(target_destination, "wb") as file:
-            file.write(obj)
+            obj_to_save = pkl.dumps(obj)
+            file.write(obj_to_save)
         return target_destination.absolute()
 
     # @abc.abstractmethod
@@ -111,8 +112,8 @@ class LocalDestination(DataTarget):
     def _create_path(self):
         self.destination_path.mkdir(parents=True, exist_ok=True)        
 
-    def _save(self, obj, name) -> bool:
-        return super()._save(obj, name)
+    def _save(self, obj, name, **kwargs) -> bool:
+        return super()._save(obj, name, **kwargs)
 
 
 class S3Destination(DataTarget):
@@ -146,11 +147,10 @@ class S3Destination(DataTarget):
 
 
 class PickleSaver(PartialSaver, abc.ABC):
-    SUB_FOLDER = Path("objects/meta_model")
     
     @property
     def name(self):
-        return f"{self._name}_{self._time}"
+        return f"{self._name}_{self._time}.pkl"
 
 
 # class DataSaver(PartialSaver, abc.ABC):

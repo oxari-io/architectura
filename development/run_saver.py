@@ -12,6 +12,7 @@ from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
 from datasources import DefaultDataManager, PreviousScopeFeaturesDataManager, S3Datasource, LocalDatasource
+from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, MongoDestination, MongoSaver, PickleSaver, S3Destination
 from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
@@ -35,6 +36,7 @@ if __name__ == "__main__":
         S3Datasource(path='model-data/input/scopes_auto.csv'),
         LocalDatasource(path='model-data/input/financials_auto.csv'),
         S3Datasource(path='model-data/input/categoricals_auto.csv'),
+        [RegionLoader()]
     ).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)

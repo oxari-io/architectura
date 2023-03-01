@@ -100,7 +100,11 @@ class PartialLoader(OxariLoggerMixin, abc.ABC):
 class SpecialLoader(PartialLoader):
 
     @abc.abstractproperty
-    def rkey(self):
+    def rkeys(self):
+        pass
+
+    @abc.abstractproperty
+    def lkeys(self):
         pass
 
 class EmptyLoader(PartialLoader):
@@ -120,15 +124,22 @@ class CombinedLoader(PartialLoader):
 
 
     def merge(self, loader_1: PartialLoader = None, loader_2: PartialLoader = None):
+        tmp_data:pd.DataFrame = None
         self.logger.info(f"Adding ({loader_1.name} + {loader_2.name})")
-        self._name = f"{loader_1.name} + {loader_2.name} "
-        common_keys = list(set(loader_1.keys).intersection(loader_2.keys))
-        self._data = loader_1.data.merge(loader_2.data, on=common_keys, how="left").sort_values(common_keys)
+        self._name = f"{loader_1.name}-{loader_2.name} "
+        if isinstance(loader_2, SpecialLoader):
+            self.logger.info(f"Merging special loader {loader_2.name} to {loader_1.name}")
+            special_loader: SpecialLoader = loader_2
+            tmp_data = loader_1.data.merge(special_loader.data, left_on=special_loader.lkeys, right_on=special_loader.rkeys, how="left").sort_values(special_loader.lkeys)
+        if not isinstance(loader_2, SpecialLoader):
+            common_keys = list(set(loader_1.keys).intersection(loader_2.keys))
+            tmp_data = loader_1.data.merge(loader_2.data, on=common_keys, how="left").sort_values(common_keys)
+        self._data = tmp_data
         return self
 
     @property
     def name(self):
-        return self._name
+        return self._name.strip()
 
 
 class ScopeLoader(PartialLoader):
@@ -216,12 +227,12 @@ class SplitScopeDataset():
     def __init__(
         self,
         data: ArrayLike,
-        scope_features: List[str],
+        non_features: List[str],
         split_size_val=0.2,
         split_size_test=0.2,
     ) -> None:
         self.data = data
-        self.scope_features = scope_features
+        self.non_features = non_features
         self.split_size_val = split_size_val
         self.split_size_test = split_size_test
         # self.core = self._helper(scope_features)
@@ -242,7 +253,7 @@ class SplitScopeDataset():
         return self._helper(scope_col)
 
     def _helper(self, scope_col):
-        columns = self.data.columns.difference(self.scope_features)
+        columns = self.data.columns.difference(self.non_features)
         X = self.data.dropna(how="all", subset=scope_col).copy()
         return SplitBag(X[columns], X[scope_col], self.split_size_test, self.split_size_test)
 
@@ -296,13 +307,15 @@ class OxariDataManager(OxariMixin):
             loaded = loader.load()
             merged_loader += loaded
             self.add_data(f"merge_stage_{idx}", merged_loader.data, merged_loader.name)
-
-        # TODO: This won't work if there are more special keys. Keys and targets need to be removed.
-        self.non_features = self.scope_loader.columns
         
         _df_merged = merged_loader.data
         _df_merged = self.add_data(OxariDataManager.MERGED, _df_merged, "Dataset with all parts merged.")
         _df_original = self.add_data(OxariDataManager.ORIGINAL, self._transform(_df_merged), "Dataset after transformation changes.")
+        self.col_non_features = list(_df_original.columns[~_df_original.columns.str.startswith("ft_")])
+        self.col_targets = list(_df_original.columns[_df_original.columns.str.startswith("tg_numc_")])
+        self.col_features = list(_df_original.columns[_df_original.columns.str.startswith("ft_")])
+        self.col_keys = list(_df_original.columns[_df_original.columns.str.startswith("key_")])
+        self.col_others = list(_df_original.columns.difference(self.col_targets).difference(self.col_features))
         return self
 
 
@@ -324,27 +337,28 @@ class OxariDataManager(OxariMixin):
             if name == nm:
                 df: pd.DataFrame = df.copy().sort_index(axis=1)
                 return df if not scope else df.dropna(subset=scope, how="all")
+        self.logger.warn(f"Data with {name} was not found in the dataset-stack")
+        return None
 
     def get_data_by_index(self, index: int) -> pd.DataFrame:
         return self._dataset_stack[index][1].copy()
 
     def get_data(self, name: str, scope=None):
         data = self.get_data_by_name(name, scope)
-        features = data.columns.difference(self.non_features)
+        features = data.columns.difference(self.col_non_features)
         X, Y = data[features].copy(), data[scope].copy()
         return X, Y
 
     def get_scopes(self, name: str):
-        return self.get_data_by_name(name)[self.non_features].copy()
+        return self.get_data_by_name(name)[self.col_non_features].copy()
 
     def get_features(self, name: str):
-        data = self.get_data_by_name(name)
-        features = data.columns.difference(self.non_features)
-        return data[features].copy()
+        return self.get_data_by_name(name)[self.col_features].copy()
+
 
     def get_split_data(self, name: str, split_size_val=0.2, split_size_test=0.2):
         data = self.get_data_by_name(name)
-        return SplitScopeDataset(data, self.non_features, split_size_val, split_size_test)
+        return SplitScopeDataset(data, self.col_non_features, split_size_val, split_size_test)
 
     # where is this called from? Where do we make an API constructor for the object?
     @staticmethod

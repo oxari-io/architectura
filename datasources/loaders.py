@@ -1,6 +1,6 @@
-from base.dataset_loader import PartialLoader
+from base.dataset_loader import PartialLoader, SpecialLoader
 from typing_extensions import Self
-from datasources.online import OnlineExcelDatasource
+from datasources.online import OnlineCSVDatasource, OnlineExcelDatasource
 import pandas as pd 
 import numpy as np
 
@@ -34,3 +34,30 @@ class NetZeroIndexLoader(PartialLoader):
         self._data = _data
         return self
 
+class RegionLoader(SpecialLoader):
+    RKEY = "key_country_code"
+    LKEY = "ft_catm_country_code"
+
+    COL_MAPPING = {
+        "alpha-3":RKEY,
+        "region":"ft_catm_region",
+        "sub-region":"ft_catm_sub_region",
+    }
+    def __init__(self, **kwargs) -> None:
+        datasource = kwargs.pop('datasource', OnlineCSVDatasource(path="https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv"))
+        super().__init__(datasource=datasource, **kwargs)
+
+
+    def _load(self) -> Self:
+        _data = self.datasource.fetch().data
+        _data = _data.rename(columns=self.COL_MAPPING)[self.COL_MAPPING.values()]
+        self._data = _data
+        return self
+
+    @property
+    def rkeys(self):
+        return [self.RKEY]
+
+    @property
+    def lkeys(self):
+        return [self.LKEY]

@@ -21,7 +21,7 @@ class DummyPreprocessor(OxariPreprocessor):
         data = X
         self.logger.info(f'number of original features: {len(data.columns)}')
         self.scope_columns = ["scope_1", "scope_2", "scope_3"]
-        self.financial_columns = X.columns[X.columns.str.startswith('ft_fin')]
+        self.financial_columns = X.columns[X.columns.str.startswith('ft_num')]
         self.categorical_columns = X.columns[X.columns.str.startswith('ft_cat')]
         # # log scaling the scopes
         # self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])

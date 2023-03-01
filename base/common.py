@@ -49,42 +49,28 @@ class OxariLoggerMixin(abc.ABC):
     
     """
     logger: logging.Logger
-
-    class CustomFormatter(logging.Formatter):
-
-        grey = "\x1b[38;20m"
-        yellow = "\x1b[33;20m"
-        red = "\x1b[31;20m"
-        bold_red = "\x1b[31;1m"
-        reset = "\x1b[0m"
-        _format = '[L %(asctime)s] - %(name)s - %(levelname)s - %(message)s'
-
-        FORMATS = {
-            logging.DEBUG: grey + _format + reset,
-            logging.INFO: grey + _format + reset,
-            logging.WARNING: yellow + _format + reset,
-            logging.ERROR: red + _format + reset,
-            logging.CRITICAL: bold_red + _format + reset
-        }
-
-        def format(self, record):
-            log_fmt = self.FORMATS.get(record.levelno)
-            formatter = logging.Formatter(log_fmt)
-            return formatter.format(record)
+    _format: str = '[%(levelname)1.1s %(asctime)s] %(name)s - %(levelname)s - %(message)s'
+    _format_colored: str = '%(log_color)s[%(levelname)1.1s %(asctime)s]%(reset)s %(name)s - %(levelname)s - %(message)s'
+    _colors = {
+        'DEBUG': 'cyan',
+        'INFO': 'blue',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    }
 
     def __init__(self, **kwargs) -> None:
         # super().__init__(**kwargs)
-        self.format = self.CustomFormatter._format
+        formatter = colorlog.ColoredFormatter(OxariLoggerMixin._format_colored, log_colors=OxariLoggerMixin._colors)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger_name = self.__class__.__name__
         if len(self.logger.handlers) > 0:
             return None
-        formatter = self.CustomFormatter()
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         if not WRITE_TO == "cout":
-            formatter = logging.Formatter(self.format)
+            formatter = logging.Formatter(OxariLoggerMixin._format)
             fhandler = logging.FileHandler(WRITE_TO)
             fhandler.setFormatter(formatter)
             self.logger.addHandler(fhandler)
@@ -224,7 +210,7 @@ class OxariOptimizer(OxariLoggerMixin, abc.ABC):
 
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
-        
+
         study = optuna.create_study(
             study_name=f"{self.__class__.__name__}_process_hp_tuning",
             direction="minimize",

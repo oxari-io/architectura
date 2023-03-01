@@ -1,9 +1,9 @@
 from base import DefaultRegressorEvaluator, OxariScopeEstimator
 from base.helper import BucketScopeDiscretizer, SingleBucketScopeDiscretizer
 from base.oxari_types import ArrayLike
-from scope_estimators.mma.classifier import (BucketClassifier, BadPerformanceBucketClassifier,
+from scope_estimators.mma.classifier import (BucketClassifier, UnderfittedBucketClassifier,
                                              BucketClassifierEvauator,
-                                             ClassifierOptimizer)
+                                             ClassifierOptimizer, MajorityBucketClassifier, RandomGuessBucketClassifier)
 from scope_estimators.mma.regressor import (BucketRegressor,
                                             EvenWeightBucketRegressor,
                                             RegressorOptimizer)
@@ -85,7 +85,17 @@ class MiniModelArmyClusterBucketEstimator(MiniModelArmyEstimator):
     # TODO: instead of classifier uses clustering for bucketing
     pass
 
-class BadPerformanceMiniModelArmyEstimator(MiniModelArmyEstimator):
+class UnderfittedClsMiniModelArmyEstimator(MiniModelArmyEstimator):
     def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
         super().__init__(n_buckets, cls, rgs, **kwargs)
-        self.bucket_cl: BucketClassifier = BadPerformanceBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+        self.bucket_cl: BucketClassifier = UnderfittedBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+
+class RandomGuessClsMiniModelArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_cl: BucketClassifier = RandomGuessBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+
+class MajorityClsMiniModelArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_cl: BucketClassifier = MajorityBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())

@@ -158,7 +158,7 @@ class S3Destination(DataTarget):
 
     def _save(self, obj, name, **kwargs):
         pkl_stream = pkl.dumps(obj)
-        _key = self._path / f"{name}.pkl"
+        _key = self._path / f"{name}"
         self.client.put_object(Body=pkl_stream, Bucket=self.do_spaces_bucket, Key=_key.as_posix())
         return True
 

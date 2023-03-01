@@ -5,7 +5,7 @@ from feature_reducers import (DropFeatureReducer, DummyFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer,
                               SparseRandProjectionFeatureReducer)
 from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator
-from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator, BadPerformanceMiniModelArmyEstimator, PredictMedianEstimator, SingleBucketModelEstimator, SingleBucketVotingArmyEstimator)
+from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator, UnderfittedClsMiniModelArmyEstimator, PredictMedianEstimator, SingleBucketModelEstimator, SingleBucketVotingArmyEstimator)
 from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator,
                               PredictMedianEstimator,
                               EvenWeightMiniModelArmyEstimator)
@@ -53,5 +53,5 @@ class WeightedVotingExperimentCommandLineParser(ExperimentCommandLineParser):
 
 class ClassifierPerformanceExperimentCommandLineParser(ExperimentCommandLineParser):
     def set_experiment_specific_arguments(self):
-        self.parser.add_argument('-c', default=[MiniModelArmyEstimator, BadPerformanceMiniModelArmyEstimator], dest='configurations', help='Names of estimators to compare', nargs='*', type=str)
+        self.parser.add_argument('-c', default=[MiniModelArmyEstimator, UnderfittedClsMiniModelArmyEstimator], dest='configurations', help='Names of estimators to compare', nargs='*', type=str)
         return super().set_experiment_specific_arguments()

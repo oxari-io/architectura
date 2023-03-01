@@ -142,7 +142,7 @@ if __name__ == "__main__":
     ### SAVE OBJECTS ###
 
     SavingManager = OxariSavingManager(
-        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(LocalDestination()),
-        # PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("test_model").set_object(model).set_datatarget(S3Destination()),
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("t_model").set_object(model).set_datatarget(LocalDestination()),
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("t_model").set_object(model).set_datatarget(S3Destination()),
     )
     SavingManager.run()

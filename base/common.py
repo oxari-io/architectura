@@ -22,6 +22,7 @@ from typing_extensions import Self
 from sklearn.preprocessing import minmax_scale
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
+import colorlog
 
 os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
@@ -49,18 +50,41 @@ class OxariLoggerMixin(abc.ABC):
     """
     logger: logging.Logger
 
+    class CustomFormatter(logging.Formatter):
+
+        grey = "\x1b[38;20m"
+        yellow = "\x1b[33;20m"
+        red = "\x1b[31;20m"
+        bold_red = "\x1b[31;1m"
+        reset = "\x1b[0m"
+        _format = '[L %(asctime)s] - %(name)s - %(levelname)s - %(message)s'
+
+        FORMATS = {
+            logging.DEBUG: grey + _format + reset,
+            logging.INFO: grey + _format + reset,
+            logging.WARNING: yellow + _format + reset,
+            logging.ERROR: red + _format + reset,
+            logging.CRITICAL: bold_red + _format + reset
+        }
+
+        def format(self, record):
+            log_fmt = self.FORMATS.get(record.levelno)
+            formatter = logging.Formatter(log_fmt)
+            return formatter.format(record)
+
     def __init__(self, **kwargs) -> None:
         # super().__init__(**kwargs)
-        self.format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        self.format = self.CustomFormatter._format
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger_name = self.__class__.__name__
         if len(self.logger.handlers) > 0:
             return None
-        formatter = logging.Formatter(self.format)
+        formatter = self.CustomFormatter()
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
         if not WRITE_TO == "cout":
+            formatter = logging.Formatter(self.format)
             fhandler = logging.FileHandler(WRITE_TO)
             fhandler.setFormatter(formatter)
             self.logger.addHandler(fhandler)

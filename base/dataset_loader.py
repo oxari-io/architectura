@@ -339,6 +339,7 @@ class OxariDataManager(OxariMixin):
         for nm, df, descr in self._dataset_stack:
             if name == nm:
                 df: pd.DataFrame = df.copy().sort_index(axis=1)
+                self.logger.info(f"Data with {name} found retrieved: {descr}")
                 return df if not scope else df.dropna(subset=scope, how="all")
         self.logger.warn(f"Data with {name} was not found in the dataset-stack")
         return None

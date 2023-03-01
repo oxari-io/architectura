@@ -25,7 +25,12 @@ if __name__ == "__main__":
 
     all_results = []
     for i in range(num_reps):
-        configurations = [MiniModelArmyEstimator(), UnderfittedClsMiniModelArmyEstimator(), MajorityClsMiniModelArmyEstimator(), RandomGuessClsMiniModelArmyEstimator()]
+        configurations = [
+            MajorityClsMiniModelArmyEstimator(),
+            RandomGuessClsMiniModelArmyEstimator(),
+            UnderfittedClsMiniModelArmyEstimator(),
+            MiniModelArmyEstimator(),
+        ]
         dataset = DefaultDataManager().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
@@ -69,8 +74,8 @@ if __name__ == "__main__":
             ## EVALUATION RESULTS ###
             concatenated = pd.json_normalize(all_results)[[
                 "scope_estimator", "repetition", "scope", "test.classifier.evaluator", "test.classifier.balanced_accuracy", "test.classifier.balanced_precision",
-                "test.classifier.balanced_recall", "test.classifier.balanced_f1", "test.classifier.adj_lenient_acc", "test.classifier.adj_strict_acc", "raw.evaluator",
-                "raw.sMAPE", "raw.R2", "raw.MAE", "raw.RMSE", "raw.MAPE"
+                "test.classifier.balanced_recall", "test.classifier.balanced_f1", "test.classifier.adj_lenient_acc", "test.classifier.adj_strict_acc", "raw.evaluator", "raw.sMAPE",
+                "raw.R2", "raw.MAE", "raw.RMSE", "raw.MAPE"
             ]]
             fname = __loader__.name.split(".")[-1]
 

@@ -2,8 +2,7 @@ from typing_extensions import Self
 import lightgbm as lgb
 import numpy as np
 import optuna
-import statistics as st
-
+from scipy import stats as sc
 from base import (DefaultClassificationEvaluator, OxariClassifier, OxariOptimizer)
 # from model.abstract_base_class import MLModelInterface
 # from model.misc.hyperparams_tuning import tune_hps_classifier
@@ -181,7 +180,7 @@ class RandomGuessBucketClassifier(BucketClassifier):
 class MajorityBucketClassifier(BucketClassifier):
 
     def fit(self, X, y, **kwargs) -> Self:
-        self.mode_ = st.mode(y)
+        self.mode_ = sc.mode(np.array(y).flatten()).mode[0]
         return self
 
     def predict(self, X, **kwargs):

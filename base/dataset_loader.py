@@ -305,7 +305,9 @@ class OxariDataManager(OxariMixin):
         merged_loader = EmptyLoader()
         for idx, loader in enumerate(main_loaders + self.other_loaders):
             loaded = loader.load()
+            loader_name = f"loader_{loaded.name.lower()}"
             merged_loader += loaded
+            self.add_data(loader_name, loader.data, loaded.name)
             self.add_data(f"merge_stage_{idx}", merged_loader.data, merged_loader.name)
         
         _df_merged = merged_loader.data
@@ -325,6 +327,7 @@ class OxariDataManager(OxariMixin):
         return df
 
     def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> pd.DataFrame:
+        self.logger.info(f"Added {name} to {self.__class__.__name__}")
         self._dataset_stack.append((name, df, descr))
         return df
 

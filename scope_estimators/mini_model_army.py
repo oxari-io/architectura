@@ -21,6 +21,10 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        # NOTE: Question is whether the linkage between bucket_cl prediction and regression makes sense. I start to believe it does not. 
+        # If the classfier predicts one class only the regressor will just use the full data.
+        # If the classifier predicts the majority class the model will have one powerful bucket and others are weak.
+        # Seperate learning allows to every bucket to learn according to the data distribution. The error does not propagate.  
         self.n_features_in_ = X.shape[1]
         y_binned = self.discretizer.fit_transform(X, y)
         self.bucket_cl: BucketClassifier = self.bucket_cl.set_params(**self.params.get("cls", {})).fit(X, y_binned)

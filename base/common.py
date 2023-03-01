@@ -113,7 +113,9 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         # y_pred[np.isinf(y_pred)] = 10e12
         offsets = np.array(np.maximum(y_pred, y_true) / np.minimum(y_pred, y_true))
         percentile_deviation = np.quantile(offsets, [.5, .75, .90, .95])
-        # Important interpretation https://medium.com/@davide.sarra/how-to-interpret-smape-just-like-mape-bf799ba03bdc
+        # NOTE MAPE: Important interpretation https://medium.com/@davide.sarra/how-to-interpret-smape-just-like-mape-bf799ba03bdc
+        # NOTE R2: Why it's useless https://data.library.virginia.edu/is-r-squared-useless/
+        # NOTE RMSE: Tends to grow with sample size, which is undesirable https://medium.com/human-in-a-machine-world/mae-and-rmse-which-metric-is-better-e60ac3bde13d
         error_metrics = {
             "sMAPE": smape(y_true, y_pred) / 100,
             "R2": r2_score(y_true, y_pred),

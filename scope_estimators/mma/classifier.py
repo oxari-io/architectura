@@ -178,7 +178,7 @@ class RandomGuessBucketClassifier(BucketClassifier):
 
 
 class MajorityBucketClassifier(BucketClassifier):
-
+    # NOTE: Because the regressor uses all data if none of the classes are selected, the regressor basically trains on all data at once.
     def fit(self, X, y, **kwargs) -> Self:
         self.mode_ = sc.mode(np.array(y).flatten()).mode[0]
         return self

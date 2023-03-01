@@ -1,7 +1,7 @@
 from base import DefaultRegressorEvaluator, OxariScopeEstimator
 from base.helper import BucketScopeDiscretizer, SingleBucketScopeDiscretizer
 from base.oxari_types import ArrayLike
-from scope_estimators.mma.classifier import (BucketClassifier,
+from scope_estimators.mma.classifier import (BucketClassifier, BadPerformanceBucketClassifier,
                                              BucketClassifierEvauator,
                                              ClassifierOptimizer)
 from scope_estimators.mma.regressor import (BucketRegressor,
@@ -17,10 +17,8 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         super().__init__(**kwargs)
         self.n_buckets = n_buckets
         self.discretizer = BucketScopeDiscretizer(self.n_buckets)
-        self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials,
-                                                                                                n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
-        self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials,
-                                                                                             n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
+        self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+        self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         self.n_features_in_ = X.shape[1]
@@ -76,8 +74,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
 class EvenWeightMiniModelArmyEstimator(MiniModelArmyEstimator):
     def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
         super().__init__(n_buckets, cls, rgs, **kwargs)
-        self.bucket_rg: BucketRegressor = EvenWeightBucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials,
-                                                                                             n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
+        self.bucket_rg: BucketRegressor = EvenWeightBucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
 
 class SingleBucketVotingArmyEstimator(MiniModelArmyEstimator):
     def __init__(self, cls={}, rgs={}, **kwargs):
@@ -87,3 +84,8 @@ class SingleBucketVotingArmyEstimator(MiniModelArmyEstimator):
 class MiniModelArmyClusterBucketEstimator(MiniModelArmyEstimator):
     # TODO: instead of classifier uses clustering for bucketing
     pass
+
+class BadPerformanceMiniModelArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_cl: BucketClassifier = BadPerformanceBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())

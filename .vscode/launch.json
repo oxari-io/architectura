@@ -5,14 +5,21 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Training Pipeline",
+      "name": "P: Training Pipeline",
       "type": "python",
       "request": "launch",
       "module": "main_prod",
       "justMyCode": true
     },
     {
-      "name": "TEST Training Pipeline",
+      "name": "Q: Training Pipeline",
+      "type": "python",
+      "request": "launch",
+      "module": "main_qual",
+      "justMyCode": true
+    },
+    {
+      "name": "T: Training Pipeline",
       "type": "python",
       "request": "launch",
       "module": "main",

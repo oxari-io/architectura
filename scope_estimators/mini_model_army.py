@@ -28,8 +28,9 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         self.n_features_in_ = X.shape[1]
         y_binned = self.discretizer.fit_transform(X, y)
         self.bucket_cl: BucketClassifier = self.bucket_cl.set_params(**self.params.get("cls", {})).fit(X, y_binned)
-        groups = self.bucket_cl.predict(X)
-        self.bucket_rg = self.bucket_rg.set_params(**self.params.get("rgs", {})).fit(X, y, groups=groups)
+        # groups = self.bucket_cl.predict(X)
+        self.bucket_rg = self.bucket_rg.set_params(**self.params.get("rgs", {})).fit(X, y, groups=y_binned.flatten())
+        # self.bucket_rg = self.bucket_rg.set_params(**self.params.get("rgs", {})).fit(X, y, groups=groups)
         return self
 
     def predict(self, X, **kwargs) -> ArrayLike:

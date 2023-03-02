@@ -97,6 +97,19 @@ class LogTargetScaler(OxariScopeTransformer):
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
         return np.expm1(y.copy())
 
+
+class ArcSinhTargetScaler(OxariScopeTransformer):
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    def transform(self, y, **kwargs) -> ArrayLike:
+        return np.arcsinh(y.copy())
+
+    def reverse_transform(self, y, **kwargs) -> ArrayLike:
+        return np.sinh(y.copy())
+
+
 class DummyTargetScaler(OxariScopeTransformer):
 
     def transform(self, y, **kwargs) -> ArrayLike:
@@ -104,6 +117,7 @@ class DummyTargetScaler(OxariScopeTransformer):
 
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
         return super().reverse_transform(y, **kwargs)
+
 
 class ArcSinhScaler(OxariFeatureTransformer):
 

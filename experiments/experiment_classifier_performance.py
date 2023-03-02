@@ -34,10 +34,6 @@ if __name__ == "__main__":
         dataset = DefaultDataManager().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
-        if (scope == True):
-            SPLIT_2 = bag.scope_2
-            SPLIT_3 = bag.scope_3
-
         for estimator in configurations:
             start = time.time()
             ppl1 = DefaultPipeline(
@@ -51,6 +47,8 @@ if __name__ == "__main__":
             all_results.append({"repetition": i, "time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
 
             if (scope == True):
+                SPLIT_2 = bag.scope_2
+                SPLIT_3 = bag.scope_3
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=PCAFeatureReducer(),

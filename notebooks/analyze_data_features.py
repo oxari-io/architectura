@@ -78,3 +78,5 @@ for axs, feature in zip(axes, numerical_features.columns):
 
 fig.tight_layout()
 plt.show()
+
+# %%

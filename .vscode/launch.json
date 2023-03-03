@@ -38,6 +38,14 @@
       "request": "launch",
       "module": "experiments.${fileBasenameNoExtension}",
       "justMyCode": true
-    }
+    },
+    {
+      "name": "Run Bucket Error Experiment",
+      "type": "python",
+      "console": "externalTerminal",
+      "request": "launch",
+      "module": "experiments.experiment_bucket_error",
+      "justMyCode": true
+    },
   ]
 }

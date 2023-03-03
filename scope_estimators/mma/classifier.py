@@ -1,6 +1,7 @@
 import lightgbm as lgb
 import numpy as np
 import optuna
+import pandas as pd
 
 from base import (DefaultClassificationEvaluator, OxariClassifier,
                   OxariOptimizer)
@@ -8,6 +9,8 @@ from base import (DefaultClassificationEvaluator, OxariClassifier,
 # from model.misc.hyperparams_tuning import tune_hps_classifier
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
 from base.metrics import classification_metric
+from sklearn.metrics import (classification_report, confusion_matrix)
+
 
 
 class BucketClassifierEvauator(DefaultClassificationEvaluator):
@@ -31,6 +34,8 @@ class BucketClassifierEvauator(DefaultClassificationEvaluator):
             "adj_strict_acc": self.strict_adjacent_accuracy_score(y_test, y_pred, n_buckets),
         }
         # TODO: This is the better way to propagate the information. Not trickle-down but bottom up
+
+        
         return {**super().evaluate(y_test, y_pred), **error_metrics}
 
     def lenient_adjacent_accuracy_score(self, y_true, y_pred):
@@ -129,6 +134,7 @@ class BucketClassifier(OxariClassifier):
     def __init__(self, n_buckets=10, **kwargs):
         self.n_buckets = n_buckets
         self._estimator = lgb.LGBMClassifier(**kwargs)
+        self.bucket_metrics_ = {"scores":{}}
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
@@ -139,6 +145,14 @@ class BucketClassifier(OxariClassifier):
 
     def fit(self, X, y, **kwargs) -> "OxariClassifier":
         self._estimator.set_params(**self.params).fit(X, y.ravel())
+        self.bucket_metrics_ = classification_report(y, self._estimator.predict(X), output_dict=True)
+        cls_report_df = pd.DataFrame(classification_report(y, self._estimator.predict(X), output_dict=True)).transpose()
+        cnf_df = pd.DataFrame(confusion_matrix(y, self._estimator.predict(X)))
+        cnf_df.index = cnf_df.index.astype(float)
+        cnf_df.index = cnf_df.index.astype(str)
+        classification_metrics = cls_report_df.merge(cnf_df, how='left', left_index=True, right_index=True)
+        self.bucket_metrics_ = classification_metrics
+        
         return self
 
     def predict(self, X, **kwargs):

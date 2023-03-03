@@ -172,7 +172,9 @@ class BadPerformanceBucketClassifier(OxariClassifier):
         self._estimator = lgb.LGBMClassifier(**kwargs)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        # best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        best_params = {'max_depth': 1, 'num_leaves': 2, 'colsample_bytree': 1.0, 'min_child_weight': 1, 'subsample': 1.0, 'learning_rate': 10, 'n_estimators': 1}
+        info = None
         return best_params, info
 
     def evaluate(self, y_true, y_pred, **kwargs):

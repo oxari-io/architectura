@@ -54,10 +54,11 @@ if __name__ == "__main__":
     # print(f"Bucket-Specific evaluation metrics: {dp1.estimator.bucket_rg.bucket_specifics_}")
     # bucket_metrics.to_csv('local/eval_results/bucket_metrics.csv')
     bucket_metrics_cl = dp1.estimator.bucket_cl.bucket_metrics_
-    bucket_metrics_rg = dp1.estimator.bucket_rg.bucket_specifics_
-    bucket_metrics_cl.to_csv('local/eval_results/bucket_metrics_cl.csv', index=False, header=True)
-    bucket_metrics_rg = pd.DataFrame(bucket_metrics_rg)
-    bucket_metrics_rg.to_csv('local/eval_results/bucket_metrics_rg.csv', index=False, header=True)
+    bucket_metrics_rg = dp1.estimator.bucket_rg.bucket_specifics_["scores"]
+    frames = [bucket_metrics_cl, bucket_metrics_rg]
+    bucket_metrics =  pd.concat(frames, ignore_index=True)
+    bucket_metrics.to_csv('local/eval_results/bucket_metrics.csv', index=False, header=True)
+    # bucket_metrics_rg.to_csv('local/eval_results/bucket_metrics_rg.csv', index=False, header=True)
 
     # dp2 = DefaultPipeline(
     #     preprocessor=IIDPreprocessor(),

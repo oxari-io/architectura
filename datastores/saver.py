@@ -1,6 +1,7 @@
 import io
 
 import cloudpickle as pkl
+from jmespath.ast import index
 from statsmodels.multivariate.factor_rotation import target_rotation
 
 import base
@@ -164,8 +165,10 @@ class S3Destination(DataTarget):
 
 class MongoDestination(DataTarget):
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, index=None, options=None, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.index=index
+        self.options=options
         self._path = Path(self._path) if self._path else Path('.')
         self._connection_string = env.get('MONGO_CONNECTION_STRING')
         self.connect()
@@ -175,7 +178,7 @@ class MongoDestination(DataTarget):
             self.logger.error(f"Exception: Path(s) do/does not exist! Got {self._path.absolute()}")
             raise Exception(f"Path(s) do/does not exist! Got {self._path.absolute()}")
 
-    def connect(self) -> S3Client:
+    def connect(self) -> MongoClient:
         self.client = MongoClient(self._connection_string, server_api=ServerApi('1'))
         return self.client
 
@@ -188,6 +191,9 @@ class MongoDestination(DataTarget):
         collection.drop()
         self.logger.info(f"Dropped collection '{db.name}/{collection.name}'")
         inserted = collection.insert_many(obj.to_dict('records'))
+        if self.index:
+            collection.create_index(name='TextIndex', keys=list(self.index.items()))
+
         self.logger.info(f"Inserted {len(inserted.inserted_ids)} rows.")
         return True
 

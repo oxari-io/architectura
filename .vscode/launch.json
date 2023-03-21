@@ -5,6 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Save Data",
+      "type": "python",
+      "request": "launch",
+      "module": "main_save_search_db",
+      "justMyCode": true
+    },
+    {
       "name": "P: Training Pipeline",
       "type": "python",
       "request": "launch",

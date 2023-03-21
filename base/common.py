@@ -7,7 +7,8 @@ import os
 import time
 from numbers import Number
 from typing import Any, Dict, List, Tuple
-
+import sys
+import platform
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
@@ -23,6 +24,9 @@ from sklearn.preprocessing import minmax_scale
 from .metrics import dunn_index, mape
 from .oxari_types import ArrayLike
 import colorlog
+import time as tm
+import datetime as dt
+import cloudpickle as pkl
 
 os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
@@ -841,8 +845,11 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.created = None  # TODO: Make sure the meta-model also has an attribute which records the full creation time (data, hour). Normalize timezone to UTC.
         self.pipelines: Dict[str, OxariPipeline] = {}
+        self.creation_time = dt.datetime.utcnow()
+        self.python_version = sys.version
+        self.pickle_package = pkl.__package__
+        self.pickle_version = pkl.__version__
 
     def add_pipeline(self, scope: int, pipeline: OxariPipeline, **kwargs) -> "OxariMetaModel":
         self.check_scope(scope)
@@ -860,7 +867,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
     def get_pipeline(self, scope: int) -> OxariPipeline:
         return self.pipelines[f"scope_{scope}"]
 
-    def fit(self, X, y=None, **kwargs):
+    def fit(self, X:pd.DataFrame, y=None, **kwargs):
         self._set_meta(X)
         scope = kwargs.pop("scope", "all")
         if scope == "all":
@@ -878,6 +885,12 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         if scope == "all":
             return self._predict_all(X_new, **kwargs)
         return self.get_pipeline(scope).predict(X_new, **kwargs)
+
+    def get_features(self, scope:int=None) -> ArrayLike:
+        if not scope:
+            raise Exception('Need to provide scope parameter to select a pipeline!')
+        pipeline = self.get_pipeline(scope)
+        return pipeline.feature_names_in_
 
     def _predict_all(self, X, **kwargs) -> ArrayLike:
         result = pd.DataFrame()

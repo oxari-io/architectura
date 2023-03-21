@@ -4,11 +4,14 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import PowerTransformer
 
-from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver, OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
+from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
 from datasources.core import PreviousScopeFeaturesDataManager
+from datasources.loaders import RegionLoader
+from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
@@ -21,16 +24,17 @@ from datasources.local import LocalDatasource
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.lar_model import OxariUnboundLAR
 
-N_TRIALS = 40
-N_STARTUP_TRIALS = 10
+N_TRIALS = 5
+N_STARTUP_TRIALS = 5
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
     dataset = PreviousScopeFeaturesDataManager(
         S3Datasource(path='model-input-data/scopes_auto.csv'),
-        LocalDatasource(path=DATA_DIR / 'financials_auto.csv'),
+        S3Datasource(path='model-input-data/financials_auto.csv'),
         S3Datasource(path='model-input-data/categoricals_auto.csv'),
+        other_loaders=[RegionLoader()]
     ).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
@@ -41,26 +45,26 @@ if __name__ == "__main__":
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
+        preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=5),
-        scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        scope_estimator=MiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
+        preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=5),
-        scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        scope_estimator=MiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
+        preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=5),
-        scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        scope_estimator=MiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
@@ -142,8 +146,35 @@ if __name__ == "__main__":
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
 
-    local_model_saver = LocalMetaModelSaver(time=time.strftime('%d-%m-%Y'), name="lightweight").set(model=model)
-    local_lar_saver = LocalLARModelSaver(time=time.strftime('%d-%m-%Y'), name="lightweight").set(model=lar_model)
-    local_data_saver = LocalDataSaver(time=time.strftime('%d-%m-%Y'), name="lightweight").set(dataset=dataset)
-    SavingManager = OxariSavingManager(meta_model=local_model_saver, lar_model=local_lar_saver, dataset=local_data_saver)
+    all_meta_models = [
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_model").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_model").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
+    ]
+
+    all_lar_models = [
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar").set_object(lar_model).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
+    ]
+
+    df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
+    all_data_scope_imputations = [
+        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_scope_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_scope_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_scope_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output")),
+    ]
+
+    df = dataset.get_data_by_name(OxariDataManager.IMPUTED_LARS)
+    all_data_lar_imputations = [
+        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output")),
+    ]
+
+
+    SavingManager = OxariSavingManager(
+        *all_meta_models,
+        *all_lar_models,
+        *all_data_scope_imputations,
+        *all_data_lar_imputations,
+    )
     SavingManager.run()

@@ -277,6 +277,7 @@ class OxariDataManager(OxariMixin):
     JUMP_RATES_AGG = 'jump_rates_aggregated'
     IMPUTED_LARS = 'imputed_lars'
     SHORTENED = 'shortened'
+    SEARCH_DB = 'search_db' 
 
     # NON_FEATURES = ["isin", "year"] + ScopeLoader._COLS
     INDEPENDENT_VARIABLES = []
@@ -302,6 +303,8 @@ class OxariDataManager(OxariMixin):
 
     def run(self, **kwargs) -> "OxariDataManager":
         main_loaders = [self.scope_loader, self.financial_loader,self.categorical_loader]
+
+
         merged_loader = EmptyLoader()
         for idx, loader in enumerate(main_loaders + self.other_loaders):
             loaded = loader.load()

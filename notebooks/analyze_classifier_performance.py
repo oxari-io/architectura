@@ -19,6 +19,7 @@ df_results
 df_results["groups"] = pd.Categorical(df_results["scope_estimator"]+"-Scope"+df_results["scope"].astype(str)+"-"+df_results["type"])
 df_results["scope"] = pd.Categorical(df_results["scope"])
 df_results["scope-type"] = pd.Categorical(df_results["scope"].astype(str)+"-"+df_results["type"])
+df_results["model-scope"] = pd.Categorical(df_results["scope_estimator"]+"-"+df_results["scope"].astype(str))
 df_results["repetition"] = pd.Categorical(df_results["repetition"])
 df_results["smape"] = df_results["raw.sMAPE"]
 df_results["f1"] = df_results["test.classifier.balanced_f1"]
@@ -30,7 +31,7 @@ sns.boxplot(df_results, x="scope_estimator", y="raw.sMAPE", hue="scope")
 # %%
 plt.figure(figsize=(15,10))
 # sns.scatterplot(df_results, x="test.classifier.balanced_f1", y="raw.sMAPE", hue="scope-type")
-sns.scatterplot(df_results[df_results["type"]=="delinked"], x="test.classifier.balanced_f1", y="raw.sMAPE", hue="groups")
+sns.scatterplot(df_results[df_results["type"]=="delinked"], x="test.classifier.balanced_f1", y="raw.sMAPE", hue="model-scope")
 # sns.scatterplot(df_results[df_results["type"]=="linked"], x="test.classifier.balanced_f1", y="raw.sMAPE", hue="scope")
 plt.show()
 # %%

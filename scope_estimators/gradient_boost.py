@@ -1,8 +1,9 @@
+from lightgbm import LGBMRegressor
 import numpy as np
 import optuna
 import pandas as pd
 from sklearn.svm import SVR
-
+from typing_extensions import Self
 from base import OxariScopeEstimator
 from base.common import OxariOptimizer
 from base.metrics import optuna_metric
@@ -102,12 +103,9 @@ class XGBEstimator(OxariScopeEstimator):
 
     def fit(self, X, y, **kwargs) -> "XGBEstimator":
         self.n_features_in_ = X.shape[1]
-        max_size = len(X)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)   
         X = pd.DataFrame(X)
         y = pd.DataFrame(y)
-        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
+        self._estimator = self._estimator.set_params(**self.params).fit(X, y.values.ravel())
         # self.coef_ = self._estimator.coef_
         return self
        
@@ -120,11 +118,15 @@ class XGBEstimator(OxariScopeEstimator):
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred, **kwargs)     
 
-    def check_conformance(self):
-        pass
-
     def get_config(self, deep=True):
         return {**self._estimator.get_params(), **super().get_config(deep)}
+
+class LGBEstimator(XGBEstimator):
+    def __init__(self, optimizer=None, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = LGBMRegressor()
+        self._optimizer = optimizer or XGBOptimizer()
+
         
        
 

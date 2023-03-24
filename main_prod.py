@@ -31,13 +31,14 @@ STAGE = "p_"
 # TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)
 # TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_) 
 # TODO: Use constant STAGE to specify names for intermediate savings (p_, q_, t_, d_) 
-# TODO: Delete all model results and run experiments again
 # TODO: Modify saver to save all generated dataframes in OXariDataManager
 # TODO: Reverse date format for saving
 # TODO: Change MongoDb destiantion so that path is incorporated (Split by "database-name/collection-name")
 # TODO: Remove redundant lar step from other main_* experiments too
 # TODO: Introduce OxariPostprocessing piepline 
 # TODO: Extend CLI Runner to also include a training option  
+# TODO: Delete all model results and run experiments again
+# TODO: Convert some of the main_*.py scripts to experiments.
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')

@@ -8,7 +8,7 @@ from scope_estimators.mma.classifier import (BucketClassifier,
                                              ClassifierOptimizer)
 from scope_estimators.mma.regressor import BucketRegressor, RegressorOptimizer
 
-
+# TODO: Put this into the mma package
 class SingleBucketModelRegressorOptimizer(RegressorOptimizer):
     def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(n_trials, n_startup_trials, sampler, **kwargs)

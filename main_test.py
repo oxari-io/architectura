@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # dataset = DefaultDataManager().run()
     dataset = PreviousScopeFeaturesDataManager().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    X = dataset.get_features(OxariDataManager.ORIGINAL)
+    # X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
     SPLIT_1 = bag.scope_1
     SPLIT_2 = bag.scope_2

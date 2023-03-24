@@ -72,6 +72,9 @@ class PartialLoader(OxariLoggerMixin, abc.ABC):
     def __add__(self, other: PartialLoader):
         return CombinedLoader().merge(self, other)
 
+    def __len__(self):
+        return len(self.data) if self._data else 0
+
     @property
     def name(self):
         return self.__class__.__name__
@@ -107,7 +110,9 @@ class SpecialLoader(PartialLoader):
     def lkeys(self):
         pass
 
+
 class EmptyLoader(PartialLoader):
+
     def __init__(self, datasource: Datasource = None, verbose=False, **kwargs) -> None:
         super().__init__(None, verbose, **kwargs)
         self._data = pd.DataFrame()
@@ -116,15 +121,15 @@ class EmptyLoader(PartialLoader):
 
         return CombinedLoader(other.data).set_name(other.name)
 
+
 class CombinedLoader(PartialLoader):
 
     def __init__(self, _data: pd.DataFrame = None, **kwargs) -> None:
         super().__init__(**kwargs)
         self._data = _data
 
-
     def merge(self, loader_1: PartialLoader = None, loader_2: PartialLoader = None):
-        tmp_data:pd.DataFrame = None
+        tmp_data: pd.DataFrame = None
         self.logger.info(f"Adding ({loader_1.name} + {loader_2.name})")
         self._name = f"{loader_1.name}-{loader_2.name} "
         if isinstance(loader_2, SpecialLoader):
@@ -142,7 +147,7 @@ class CombinedLoader(PartialLoader):
         return self._name.strip()
 
 
-class ScopeLoader(PartialLoader):
+class OldScopeLoader(PartialLoader):
     PATTERN = "tg_num"
 
     def __init__(self, threshold=5, **kwargs) -> None:
@@ -170,6 +175,15 @@ class ScopeLoader(PartialLoader):
     @property
     def data(self):
         return self._data
+
+
+class ScopeLoader(OldScopeLoader):
+
+    def _load(self) -> Self:
+        # before logging some scopes have very small values so we discard them
+        _data = self.datasource.fetch().data
+        self._data = _data
+        return self
 
 
 class FinancialLoader(PartialLoader):
@@ -266,7 +280,6 @@ class OxariDataManager(OxariMixin):
     Handles loading the dataset and keeps versions of each dataset throughout the pipeline.
     Should be capable of reading the data from csv-file or from database
     """
-    ORIGINAL = 'original'
     FINANCIAL = 'financials'
     CATEGORICAL = 'categoricals'
     SCOPE = 'scopes'
@@ -277,7 +290,8 @@ class OxariDataManager(OxariMixin):
     JUMP_RATES_AGG = 'jump_rates_aggregated'
     IMPUTED_LARS = 'imputed_lars'
     SHORTENED = 'shortened'
-    SEARCH_DB = 'search_db' 
+    SEARCH_DB = 'search_db'
+    REDUCED = 'reduced'
 
     # NON_FEATURES = ["isin", "year"] + ScopeLoader._COLS
     INDEPENDENT_VARIABLES = []
@@ -301,20 +315,21 @@ class OxariDataManager(OxariMixin):
         self._dataset_stack = []
         self.threshold = kwargs.pop("threshold", 5)
 
-    def run(self, **kwargs) -> "OxariDataManager":
-        main_loaders = [self.scope_loader, self.financial_loader,self.categorical_loader]
-
+    def run(self, **kwargs) -> Self:
+        main_loaders = [self.financial_loader, self.scope_loader, self.categorical_loader]
 
         merged_loader = EmptyLoader()
+        self.logger.info(f"Remaining data points {len(merged_loader.data)}")
         for idx, loader in enumerate(main_loaders + self.other_loaders):
             loaded = loader.load()
             loader_name = f"loader_{loaded.name.lower()}"
             merged_loader += loaded
             self.add_data(loader_name, loader.data, loaded.name)
             self.add_data(f"merge_stage_{idx}", merged_loader.data, merged_loader.name)
-        
-        _df_merged = merged_loader.data
-        _df_merged = self.add_data(OxariDataManager.MERGED, _df_merged, "Dataset with all parts merged.")
+            self.logger.info(f"Remaining data points {len(merged_loader.data)}")
+
+        _df_merged = self.add_data(OxariDataManager.MERGED, merged_loader.data, "Dataset with all parts merged.")
+        # _df_reduced = self.add_data(OxariDataManager.REDUCED, self._reduced(_df_merged), "Dataset with only training material.")
         _df_original = self.add_data(OxariDataManager.ORIGINAL, self._transform(_df_merged), "Dataset after transformation changes.")
         self.col_non_features = list(_df_original.columns[~_df_original.columns.str.startswith("ft_")])
         self.col_targets = list(_df_original.columns[_df_original.columns.str.startswith("tg_numc_")])
@@ -323,7 +338,18 @@ class OxariDataManager(OxariMixin):
         self.col_others = list(_df_original.columns.difference(self.col_targets).difference(self.col_features))
         return self
 
+    # def _reduced(self, df, **kwargs):
+    #     num_inititial = df.shape[0]
+    #     tmp_targets = [col for col in df.columns if col.startswith("tg_")]
+    #     # tmp_keys = [col for col in df.columns if col.startswith("key_")]
+    #     # dropping datapoints that have no scopes
+    #     df = df.dropna(how="all", subset=tmp_targets)
+    #     # dropping all data points with leaky keys
+    #     # df = df.dropna(how="any", subset=tmp_keys)
 
+    #     num_remaining = df.shape[0]
+    #     self.logger.info(f"From {num_inititial} initial data points removed {num_inititial - num_remaining} data points.")
+    #     return df
 
     #TODO: JUST OVERWRITE THIS ONE
     def _transform(self, df, **kwargs):
@@ -357,11 +383,14 @@ class OxariDataManager(OxariMixin):
         return X, Y
 
     def get_scopes(self, name: str):
-        return self.get_data_by_name(name)[self.col_non_features].copy()
+        data = self.get_data_by_name(name)[self.col_non_features].copy()
+        results = data.dropna(how="all", subset=self.col_targets)
+        return results
 
     def get_features(self, name: str):
-        return self.get_data_by_name(name)[self.col_features].copy()
-
+        data = self.get_data_by_name(name)[self.col_features].copy()
+        results = data.dropna(how="all", subset=self.col_features)
+        return results
 
     def get_split_data(self, name: str, split_size_val=0.2, split_size_test=0.2):
         data = self.get_data_by_name(name)

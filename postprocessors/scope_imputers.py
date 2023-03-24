@@ -20,7 +20,8 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
 
     def run(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # we are only interested in the most recent years
-        data = X.loc[X["key_year"].isin(list(range(2016, 2022)))].copy()
+        # data = X.loc[X["key_year"].isin(list(range(2016, 2022)))].copy()
+        data = X.copy()
         predicted_scope_1 = self.estimator.predict(data, scope=1)
         predicted_scope_2 = self.estimator.predict(data, scope=2)
         predicted_scope_3 = self.estimator.predict(data, scope=3)
@@ -86,10 +87,11 @@ class JumpRateEvaluator(OxariLoggerMixin):
 
     def evaluate(self, X: pd.DataFrame) -> Self:
         companies = X.groupby('key_isin', group_keys=True)
-        self.logger.info("Compute Jump Rates")
+        self.logger.info("Compute Jump Ratios (yearly)")
         jump_rates: pd.DataFrame = companies.progress_apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
-        self.logger.info("Compute Jump Ratios")
+        self.logger.info("Compute Jump Ratios (aggregated)")
         estimation_stats: pd.DataFrame = companies.progress_apply(self._compute_estimate_to_fact_ratio).reset_index()
+        self.logger.info("Merge yearly jum rates with aggregated stats")
         self.jump_rates = jump_rates.merge(estimation_stats, left_on="key_isin", right_on="key_isin").drop('index', axis=1)
         # self.jump_rates = self.jump_rates.drop('level_1', axis=1)
         self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('key_isin').agg(['median', 'mean', 'std', 'max', 'min'])

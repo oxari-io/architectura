@@ -37,7 +37,7 @@ if __name__ == "__main__":
         other_loaders=[RegionLoader()]
     ).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    X = dataset.get_features(OxariDataManager.ORIGINAL)
+    # X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
     SPLIT_1 = bag.scope_1
     SPLIT_2 = bag.scope_2

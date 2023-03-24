@@ -29,7 +29,7 @@
       "name": "T: Training Pipeline",
       "type": "python",
       "request": "launch",
-      "module": "main",
+      "module": "main_test",
       "justMyCode": true
     },
     {

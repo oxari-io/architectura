@@ -326,6 +326,7 @@ class OxariDataManager(OxariMixin):
             merged_loader += loaded
             self.add_data(loader_name, loader.data, loaded.name)
             self.add_data(f"merge_stage_{idx}", merged_loader.data, merged_loader.name)
+            # TODO: take len of loader directly  
             self.logger.info(f"Remaining data points {len(merged_loader.data)}")
 
         _df_merged = self.add_data(OxariDataManager.MERGED, merged_loader.data, "Dataset with all parts merged.")

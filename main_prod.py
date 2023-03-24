@@ -27,6 +27,9 @@ from lar_calculator.lar_model import OxariUnboundLAR
 N_TRIALS = 5
 N_STARTUP_TRIALS = 5
 
+# TODO: Refactor experiment sections into functions
+# TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_) 
+
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 

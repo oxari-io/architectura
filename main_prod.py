@@ -26,9 +26,18 @@ from lar_calculator.lar_model import OxariUnboundLAR
 
 N_TRIALS = 5
 N_STARTUP_TRIALS = 5
+STAGE = "p_"
 
-# TODO: Refactor experiment sections into functions
+# TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)
 # TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_) 
+# TODO: Use constant STAGE to specify names for intermediate savings (p_, q_, t_, d_) 
+# TODO: Delete all model results and run experiments again
+# TODO: Modify saver to save all generated dataframes in OXariDataManager
+# TODO: Reverse date format for saving
+# TODO: Change MongoDb destiantion so that path is incorporated (Split by "database-name/collection-name")
+# TODO: Remove redundant lar step from other main_* experiments too
+# TODO: Introduce OxariPostprocessing piepline 
+# TODO: Extend CLI Runner to also include a training option  
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
@@ -137,12 +146,6 @@ if __name__ == "__main__":
     result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
     result.to_csv('local/eval_results/model_training_direct_comparison.csv')
     print(result)
-
-    print("\n", "Predict LARs on Mock data")
-    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
-    print(lar_imputed_data)
 
     tmp_pipeline = model.get_pipeline(1)
 

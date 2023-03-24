@@ -7,7 +7,7 @@ from postprocessors import ScopeImputerPostprocessor
 from imputers import BaselineImputer, RevenueQuantileBucketImputer
 from feature_reducers import DummyFeatureReducer, PCAFeatureSelector, DropFeatureReducer, IsomapDimensionalityReduction, MDSDimensionalitySelector, FeatureAgglomeration, GaussRandProjection, SparseRandProjection, Factor_Analysis, Latent_Dirichlet_Allocation
 from scope_estimators import PredictMedianEstimator, GaussianProcessEstimator, MiniModelArmyEstimator, DummyEstimator, PredictMeanEstimator, BaselineEstimator
-from scope_estimators import SupportVectorEstimator, XGBEstimator, SGDEstimator, PLSEstimator, GaussianProcessEstimator, DummyEstimator, KNEstimator, RNEstimator, LinearSVREstimator, BayesianRegressionEstimator, MLPEstimator
+from scope_estimators import SupportVectorEstimator, XGBEstimator, SGDEstimator, PLSEstimator, GaussianProcessEstimator, DummyEstimator, KNNEstimator, RNEstimator, LinearSVREstimator, BayesianRegressionEstimator, MLPEstimator
 from base import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
 from scope_estimators import MiniModelPartyEstimator

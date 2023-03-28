@@ -59,9 +59,9 @@ class OxariUnboundLAR(OxariLinearAnnualReduction):
         return lar
 
     def transform(self, X, **kwargs) -> ArrayLike:
-        new_X = X.copy()
+        new_X:pd.DataFrame = X.copy()
         params = self.params_1.merge(self.params_2, how="left", on="key_isin", suffixes=("_scope_1_2", "_scope_3"))
-        new_X = new_X.merge(params, how="left", on="key_isin")
+        new_X = new_X.merge(params, how="left", on="key_isin").drop_duplicates(subset="key_isin", keep='last')
         
         return new_X
 

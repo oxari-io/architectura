@@ -58,7 +58,7 @@ class DropFeatureReducer(OxariFeatureReducer):
 class PCAFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector uses PCA to reduce the dimensionality of the features first"""
 
-    def __init__(self, n_components=5, **kwargs):
+    def __init__(self, n_components=10, **kwargs):
         super().__init__(**kwargs)
         self.n_components_ = n_components
         self._dimensionality_reducer: PCA = PCA(n_components=n_components)
@@ -104,7 +104,7 @@ class ModifiedLocallyLinearEmbeddingFeatureReducer(AgglomerateFeatureReducer):
     which preserves distances within local neighborhoods. It additionally uses multiple 
     weight vectors in each neighborhood to solve the LLE regularisation problem"""
 
-    def __init__(self, n_neighbors=5, n_components=5, method="modified", **kwargs):  #are kwargs the parameters of this estimator?
+    def __init__(self, n_components=10, n_neighbors=10,  method="modified", **kwargs):  #are kwargs the parameters of this estimator?
         super().__init__(**kwargs)
         self._dimensionality_reducer = LocallyLinearEmbedding(n_neighbors=n_neighbors, n_components=n_components, method=method, eigen_solver='dense')
 
@@ -121,7 +121,7 @@ class FactorAnalysisFeatureReducer(AgglomerateFeatureReducer):
 
     # Number of components can (and maybe should) change
     # What's the effect of the rotation parameter? What if it's None?
-    def __init__(self, n_components=5, rotation="varimax", **kwargs):
+    def __init__(self, n_components=10, rotation="varimax", **kwargs):
         super().__init__(**kwargs)
         self._dimensionality_reducer = FactorAnalysis(n_components=n_components, rotation=rotation)
 
@@ -138,7 +138,7 @@ class LDAFeatureReducer(AgglomerateFeatureReducer):
 
     # N_COMPONENTS DEFAULT IS 10
     # If the data size is large, the "ONLINE" update will be much faster than the "BATCH" update
-    def __init__(self, n_components=5, learning_method="batch", **kwargs):
+    def __init__(self, n_components=10, learning_method="batch", **kwargs):
         super().__init__(**kwargs)
         self._dimensionality_reducer = LatentDirichletAllocation(n_components=n_components, learning_method=learning_method)
 

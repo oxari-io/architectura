@@ -180,7 +180,7 @@ class OldScopeLoader(PartialLoader):
 class ScopeLoader(OldScopeLoader):
 
     def _load(self) -> Self:
-        # before logging some scopes have very small values so we discard them
+        # TODO: before logging some scopes have very small values so we discard them. 
         _data = self.datasource.fetch().data
         self._data = _data
         return self
@@ -269,6 +269,7 @@ class SplitScopeDataset():
     def _helper(self, scope_col):
         columns = self.data.columns.difference(self.non_features)
         X = self.data.dropna(how="all", subset=scope_col).copy()
+        X = X[X[scope_col]>0]
         return SplitBag(X[columns], X[scope_col], self.split_size_test, self.split_size_test)
 
 

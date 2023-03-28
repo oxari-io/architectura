@@ -73,9 +73,9 @@ class SupportVectorEstimator(OxariScopeEstimator):
         super().__init__(**kwargs)
         self._estimator = SVR()
         self._optimizer = optimizer or SVROptimizer(**kwargs)
-        self.logger.warning(f"Better use {FastSupportVectorEstimator}! It's much faster.")
 
     def fit(self, X, y, **kwargs) -> Self:
+        self.logger.warning(f"Better use {FastSupportVectorEstimator}! It's much faster.")
         max_size = len(X)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)   
@@ -111,7 +111,14 @@ class FastSVROptimizer(SVROptimizer):
         return optuna_metric(y_true=y_val, y_pred=y_pred)
         
 class FastSupportVectorEstimator(SupportVectorEstimator):
-    def __init__(self, optimizer=None, **kwargs):
+    def __init__(self, optimizer:OxariOptimizer|None =None, **kwargs):
         super().__init__(optimizer, **kwargs)
         self._estimator = make_pipeline(Nystroem(), SVR())
         self._optimizer = optimizer or FastSVROptimizer()  
+
+    def fit(self, X, y, **kwargs) -> Self:
+        X = pd.DataFrame(X)
+        y = pd.DataFrame(y)
+        self._estimator.named_steps["svr"].set_params(**self.params)
+        self._estimator = self._estimator.fit(X, y.values.ravel())
+        return self

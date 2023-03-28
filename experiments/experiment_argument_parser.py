@@ -74,6 +74,17 @@ class FeatureReductionExperimentCommandLineParser(ExperimentCommandLineParser):
         return super().set_experiment_specific_arguments()
 
 
+class AllComparisonExperimentCommandLineParser(ExperimentCommandLineParser):
+    # TODO: Impl: parser for experiment that has multiple configurations
+    def set_experiment_specific_arguments(self):
+        self.parser.add_argument('-c',
+                                 default=[],
+                                 dest='configurations',
+                                 help='Names of scope estimator methods to compare',
+                                 nargs='*',
+                                 type=str)
+        return super().set_experiment_specific_arguments()
+
 class ScopeEstimatorComparisonExperimentCommandLineParser(ExperimentCommandLineParser):
 
     def set_experiment_specific_arguments(self):

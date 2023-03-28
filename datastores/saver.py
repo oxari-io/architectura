@@ -107,7 +107,7 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
             return True
         except Exception as e:
             # TODO: Needs local emergency saving in case of exception
-            self.logger.error(f"ERROR: Something went horribly wrong while saving '{self._name}': {e}")
+            self.logger.error(f"ERROR: Something went horribly wrong while saving '{self._name}' -> {e}")
             return False
 
 
@@ -171,26 +171,35 @@ class MongoDestination(DataTarget):
         self.options=options
         self._path = Path(self._path) if self._path else Path('.')
         self._connection_string = env.get('MONGO_CONNECTION_STRING')
-        self.connect()
+        
 
     def _check_if_destination_accessible(self):
         if not self._path.exists():
             self.logger.error(f"Exception: Path(s) do/does not exist! Got {self._path.absolute()}")
             raise Exception(f"Path(s) do/does not exist! Got {self._path.absolute()}")
 
+    def _batch(self, iterable, n=1):
+        l = len(iterable)
+        for ndx in range(0, l, n):
+            yield iterable[ndx:min(ndx + n, l)]
+
     def connect(self) -> MongoClient:
-        self.client = MongoClient(self._connection_string, server_api=ServerApi('1'))
+        self.client = MongoClient(self._connection_string, server_api=ServerApi('1'), connectTimeoutMS=120000)
         return self.client
 
     def _save(self, obj:pd.DataFrame, name, **kwargs) -> bool:
         if not isinstance(obj, pd.DataFrame):
             raise Exception(f'Object is not a dataframe but {obj.__class__}')
-        db = self.client['companies']
+        bsize = 50000
+        client = self.connect()    
+        db = client['companies']
         
         collection = db[name]
         collection.drop()
         self.logger.info(f"Dropped collection '{db.name}/{collection.name}'")
-        inserted = collection.insert_many(obj.to_dict('records'))
+        records = obj.to_dict('records')
+        for b in tqdm.tqdm(self._batch(records, bsize), total=(len(records)//bsize)+1, desc="MongoDB Batch Upload"):
+            inserted = collection.insert_many(b)
         if self.index:
             collection.create_index(name='TextIndex', keys=list(self.index.items()))
 

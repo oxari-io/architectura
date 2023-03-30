@@ -59,6 +59,13 @@
       "request": "launch",
       "module": "experiments.${fileBasenameNoExtension}",
       "justMyCode": true
+    },
+    {
+      "name": "Run Specific Experiment",
+      "type": "python",
+      "request": "launch",
+      "module": "experiments.experiment_missing_year_imputers",
+      "justMyCode": true
     }
   ]
 }

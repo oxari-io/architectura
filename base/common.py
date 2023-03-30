@@ -306,11 +306,11 @@ class OxariTransformer(OxariMixin, sklearn.base.TransformerMixin, sklearn.base.B
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
 
     @abc.abstractmethod
-    def fit(self, X, y=None, **kwargs) -> Self:
+    def fit(self, X:ArrayLike, y:ArrayLike=None, **kwargs) -> Self:
         return self
 
     @abc.abstractmethod
-    def transform(self, X, **kwargs) -> ArrayLike:
+    def transform(self, X:ArrayLike, **kwargs) -> ArrayLike:
         pass
 
 
@@ -369,7 +369,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         self.set_evaluator(evaluator)
 
     @abc.abstractmethod
-    def fit(self, X, y=None, **kwargs) -> Self:
+    def fit(self, X:ArrayLike, y=None, **kwargs) -> Self:
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f�X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})�).
         # Set self.n_features_in_ = X.shape[1]
@@ -380,7 +380,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         return self
 
     @abc.abstractmethod
-    def transform(self, X, **kwargs) -> ArrayLike:
+    def transform(self, X:ArrayLike, **kwargs) -> ArrayLike:
         pass
 
     def evaluate(self, X: pd.DataFrame, y=None, **kwargs) -> Self:

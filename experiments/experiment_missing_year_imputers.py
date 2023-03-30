@@ -12,8 +12,9 @@ from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
 import tqdm
 import itertools as it
+from imputers.interpolation import LinearInterpolationImputer
 
-from postprocessors.timeseries_interpolators import MissingYearImputer
+from postprocessors.timeseries_interpolators import MissingYearInterpolator
 from preprocessors.core import IIDPreprocessor
 if __name__ == "__main__":
 
@@ -25,9 +26,9 @@ if __name__ == "__main__":
         S3Datasource(path='model-input-data/financials_auto.csv'),
         S3Datasource(path='model-input-data/categoricals_auto.csv'),
     ).run()
-    preprocessor = RevenueQuantileBucketImputer()
-    configurations: list[MissingYearImputer] = [
-        MissingYearImputer(),
+    preprocessor = LinearInterpolationImputer()
+    configurations: list[MissingYearInterpolator] = [
+        MissingYearInterpolator(),
     ]
     repeats = range(1)
     with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:

@@ -13,7 +13,7 @@ from base.oxari_types import ArrayLike
 tqdm.tqdm.pandas()
 
 
-class MissingYearImputer(OxariImputer):
+class MissingYearInterpolator(OxariImputer):
     COL_GROUP = 'key_isin'
     COL_TIME = 'key_year'
     def __init__(self, **kwargs):

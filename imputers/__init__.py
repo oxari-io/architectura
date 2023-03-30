@@ -3,3 +3,4 @@ from .kcluster_bucket import *
 from .revenue_bucket import *
 from .autoimpute import *
 from .iterative import *
+from .interpolation import *

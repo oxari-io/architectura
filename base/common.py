@@ -306,7 +306,7 @@ class OxariTransformer(OxariMixin, sklearn.base.TransformerMixin, sklearn.base.B
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
 
     @abc.abstractmethod
-    def fit(self, X, y=None, **kwargs) -> "OxariTransformer":
+    def fit(self, X, y=None, **kwargs) -> Self:
         return self
 
     @abc.abstractmethod
@@ -318,7 +318,7 @@ class OxariClassifier(OxariMixin, sklearn.base.ClassifierMixin, sklearn.base.Bas
     """Just for intellisense convenience. Not really necessary but allows autocompletion"""
 
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "OxariClassifier":
+    def fit(self, X, y, **kwargs) -> Self:
         return self
 
     @abc.abstractmethod
@@ -333,7 +333,7 @@ class OxariRegressor(OxariMixin, sklearn.base.RegressorMixin, sklearn.base.BaseE
         super().__init__(**kwargs)
 
     @abc.abstractmethod
-    def fit(self, X, y, **kwargs) -> "OxariRegressor":
+    def fit(self, X, y, **kwargs) -> Self:
         return self
 
     @abc.abstractmethod

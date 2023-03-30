@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from typing_extensions import Self
 
 from base import OxariLoggerMixin, OxariMixin
+from base.common import OxariTransformer
 from base.oxari_types import ArrayLike
 
 
@@ -180,7 +181,7 @@ class OldScopeLoader(PartialLoader):
 class ScopeLoader(OldScopeLoader):
 
     def _load(self) -> Self:
-        # TODO: before logging some scopes have very small values so we discard them. 
+        # TODO: before logging some scopes have very small values so we discard them.
         _data = self.datasource.fetch().data
         self._data = _data
         return self
@@ -269,11 +270,41 @@ class SplitScopeDataset():
     def _helper(self, scope_col):
         columns = self.data.columns.difference(self.non_features)
         X = self.data.dropna(how="all", subset=scope_col).copy()
-        X = X[X[scope_col]>0]
+        X = X[X[scope_col] > 0]
         return SplitBag(X[columns], X[scope_col], self.split_size_test, self.split_size_test)
 
 
-HOW_TO_MERGE = "inner"
+class DataFilter(OxariTransformer):
+
+    def __init__(self, frac: float = 0.1, name=None, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.frac = frac
+
+    def fit(self, X: ArrayLike, y: ArrayLike = None, **kwargs) -> Self:
+        return super().fit(X, y, **kwargs)
+
+    def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
+        return X
+
+
+class SimpleDataFilter(DataFilter):
+
+    def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
+        X_new = X.sample(frac=self.frac)
+        self.logger.info(f'Filtered dataset from {len(X)} to {len(X_new)} data points')
+        return X_new
+
+class CompanyDataFilter(DataFilter):
+
+    def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
+        isins = X["key_isin"].unique()
+        self.num_companies_pre = len(isins)
+        isin_subset = pd.Series(isins).sample(frac=self.frac).values
+        X_new = X[X["key_isin"].isin(isin_subset)]
+        self.num_companies_post = len(X_new["key_isin"].unique())
+        self.logger.debug(f'Filtered dataset from {self.num_companies_pre} to {self.num_companies_post} companies')
+        self.logger.info(f'Filtered dataset from {len(X)} to {len(X_new)} data points')
+        return X_new
 
 
 class OxariDataManager(OxariMixin):
@@ -298,13 +329,14 @@ class OxariDataManager(OxariMixin):
     INDEPENDENT_VARIABLES = []
 
     def __init__(
-        self,
-        scope_loader: PartialLoader = None,
-        financial_loader: PartialLoader = None,
-        categorical_loader: PartialLoader = None,
-        other_loaders: List[PartialLoader] = [],
-        verbose=False,
-        **kwargs,
+            self,
+            scope_loader: PartialLoader = None,
+            financial_loader: PartialLoader = None,
+            categorical_loader: PartialLoader = None,
+            other_loaders: List[PartialLoader] = [],
+            data_filter: DataFilter = DataFilter(),
+            verbose=False,
+            **kwargs,
     ):
         super().__init__(**kwargs)
         self.scope_loader = scope_loader
@@ -312,6 +344,7 @@ class OxariDataManager(OxariMixin):
         self.financial_loader = financial_loader
         self.categorical_loader = categorical_loader
         self.other_loaders = other_loaders
+        self.data_filter = data_filter
         self.verbose = verbose
         self._dataset_stack = []
         self.threshold = kwargs.pop("threshold", 5)
@@ -327,12 +360,12 @@ class OxariDataManager(OxariMixin):
             merged_loader += loaded
             self.add_data(loader_name, loader.data, loaded.name)
             self.add_data(f"merge_stage_{idx}", merged_loader.data, merged_loader.name)
-            # TODO: take len of loader directly  
+            # TODO: take len of loader directly
             self.logger.info(f"Remaining data points {len(merged_loader.data)}")
 
         _df_merged = self.add_data(OxariDataManager.MERGED, merged_loader.data, "Dataset with all parts merged.")
-        # _df_reduced = self.add_data(OxariDataManager.REDUCED, self._reduced(_df_merged), "Dataset with only training material.")
-        _df_original = self.add_data(OxariDataManager.ORIGINAL, self._transform(_df_merged), "Dataset after transformation changes.")
+        _df_reduced = self.add_data(OxariDataManager.REDUCED, self.data_filter.fit_transform(_df_merged), "Dataset with reduced number of rows.")
+        _df_original = self.add_data(OxariDataManager.ORIGINAL, self._transform(_df_reduced), "Dataset after transformation changes.")
         self.col_non_features = list(_df_original.columns[~_df_original.columns.str.startswith("ft_")])
         self.col_targets = list(_df_original.columns[_df_original.columns.str.startswith("tg_numc_")])
         self.col_features = list(_df_original.columns[_df_original.columns.str.startswith("ft_")])
@@ -440,3 +473,7 @@ class OxariDataManager(OxariMixin):
 
         # return X_train, y_train, X_train_full, y_train_full, X_test, y_test, X_val, y_val
         return X_rem, y_rem, X_train, y_train, X_val, y_val, X_test, y_test
+
+    def set_filter(self, filter: DataFilter) -> Self:
+        self.data_filter = filter
+        return self

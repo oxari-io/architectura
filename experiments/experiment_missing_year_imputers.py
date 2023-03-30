@@ -3,6 +3,7 @@ import time
 
 import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
+from base.dataset_loader import CompanyDataFilter
 from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager
 from feature_reducers import PCAFeatureReducer
@@ -25,7 +26,7 @@ if __name__ == "__main__":
         S3Datasource(path='model-input-data/scopes_auto.csv'),
         S3Datasource(path='model-input-data/financials_auto.csv'),
         S3Datasource(path='model-input-data/categoricals_auto.csv'),
-    ).run()
+    ).set_filter(CompanyDataFilter(frac=0.01)).run()
     preprocessor = LinearInterpolationImputer()
     configurations: list[MissingYearInterpolator] = [
         MissingYearInterpolator(),

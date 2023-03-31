@@ -388,14 +388,20 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         p = kwargs.pop('p', 0.3)
 
         X_true = X.dropna(how='any')
+        X_true_features = X_true.filter(regex="^ft_", axis=1)
+        ft_cols = X_true_features.columns
 
-        mask = np.random.rand(*X_true.shape) < p
-        X_eval = X_true.where(~mask, np.nan)
+        rows, cols = X_true_features.shape
+        mask = ~(np.random.rand(rows, cols) < p)
+
+        X_eval = X_true.copy()
+
+        X_eval[ft_cols] = X_true[ft_cols].where(mask, np.nan)
         X_pred = self.transform(X_eval, **kwargs)
 
-        y_true = np.array(X_true)[mask]
-        y_pred = np.array(X_pred)[mask]
-
+        y_true = np.array(X_true[ft_cols])[mask]
+        y_pred = np.array(X_pred[ft_cols])[mask]
+        self.logger.error("PROBABLY BROKEN")
         self._evaluation_results = {}
         self._evaluation_results["overall"] = self._evaluator.evaluate(y_true, y_pred)
         return self

@@ -41,8 +41,7 @@ class InterpolationImputer(OxariImputer):
         if (end_idx - start_idx)+1 < self.window_size:
             return tmp_col
 
-        s_new = tmp_col.copy()
-        s_new.loc[start_idx:end_idx] = tmp_col.loc[start_idx:end_idx].interpolate(self.method)
+        s_new = tmp_col.interpolate(self.method, limit_area=None)
 
 
         # fill in the missing values backward with a moving average
@@ -67,16 +66,21 @@ class InterpolationImputer(OxariImputer):
         X = group.copy()
         tmp_df = X.set_index(COL_TIME).drop([COL_GROUPER], axis=1).transform(self._transform_col)
         # result = tmp_df.interpolate(self.method)
-        X[tmp_df.columns] = tmp_df.values
+        X[tmp_df.columns] = tmp_df[tmp_df.columns]
         return X
 
-    @abstractmethod
     def transform(self, X:ArrayLike, **kwargs) -> ArrayLike:
-        result = X.sort_values([COL_GROUPER, COL_TIME]).filter(regex="^(?!tg_).*", axis=1).groupby(COL_GROUPER).progress_apply(self._interpolate)
+        result = X.sort_values([COL_GROUPER, COL_TIME]).drop_duplicates([COL_GROUPER, COL_TIME]).filter(regex="^(?!tg_).*", axis=1).groupby(COL_GROUPER, group_keys=False).progress_apply(self._interpolate)
         result = self.fallback_imputer.transform(result)
         return result 
 
 class LinearInterpolationImputer(InterpolationImputer):
-    def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
-        return super().transform(X, **kwargs)
+    def __init__(self, window_size: int = 3, **kwargs):
+        super().__init__('linear', window_size, **kwargs)
+
+
+class SplineInterpolationImputer(InterpolationImputer):
+    def __init__(self, window_size: int = 3, **kwargs):
+        super().__init__('cubicspline', window_size, **kwargs)
+
 

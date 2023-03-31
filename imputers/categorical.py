@@ -4,6 +4,7 @@ from numbers import Number
 
 from base.oxari_types import ArrayLike
 import pandas as pd
+import numpy as np 
 
 EXAMPLE_STRING = """
 self.statistics = {
@@ -73,11 +74,21 @@ class CategoricalStatisticsImputer(OxariImputer):
         X_new = X.copy()
         X_new = X_new.to_frame() if isinstance(X_new, pd.Series) else X_new
         stats = self.stats_specific[self.reference]
-        for ft_col in X_new.filter(regex="^ft_num", axis=1).columns.tolist():
-            for grp, replacers in stats.items():
-                values_need_filling_and_are_of_grp:pd.Series = (X_new[ft_col].isna()) & (X_new[self.reference] == grp)
-                if values_need_filling_and_are_of_grp.any() is not True:
+        all_columns = X_new.filter(regex="^ft_num", axis=1).columns.tolist()
+        for ft_col in all_columns:
+            for value, replacers in stats.items():
+                values_need_filling_and_are_of_grp:pd.Series = (X_new[ft_col].isna()) & (X_new[self.reference] == value)
+                num_values_to_replace = len(X_new.loc[values_need_filling_and_are_of_grp, ft_col])
+                if not num_values_to_replace:
                     continue
-                replacement_value = replacers.get((ft_col, self.statistic)) or self.stats_overall.get((ft_col, self.statistic))
+                specific_replacement_value = replacers.get((ft_col, self.statistic))
+                overall_replacement_value = self.stats_overall.get((ft_col, self.statistic))
+                replacement_value = specific_replacement_value if not (np.isnan(specific_replacement_value) or specific_replacement_value is None) else overall_replacement_value
                 X_new.loc[values_need_filling_and_are_of_grp, ft_col] = replacement_value
+        for ft_col in all_columns:
+            reference_value_is_none = (X_new[ft_col].isna()) & (X_new[self.reference].isna())
+            num_values_to_replace = len(X_new.loc[reference_value_is_none, ft_col])
+            if not num_values_to_replace:
+                continue
+            X_new.loc[reference_value_is_none, ft_col] = self.stats_overall.get((ft_col, self.statistic))
         return X_new

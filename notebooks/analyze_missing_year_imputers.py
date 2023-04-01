@@ -9,7 +9,7 @@ import statsmodels.formula.api as smf
 
 # %%
 cwd = pathlib.Path(__file__).parent
-df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_year_imputers.csv', index_col=0)
+df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_year_imputers_scaled.csv', index_col=0)
 df_results
 # %%
 df_results["imputer"] = pd.Categorical(df_results["imputer"])
@@ -19,20 +19,14 @@ df_results
 # %%
 plt.figure(figsize=(15,5))
 # sns.boxplot(df_results, x="scope_estimator", y="raw.sMAPE")
-sns.boxplot(df_results, x="imputer", y="smape", hue="difficulty_level")
+sns.boxplot(df_results, x="imputer", y="mae", hue="difficulty")
 # %%
-plt.figure(figsize=(15,10))
-sns.boxplot(df_results, x="difficulty_level", y="smape", hue="imputer")
+plt.figure(figsize=(10,10))
+sns.lineplot(df_results, x="difficulty", y="mae", hue="imputer")
 plt.show()
+
 # %%
-plt.figure(figsize=(10,5))
-sns.kdeplot(df_results[(df_results.scope==1) & (df_results.type=="delinked")], x="raw.sMAPE", hue="scope_estimator")
-plt.show()
+formula = "smape ~ imputer + repetition"
+mod1 = smf.mixedlm(formula=formula, data=df_results, groups=df_results["difficulty"]).fit()
+mod1.summary()
 # %%
-formula = "smape ~ f1 + scope_estimator + scope"
-mod1 = smf.mixedlm(formula=formula, data=df_results, groups=df_results["groups"]).fit()
-mod1.summary()
-# %%plt.figure(figsize=(10,10))
-formula = "smape ~ f1 + scope_estimator + scope + type"
-mod1 = smf.mixedlm(formula=formula, data=df_results, groups=df_results["groups"]).fit()
-mod1.summary()

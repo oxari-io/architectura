@@ -295,8 +295,14 @@ class SimpleDataFilter(DataFilter):
         return X_new
 
 class CompanyDataFilter(DataFilter):
+    def __init__(self, frac: float = 0.1, drop_single_rows=False, name=None, **kwargs) -> None:
+        super().__init__(frac, name, **kwargs)
+        self.drop_single_rows=drop_single_rows
 
     def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
+        if self.drop_single_rows:
+            group_counts = X.groupby('key_isin').size()
+            X = X.groupby('key_isin').filter(lambda x: group_counts[x.name] > 1)
         isins = X["key_isin"].unique()
         self.num_companies_pre = len(isins)
         isin_subset = pd.Series(isins).sample(frac=self.frac).values

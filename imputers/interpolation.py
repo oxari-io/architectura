@@ -66,7 +66,8 @@ class InterpolationImputer(OxariImputer):
         X = group.copy()
         tmp_df = X.set_index(COL_TIME).drop([COL_GROUPER], axis=1).transform(self._transform_col)
         # result = tmp_df.interpolate(self.method)
-        X[tmp_df.columns] = tmp_df[tmp_df.columns]
+        X[tmp_df.columns] = tmp_df[tmp_df.columns].values
+        X = X.infer_objects()
         return X
 
     def transform(self, X:ArrayLike, **kwargs) -> ArrayLike:

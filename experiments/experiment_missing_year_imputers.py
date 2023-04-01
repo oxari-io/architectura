@@ -15,7 +15,7 @@ import tqdm
 import itertools as it
 from imputers.interpolation import LinearInterpolationImputer, SplineInterpolationImputer
 
-from postprocessors.timeseries_interpolators import CubicMissingYearImputer, SimpleMissingYearImputer
+from postprocessors.missing_year_imputers import QuadraticPolynomialMissingYearImputer, CubicSplineMissingYearImputer, DerivativeMissingYearImputer, DummyMissingYearImputer, SimpleMissingYearImputer
 from preprocessors.core import IIDPreprocessor
 if __name__ == "__main__":
 
@@ -24,10 +24,13 @@ if __name__ == "__main__":
     # TODO: Redesign imputation to be at the start everytime.
     preprocessor = SplineInterpolationImputer()
     repeats = range(10)
-    difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+    difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     configurations: list[SimpleMissingYearImputer] = [
+        QuadraticPolynomialMissingYearImputer,
+        DummyMissingYearImputer,
+        DerivativeMissingYearImputer,
         SimpleMissingYearImputer,
-        CubicMissingYearImputer,
+        CubicSplineMissingYearImputer,
     ]
     with tqdm.tqdm(total=len(repeats) * len(configurations) * len(difficulties)) as pbar:
         for i in repeats:
@@ -35,14 +38,14 @@ if __name__ == "__main__":
                 S3Datasource(path='model-input-data/scopes_auto.csv'),
                 S3Datasource(path='model-input-data/financials_auto.csv'),
                 S3Datasource(path='model-input-data/categoricals_auto.csv'),
-            ).set_filter(CompanyDataFilter(frac=0.1)).run()
+            ).set_filter(CompanyDataFilter(frac=0.1, drop_single_rows=True)).run()
             data = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
             data_filled = preprocessor.fit_transform(data)
             for Imputer in configurations:
                 imputer: SimpleMissingYearImputer = Imputer()
                 for dff in difficulties:
                     imputer.fit(data_filled).evaluate(difficulty=dff)
-                    all_results.append({"repetition": i, **imputer.evaluation_results, **imputer.get_config()})
+                    all_results.append({"repetition": i, "difficulty": dff, **imputer.evaluation_results, **imputer.get_config()})
                     concatenated = pd.json_normalize(all_results)
                     fname = __loader__.name.split(".")[-1]
                     pbar.update(1)

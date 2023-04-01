@@ -3,6 +3,7 @@ import pandas as pd
 from typing_extensions import Self
 
 from pandas.core.computation.expressions import evaluate
+from sklearn.preprocessing import MinMaxScaler
 
 from base import OxariMetaModel, OxariPostprocessor
 import tqdm
@@ -28,14 +29,15 @@ class SimpleMissingYearImputer(OxariImputer):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.data = X.copy().drop_duplicates([self.COL_GROUP, self.COL_TIME])
+        self.scaler = MinMaxScaler().fit(self.data.filter(regex="^ft_num", axis=1))
         return super().fit(X, y, **kwargs)
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
         data = X.copy()
         data_extended = data.groupby(self.COL_GROUP, group_keys=False).apply(self._extend).reset_index(drop=True)
-        data_transformed: pd.DataFrame = data_extended.infer_objects().groupby(self.COL_GROUP, group_keys=False).progress_apply(self._interpolate)
-        data_transformed = data_transformed.reset_index(drop=True)
-        return data_transformed
+        data_transformed: pd.DataFrame = data_extended.infer_objects().groupby(self.COL_GROUP, group_keys=False).progress_apply(self._interpolate).reset_index(drop=True)
+        data_completed = data_transformed.groupby(self.COL_GROUP, group_keys=False).apply(lambda x: x.bfill().ffill())
+        return data_completed
 
     def _trim(self, df_company: pd.DataFrame):
         df_company = df_company.sort_values(self.COL_TIME)
@@ -47,12 +49,14 @@ class SimpleMissingYearImputer(OxariImputer):
         return df_result
 
     def _extend(self, df_company: pd.DataFrame):
+
+        df = df_company.set_index(self.COL_TIME).sort_index()
         key_isin = df_company[self.COL_GROUP].values[0]
-        min_year = int(df_company[self.COL_TIME].min())
-        max_year = int(df_company[self.COL_TIME].max())
-        rows = df_company.set_index(self.COL_TIME).to_dict(orient='index')
-        new_rows = {i: {"key_year": i, "key_isin": key_isin, **rows.get(i, {})} for i in range(min_year, max_year + 1)}
-        new_data = pd.DataFrame(new_rows).T
+        min_year = int(df.index.min())
+        max_year = int(df.index.max())
+        new_index = pd.RangeIndex(start=min_year, stop=max_year+1, name=self.COL_TIME)
+        new_data = df.reindex(new_index).reset_index()
+        new_data["key_isin"] = key_isin
         return new_data
 
     def _interpolate(self, df_company: pd.DataFrame):
@@ -84,10 +88,15 @@ class SimpleMissingYearImputer(OxariImputer):
 
         X_pred = self.transform(X_eval, **kwargs)
 
-        y_true = np.array(X_true[ft_cols])[mask].flatten()
-        y_pred = np.array(X_pred[ft_cols])[mask].flatten()
+        
+
+        y_true_scaled = np.array(self.scaler.transform(X_true[ft_cols]))[mask].flatten()
+        y_pred_scaled = np.array(self.scaler.transform(X_pred[ft_cols]))[mask].flatten()
+        y_true_raw = np.array(X_true[ft_cols])[mask].flatten()
+        y_pred_raw = np.array(X_pred[ft_cols])[mask].flatten()
         self._evaluation_results = {}
-        self._evaluation_results["overall"] = self._evaluator.evaluate(y_true, y_pred)
+        self._evaluation_results["scaled"] = self._evaluator.evaluate(y_true_scaled, y_pred_scaled+np.finfo(float).eps)
+        self._evaluation_results["raw"] = self._evaluator.evaluate(y_true_raw, y_pred_raw+np.finfo(float).eps)
 
         return self
 
@@ -98,11 +107,25 @@ class SimpleMissingYearImputer(OxariImputer):
         return f"@{self.__class__.__name__}[ --- ]"
 
 
-class CubicMissingYearImputer(SimpleMissingYearImputer):
+class CubicSplineMissingYearImputer(SimpleMissingYearImputer):
 
     def __init__(self, **kwargs):
         super().__init__(method='cubicspline', **kwargs)
 
-    def _interpolate(self, df_company: pd.DataFrame):
-        results = df_company.interpolate(self.method)
-        return results
+
+class QuadraticPolynomialMissingYearImputer(SimpleMissingYearImputer):
+
+    def __init__(self, **kwargs):
+        super().__init__(method='quadratic', **kwargs)
+
+
+class DerivativeMissingYearImputer(SimpleMissingYearImputer):
+
+    def __init__(self, **kwargs):
+        super().__init__(method='from_derivatives', **kwargs)
+
+class DummyMissingYearImputer(SimpleMissingYearImputer):
+
+    def __init__(self, **kwargs):
+        super().__init__(method='zero', **kwargs)
+

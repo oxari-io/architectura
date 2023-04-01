@@ -3,6 +3,7 @@ import time
 
 import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
+from base.dataset_loader import SimpleDataFilter
 from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager
 from feature_reducers import PCAFeatureReducer
@@ -12,6 +13,9 @@ from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
 import tqdm
 import itertools as it
+
+from imputers.categorical import CategoricalStatisticsImputer
+from imputers.interpolation import LinearInterpolationImputer, SplineInterpolationImputer
 if __name__ == "__main__":
 
     all_results = []
@@ -21,12 +25,15 @@ if __name__ == "__main__":
         S3Datasource(path='model-input-data/scopes_auto.csv'),
         S3Datasource(path='model-input-data/financials_auto.csv'),
         S3Datasource(path='model-input-data/categoricals_auto.csv'),
-    ).run()
+    ).set_filter(SimpleDataFilter(0.5)).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
         RevenueQuantileBucketImputer(),
         KMeansBucketImputer(),
         # KMedianBucketImputer,
+        LinearInterpolationImputer(),
+        SplineInterpolationImputer(),
+        CategoricalStatisticsImputer(),
         BaselineImputer(),
         RevenueBucketImputer(),
         *[MVEImputer(sub_estimator=m.value, verbose=True) for m in MVEImputer.strategies],

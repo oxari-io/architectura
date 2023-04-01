@@ -1,5 +1,6 @@
 import pathlib
 import time
+from isapi.simple import SimpleFilter
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,6 +10,7 @@ from base import (OxariDataManager, OxariMetaModel, helper)
 from base.common import OxariLoggerMixin
 from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
+from base.dataset_loader import CompanyDataFilter
 from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from datastores.saver import CSVSaver, MongoDestination, MongoSaver, PickleSaver, S3Destination
@@ -31,7 +33,7 @@ if __name__ == "__main__":
 
     # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
     # dataset = DefaultDataManager().run()
-    dataset = PreviousScopeFeaturesDataManager().run()
+    dataset = PreviousScopeFeaturesDataManager().set_filter(CompanyDataFilter(0.1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

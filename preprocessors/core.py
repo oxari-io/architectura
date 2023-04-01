@@ -53,7 +53,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         # self.categorical_columns = CategoricalLoader.columns
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
-        data = X
+        data = X.copy()
         self.original_features = data.columns
         self.scope_columns = data.columns[data.columns.str.startswith('tg_num')]
         self.financial_columns = data.columns[data.columns.str.startswith('ft_num')]
@@ -70,14 +70,16 @@ class BaselinePreprocessor(OxariPreprocessor):
         return self
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
-        X_new = pd.DataFrame(X, columns=self.original_features)
+        X_result = X.copy()
+        X_new = X.filter(regex='ft_', axis=1)
         # impute all the missing columns
         X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
         # transform numerical
         X_new[self.financial_columns] = self.fin_transformer.transform(X_new[self.financial_columns])
         # encode categorical
         X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
-        return X_new
+        X_result[X_new.columns] = X_new[X_new.columns].values
+        return X_result
 
     def get_config(self, deep=True):
         return {
@@ -93,7 +95,7 @@ class BaselinePreprocessor(OxariPreprocessor):
 
 class ImprovedBaselinePreprocessor(BaselinePreprocessor):
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         X_new = X.copy()
         self.scope_columns = X.columns[X.columns.str.startswith('tg_numc')]
         self.financial_columns = X.columns[X.columns.str.startswith('ft_num')]
@@ -124,7 +126,7 @@ class IIDPreprocessor(BaselinePreprocessor):
         super().__init__(fin_transformer, cat_transformer, **kwargs)
         self.overall_scaler = prep.StandardScaler()
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # NOTE: Using fit_transform here leads to recursion.
         super().fit(X, y, **kwargs)
         X_new = super().transform(X, **kwargs)
@@ -146,7 +148,7 @@ class NormalizedIIDPreprocessor(IIDPreprocessor):
         super().__init__(fin_transformer, cat_transformer, **kwargs)
         self.overall_scaler_2 = prep.MinMaxScaler()
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "NormalizedIIDPreprocessor":
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # NOTE: Using fit_transform here leads to recursion.
         super().fit(X, y, **kwargs)
         X_new = super().transform(X, **kwargs)

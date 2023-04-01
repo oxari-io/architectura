@@ -41,6 +41,8 @@ def mock_data():
     df = pd.Series({**num_data, **cat_data}).to_frame().T.sort_index(axis=1)
     return df
 
+class OxariWrapper(OxariFeatureTransformer):
+    pass
 
 class BucketScopeDiscretizer(OxariScopeTransformer):
 

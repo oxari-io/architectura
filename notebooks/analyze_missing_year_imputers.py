@@ -9,13 +9,18 @@ import statsmodels.formula.api as smf
 
 # %%
 cwd = pathlib.Path(__file__).parent
-df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_year_imputers_scaled.csv', index_col=0)
+df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_year_imputers.csv', index_col=0)
 df_results
 # %%
 df_results["imputer"] = pd.Categorical(df_results["imputer"])
-df_results["mae"] = df_results["overall.MAE"]
-df_results["smape"] = df_results["overall.sMAPE"]
+df_results["mae"] = df_results["adjusted.mae"]
+df_results["smape"] = df_results["raw.sMAPE"]
 df_results
+# %%
+plt.figure(figsize=(15,5))
+# sns.boxplot(df_results, x="scope_estimator", y="raw.sMAPE")
+sns.boxplot(df_results, x="mae", y="imputer")
+plt.show()
 # %%
 plt.figure(figsize=(15,5))
 # sns.boxplot(df_results, x="scope_estimator", y="raw.sMAPE")

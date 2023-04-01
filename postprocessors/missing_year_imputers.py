@@ -89,14 +89,25 @@ class SimpleMissingYearImputer(OxariImputer):
         X_pred = self.transform(X_eval, **kwargs)
 
         
+        X_true_matrix = X_true[ft_cols]
+        X_pred_matrix = X_pred[ft_cols]
+        
+        X_true_matrix_scaled = self.scaler.transform(X_true_matrix)
+        X_pred_matrix_scaled = self.scaler.transform(X_pred_matrix)
 
-        y_true_scaled = np.array(self.scaler.transform(X_true[ft_cols]))[mask].flatten()
-        y_pred_scaled = np.array(self.scaler.transform(X_pred[ft_cols]))[mask].flatten()
-        y_true_raw = np.array(X_true[ft_cols])[mask].flatten()
-        y_pred_raw = np.array(X_pred[ft_cols])[mask].flatten()
+        y_true_scaled = np.array(X_true_matrix_scaled)[mask].flatten()
+        y_pred_scaled = np.array(X_pred_matrix_scaled)[mask].flatten()
+
+        y_true_raw = np.array(X_true_matrix)[mask].flatten()
+        y_pred_raw = np.array(X_pred_matrix)[mask].flatten()
+
+        row_mae = np.abs(np.array(X_true_matrix_scaled) - np.array(X_pred_matrix_scaled)).mean(axis=1)
+        adj_mae = row_mae.sum()/(row_mae!=0).sum()
+
         self._evaluation_results = {}
         self._evaluation_results["scaled"] = self._evaluator.evaluate(y_true_scaled, y_pred_scaled+np.finfo(float).eps)
         self._evaluation_results["raw"] = self._evaluator.evaluate(y_true_raw, y_pred_raw+np.finfo(float).eps)
+        self._evaluation_results["adjusted"] = {"mae":adj_mae}
 
         return self
 

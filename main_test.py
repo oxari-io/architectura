@@ -17,6 +17,7 @@ from imputers import RevenueQuantileBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
 from pipeline.core import DefaultPipeline
 from postprocessors import ScopeImputerPostprocessor
+from postprocessors.missing_year_imputers import DerivativeMissingYearImputer
 from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator
 from datastores import PartialSaver, LocalDestination, OxariSavingManager
@@ -88,8 +89,13 @@ if __name__ == "__main__":
     # print(model.predict(SPLIT_1.val.X, scope=1))
     mainlogger.logger.info(f"Predict with Model only SCOPE1, Predictions: {model.predict(SPLIT_1.val.X, scope=1)}")
 
+    print("\n", "Missing Year Imputation")
+    data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
+    my_imputer = DerivativeMissingYearImputer().fit(data_filled)
+    DATA_FOR_IMPUTE = my_imputer.transform(DATA)
+
     print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE).evaluate()
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
     dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
@@ -136,7 +142,10 @@ if __name__ == "__main__":
     X_new.to_csv('local/eval_results/model_training_test.csv')
     print(X_new)
 
-    tmp_pipeline = model.get_pipeline(1)
+    
+
+
+    # tmp_pipeline = model.get_pipeline(1)
 
     # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###

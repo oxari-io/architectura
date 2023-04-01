@@ -16,6 +16,7 @@ from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManage
 from datastores.saver import CSVSaver, MongoDestination, MongoSaver, PickleSaver, S3Destination
 from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
+from imputers.revenue_bucket import RevenueBucketImputer
 from lar_calculator.lar_model import OxariUnboundLAR
 from pipeline.core import DefaultPipeline
 from postprocessors import ScopeImputerPostprocessor

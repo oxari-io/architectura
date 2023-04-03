@@ -396,12 +396,11 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
 
         X_eval = X_true.copy()
 
-        X_eval[ft_cols] = X_true[ft_cols].where(mask, np.nan)
+        X_eval[ft_cols] = np.where(mask, X_true[ft_cols], np.nan)
         X_pred = self.transform(X_eval, **kwargs)
 
-        y_true = np.array(X_true[ft_cols])[mask]
-        y_pred = np.array(X_pred[ft_cols])[mask]
-        self.logger.error("PROBABLY BROKEN")
+        y_true = X_true[ft_cols].values[np.where(~mask)]
+        y_pred = X_pred[ft_cols].values[np.where(~mask)]
         self._evaluation_results = {}
         self._evaluation_results["overall"] = self._evaluator.evaluate(y_true, y_pred)
         return self

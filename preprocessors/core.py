@@ -7,7 +7,7 @@ import pandas as pd
 import sklearn.preprocessing as prep
 
 from base import OxariPreprocessor
-from base.helper import DummyTargetScaler
+from base.helper import DummyTargetScaler, OxariFeatureTransformerWrapper
 
 
 class DummyPreprocessor(OxariPreprocessor):
@@ -124,7 +124,7 @@ class IIDPreprocessor(BaselinePreprocessor):
 
     def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(fin_transformer, cat_transformer, **kwargs)
-        self.overall_scaler = prep.StandardScaler()
+        self.overall_scaler = OxariFeatureTransformerWrapper(transformer=prep.StandardScaler()) 
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # NOTE: Using fit_transform here leads to recursion.
@@ -135,7 +135,7 @@ class IIDPreprocessor(BaselinePreprocessor):
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_new = super().transform(X, **kwargs)
-        X_new = pd.DataFrame(self.overall_scaler.transform(X_new), index=X_new.index, columns=X_new.columns)
+        X_new = self.overall_scaler.transform(X_new)
         return X_new
 
 
@@ -146,7 +146,7 @@ class NormalizedIIDPreprocessor(IIDPreprocessor):
 
     def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(fin_transformer, cat_transformer, **kwargs)
-        self.overall_scaler_2 = prep.MinMaxScaler()
+        self.overall_scaler_2 = OxariFeatureTransformerWrapper(transformer=prep.MinMaxScaler())
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # NOTE: Using fit_transform here leads to recursion.

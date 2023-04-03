@@ -7,7 +7,12 @@ import pandas as pd
 from sklearn.preprocessing import KBinsDiscretizer
 from base.common import OxariScopeTransformer, OxariFeatureTransformer
 from base.oxari_types import ArrayLike
+from typing_extensions import Self
 
+def replace_ft_num(X:pd.DataFrame, X_new:ArrayLike):
+    X_tmp = X.copy()
+    X_tmp[X.filter(regex='^ft_num', axis=1).columns] = X_new
+    return X_tmp
 
 def mock_data():
     num_data = {
@@ -41,8 +46,24 @@ def mock_data():
     df = pd.Series({**num_data, **cat_data}).to_frame().T.sort_index(axis=1)
     return df
 
-class OxariWrapper(OxariFeatureTransformer):
-    pass
+class OxariFeatureTransformerWrapper(OxariFeatureTransformer):
+    def __init__(self, transformer=None, name=None, **kwargs) -> None:
+        super().__init__(name, **kwargs)
+        self.transformer = transformer
+
+    def fit(self, X:ArrayLike, y=None, **kwargs) -> Self:
+        self.feature_names_in_ = X.columns.tolist()
+        return self.transformer.fit(X, y, **kwargs)
+    
+    def transform(self, X:ArrayLike, y=None, **kwargs) -> ArrayLike:
+        X_result = X.copy()
+        X_ft = X[self.feature_names_in_]
+        X_new = pd.DataFrame(self.transformer.transform(X_ft, y, **kwargs), columns=X_ft.columns, index=X_ft.index)
+        X_result[X_new.columns]=X_new[X_new.columns].values
+        return X_result
+    
+    def reverse_transform(self, X, **kwargs) -> ArrayLike:
+        return self.transformer.reverse_transform(X, **kwargs)
 
 class BucketScopeDiscretizer(OxariScopeTransformer):
 

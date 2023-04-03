@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
     # dataset = DefaultDataManager().run()
-    dataset = PreviousScopeFeaturesDataManager().set_filter(CompanyDataFilter(0.1)).run()
+    dataset = PreviousScopeFeaturesDataManager().set_filter(CompanyDataFilter(0.01)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     print("\n", "Missing Year Imputation")
     data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
     my_imputer = DerivativeMissingYearImputer().fit(data_filled)
-    DATA_FOR_IMPUTE = my_imputer.transform(DATA)
+    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
 
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE).evaluate()

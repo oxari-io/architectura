@@ -7,7 +7,9 @@ from sklearn import cluster
 from sklearn.impute import SimpleImputer, KNNImputer
 
 from base.common import DefaultClusterEvaluator, OxariImputer
+from base.helper import replace_ft_num
 from base.mappings import NumMapping
+from base.oxari_types import ArrayLike
 
 from .core import BucketImputerBase
 
@@ -23,20 +25,14 @@ class KMeansBucketImputer(BucketImputerBase):
         """
         Creates a lookup table to impute missing values based on the buckets created on revenue
         """
-        self._estimator = self._estimator.fit(X)
-        # X_copy = self._estimator.transform(X)
-
-        # self.centroids = self._estimator.cluster_centers_
-
-        #TODO: Remove this line
-        # test = self.evaluate(X_copy, self._estimator.predict(X_copy))
-
+        self._estimator = self._estimator.fit(X.filter(regex="^ft_num"))
         return self
 
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        new_X = self._estimator.transform(X)
-        new_X = pd.DataFrame(new_X, X.index, X.columns)
-        return new_X
+    def transform(self, X, **kwargs) -> ArrayLike:
+        X_num = X.filter(regex="^ft_num")
+        X_new = self._estimator.transform(X_num)
+        X_new = pd.DataFrame(X_new, X.index, X_num.columns)
+        return replace_ft_num(X, X_new)
 
     def evaluate(self, X, y=None, **kwargs):
         return super().evaluate(X, y, **kwargs)
@@ -48,29 +44,23 @@ class KMedianBucketImputer(BucketImputerBase):
         self._estimator = kmedoids.KMedoids(buckets_number, metric="euclidean")
         self._helper_imputer = SimpleImputer(strategy="median")
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "OxariImputer":
-        """
-        Creates a lookup table to impute missing values based on the buckets created on revenue
-        """
-        self._helper_imputer = self._helper_imputer.fit(X)
-        X_copy = self._helper_imputer.transform(X)
-        self._estimator = self._estimator.fit(X_copy)
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
+
+        X_new = self._helper_imputer.fit_transform(X.filter(regex="^ft_num"))
+        self._estimator = self._estimator.fit(X_new)
 
         self.centroids = self._estimator.cluster_centers_
-
-        #TODO: Remove this line
-        # test = self.evaluate(X_copy, self._estimator.predict(X_copy))
-
         return self
 
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        X_copy = self._helper_imputer.transform(X)
+    def transform(self, X, **kwargs) -> ArrayLike:
+        X_num = X.filter(regex="^ft_num")
+        X_copy = self._helper_imputer.transform(X_num)
         # TODO: Write a version with a weighted average based on distance space form transform function
         X_assignments = self._estimator.predict(X=X_copy)
         impute_values = self.centroids[X_assignments]
 
-        new_X = pd.DataFrame(np.where(np.isnan(X), impute_values, X), X.index, X.columns)
-        return new_X
+        X_new = pd.DataFrame(np.where(np.isnan(X_num), impute_values, X_num), X.index, X_num.columns)
+        return replace_ft_num(X, X_new)
 
     def evaluate(self, X, y=None, **kwargs):
         return super().evaluate(X, y, **kwargs)

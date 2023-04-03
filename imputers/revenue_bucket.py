@@ -51,7 +51,8 @@ class RevenueBucketImputer(BucketImputerBase):
         min_ = data[MAIN_VARIABLE].min()  # 20
         max_ = data[MAIN_VARIABLE].max()  # 1000
         self.thresholds = self._get_threshold(self.bucket_number, min_, max_, data[MAIN_VARIABLE].dropna())
-        data_numerical[MAIN_VARIABLE] = data_numerical[MAIN_VARIABLE].fillna(data_numerical[MAIN_VARIABLE].median())
+        data_numerical = data_numerical.assign(**{MAIN_VARIABLE:data_numerical[MAIN_VARIABLE].fillna(data_numerical[MAIN_VARIABLE].median()).values})
+        data_numerical["bucket"] = None
         data_numerical["bucket"] = pd.cut(data[MAIN_VARIABLE], self.thresholds)
         cat_stats: pd.DataFrame = data_numerical.groupby("bucket").aggregate(self._aggregations())
         self.stats_specific = cat_stats.to_dict(orient='index')
@@ -62,6 +63,7 @@ class RevenueBucketImputer(BucketImputerBase):
     def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
         X_new = X.copy()
         X_new = X_new.to_frame() if isinstance(X_new, pd.Series) else X_new
+        X_new["bucket"] = None
         X_new["bucket"] = pd.cut(X_new[MAIN_VARIABLE], self.thresholds)
 
         tmp = X_new.set_index('bucket')
@@ -70,7 +72,7 @@ class RevenueBucketImputer(BucketImputerBase):
             filled_bgroup = bgroup.apply(lambda col: col.fillna(self.stats_specific.get(intervall_group, {}).get((col.name, 'median'))),axis=0)
             tmp.loc[tmp.index==intervall_group, filled_bgroup.columns]=filled_bgroup[filled_bgroup.columns].values
         # Apply overall statistics to fill na in every column
-        tmp_filled = tmp.apply(lambda col: col.fillna(self.stats_overall.get((col.name, 'median'))),axis=0)
+        tmp_filled = tmp.apply(lambda col: col.fillna(self.stats_overall.get((col.name, 'median'))) if col.name.startswith('ft_num') else col,axis=0)
         X_new[tmp_filled.columns] = tmp_filled[tmp_filled.columns].reset_index(drop=True).values
         return X_new.drop('bucket', axis=1).infer_objects()
 

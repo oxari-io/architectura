@@ -394,7 +394,7 @@ class OxariDataManager(OxariMixin):
 
     #TODO: JUST OVERWRITE THIS ONE
     def _transform(self, df, **kwargs):
-        return df
+        return df.drop_duplicates(['key_isin', 'key_year'])
 
     def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> pd.DataFrame:
         self.logger.info(f"Added {name} to {self.__class__.__name__}")

@@ -1,10 +1,12 @@
 from typing import Union
-
+from typing_extensions import Self
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 
 from base.common import OxariImputer
+from base.helper import replace_ft_num
+from base.oxari_types import ArrayLike
 
 
 class BaselineImputer(OxariImputer):
@@ -19,12 +21,13 @@ class BaselineImputer(OxariImputer):
             **kwargs,
         )
 
-    def fit(self, X, y=None, **kwargs) -> "OxariImputer":
-        self._imputer.fit(X, y, **kwargs)
+    def fit(self, X, y=None, **kwargs) -> Self:
+        self._imputer.fit(X.filter(regex="^ft_num"), y, **kwargs)
         return self
 
-    def transform(self, X, **kwargs) -> Union[np.ndarray, pd.DataFrame]:
-        return self._imputer.transform(X, **kwargs)
+    def transform(self, X, **kwargs) -> ArrayLike:
+        X_num = X.filter(regex="^ft_num")
+        return replace_ft_num(X, X_num)
     
 class BucketImputerBase(OxariImputer):
     bucket_number:int = None

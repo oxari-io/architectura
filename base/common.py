@@ -388,7 +388,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         p = kwargs.pop('p', 0.3)
 
         X_true = X.dropna(how='any')
-        X_true_features = X_true.filter(regex="^ft_", axis=1)
+        X_true_features = X_true.filter(regex="^ft_num", axis=1)
         ft_cols = X_true_features.columns
 
         rows, cols = X_true_features.shape

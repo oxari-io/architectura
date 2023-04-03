@@ -38,7 +38,7 @@ if __name__ == "__main__":
                 S3Datasource(path='model-input-data/scopes_auto.csv'),
                 S3Datasource(path='model-input-data/financials_auto.csv'),
                 S3Datasource(path='model-input-data/categoricals_auto.csv'),
-            ).set_filter(CompanyDataFilter(frac=0.01, drop_single_rows=True)).run()
+            ).set_filter(CompanyDataFilter(frac=0.1, drop_single_rows=True)).run()
             data = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
             data_filled = preprocessor.fit_transform(data)
             for Imputer in configurations:

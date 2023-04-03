@@ -33,11 +33,14 @@ class SimpleMissingYearImputer(OxariImputer):
         return super().fit(X, y, **kwargs)
 
     def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
+        # data = X.filter(regex="^(ft_num|key_)", axis=1)
         data = X.copy()
         data_extended = data.groupby(self.COL_GROUP, group_keys=False).apply(self._extend).reset_index(drop=True)
         data_transformed: pd.DataFrame = data_extended.infer_objects().groupby(self.COL_GROUP, group_keys=False).progress_apply(self._interpolate).reset_index(drop=True)
-        data_completed = data_transformed.groupby(self.COL_GROUP, group_keys=False).apply(lambda x: x.bfill().ffill())
-        return data_completed
+        X_result = data_transformed.copy() 
+        data_completed = data_transformed.filter(regex=f'^(ft_cat|{self.COL_GROUP})', axis=1).groupby(self.COL_GROUP, group_keys=False).apply(lambda x: x.bfill().ffill())
+        X_result[data_completed.columns] = data_completed[data_completed.columns].values
+        return X_result
 
     def _trim(self, df_company: pd.DataFrame):
         df_company = df_company.sort_values(self.COL_TIME)
@@ -60,8 +63,10 @@ class SimpleMissingYearImputer(OxariImputer):
         return new_data
 
     def _interpolate(self, df_company: pd.DataFrame):
-        results = df_company.interpolate(self.method)
-        return results
+        X_result = df_company.copy()
+        results = df_company.filter(regex="^ft_num", axis=1).interpolate(self.method)
+        X_result[results.columns] = results[results.columns].values
+        return X_result
 
     def _get_drop_indices(self, df_company: pd.DataFrame):
         allowed_indices:pd.Index = df_company.index[1:-2]

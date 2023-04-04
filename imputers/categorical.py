@@ -100,3 +100,6 @@ class CategoricalStatisticsImputer(OxariImputer):
                 continue
             X_new.loc[remaining, ft_col] = self.stats_overall.get((ft_col, self.statistic))
         return X_new
+
+    def get_config(self):
+        return {"reference": self.reference, "imputer": f"{self.name}:{self.reference}", **super().get_config()}

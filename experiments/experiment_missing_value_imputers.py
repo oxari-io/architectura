@@ -36,8 +36,8 @@ if __name__ == "__main__":
     configurations: list[OxariImputer] = [
         # AutoImputer(),
         # BaselineImputer(),
-        DummyImputer(),
-        CategoricalStatisticsImputer(),
+        # DummyImputer(),
+        *[CategoricalStatisticsImputer(reference=ref) for ref in ["ft_catm_country_code", "ft_catm_industry_name", "ft_catm_sector_name"]],
         # *[RImputer(buckets_number=num) for RImputer in [RevenueBucketImputer,RevenueQuantileBucketImputer, RevenueExponentialBucketImputer] for num in [3,5,7]],
         # KMeansBucketImputer(),
         # *[MVEImputer(sub_estimator=m.value, verbose=True) for m in MVEImputer.strategies],

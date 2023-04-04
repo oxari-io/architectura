@@ -7,6 +7,7 @@ import pandas as pd
 
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
+from base.dataset_loader import CompanyDataFilter
 from base.helper import LogTargetScaler
 from datasources.core import PreviousScopeFeaturesDataManager
 from datasources.loaders import RegionLoader
@@ -15,6 +16,7 @@ from feature_reducers import DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
+from postprocessors.missing_year_imputers import DerivativeMissingYearImputer
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
 from datasources.online import S3Datasource
@@ -31,8 +33,12 @@ if __name__ == "__main__":
 
     # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
     # dataset = DefaultDataManager().run()
-    dataset = PreviousScopeFeaturesDataManager(S3Datasource(path='model-data/input/scopes_auto.csv'), LocalDatasource(path='model-data/input/financials_auto.csv'),
-                                               S3Datasource(path='model-data/input/categoricals_auto.csv'), [RegionLoader()]).run()
+    dataset = PreviousScopeFeaturesDataManager(
+        S3Datasource(path='model-data/input/scopes_auto.csv'),
+        LocalDatasource(path='model-data/input/financials_auto.csv'),
+        S3Datasource(path='model-data/input/categoricals_auto.csv'),
+        [RegionLoader()],
+    ).set_filter(CompanyDataFilter()).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -93,8 +99,13 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
 
+    print("\n", "Missing Year Imputation")
+    data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
+    my_imputer = DerivativeMissingYearImputer().fit(data_filled)
+    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
+
     print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE).evaluate()
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
     dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
@@ -124,8 +135,8 @@ if __name__ == "__main__":
     print("\n", "Predict ALL with Model")
     print(model.predict(SPLIT_1.val.X))
 
-    print("\n", "Predict ALL on Mock data")
-    print(model.predict(helper.mock_data()))
+    # print("\n", "Predict ALL on Mock data")
+    # print(model.predict(helper.mock_data()))
 
     print("\n", "Compute Confidences")
     print(model.predict(SPLIT_1.val.X, return_ci=True))

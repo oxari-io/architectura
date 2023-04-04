@@ -1,71 +1,79 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Save Data",
-      "type": "python",
-      "request": "launch",
-      "module": "main_save_search_db",
-      "justMyCode": true
-    },
-    {
-      "name": "P: Training Pipeline",
-      "type": "python",
-      "request": "launch",
-      "module": "main_prod",
-      "justMyCode": true
-    },
-    {
-      "name": "Q: Training Pipeline",
-      "type": "python",
-      "request": "launch",
-      "module": "main_qual",
-      "justMyCode": true
-    },
-    {
-      "name": "T: Training Pipeline",
-      "type": "python",
-      "request": "launch",
-      "module": "main_test",
-      "justMyCode": true
-    },
-    {
-      "name": "DEV Saver",
-      "type": "python",
-      "request": "launch",
-      "module": "development.run_saver",
-      "justMyCode": true
-    },
-    {
-      "name": "Run Parallel Pipeline",
-      "type": "python",
-      "request": "launch",
-      "module": "main_test_estimators_parallel",
-      "justMyCode": true
-    },
-    {
-      "name": "Run Sequential Pipeline",
-      "type": "python",
-      "request": "launch",
-      "module": "main_test_estimators_sequential",
-      "justMyCode": true
-    },
-    {
-      "name": "Run Experiment",
-      "type": "python",
-      "request": "launch",
-      "module": "experiments.${fileBasenameNoExtension}",
-      "justMyCode": true
-    },
-    {
-      "name": "Run Specific Experiment",
-      "type": "python",
-      "request": "launch",
-      "module": "experiments.experiment_missing_value_imputers",
-      "justMyCode": true
-    }
-  ]
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Save Data",
+			"type": "python",
+			"request": "launch",
+			"module": "main_save_search_db",
+			"justMyCode": true
+		},
+		{
+			"name": "P: Training Pipeline",
+			"type": "python",
+			"request": "launch",
+			"module": "main_prod",
+			"justMyCode": true
+		},
+		{
+			"name": "Q: Training Pipeline",
+			"type": "python",
+			"request": "launch",
+			"module": "main_qual",
+			"justMyCode": true
+		},
+		{
+			"name": "T: Training Pipeline",
+			"type": "python",
+			"request": "launch",
+			"module": "main_test",
+			"justMyCode": true
+		},
+		{
+			"name": "DEV Saver",
+			"type": "python",
+			"request": "launch",
+			"module": "development.run_saver",
+			"justMyCode": true
+		},
+		{
+			"name": "Run Parallel Pipeline",
+			"type": "python",
+			"request": "launch",
+			"module": "main_test_estimators_parallel",
+			"justMyCode": true
+		},
+		{
+			"name": "Run Sequential Pipeline",
+			"type": "python",
+			"request": "launch",
+			"module": "main_test_estimators_sequential",
+			"justMyCode": true
+		},
+		{
+			"name": "Run Experiment",
+			"type": "python",
+			"request": "launch",
+			"module": "experiments.${fileBasenameNoExtension}",
+			"justMyCode": true
+		},
+		{
+			"name": "Run Specific Experiment",
+			"type": "python",
+			"request": "launch",
+			"module": "experiments.experiment_missing_value_imputers",
+			"justMyCode": true
+		},
+		{
+			"name": "Test All",
+			"type": "python",
+			"request": "launch",
+			"module": "pytest",
+			"args": ["-v", "-s", "--debug=pytest_debug.log"],
+			"justMyCode": true
+		}
+	]
 }

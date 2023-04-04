@@ -31,19 +31,19 @@ N_STARTUP_TRIALS = 1
 ENV = "t"
 
 
-def test_getting_config_works(dp1: OxariPipeline, mainlogger: OxariLoggerMixin):
+def compute_getting_config_works(dp1: OxariPipeline, mainlogger: OxariLoggerMixin):
     mainlogger.logger.info(f"Parameter Configuration")
     mainlogger.logger.info(f"{dp1.get_config(deep=True)}")
 
 
-def test_eval_results(model: OxariMetaModel, mainlogger: OxariLoggerMixin):
+def computer_eval_results(model: OxariMetaModel, mainlogger: OxariLoggerMixin):
     mainlogger.logger.info(f"Evaluation results")
     eval_results = pd.json_normalize(model.collect_eval_results())
     eval_results.T.to_csv(f'local/eval_results/{ENV}_model_evalresults.csv')
     mainlogger.logger.info(f"{eval_results.loc[:, IMPORTANT_EVALUATION_COLUMNS].to_dict('records')}")
 
 
-def test_singular_prediction(model, mainlogger, scope, training_data):
+def compute_singular_prediction(model, mainlogger, scope, training_data):
     mainlogger.logger.info(f"Predict with one model")
     mainlogger.logger.info(f"Directly: {model.get_pipeline(scope).predict(training_data, scope=scope)}")
     mainlogger.logger.info(f"Predict with Model only SCOPE1 from pipeline")
@@ -105,16 +105,16 @@ if __name__ == "__main__":
 
     mainlogger = OxariLoggerMixin()
 
-    test_getting_config_works(dp1, mainlogger)
+    compute_getting_config_works(dp1, mainlogger)
 
     ### EVALUATION RESULTS ###
-    test_eval_results(model, mainlogger)
+    computer_eval_results(model, mainlogger)
 
     # print("Predict with Model only SCOPE1")
     # print(model.predict(SPLIT_1.val.X, scope=1))
     scope = 1
     training_data = SPLIT_1.val.X
-    test_singular_prediction(model, mainlogger, scope, training_data)
+    compute_singular_prediction(model, mainlogger, scope, training_data)
 
     DATA_FOR_IMPUTE = compute_imputation(DATA, model, scope)
 

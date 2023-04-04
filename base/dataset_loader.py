@@ -50,7 +50,7 @@ class Datasource(OxariLoggerMixin, abc.ABC):
 
 class PartialLoader(OxariLoggerMixin, abc.ABC):
     PATTERN = ""
-
+    COL_MAPPING = {}
     def __init__(self, datasource: Datasource = None, verbose=False, **kwargs) -> None:
         super().__init__()
         self.verbose = verbose
@@ -89,6 +89,12 @@ class PartialLoader(OxariLoggerMixin, abc.ABC):
         return self
 
     def load(self, **kwargs) -> Self:
+        # TODO: Add caching here! 
+        # 1. create .caching folder if not exist
+        # 2. specify standard file name for loader based on loader name
+        # 3. save loaded data after load function
+        # 4. on subsquent load check if file exits locally and load if it does
+        # 5. on error save what ever was successfully loaded to caching folder 
         self.logger.info(f'Loading...')
         stime = time.time()
         self._load(**kwargs)

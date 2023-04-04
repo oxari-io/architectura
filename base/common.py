@@ -896,11 +896,6 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def get_features(self, scope:int=None) -> ArrayLike:
         if not scope:
-            self.logger.warn("""
-            About to provide all features used in EVERY pipeline. 
-            However, every pipeline might use a different set of features.
-            Prefer running this function with the scope parameter.
-            """)
             all_features = []
             for scope_str, estimator in self.pipelines.items():
                 all_features.extend(estimator.feature_names_in_)
@@ -967,7 +962,12 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         
         # Find the missing feature columns
         missing_features = set(feature_names) - set(df.columns)
-        
+        if len(missing_features):
+            self.logger.warn(f"{missing_features} were missing in the input. They are filled with 'None'. ")
+
+        if not len(missing_features):
+            return df.copy()
+            
         # Create a new DataFrame with the same index and the missing feature columns filled with None
         missing_features_df = pd.DataFrame(columns=list(missing_features), index=df.index)
         

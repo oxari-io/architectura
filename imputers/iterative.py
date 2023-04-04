@@ -29,7 +29,7 @@ class MVEImputer(OxariImputer):
         RIDGE = KernelRidge(kernel='rbf')
         KNN = KNeighborsRegressor()
 
-    def __init__(self, sub_estimator=strategies.RIDGE.value, verbose=False, max_iter=10, **kwargs):
+    def __init__(self, sub_estimator=strategies.RIDGE.value, verbose=False, max_iter=15, **kwargs):
         super().__init__(**kwargs)
         self.sub_estimator = sub_estimator
         self.verbose = verbose

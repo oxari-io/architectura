@@ -86,9 +86,17 @@ class CategoricalStatisticsImputer(OxariImputer):
                 replacement_value = specific_replacement_value if not (np.isnan(specific_replacement_value) or specific_replacement_value is None) else overall_replacement_value
                 X_new.loc[values_need_filling_and_are_of_grp, ft_col] = replacement_value
         for ft_col in all_columns:
+            # All whose values are still none necause the reference itself is None.
             reference_value_is_none = (X_new[ft_col].isna()) & (X_new[self.reference].isna())
             num_values_to_replace = len(X_new.loc[reference_value_is_none, ft_col])
             if not num_values_to_replace:
                 continue
             X_new.loc[reference_value_is_none, ft_col] = self.stats_overall.get((ft_col, self.statistic))
+        for ft_col in all_columns:
+            # All whose values are still none because not enough statistics where gathered. (Some values don't exist.)
+            remaining = (X_new[ft_col].isna())
+            num_values_to_replace = len(X_new.loc[remaining, ft_col])
+            if not num_values_to_replace:
+                continue
+            X_new.loc[remaining, ft_col] = self.stats_overall.get((ft_col, self.statistic))
         return X_new

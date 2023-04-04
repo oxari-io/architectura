@@ -400,7 +400,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         X_pred = self.transform(X_eval, **kwargs)
 
         y_true = X_true[ft_cols].values[np.where(~mask)]
-        y_pred = X_pred[ft_cols].values[np.where(~mask)]
+        y_pred = X_pred[ft_cols].values[np.where(~mask)] + np.finfo(float).eps
         self._evaluation_results = {}
         self._evaluation_results["overall"] = self._evaluator.evaluate(y_true, y_pred)
         return self

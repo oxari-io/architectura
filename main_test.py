@@ -74,6 +74,8 @@ if __name__ == "__main__":
     model.add_pipeline(scope=2, pipeline=dp2)
     model.add_pipeline(scope=3, pipeline=dp3)
 
+    print("HEEEEEEEEEEEEEEEERE", model.feature_names_in_)
+
     mainlogger = OxariLoggerMixin()
     # print("Parameter Configuration")
     mainlogger.logger.info(f"Parameter Configuration: {dp1.get_config(deep=True)}")
@@ -132,6 +134,7 @@ if __name__ == "__main__":
 
     print("\n", "Predict ALL on Mock data")
     print(model.predict(helper.mock_data()))
+    print(model.predict(helper.mock_data_dict()))
 
     print("\n", "Compute Confidences")
     print(model.predict(SPLIT_1.val.X, return_ci=True))

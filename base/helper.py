@@ -15,6 +15,15 @@ def replace_ft_num(X:pd.DataFrame, X_new:ArrayLike):
     return X_tmp
 
 def mock_data():
+    num_data, cat_data = data_point()
+    df = pd.Series({**num_data, **cat_data}).to_frame().T.sort_index(axis=1)
+    return df
+
+def mock_data_dict():
+    num_data, cat_data = data_point()
+    return {**num_data, **cat_data}
+
+def data_point():
     num_data = {
         "ft_numc_stock_return": -0.03294267654418,
         "ft_numc_total_assets": 0.0,
@@ -33,9 +42,6 @@ def mock_data():
         "ft_numc_prior_tg_numc_scope_1": 26523,
         "ft_numc_prior_tg_numc_scope_2": 50033,
         "ft_numc_prior_tg_numc_scope_3": None,
-        "ft_catm_country_code":"USA",
-        "ft_catm_industry_name":None,
-        "ft_catm_sector_name":None,
         "key_year": 2019.0,
         "key_isin": "FR0000051070",
         "tg_numc_scope_1": None,
@@ -44,13 +50,12 @@ def mock_data():
     }
 
     cat_data = {
-        "industry_name": "Industrial Conglomerates",
-        # "company_name": "Aboitiz Equity Ventures Inc",
-        "country_name": "Philippines",
-        "sector_name": "Industrials",
+        "ft_catm_industry_name": "Industrial Conglomerates",
+        "ft_catm_country_name": "Philippines",
+        "ft_catm_sector_name": "Industrials",
     }
-    df = pd.Series({**num_data, **cat_data}).to_frame().T.sort_index(axis=1)
-    return df
+    
+    return num_data,cat_data
 
 class OxariFeatureTransformerWrapper(OxariFeatureTransformer):
     def __init__(self, transformer=None, name=None, **kwargs) -> None:

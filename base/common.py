@@ -886,16 +886,31 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
     def predict(self, X, **kwargs) -> ArrayLike:
         scope = kwargs.pop("scope", "all")
-        X_new = X.filter(regex='^ft', axis=1)
+        X_aligned = self._convert_input(X)
+        X_new = X_aligned.filter(regex='^ft', axis=1)
         if scope == "all":
-            return self._predict_all(X_new, **kwargs)
-        return self.get_pipeline(scope).predict(X_new, **kwargs)
+            X_extended = self._extend_missing_features(X_new, self.feature_names_in_)
+            return self._predict_all(X_extended, **kwargs)
+        X_extended = self._extend_missing_features(X_new, self.get_pipeline(scope).feature_names_in_)
+        return self.get_pipeline(scope).predict(X_extended, **kwargs)
 
     def get_features(self, scope:int=None) -> ArrayLike:
         if not scope:
-            raise Exception('Need to provide scope parameter to select a pipeline!')
+            self.logger.warn("""
+            About to provide all features used in EVERY pipeline. 
+            However, every pipeline might use a different set of features.
+            Prefer running this function with the scope parameter.
+            """)
+            all_features = []
+            for scope_str, estimator in self.pipelines.items():
+                all_features.extend(estimator.feature_names_in_)
+            return list(set(all_features))
         pipeline = self.get_pipeline(scope)
         return pipeline.feature_names_in_
+
+    @property
+    def feature_names_in_(self):
+        return self.get_features()
 
     def _predict_all(self, X, **kwargs) -> ArrayLike:
         result = pd.DataFrame()
@@ -920,6 +935,46 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
         return results
 
+    def _convert_input(self, X:dict|pd.Series|pd.DataFrame|list[dict]):
+        """
+        Preprocess the input variable X and run the predict function of the model.
+
+        :param X: The input variable (pandas Series, DataFrame, dictionary, or list of dictionaries)
+        :return: A pandas DataFrame with the predicted values
+        """
+        
+        # Convert the input variable to a pandas DataFrame
+        if isinstance(X, pd.Series):
+            X = X.to_frame().T
+        elif isinstance(X, dict):
+            X = pd.DataFrame(X, index=[0])
+        elif isinstance(X, list) and all(isinstance(item, dict) for item in X):
+            X = pd.DataFrame(X)
+        elif not isinstance(X, pd.DataFrame):
+            raise ValueError("The input variable X must be a pandas Series, DataFrame, dictionary, or list of dictionaries.")
+        
+        return X
+
+    def _extend_missing_features(self, df: pd.DataFrame, feature_names: List[str]) -> pd.DataFrame:
+        """
+        Extend a DataFrame with columns of features that are not yet present.
+        The new columns will be filled with None.
+
+        :param df: The input DataFrame to be extended
+        :param feature_names: A list of feature names to ensure in the output DataFrame
+        :return: A new DataFrame with the missing feature columns added and filled with None
+        """
+        
+        # Find the missing feature columns
+        missing_features = set(feature_names) - set(df.columns)
+        
+        # Create a new DataFrame with the same index and the missing feature columns filled with None
+        missing_features_df = pd.DataFrame(columns=list(missing_features), index=df.index)
+        
+        # Concatenate the input DataFrame and the missing features DataFrame
+        extended_df = pd.concat([df, missing_features_df], axis=1)
+        
+        return extended_df
 
 # class DefaultMetaModel(OxariMetaModel):
 #     """

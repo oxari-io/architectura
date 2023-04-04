@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from base import (OxariDataManager, OxariMetaModel, helper)
-from base.common import OxariLoggerMixin, OxariPipeline
+from base.common import OxariLoggerMixin
 from base.constants import IMPORTANT_EVALUATION_COLUMNS
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CompanyDataFilter
@@ -28,33 +28,6 @@ from datastores import PartialSaver, LocalDestination, OxariSavingManager
 DATA_DIR = pathlib.Path('local/data')
 N_TRIALS = 5
 N_STARTUP_TRIALS = 1
-ENV = "t"
-
-
-def test_getting_config_works(dp1: OxariPipeline, mainlogger: OxariLoggerMixin):
-    mainlogger.logger.info(f"Parameter Configuration")
-    mainlogger.logger.info(f"{dp1.get_config(deep=True)}")
-
-
-def test_eval_results(model: OxariMetaModel, mainlogger: OxariLoggerMixin):
-    mainlogger.logger.info(f"Evaluation results")
-    eval_results = pd.json_normalize(model.collect_eval_results())
-    eval_results.T.to_csv(f'local/eval_results/{ENV}_model_evalresults.csv')
-    mainlogger.logger.info(f"{eval_results.loc[:, IMPORTANT_EVALUATION_COLUMNS].to_dict('records')}")
-
-
-def test_singular_prediction(model, mainlogger, scope, training_data):
-    mainlogger.logger.info(f"Predict with one model")
-    mainlogger.logger.info(f"Directly: {model.get_pipeline(scope).predict(training_data, scope=scope)}")
-    mainlogger.logger.info(f"Predict with Model only SCOPE1 from pipeline")
-    mainlogger.logger.info(f"Over Meta: {model.predict(training_data, scope=scope)}")
-
-def compute_imputation(DATA, model, scope):
-    print("\n", "Missing Year Imputation")
-    data_filled = model.get_pipeline(scope).preprocessor.transform(DATA)
-    my_imputer = DerivativeMissingYearImputer().fit(data_filled)
-    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
-    return DATA_FOR_IMPUTE
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
@@ -104,19 +77,27 @@ if __name__ == "__main__":
     print("HEEEEEEEEEEEEEEEERE", model.feature_names_in_)
 
     mainlogger = OxariLoggerMixin()
-
-    test_getting_config_works(dp1, mainlogger)
+    # print("Parameter Configuration")
+    mainlogger.logger.info(f"Parameter Configuration: {dp1.get_config(deep=True)}")
+    print(dp1.get_config(deep=True))
+    # print(dp2.get_config(deep=True))
+    # print(dp3.get_config(deep=True))
 
     ### EVALUATION RESULTS ###
-    test_eval_results(model, mainlogger)
+    # print("Eval results")
+    eval_results = pd.json_normalize(model.collect_eval_results())
+    eval_results.T.to_csv('local/eval_results/model_pipelines_test.csv')
+    # print(eval_results)
+    mainlogger.logger.info(f"Evaluation results: {eval_results.loc[:, IMPORTANT_EVALUATION_COLUMNS].to_dict('records')}")
 
     # print("Predict with Model only SCOPE1")
     # print(model.predict(SPLIT_1.val.X, scope=1))
-    scope = 1
-    training_data = SPLIT_1.val.X
-    test_singular_prediction(model, mainlogger, scope, training_data)
+    mainlogger.logger.info(f"Predict with Model only SCOPE1, Predictions: {model.predict(SPLIT_1.val.X, scope=1)}")
 
-    DATA_FOR_IMPUTE = compute_imputation(DATA, model, scope)
+    print("\n", "Missing Year Imputation")
+    data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
+    my_imputer = DerivativeMissingYearImputer().fit(data_filled)
+    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
 
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE).evaluate()
@@ -166,6 +147,9 @@ if __name__ == "__main__":
     X_new.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
     X_new.to_csv('local/eval_results/model_training_test.csv')
     print(X_new)
+
+    
+
 
     # tmp_pipeline = model.get_pipeline(1)
 

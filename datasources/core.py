@@ -12,7 +12,10 @@ from datasources.local import LocalDatasource
 
 
 class DefaultDataManager(OxariDataManager):
-
+    # TODO: Follow loader structure of special loaders. 
+    # TODO: Remove named attributes and pass everything as a list of loaders.
+    # TODO: Test if all combinations of loaders work (exclude standard loaders)
+    # TODO: Introduce another file which has all the ISIN-YEAR keys
     def __init__(self,
                  scope_loader: Datasource = LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
                  financial_loader: Datasource = LocalDatasource(path=DATA_DIR / "financials_auto.csv"),

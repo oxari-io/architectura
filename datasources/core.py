@@ -51,5 +51,6 @@ class PreviousScopeFeaturesDataManager(DefaultDataManager):
 
     def _transform(self, df: pd.DataFrame):
         key_cols = list(df.columns[df.columns.str.startswith('key')])
-        df = df.sort_values(key_cols, ascending=True).groupby('key_isin', group_keys=False).apply(self._take_previous_scopes)
+        self.logger.info("Taking all previous year scopes")
+        df:pd.DataFrame = df.sort_values(key_cols, ascending=True).groupby('key_isin', group_keys=False).progress_apply(self._take_previous_scopes)
         return super()._transform(df)

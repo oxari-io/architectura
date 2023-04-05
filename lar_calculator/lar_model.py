@@ -4,7 +4,6 @@ from sklearn.linear_model import LinearRegression
 from base import OxariLinearAnnualReduction
 from base.oxari_types import ArrayLike
 import tqdm
-tqdm.tqdm.pandas()
 
 # TODO: Move those into the class
 def _helper(name, isins, years, emissions):

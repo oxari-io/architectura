@@ -670,6 +670,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def predict(self, X, **kwargs) -> ArrayLike:
         return_std = kwargs.pop('return_ci', False)
         # return_raw = kwargs.pop('return_raw', False) #
+        X = self._convert_input(X)
         if return_std:
             preds = self.ci_estimator.predict(X, **kwargs)
             return preds  # Alread reversed
@@ -754,6 +755,52 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def evaluation_results(self):
         return {"pipeline": self.name, "stats": self.stats, **self._evaluation_results}
 
+    def _convert_input(self, X:dict|pd.Series|pd.DataFrame|list[dict]):
+        """
+        Preprocess the input variable X and run the predict function of the model.
+
+        :param X: The input variable (pandas Series, DataFrame, dictionary, or list of dictionaries)
+        :return: A pandas DataFrame with the predicted values
+        """
+        
+        # Convert the input variable to a pandas DataFrame
+        if isinstance(X, pd.Series):
+            X = X.to_frame().T
+        elif isinstance(X, dict):
+            X = pd.DataFrame(X, index=[0])
+        elif isinstance(X, list) and all(isinstance(item, dict) for item in X):
+            X = pd.DataFrame(X)
+        elif not isinstance(X, pd.DataFrame):
+            raise ValueError("The input variable X must be a pandas Series, DataFrame, dictionary, or list of dictionaries.")
+        
+        return X
+
+    def _extend_missing_features(self, df: pd.DataFrame, feature_names: List[str]) -> pd.DataFrame:
+        """
+        Extend a DataFrame with columns of features that are not yet present.
+        The new columns will be filled with None.
+
+        :param df: The input DataFrame to be extended
+        :param feature_names: A list of feature names to ensure in the output DataFrame
+        :return: A new DataFrame with the missing feature columns added and filled with None
+        """
+        
+        # Find the missing feature columns
+        missing_features = set(feature_names) - set(df.columns)
+        if not len(missing_features):
+            return df.copy()
+        
+        if len(missing_features):
+            self.logger.warning(f"Features {list(missing_features)} were missing in the input. They are filled with 'None'. ")
+
+            
+        # Create a new DataFrame with the same index and the missing feature columns filled with None
+        missing_features_df = pd.DataFrame(columns=list(missing_features), index=df.index)
+        
+        # Concatenate the input DataFrame and the missing features DataFrame
+        extended_df = pd.concat([df, missing_features_df], axis=1)
+        
+        return extended_df
 
 class Test(OxariPipeline):
 
@@ -962,11 +1009,12 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         
         # Find the missing feature columns
         missing_features = set(feature_names) - set(df.columns)
-        if len(missing_features):
-            self.logger.warn(f"{missing_features} were missing in the input. They are filled with 'None'. ")
-
         if not len(missing_features):
             return df.copy()
+        
+        if len(missing_features):
+            self.logger.warning(f"Features {list(missing_features)} were missing in the input. They are filled with 'None'. ")
+
             
         # Create a new DataFrame with the same index and the missing feature columns filled with None
         missing_features_df = pd.DataFrame(columns=list(missing_features), index=df.index)

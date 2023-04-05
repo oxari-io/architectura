@@ -9,13 +9,10 @@ from datasources.online import OnlineCSVDatasource, OnlineExcelDatasource, S3Dat
 import pandas as pd
 import logging
 
-from tests.fixtures import training_data_full
+from tests.fixtures import const_dataset_filtered, const_dataset_full, const_data_manager
 
-
-logging.basicConfig(level=logging.DEBUG)
-mylogger = logging.getLogger()
-
-
+# logging.basicConfig(level=logging.DEBUG)
+# mylogger = logging.getLogger()
 
 
 @pytest.mark.parametrize("datasource", [
@@ -52,24 +49,39 @@ def test_additional_loaders(loaders: list[PartialLoader]):
         for col in l.COL_MAPPING.values():
             assert col in DATA
 
+
 @pytest.mark.parametrize("filter", [
     CompanyDataFilter(0.1),
     SimpleDataFilter(0.1),
 ])
-def test_filters(filter: DataFilter, training_data_full:pd.DataFrame):
-    loaded = filter.fit_transform(training_data_full)
-    assert len(loaded) > 0
+def test_filters(filter: DataFilter, const_dataset_full: pd.DataFrame):
+    loaded = filter.fit_transform(const_dataset_full)
+    assert len(loaded) < len(const_dataset_full)
+
+
+def test_splits(const_data_manager: OxariDataManager):
+    BAGSIZE = 2
+    bag = const_data_manager.get_split_data(OxariDataManager.ORIGINAL)
+    SPLIT_1 = bag.scope_1
+    assert hasattr(SPLIT_1, "train")
+    assert hasattr(SPLIT_1, "rem")
+    assert hasattr(SPLIT_1, "val")
+    assert hasattr(SPLIT_1, "test")
+
+    SPLIT_1 = bag.scope_1
+    assert len(SPLIT_1.train) == BAGSIZE
+    SPLIT_2 = bag.scope_2
+    assert len(SPLIT_2.train) == BAGSIZE
+    SPLIT_3 = bag.scope_3
+    assert len(SPLIT_3.train) == BAGSIZE
 
 
 @pytest.mark.parametrize("data_manager", [
     DefaultDataManager(),
     PreviousScopeFeaturesDataManager(),
-    PreviousScopeFeaturesDataManager(LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
-                                     LocalDatasource(path=DATA_DIR / "financials_auto.csv"),
-                                     LocalDatasource(path=DATA_DIR / "categoricals_auto.csv"),
-                                     other_loaders=[RegionLoader(), NetZeroIndexLoader()]).run(),
+    PreviousScopeFeaturesDataManager(other_loaders=[RegionLoader(), NetZeroIndexLoader()]),
 ])
 def test_data_manager(data_manager: OxariDataManager):
-    dataset = data_manager.run()
+    dataset = data_manager.set_filter(CompanyDataFilter()).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     assert len(DATA)

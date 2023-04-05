@@ -12,7 +12,6 @@ from base.common import OxariEvaluator, OxariImputer, OxariLoggerMixin, OxariTra
 from base.oxari_types import ArrayLike
 import itertools as it
 
-tqdm.tqdm.pandas()
 
 
 class SimpleMissingYearImputer(OxariImputer):

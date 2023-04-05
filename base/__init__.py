@@ -2,10 +2,12 @@
 import cpuinfo
 from dotenv import load_dotenv
 import pandas as pd 
+import tqdm
+
+tqdm.tqdm.pandas()
 
 load_dotenv()
 
-import pandas as pd
 pd.set_option('display.max_rows', 100)
 pd.set_option('max_colwidth',20)
 pd.set_option('display.width', 100)

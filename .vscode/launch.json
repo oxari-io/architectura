@@ -73,6 +73,7 @@
 			"request": "launch",
 			"module": "pytest",
 			"args": ["-v", "-s", "--debug=pytest_debug.log"],
+      // "stopOnEntry": true,
 			"justMyCode": true
 		}
 	]

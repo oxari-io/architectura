@@ -7,7 +7,6 @@ import tqdm
 
 from base.common import OxariLoggerMixin
 
-tqdm.tqdm.pandas()
 
 
 class ScopeImputerPostprocessor(OxariPostprocessor):

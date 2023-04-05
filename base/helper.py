@@ -1,4 +1,5 @@
 from __future__ import annotations
+from enum import Enum
 
 from typing import Union
 
@@ -23,7 +24,12 @@ def mock_data_dict():
     num_data, cat_data = data_point()
     return {**num_data, **cat_data}
 
-def data_point():
+class ExampleModifications(str, Enum):
+    NORMAL = "normal"
+    MISSING_CATS = "missing_categoricals"
+    MISSING_NUMS = "missing_numericals"
+
+def data_point(drop_rate:float=0.0):
     num_data = {
         "ft_numc_stock_return": -0.03294267654418,
         "ft_numc_total_assets": 0.0,
@@ -41,7 +47,7 @@ def data_point():
         "ft_numc_rd": 500,
         "ft_numc_prior_tg_numc_scope_1": 26523,
         "ft_numc_prior_tg_numc_scope_2": 50033,
-        "ft_numc_prior_tg_numc_scope_3": None,
+        "ft_numc_prior_tg_numc_scope_3": 11111,
         "key_year": 2019.0,
         "key_isin": "FR0000051070",
         "tg_numc_scope_1": None,
@@ -54,8 +60,11 @@ def data_point():
         "ft_catm_country_name": "Philippines",
         "ft_catm_sector_name": "Industrials",
     }
-    
-    return num_data,cat_data
+
+    tmp = {**num_data, **cat_data}
+    remove = np.random.rand(len(tmp.keys())) < drop_rate
+    result = {k:v for is_remove, (k, v) in zip(remove, tmp.items()) if (not is_remove) or k.startswith("key_") or k.startswith("tg_")}
+    return result
 
 class OxariFeatureTransformerWrapper(OxariFeatureTransformer):
     def __init__(self, transformer=None, name=None, **kwargs) -> None:

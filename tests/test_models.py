@@ -3,13 +3,14 @@ from base.common import OxariMetaModel, OxariPipeline
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.constants import DATA_DIR
 from base.dataset_loader import CategoricalLoader, CompanyDataFilter, DataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader, SimpleDataFilter
-from base.helper import LogTargetScaler
+from base.helper import LogTargetScaler, data_point, mock_data
 
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from datasources.loaders import NetZeroIndexLoader, RegionLoader
 from datasources.local import LocalDatasource
 from datasources.online import OnlineCSVDatasource, OnlineExcelDatasource, S3Datasource
 import pandas as pd
+import numpy as np
 import logging
 from feature_reducers.core import PCAFeatureReducer
 from imputers.revenue_bucket import RevenueQuantileBucketImputer
@@ -60,14 +61,13 @@ def test_pipeline_prediction(
 ):
     result = const_pipeline.predict(const_example_series)
     assert len(result)>0
-    reference = result.iloc[0]
-    # print("HEEEEEERE")
-    next_result = const_pipeline.predict(const_example_series).iloc[0]
+    reference = result
+    next_result = const_pipeline.predict(const_example_series)
     assert (reference == next_result).all(), f"Prediction of dict ({reference}) is not the same as for series ({next_result})"
-    next_result = const_pipeline.predict(const_example_df).iloc[0]
+    next_result = const_pipeline.predict(const_example_df)
     assert (reference == next_result).all(), f"Prediction of dict ({reference}) is not the same as for df ({next_result})"
     prediction_results = const_pipeline.predict(const_example_df_multi_rows)
-    assert (reference==prediction_results).all().all()
+    assert (reference==prediction_results).all()
 
 
 
@@ -96,4 +96,19 @@ def test_metamodel_prediction(
 
     prediction_results = const_meta_model.predict(const_example_dict_multi_rows)
     assert (reference==prediction_results).all().all()
+
+@pytest.mark.parametrize("data_point", [
+    data_point(0.0),
+    data_point(0.2),
+    data_point(0.4),
+    data_point(0.6),
+    data_point(0.8),
+    data_point(1.0),
+])
+def test_metamodel_prediction_with_holes(
+    const_meta_model: OxariMetaModel,
+    data_point:dict,
+):
+    result = const_meta_model.predict(data_point)
+    assert len(result)>0
 

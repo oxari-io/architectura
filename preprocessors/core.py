@@ -73,11 +73,11 @@ class BaselinePreprocessor(OxariPreprocessor):
         X_result = X.copy()
         X_new = X.filter(regex='ft_', axis=1)
         # impute all the missing columns
-        X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
+        X_new.loc[:, self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
         # transform numerical
-        X_new[self.financial_columns] = self.fin_transformer.transform(X_new[self.financial_columns])
+        X_new.loc[:, self.financial_columns] = self.fin_transformer.transform(X_new[self.financial_columns])
         # encode categorical
-        X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
+        X_new.loc[:, self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
         X_result[X_new.columns] = X_new[X_new.columns].values
         return X_result
 

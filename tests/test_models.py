@@ -14,12 +14,15 @@ import numpy as np
 import logging
 from feature_reducers.core import PCAFeatureReducer
 from imputers.revenue_bucket import RevenueQuantileBucketImputer
+from lar_calculator.lar_model import OxariUnboundLAR
 from pipeline.core import DefaultPipeline
+from postprocessors.missing_year_imputers import DerivativeMissingYearImputer
+from postprocessors.scope_imputers import ScopeImputerPostprocessor
 from preprocessors.core import IIDPreprocessor
 from scope_estimators.mini_model_army import MiniModelArmyEstimator
 from scope_estimators.svm import SupportVectorEstimator
 
-from tests.fixtures import const_data_manager, const_pipeline, const_meta_model, const_example_df, const_example_df_multi_rows, const_example_dict, const_example_dict_multi_rows, const_example_series
+from tests.fixtures import const_data_manager, const_pipeline, const_meta_model, const_example_df, const_example_df_multi_rows, const_example_dict, const_example_dict_multi_rows, const_example_series, const_dataset_filtered, const_data_for_scope_imputation
 
 # logging.basicConfig(level=logging.DEBUG)
 # mylogger = logging.getLogger()
@@ -112,3 +115,23 @@ def test_metamodel_prediction_with_holes(
     result = const_meta_model.predict(data_point)
     assert len(result)>0
 
+
+
+def test_year_interpolation(const_meta_model:OxariMetaModel, const_dataset_filtered:pd.DataFrame):
+    # scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=DATA_FOR_IMPUTE).evaluate()
+    DATA = const_dataset_filtered
+    # get_pipeline(1) is based on gut feeling
+    data_filled = const_meta_model.get_pipeline(1).preprocessor.transform(DATA)
+    data_year_imputed = DerivativeMissingYearImputer().fit_transform(data_filled)
+    assert len(DATA) < len(data_year_imputed)    
+
+def test_scope_imputation(const_meta_model:OxariMetaModel, const_dataset_filtered:pd.DataFrame):
+    DATA = const_dataset_filtered
+    data_filled = const_meta_model.get_pipeline(1).preprocessor.transform(DATA)
+    data_year_imputed = DerivativeMissingYearImputer().fit_transform(data_filled)
+    scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=data_year_imputed).evaluate()
+    assert len(scope_imputer.data) > 0  
+
+def test_lar_imputation(const_data_for_scope_imputation:OxariDataManager):
+    lar_computations = OxariUnboundLAR().fit_transform(const_data_for_scope_imputation.get_scopes(OxariDataManager.IMPUTED_SCOPES))
+    assert len(lar_computations) > 0  

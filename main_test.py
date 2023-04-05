@@ -148,12 +148,12 @@ if __name__ == "__main__":
 
     # plt.show(block=True)
 
-    print("\n", "Predict ALL with Model")
-    print(model.predict(SPLIT_1.val.X))
+    # print("\n", "Predict ALL with Model")
+    # print(model.predict(SPLIT_1.val.X))
 
-    print("\n", "Predict ALL on Mock data")
-    print(model.predict(helper.mock_data()))
-    print(model.predict(helper.mock_data_dict()))
+    # print("\n", "Predict ALL on Mock data")
+    # print(model.predict(helper.mock_data()))
+    # print(model.predict(helper.mock_data_dict()))
 
     print("\n", "Compute Confidences")
     print(model.predict(SPLIT_1.val.X, return_ci=True))

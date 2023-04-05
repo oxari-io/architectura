@@ -57,7 +57,7 @@ def data_point(drop_rate:float=0.0):
 
     cat_data = {
         "ft_catm_industry_name": "Industrial Conglomerates",
-        "ft_catm_country_name": "Philippines",
+        "ft_catm_country_code": "USA",
         "ft_catm_sector_name": "Industrials",
     }
 

@@ -10,6 +10,8 @@ from feature_reducers.core import PCAFeatureReducer
 from imputers.revenue_bucket import RevenueQuantileBucketImputer
 
 from pipeline.core import DefaultPipeline
+from postprocessors.missing_year_imputers import DerivativeMissingYearImputer
+from postprocessors.scope_imputers import ScopeImputerPostprocessor
 from preprocessors.core import IIDPreprocessor
 from scope_estimators.svm import SupportVectorEstimator
 
@@ -103,3 +105,13 @@ def const_example_dict():
 def const_example_dict_multi_rows():
     d_point = data_point()
     return [d_point, d_point]
+
+
+@pytest.fixture
+def const_data_for_scope_imputation(const_meta_model:OxariMetaModel, const_data_manager:OxariDataManager):
+    DATA = const_data_manager.get_data_by_name(OxariDataManager.ORIGINAL)
+    data_filled = const_meta_model.get_pipeline(1).preprocessor.transform(DATA)
+    data_year_imputed = DerivativeMissingYearImputer().fit_transform(data_filled)
+    scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=data_year_imputed).evaluate()
+    const_data_manager.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model")
+    return const_data_manager

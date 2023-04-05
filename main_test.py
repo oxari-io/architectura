@@ -113,8 +113,8 @@ if __name__ == "__main__":
     # print("Predict with Model only SCOPE1")
     # print(model.predict(SPLIT_1.val.X, scope=1))
     scope = 1
-    training_data = SPLIT_1.val.X
-    compute_singular_prediction(model, mainlogger, scope, training_data)
+    # training_data = SPLIT_1.val.X
+    # compute_singular_prediction(model, mainlogger, scope, training_data)
 
     DATA_FOR_IMPUTE = compute_imputation(DATA, model, scope)
 
@@ -155,8 +155,8 @@ if __name__ == "__main__":
     # print(model.predict(helper.mock_data()))
     # print(model.predict(helper.mock_data_dict()))
 
-    print("\n", "Compute Confidences")
-    print(model.predict(SPLIT_1.val.X, return_ci=True))
+    # print("\n", "Compute Confidences")
+    # print(model.predict(SPLIT_1.val.X, return_ci=True))
 
     print("\n", "DIRECT COMPARISON")
     X_new = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)

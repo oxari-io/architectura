@@ -115,7 +115,12 @@ def test_metamodel_prediction_with_holes(
     result = const_meta_model.predict(data_point)
     assert len(result)>0
 
-
+# TODO: Add multiple confidence tests
+def test_confidences(const_meta_model:OxariMetaModel, const_data_manager: OxariDataManager):
+    bag = const_data_manager.get_split_data(OxariDataManager.ORIGINAL)    
+    SPLIT_1 = bag.scope_1
+    results = const_meta_model.predict(SPLIT_1.val.X, return_ci=True)
+    assert len(results) > 0
 
 def test_year_interpolation(const_meta_model:OxariMetaModel, const_dataset_filtered:pd.DataFrame):
     # scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=DATA_FOR_IMPUTE).evaluate()

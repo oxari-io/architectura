@@ -72,8 +72,13 @@
 			"type": "python",
 			"request": "launch",
 			"module": "pytest",
-			"args": ["-v", "-s", "--debug=pytest_debug.log"],
-      // "stopOnEntry": true,
+			"args": [
+				"-v",
+				"-s",
+				"--debug=pytest_debug.log",
+				"tests/test_data_saver.py"
+			],
+			// "stopOnEntry": true,
 			"justMyCode": true
 		}
 	]

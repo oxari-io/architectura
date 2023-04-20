@@ -64,6 +64,9 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
             file.write(obj_to_save)
         return target_destination.absolute()
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}[to:{self._path}]"
+
     # @abc.abstractmethod
     # def _save_fallback(self, **kwargs) -> bool:
     #     return False
@@ -75,6 +78,8 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
         super().__init__(**kwargs)
         self.verbose = verbose
         self._store = None
+        self._extension = None
+        self._time = None
 
     def set_datatarget(self, datatarget: DataTarget) -> Self:
         self.datatarget: DataTarget = datatarget
@@ -88,6 +93,10 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
         self._name = name
         return self
 
+    def set_extension(self, ext:str) -> Self:
+        self._extension = ext
+        return self
+
     def set_path(self, path: str) -> Self:
         self._path = path
         return self
@@ -98,7 +107,13 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
 
     @property
     def name(self):
-        return f"{self._name}_{self._time}"
+        composed_name = f"{self._name}"
+        if self._time:
+            composed_name += f"_{self._time}"
+        if self._extension:
+            composed_name += f"{self._extension}"
+
+        return composed_name
 
     def save(self, **kwargs) -> bool:
         try:
@@ -201,6 +216,7 @@ class MongoDestination(DataTarget):
         for b in tqdm.tqdm(self._batch(records, bsize), total=(len(records)//bsize)+1, desc="MongoDB Batch Upload"):
             inserted = collection.insert_many(b)
         if self.index:
+            # TODO: This could also be a non-textindex
             collection.create_index(name='TextIndex', keys=list(self.index.items()))
 
         self.logger.info(f"Inserted {len(inserted.inserted_ids)} rows.")

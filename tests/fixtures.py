@@ -16,25 +16,25 @@ from preprocessors.core import IIDPreprocessor
 from scope_estimators.svm import SupportVectorEstimator
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def const_data_manager():
     dataset = DefaultDataManager().set_filter(CompanyDataFilter(0.05)).run()
     return dataset
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def const_dataset_filtered(const_data_manager: OxariDataManager):
     DATA = const_data_manager.get_data_by_name(OxariDataManager.ORIGINAL)
     return DATA
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def const_dataset_full():
     DATA = DefaultDataManager().run().get_data_by_name(OxariDataManager.ORIGINAL)
     return DATA
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def const_pipeline(const_data_manager: OxariDataManager):
     bag = const_data_manager.get_split_data(OxariDataManager.ORIGINAL)
 
@@ -52,7 +52,7 @@ def const_pipeline(const_data_manager: OxariDataManager):
     return dp1
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def const_meta_model(const_data_manager: OxariDataManager, const_pipeline: OxariPipeline):
     bag = const_data_manager.get_split_data(OxariDataManager.ORIGINAL)
 
@@ -107,11 +107,10 @@ def const_example_dict_multi_rows():
     return [d_point, d_point]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def const_data_for_scope_imputation(const_meta_model:OxariMetaModel, const_data_manager:OxariDataManager):
     DATA = const_data_manager.get_data_by_name(OxariDataManager.ORIGINAL)
     data_filled = const_meta_model.get_pipeline(1).preprocessor.transform(DATA)
     data_year_imputed = DerivativeMissingYearImputer().fit_transform(data_filled)
     scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=data_year_imputed).evaluate()
-    const_data_manager.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model")
-    return const_data_manager
+    return scope_imputer.data

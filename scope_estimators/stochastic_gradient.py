@@ -63,11 +63,11 @@ class SGDOptimizer(OxariOptimizer):
         
         param_space = {
                 "loss": trial.suggest_categorical("loss", ["squared_error", "huber", "epsilon_insensitive"]),
-                "epsilon": trial.suggest_float("epsilon", 0.01, 0.2) if not ("loss" is "squared_error") else 0.0,
                 "penalty": trial.suggest_categorical("penalty", ["l1", "l2", "elasticnet", None]),
                 "alpha": trial.suggest_float("alpha", 0.0001, 0.1),
                 "shuffle": trial.suggest_categorical("shuffle", [True, False])
             }
+        param_space["epsilon"] = trial.suggest_float("epsilon", 0.01, 0.2) if not (param_space["loss"] == "squared_error") else 0.0
             
         
         model = SGDRegressor(**param_space).fit(X_train, y_train)

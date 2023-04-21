@@ -109,7 +109,7 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
     def name(self):
         composed_name = f"{self._name}"
         if self._time:
-            composed_name += f"_{self._time}"
+            composed_name = f"{self._time}_"+composed_name
         if self._extension:
             composed_name += f"{self._extension}"
 
@@ -180,7 +180,7 @@ class S3Destination(DataTarget):
 
 class MongoDestination(DataTarget):
 
-    def __init__(self, index=None, options=None, **kwargs) -> None:
+    def __init__(self, index=None, options={}, **kwargs) -> None:
         super().__init__(**kwargs)
         self.index=index
         self.options=options
@@ -217,7 +217,7 @@ class MongoDestination(DataTarget):
             inserted = collection.insert_many(b)
         if self.index:
             # TODO: This could also be a non-textindex
-            collection.create_index(name='TextIndex', keys=list(self.index.items()))
+            collection.create_index(keys=list(self.index.items()), **self.options)
 
         self.logger.info(f"Inserted {len(inserted.inserted_ids)} rows.")
         return True
@@ -226,21 +226,21 @@ class PickleSaver(PartialSaver, abc.ABC):
 
     @property
     def name(self):
-        return f"{self._name}_{self._time}.pkl"
+        return f"{self._time}_{self._name}.pkl"
 
 
 class CSVSaver(PartialSaver, abc.ABC):
 
     @property
     def name(self):
-        return f"{self._name}_{self._time}.csv"
+        return f"{self._time}_{self._name}.csv"
 
 
 class MongoSaver(PartialSaver, abc.ABC):
 
     @property
     def name(self):
-        return f"{self._name}_{self._time}"
+        return f"{self._time}_{self._name}"
 
 # class DataSaver(PartialSaver, abc.ABC):
 #     SUB_FOLDER = Path("objects/estimates")
@@ -328,7 +328,9 @@ class OxariSavingManager(OxariLoggerMixin):
     def run(self, **kwargs) -> Self:
         for saver in tqdm.tqdm(self.savers):
             self.logger.info(f"Saved {saver.name} via {saver.__class__}")
-            saver.save(**kwargs)
+            success = saver.save(**kwargs)
+            if not success:
+                self.logger.error("SOMETHING FAILED HERE")
 
     def _register_all_modules_to_pickle(self):
         # https://oegedijk.github.io/blog/pickle/dill/python/2020/11/10/serializing-dill-references.html

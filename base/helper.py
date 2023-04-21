@@ -16,13 +16,12 @@ def replace_ft_num(X:pd.DataFrame, X_new:ArrayLike):
     return X_tmp
 
 def mock_data():
-    num_data, cat_data = data_point()
-    df = pd.Series({**num_data, **cat_data}).to_frame().T.sort_index(axis=1)
+    data = data_point()
+    df = pd.Series(data).to_frame().T.sort_index(axis=1)
     return df
 
 def mock_data_dict():
-    num_data, cat_data = data_point()
-    return {**num_data, **cat_data}
+    return data_point()
 
 class ExampleModifications(str, Enum):
     NORMAL = "normal"

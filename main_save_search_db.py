@@ -73,11 +73,12 @@ if __name__ == "__main__":
 
     df_fin = dataset.financial_loader._data
 
+    dateformat = 'T%Y%m%d'
     all_data_features = [
-        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_companies").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_companies").set_object(df).set_datatarget(MongoDestination(index=keys, path="model-data/output")),
-        MongoSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_financials").set_object(df_fin).set_datatarget(MongoDestination(index=keys, path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime(dateformat)).set_name("p_companies").set_object(df).set_datatarget(MongoDestination(index=keys, path="model-data/output")),
+        MongoSaver().set_time(time.strftime(dateformat)).set_name("p_financials").set_object(df_fin).set_datatarget(MongoDestination(index=keys, path="model-data/output")),
     ]
 
     SavingManager = OxariSavingManager(*all_data_features, )

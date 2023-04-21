@@ -20,9 +20,12 @@ from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
 from datasources.online import S3Datasource
 from datasources.local import LocalDatasource
+from lar_calculator.lar_model import OxariUnboundLAR
+from pymongo import TEXT, DESCENDING, ASCENDING
 
 DATA_DIR = pathlib.Path('local/data')
-from lar_calculator.lar_model import OxariUnboundLAR
+
+DATE_FORMAT = 'T%Y%m%d'
 
 N_TRIALS = 5
 N_STARTUP_TRIALS = 5
@@ -41,12 +44,12 @@ STAGE = "p_"
 # TODO: Convert some of the main_*.py scripts to experiments.
 
 if __name__ == "__main__":
-    today = time.strftime('%d-%m-%Y')
+    today = time.strftime(DATE_FORMAT)
 
     dataset = PreviousScopeFeaturesDataManager(
-        S3Datasource(path='model-input-data/scopes_auto.csv'),
-        S3Datasource(path='model-input-data/financials_auto.csv'),
-        S3Datasource(path='model-input-data/categoricals_auto.csv'),
+        LocalDatasource(path='model-data/input/scopes_auto.csv'),
+        LocalDatasource(path='model-data/input/financials_auto.csv'),
+        LocalDatasource(path='model-data/input/categoricals_auto.csv'),
         other_loaders=[RegionLoader()]
     ).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
@@ -118,63 +121,63 @@ if __name__ == "__main__":
     print(lar_imputed_data)
 
     print("Explain Effects of features")
-    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=100).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
-    fig, ax = explainer0.visualize()
-    fig.savefig(f'local/eval_results/importance_explainer{0}.png')
-    explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    for intervall_group, expl in enumerate([explainer1, explainer2, explainer3]):
-        fig, ax = expl.plot_tree()
-        fig.savefig(f'local/eval_results/tree_explainer{intervall_group+1}.png', dpi=600)
-        fig, ax = expl.plot_importances()
-        fig.savefig(f'local/eval_results/importance_explainer{intervall_group+1}.png')
+    # explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=100).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
+    # fig, ax = explainer0.visualize()
+    # fig.savefig(f'local/eval_results/importance_explainer{0}.png')
+    # explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # explainer2 = JumpRateExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # explainer3 = DecisionExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # for intervall_group, expl in enumerate([explainer1, explainer2, explainer3]):
+    #     fig, ax = expl.plot_tree()
+    #     fig.savefig(f'local/eval_results/tree_explainer{intervall_group+1}.png', dpi=600)
+    #     fig, ax = expl.plot_importances()
+    #     fig.savefig(f'local/eval_results/importance_explainer{intervall_group+1}.png')
 
-    print("\n", "Predict ALL with Model")
-    print(model.predict(SPLIT_1.val.X))
+    # print("\n", "Predict ALL with Model")
+    # print(model.predict(SPLIT_1.val.X))
 
-    print("\n", "Predict ALL on Mock data")
-    print(model.predict(helper.mock_data()))
+    # print("\n", "Predict ALL on Mock data")
+    # print(model.predict(helper.mock_data()))
 
-    print("\n", "Compute Confidences")
-    print(model.predict(SPLIT_1.val.X, return_ci=True))
+    # print("\n", "Compute Confidences")
+    # print(model.predict(SPLIT_1.val.X, return_ci=True))
 
-    print("\n", "DIRECT COMPARISON")
-    X_new = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
-    X_new["true_scope"] = SPLIT_1.test.y.values
-    X_new["absolute_difference"] = np.abs(X_new["pred"] - X_new["true_scope"])
-    X_new["offset_ratio"] = np.maximum(X_new["pred"], X_new["true_scope"]) / np.minimum(X_new["pred"], X_new["true_scope"])
-    X_new.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
-    X_new.to_csv('local/eval_results/model_training_direct_comparison.csv')
-    print(X_new)
+    # print("\n", "DIRECT COMPARISON")
+    # X_new = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
+    # X_new["true_scope"] = SPLIT_1.test.y.values
+    # X_new["absolute_difference"] = np.abs(X_new["pred"] - X_new["true_scope"])
+    # X_new["offset_ratio"] = np.maximum(X_new["pred"], X_new["true_scope"]) / np.minimum(X_new["pred"], X_new["true_scope"])
+    # X_new.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
+    # X_new.to_csv('local/eval_results/model_training_direct_comparison.csv')
+    # print(X_new)
 
-    tmp_pipeline = model.get_pipeline(1)
+    # tmp_pipeline = model.get_pipeline(1)
 
-    # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
+    # # tmp_pipeline.feature_selector.visualize(tmp_pipeline._preprocess(X))
     ### SAVE OBJECTS ###
 
     all_meta_models = [
-        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_model").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_model").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
+        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     all_lar_models = [
-        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar").set_object(lar_model).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(LocalDestination(path="model-data/output")),
+        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
     all_data_scope_imputations = [
-        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_scope_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_scope_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_scope_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING, "key_year":ASCENDING})),
     ]
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_LARS)
     all_data_lar_imputations = [
-        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime('%d-%m-%Y')).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output")),
     ]
 
 

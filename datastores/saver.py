@@ -60,8 +60,8 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
     def _save(self, obj, name, **kwargs) -> bool:
         target_destination = self._path / name
         with io.open(target_destination, "wb") as file:
-            obj_to_save = pkl.dumps(obj)
-            file.write(obj_to_save)
+            
+            file.write(obj)
         return target_destination.absolute()
 
     def __repr__(self) -> str:
@@ -70,6 +70,7 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
     # @abc.abstractmethod
     # def _save_fallback(self, **kwargs) -> bool:
     #     return False
+
 
 
 class PartialSaver(OxariLoggerMixin, abc.ABC):
@@ -115,10 +116,15 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
 
         return composed_name
 
+    def _convert(self, obj, **kwargs):
+        new_obj = obj
+        return new_obj
+
     def save(self, **kwargs) -> bool:
         try:
             self.datatarget._check_if_destination_accessible(**kwargs)
-            self.datatarget._save(self.object, self.name, **kwargs)
+            obj = self._convert(self.object)
+            self.datatarget._save(obj, self.name, **kwargs)
             return True
         except Exception as e:
             # TODO: Needs local emergency saving in case of exception
@@ -202,9 +208,8 @@ class MongoDestination(DataTarget):
         self.client = MongoClient(self._connection_string, server_api=ServerApi('1'), connectTimeoutMS=120000)
         return self.client
 
-    def _save(self, obj:pd.DataFrame, name, **kwargs) -> bool:
-        if not isinstance(obj, pd.DataFrame):
-            raise Exception(f'Object is not a dataframe but {obj.__class__}')
+    def _save(self, obj:list[dict], name, **kwargs) -> bool:
+        
         bsize = 50000
         client = self.connect()    
         db = client['companies']
@@ -212,8 +217,7 @@ class MongoDestination(DataTarget):
         collection = db[name]
         collection.drop()
         self.logger.info(f"Dropped collection '{db.name}/{collection.name}'")
-        records = obj.to_dict('records')
-        for b in tqdm.tqdm(self._batch(records, bsize), total=(len(records)//bsize)+1, desc="MongoDB Batch Upload"):
+        for b in tqdm.tqdm(self._batch(obj, bsize), total=(len(obj)//bsize)+1, desc="MongoDB Batch Upload"):
             inserted = collection.insert_many(b)
         if self.index:
             # TODO: This could also be a non-textindex
@@ -224,23 +228,26 @@ class MongoDestination(DataTarget):
 
 class PickleSaver(PartialSaver, abc.ABC):
 
-    @property
-    def name(self):
-        return f"{self._time}_{self._name}.pkl"
-
+    def _convert(self, obj:pd.DataFrame, **kwargs) -> bytes:
+        new_obj = pkl.dumps(obj)
+        return super()._convert(new_obj, **kwargs)
 
 class CSVSaver(PartialSaver, abc.ABC):
 
-    @property
-    def name(self):
-        return f"{self._time}_{self._name}.csv"
-
+    def _convert(self, obj:pd.DataFrame, **kwargs) -> io.StringIO:
+        if not isinstance(obj, pd.DataFrame):
+            raise Exception(f'Object is not a dataframe but {obj.__class__}')
+        new_obj = bytes(obj.to_csv(), "utf-8")
+        
+        return super()._convert(new_obj, **kwargs)
 
 class MongoSaver(PartialSaver, abc.ABC):
 
-    @property
-    def name(self):
-        return f"{self._time}_{self._name}"
+    def _convert(self, obj, **kwargs) -> list[dict]:
+        if not isinstance(obj, pd.DataFrame):
+            raise Exception(f'Object is not a dataframe but {obj.__class__}')
+        records = obj.to_dict('records')
+        return records
 
 # class DataSaver(PartialSaver, abc.ABC):
 #     SUB_FOLDER = Path("objects/estimates")

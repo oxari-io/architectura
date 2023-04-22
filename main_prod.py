@@ -177,7 +177,7 @@ if __name__ == "__main__":
     all_data_lar_imputations = [
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
         # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING})),
     ]
 
 

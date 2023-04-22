@@ -21,12 +21,21 @@ def test_model_destinations(destination: DataTarget, const_meta_model:OxariMetaM
 @pytest.mark.parametrize("destination", [
     LocalDestination(path="model-data/output"),
     S3Destination(path="model-data/output"),
-    MongoDestination(path="model-data/output"),
 ])
 def test_csv_destinations(destination: DataTarget, const_data_for_scope_imputation:pd.DataFrame):
-    saver = PartialSaver()
+    saver = CSVSaver()
     saver = saver.set_name("t_scope")
     saver = saver.set_extension(".csv")
+    saver = saver.set_object(const_data_for_scope_imputation)
+    saver = saver.set_datatarget(destination)
+    assert saver.save(), f"Saving data to {destination} failed"
+
+@pytest.mark.parametrize("destination", [
+    MongoDestination(path="model-data/output"),
+])
+def test_mongo_destinations(destination: DataTarget, const_data_for_scope_imputation:pd.DataFrame):
+    saver = MongoSaver()
+    saver = saver.set_name("t_scope")
     saver = saver.set_object(const_data_for_scope_imputation)
     saver = saver.set_datatarget(destination)
     assert saver.save(), f"Saving data to {destination} failed"

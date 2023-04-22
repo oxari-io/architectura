@@ -20,7 +20,7 @@ from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
 from datasources.online import S3Datasource
 from datasources.local import LocalDatasource
-from pymongo import TEXT
+from pymongo import ASCENDING, TEXT
 
 DATA_DIR = pathlib.Path('local/data')
 from lar_calculator.lar_model import OxariUnboundLAR
@@ -30,11 +30,12 @@ N_STARTUP_TRIALS = 5
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
-
-    dataset = PreviousScopeFeaturesDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),
-                                               S3Datasource(path='model-input-data/financials_auto.csv'),
-                                               S3Datasource(path='model-input-data/categoricals_auto.csv'),
-                                               other_loaders=[RegionLoader(), NetZeroIndexLoader()]).run()
+    dataset = PreviousScopeFeaturesDataManager(
+        LocalDatasource(path='model-data/input/scopes_auto.csv'),
+        LocalDatasource(path='model-data/input/financials_auto.csv'),
+        LocalDatasource(path='model-data/input/categoricals_auto.csv'),
+        other_loaders=[RegionLoader(), NetZeroIndexLoader()],
+    ).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -76,9 +77,13 @@ if __name__ == "__main__":
     dateformat = 'T%Y%m%d'
     all_data_features = [
         CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(dateformat)).set_name("p_companies").set_object(df).set_datatarget(MongoDestination(index=keys, path="model-data/output")),
-        MongoSaver().set_time(time.strftime(dateformat)).set_name("p_financials").set_object(df_fin).set_datatarget(MongoDestination(index=keys, path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(LocalDestination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime(dateformat)).set_name("p_companies").set_object(df).set_datatarget(
+            MongoDestination(index=keys, path="model-data/output", options=options)),
+        MongoSaver().set_time(time.strftime(dateformat)).set_name("p_financials").set_object(df_fin).set_datatarget(
+            MongoDestination(index={"key_isin":ASCENDING, "key_year":ASCENDING}, path="model-data/output", options=options)),
     ]
 
     SavingManager = OxariSavingManager(*all_data_features, )

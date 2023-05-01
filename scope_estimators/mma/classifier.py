@@ -1,10 +1,9 @@
+from typing_extensions import Self
 import lightgbm as lgb
 import numpy as np
 import optuna
-import pandas as pd
-
-from base import (DefaultClassificationEvaluator, OxariClassifier,
-                  OxariOptimizer)
+from scipy import stats as sc
+from base import (DefaultClassificationEvaluator, OxariClassifier, OxariOptimizer)
 # from model.abstract_base_class import MLModelInterface
 # from model.misc.hyperparams_tuning import tune_hps_classifier
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
@@ -14,6 +13,7 @@ from sklearn.metrics import (classification_report, confusion_matrix)
 
 
 class BucketClassifierEvauator(DefaultClassificationEvaluator):
+
     def __init__(self, **kwargs) -> None:
         super().__init__()
 
@@ -62,8 +62,8 @@ class BucketClassifierEvauator(DefaultClassificationEvaluator):
         return (correct_bottom.sum() + correct_top.sum() + correct_adjacency.sum()) / len(y_pred)
 
 
-
 class ClassifierOptimizer(OxariOptimizer):
+
     def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.n_trials = n_trials
@@ -131,6 +131,7 @@ class ClassifierOptimizer(OxariOptimizer):
 
 
 class BucketClassifier(OxariClassifier):
+
     def __init__(self, n_buckets=10, **kwargs):
         self.n_buckets = n_buckets
         self._estimator = lgb.LGBMClassifier(**kwargs)
@@ -143,7 +144,7 @@ class BucketClassifier(OxariClassifier):
     def evaluate(self, y_true, y_pred, **kwargs):
         return self._evaluator.evaluate(y_true, y_pred)
 
-    def fit(self, X, y, **kwargs) -> "OxariClassifier":
+    def fit(self, X, y, **kwargs) -> Self:
         self._estimator.set_params(**self.params).fit(X, y.ravel())
         self.bucket_metrics_ = classification_report(y, self._estimator.predict(X), output_dict=True)
         cls_report_df = pd.DataFrame(classification_report(y, self._estimator.predict(X), output_dict=True)).transpose()
@@ -161,12 +162,13 @@ class BucketClassifier(OxariClassifier):
     def set_params(self, **params):
         self.params = params
         return self
-    
+
     def get_config(self, deep=True):
         return {**self.params}
-    
 
-class BadPerformanceBucketClassifier(OxariClassifier):
+
+class UnderfittedBucketClassifier(BucketClassifier):
+
     def __init__(self, n_buckets=10, **kwargs):
         self.n_buckets = n_buckets
         self._estimator = lgb.LGBMClassifier(**kwargs)
@@ -177,19 +179,22 @@ class BadPerformanceBucketClassifier(OxariClassifier):
         info = None
         return best_params, info
 
-    def evaluate(self, y_true, y_pred, **kwargs):
-        return self._evaluator.evaluate(y_true, y_pred)
 
-    def fit(self, X, y, **kwargs) -> "OxariClassifier":
-        self._estimator.set_params(**self.params).fit(X, y.ravel())
+class RandomGuessBucketClassifier(BucketClassifier):
+
+    def fit(self, X, y, **kwargs) -> Self:
+        self.highest_class_ = np.max(y)
         return self
 
     def predict(self, X, **kwargs):
-        return self._estimator.predict(X)
+        return np.random.randint(0, self.highest_class_ + 1, size=len(X))
 
-    def set_params(self, **params):
-        self.params = params
+
+class MajorityBucketClassifier(BucketClassifier):
+    # NOTE: Because the regressor uses all data if none of the classes are selected, the regressor basically trains on all data at once.
+    def fit(self, X, y, **kwargs) -> Self:
+        self.mode_ = sc.mode(np.array(y).flatten()).mode[0]
         return self
-    
-    def get_config(self, deep=True):
-        return {**self.params}
+
+    def predict(self, X, **kwargs):
+        return np.ones(len(X)) * self.mode_

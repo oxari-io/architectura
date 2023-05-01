@@ -5,17 +5,38 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Training Pipeline",
+      "name": "Save Data",
       "type": "python",
       "request": "launch",
-      "module": "main",
+      "module": "main_save_search_db",
       "justMyCode": true
     },
     {
-      "name": "TEST Training Pipeline",
+      "name": "P: Training Pipeline",
       "type": "python",
       "request": "launch",
-      "module": "main_test_datasources",
+      "module": "main_prod",
+      "justMyCode": true
+    },
+    {
+      "name": "Q: Training Pipeline",
+      "type": "python",
+      "request": "launch",
+      "module": "main_qual",
+      "justMyCode": true
+    },
+    {
+      "name": "T: Training Pipeline",
+      "type": "python",
+      "request": "launch",
+      "module": "main_test",
+      "justMyCode": true
+    },
+    {
+      "name": "DEV Saver",
+      "type": "python",
+      "request": "launch",
+      "module": "development.run_saver",
       "justMyCode": true
     },
     {
@@ -40,12 +61,25 @@
       "justMyCode": true
     },
     {
-      "name": "Run Bucket Error Experiment",
+      "name": "Run Specific Experiment",
       "type": "python",
-      "console": "externalTerminal",
       "request": "launch",
-      "module": "experiments.experiment_bucket_error",
+      "module": "experiments.experiment_missing_value_imputers",
       "justMyCode": true
     },
+    {
+      "name": "Test All",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v",
+        "-s",
+        "--debug=pytest_debug.log",
+        "tests/test_data_saver.py"
+      ],
+      // "stopOnEntry": true,
+      "justMyCode": true
+    }
   ]
 }

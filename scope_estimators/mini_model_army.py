@@ -1,9 +1,9 @@
 from base import DefaultRegressorEvaluator, OxariScopeEstimator
 from base.helper import BucketScopeDiscretizer, SingleBucketScopeDiscretizer
 from base.oxari_types import ArrayLike
-from scope_estimators.mma.classifier import (BucketClassifier, BadPerformanceBucketClassifier,
+from scope_estimators.mma.classifier import (BucketClassifier, UnderfittedBucketClassifier,
                                              BucketClassifierEvauator,
-                                             ClassifierOptimizer)
+                                             ClassifierOptimizer, MajorityBucketClassifier, RandomGuessBucketClassifier)
 from scope_estimators.mma.regressor import (BucketRegressor,
                                             EvenWeightBucketRegressor,
                                             RegressorOptimizer)
@@ -21,11 +21,16 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
 
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+        # NOTE: Question is whether the linkage between bucket_cl prediction and regression makes sense. I start to believe it does not. 
+        # If the classfier predicts one class only the regressor will just use the full data.
+        # If the classifier predicts the majority class the model will have one powerful bucket and others are weak.
+        # Seperate learning allows to every bucket to learn according to the data distribution. The error does not propagate.  
         self.n_features_in_ = X.shape[1]
         y_binned = self.discretizer.fit_transform(X, y)
         self.bucket_cl: BucketClassifier = self.bucket_cl.set_params(**self.params.get("cls", {})).fit(X, y_binned)
-        groups = self.bucket_cl.predict(X)
-        self.bucket_rg = self.bucket_rg.set_params(**self.params.get("rgs", {})).fit(X, y, groups=groups)
+        # groups = self.bucket_cl.predict(X)
+        self.bucket_rg = self.bucket_rg.set_params(**self.params.get("rgs", {})).fit(X, y, groups=y_binned.flatten())
+        # self.bucket_rg = self.bucket_rg.set_params(**self.params.get("rgs", {})).fit(X, y, groups=groups)
         return self
 
     def predict(self, X, **kwargs) -> ArrayLike:
@@ -85,7 +90,17 @@ class MiniModelArmyClusterBucketEstimator(MiniModelArmyEstimator):
     # TODO: instead of classifier uses clustering for bucketing
     pass
 
-class BadPerformanceMiniModelArmyEstimator(MiniModelArmyEstimator):
+class UnderfittedClsMiniModelArmyEstimator(MiniModelArmyEstimator):
     def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
         super().__init__(n_buckets, cls, rgs, **kwargs)
-        self.bucket_cl: BucketClassifier = BadPerformanceBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+        self.bucket_cl: BucketClassifier = UnderfittedBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+
+class RandomGuessClsMiniModelArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_cl: BucketClassifier = RandomGuessBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+
+class MajorityClsMiniModelArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_cl: BucketClassifier = MajorityBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())

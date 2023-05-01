@@ -3,6 +3,10 @@ import pandas as pd
 from typing_extensions import Self
 
 from base import OxariMetaModel, OxariPostprocessor
+import tqdm
+
+from base.common import OxariLoggerMixin
+
 
 
 class ScopeImputerPostprocessor(OxariPostprocessor):
@@ -15,7 +19,8 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
 
     def run(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # we are only interested in the most recent years
-        data = X.loc[X["key_year"].isin(list(range(2016, 2022)))].copy()
+        # data = X.loc[X["key_year"].isin(list(range(2016, 2022)))].copy()
+        data = X.copy()
         predicted_scope_1 = self.estimator.predict(data, scope=1)
         predicted_scope_2 = self.estimator.predict(data, scope=2)
         predicted_scope_3 = self.estimator.predict(data, scope=3)
@@ -33,7 +38,9 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         # TODO: Include logging how many predicted values where imputed.
 
         # retrieving only the relevant columns
-        data = data[["key_isin", "key_year", "tg_numc_scope_1", "tg_numc_scope_2", "tg_numc_scope_3", "predicted_s1", "predicted_s2", "predicted_s3"]]
+        meta_keys = list(data.columns[data.columns.str.startswith('key_')])
+        scope_keys = list(data.columns[data.columns.str.startswith('tg_numc_')])
+        data = data[meta_keys + scope_keys + ["predicted_s1", "predicted_s2", "predicted_s3"]]
         # how many unique companies?
         # print("Number of unique companies in the data: ", len(data["isin"].unique()))
         self.logger.debug(f"Number of unique companies in the data: {len(data['key_isin'].unique())}")
@@ -50,9 +57,10 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         return f"@{self.__class__.__name__}[ Count of imputed {self.imputed} ]"
 
 
-class JumpRateEvaluator():
+class JumpRateEvaluator(OxariLoggerMixin):
 
-    def __init__(self, estimator: OxariMetaModel) -> None:
+    def __init__(self, estimator: OxariMetaModel, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.estimator = estimator
         self.metrics = []
 
@@ -78,8 +86,11 @@ class JumpRateEvaluator():
 
     def evaluate(self, X: pd.DataFrame) -> Self:
         companies = X.groupby('key_isin', group_keys=True)
-        jump_rates: pd.DataFrame = companies.apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
-        estimation_stats: pd.DataFrame = companies.apply(self._compute_estimate_to_fact_ratio).reset_index()
+        self.logger.info("Compute Jump Ratios (yearly)")
+        jump_rates: pd.DataFrame = companies.progress_apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
+        self.logger.info("Compute Jump Ratios (aggregated)")
+        estimation_stats: pd.DataFrame = companies.progress_apply(self._compute_estimate_to_fact_ratio).reset_index()
+        self.logger.info("Merge yearly jum rates with aggregated stats")
         self.jump_rates = jump_rates.merge(estimation_stats, left_on="key_isin", right_on="key_isin").drop('index', axis=1)
         # self.jump_rates = self.jump_rates.drop('level_1', axis=1)
         self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('key_isin').agg(['median', 'mean', 'std', 'max', 'min'])

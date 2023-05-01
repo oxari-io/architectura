@@ -12,7 +12,10 @@ from datasources.local import LocalDatasource
 
 
 class DefaultDataManager(OxariDataManager):
-
+    # TODO: Follow loader structure of special loaders. 
+    # TODO: Remove named attributes and pass everything as a list of loaders.
+    # TODO: Test if all combinations of loaders work (exclude standard loaders)
+    # TODO: Introduce another file which has all the ISIN-YEAR keys
     def __init__(self,
                  scope_loader: Datasource = LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
                  financial_loader: Datasource = LocalDatasource(path=DATA_DIR / "financials_auto.csv"),
@@ -39,14 +42,15 @@ class FSExperimentDataLoader(DefaultDataManager):
 
 
 class PreviousScopeFeaturesDataManager(DefaultDataManager):
-
+    PREFIX = "ft_numc_prior_"
     def _take_previous_scopes(self, df: pd.DataFrame):
         df_tmp = df.iloc[:, df.columns.str.startswith('tg_numc_')].shift(1)
-        df_tmp.columns = [f"ft_numc_preyear_{col}" for col in df_tmp.columns]
+        df_tmp.columns = [f"{self.PREFIX}{col}" for col in df_tmp.columns]
         df[df_tmp.columns] = df_tmp
         return df
 
     def _transform(self, df: pd.DataFrame):
         key_cols = list(df.columns[df.columns.str.startswith('key')])
-        df = df.sort_values(key_cols, ascending=[True, True]).groupby('key_isin').apply(self._take_previous_scopes)
-        return df
+        self.logger.info("Taking all previous year scopes")
+        df:pd.DataFrame = df.sort_values(key_cols, ascending=True).groupby('key_isin', group_keys=False).progress_apply(self._take_previous_scopes)
+        return super()._transform(df)

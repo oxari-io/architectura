@@ -4,7 +4,7 @@ import pandas as pd
 import optuna
 from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
-
+from typing_extensions import Self
 from sklearn.neural_network import MLPRegressor
 
 class MLPOptimizer(OxariOptimizer):
@@ -76,7 +76,7 @@ class MLPEstimator(OxariScopeEstimator):
         self._estimator = MLPRegressor()
         self._optimizer = optimizer or MLPOptimizer()
 
-    def fit(self, X, y, **kwargs) -> "MLPEstimator":
+    def fit(self, X, y, **kwargs) -> Self:
         X = pd.DataFrame(X)
         y = pd.DataFrame(y)
         self.params.pop("num_hidden_layers")

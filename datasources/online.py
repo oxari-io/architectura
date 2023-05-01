@@ -7,6 +7,7 @@ from typing_extensions import Self
 import requests
 from base.dataset_loader import Datasource
 from requests.models import Response
+from io import StringIO
 
 
 # TODO: The internet loaders need a progressbar
@@ -65,8 +66,13 @@ class OnlineDatasource(Datasource):
 
 class OnlineCSVDatasource(OnlineDatasource):
 
+    def __init__(self, path: str = "", delimiter=",", encoding='utf-8', **kwargs) -> None:
+        super().__init__(path, **kwargs)
+        self.delimiter = delimiter
+        self.encoding = encoding
+
     def _handle_file(self, response: Response):
-        return pd.read_csv(response.content)
+        return pd.read_csv(StringIO(response.content.decode(self.encoding)), delimiter=self.delimiter)
 
 
 class OnlineExcelDatasource(OnlineDatasource):

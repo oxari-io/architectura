@@ -262,7 +262,7 @@ class BucketRegressor(OxariRegressor):
                 model = ModelConstructor(**best_params)
 
                 # calculate the score of each individual model to weight voting mechanism
-                
+                # NOTE: Could also be done faster by not using cv
                 model_score = np.mean(cross_val_score(model, X[selector] if is_any else X, y[selector] if is_any else y, scoring=cv_metric)) 
                 trained_candidates[name] = {"model": model, "score": 100-model_score, **candidate_data}
                 pbar.update(1)

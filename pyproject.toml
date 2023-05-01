@@ -7,7 +7,7 @@ license = "Proprietary"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.10"
 scikit-learn = "^1.2.0"
 numpy = "^1.23.0"
 pandas = "^1.5.2"
@@ -48,6 +48,10 @@ autoimpute = "^0.13.0"
 missingno = "^0.5.1"
 textdistance = "^4.5.0"
 pydot = "^1.4.2"
+boto3-stubs = {extras = ["essential"], version = "^1.26.80"}
+pymongo = "^4.3.3"
+colorlog = "^6.7.0"
+pytest = "^7.2.2"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"
@@ -59,6 +63,8 @@ auto-py-to-exe = "^2.27.0"
 autoflake = "^2.0.1"
 unimport = "^0.13.0"
 
+[tool.pytest.ini_options]
+testpaths = ["./tests"]
 
 [build-system]
 requires = ["poetry-core"]

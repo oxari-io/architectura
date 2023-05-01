@@ -4,7 +4,7 @@ import pandas as pd
 import optuna
 from base.oxari_types import ArrayLike
 from base.metrics import optuna_metric
-
+from typing_extensions import Self
 from sklearn.neighbors import KNeighborsRegressor
 
 class KNOptimizer(OxariOptimizer):
@@ -63,13 +63,13 @@ class KNOptimizer(OxariOptimizer):
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
 
-class KNEstimator(OxariScopeEstimator):
+class KNNEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
         self._estimator = KNeighborsRegressor()
         self._optimizer = optimizer or KNOptimizer()
 
-    def fit(self, X, y, **kwargs) -> "KNEstimator":
+    def fit(self, X, y, **kwargs) -> Self:
         max_size = len(X)
         sample_size = int(max_size*0.1)
         indices = np.random.randint(0, max_size, sample_size)   

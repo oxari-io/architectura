@@ -3,7 +3,7 @@ from sklearn.linear_model import LinearRegression
 
 from base import OxariLinearAnnualReduction
 from base.oxari_types import ArrayLike
-
+import tqdm
 
 # TODO: Move those into the class
 def _helper(name, isins, years, emissions):
@@ -58,9 +58,9 @@ class OxariUnboundLAR(OxariLinearAnnualReduction):
         return lar
 
     def transform(self, X, **kwargs) -> ArrayLike:
-        new_X = X.copy()
+        new_X:pd.DataFrame = X.copy()
         params = self.params_1.merge(self.params_2, how="left", on="key_isin", suffixes=("_scope_1_2", "_scope_3"))
-        new_X = new_X.merge(params, how="left", on="key_isin")
+        new_X = new_X.merge(params, how="left", on="key_isin").drop_duplicates(subset="key_isin", keep='last')
         
         return new_X
 
@@ -83,8 +83,9 @@ class OxariUnboundLAR(OxariLinearAnnualReduction):
         self.logger.debug(f"unique isins: {len(isins)}")
 
         grouped = scopes.groupby("key_isin", sort=False)
-
-        self.params_1 = grouped.apply(lambda df_group: _helper("tg_numc_scope_1_2", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_1_2"])).reset_index(drop=True)
-        self.params_2 = grouped.apply(lambda df_group: _helper("tg_numc_scope_3", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_3"])).reset_index(drop=True)
+        self.logger.info('Compute scope 1 and 2 lars')
+        self.params_1 = grouped.progress_apply(lambda df_group: _helper("tg_numc_scope_1_2", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_1_2"])).reset_index(drop=True)
+        self.logger.info('Compute scope 3 lars')
+        self.params_2 = grouped.progress_apply(lambda df_group: _helper("tg_numc_scope_3", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_3"])).reset_index(drop=True)
 
         return self

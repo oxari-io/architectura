@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver, OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
+from base import (OxariDataManager, OxariMetaModel, helper)
 from base.common import OxariLoggerMixin
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
@@ -137,13 +137,13 @@ if __name__ == "__main__":
     print(model.predict(SPLIT_1.val.X, return_ci=True))
 
     print("\n", "DIRECT COMPARISON")
-    result = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
-    result["true_scope"] = SPLIT_1.test.y.values
-    result["absolute_difference"] = np.abs(result["pred"] - result["true_scope"])
-    result["offset_ratio"] = np.maximum(result["pred"], result["true_scope"]) / np.minimum(result["pred"], result["true_scope"])
-    result.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
-    result.to_csv('local/eval_results/model_training_test.csv')
-    print(result)
+    X_new = model.predict(SPLIT_1.test.X, scope=1, return_ci=True)
+    X_new["true_scope"] = SPLIT_1.test.y.values
+    X_new["absolute_difference"] = np.abs(X_new["pred"] - X_new["true_scope"])
+    X_new["offset_ratio"] = np.maximum(X_new["pred"], X_new["true_scope"]) / np.minimum(X_new["pred"], X_new["true_scope"])
+    X_new.loc[:, SPLIT_1.test.X.columns] = SPLIT_1.test.X.values
+    X_new.to_csv('local/eval_results/model_training_test.csv')
+    print(X_new)
 
     tmp_pipeline = model.get_pipeline(1)
 

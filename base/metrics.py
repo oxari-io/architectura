@@ -3,7 +3,7 @@ import pandas as pd
 from pmdarima.metrics import smape
 from pmdarima.utils import check_endog
 from scipy import spatial
-from sklearn.metrics import balanced_accuracy_score, mean_absolute_error
+from sklearn.metrics import balanced_accuracy_score, mean_absolute_error, mean_absolute_percentage_error
 
 
 def optuna_metric(y_true, y_pred) -> float:
@@ -22,10 +22,13 @@ def cv_metric(estimator, X, y) -> float:
     return smape(y, y_hat)
 
 
+# def mape(A, F):
+#     tmp = np.abs(A - F) / np.abs(A)
+#     len_ = len(tmp)
+#     return 100 * np.sum(tmp) / len_
+
 def mape(A, F):
-    tmp = np.abs(A - F) / np.abs(A)
-    len_ = len(tmp)
-    return 100 * np.sum(tmp) / len_
+    return mean_absolute_percentage_error(A,F)
 
 
 # TODO: Use (MdAPE & sMdAPE): https://support.numxl.com/hc/en-us/articles/115001223503-MdAPE-Median-Absolute-Percentage-Error

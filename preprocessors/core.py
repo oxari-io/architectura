@@ -7,7 +7,7 @@ import pandas as pd
 import sklearn.preprocessing as prep
 
 from base import OxariPreprocessor
-from base.helper import DummyTargetScaler
+from base.helper import DummyTargetScaler, OxariFeatureTransformerWrapper
 
 
 class DummyPreprocessor(OxariPreprocessor):
@@ -21,7 +21,7 @@ class DummyPreprocessor(OxariPreprocessor):
         data = X
         self.logger.info(f'number of original features: {len(data.columns)}')
         self.scope_columns = ["scope_1", "scope_2", "scope_3"]
-        self.financial_columns = X.columns[X.columns.str.startswith('ft_fin')]
+        self.financial_columns = X.columns[X.columns.str.startswith('ft_num')]
         self.categorical_columns = X.columns[X.columns.str.startswith('ft_cat')]
         # # log scaling the scopes
         # self.scope_transformer = self.scope_transformer.fit(data[self.scope_columns])
@@ -53,7 +53,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         # self.categorical_columns = CategoricalLoader.columns
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
-        data = X
+        data = X.copy()
         self.original_features = data.columns
         self.scope_columns = data.columns[data.columns.str.startswith('tg_num')]
         self.financial_columns = data.columns[data.columns.str.startswith('ft_num')]
@@ -70,14 +70,16 @@ class BaselinePreprocessor(OxariPreprocessor):
         return self
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
-        X_new = pd.DataFrame(X, columns=self.original_features)
+        X_result = X.copy()
+        X_new = X.filter(regex='ft_', axis=1)
         # impute all the missing columns
-        X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
+        X_new.loc[:, self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
         # transform numerical
-        X_new[self.financial_columns] = self.fin_transformer.transform(X_new[self.financial_columns])
+        X_new.loc[:, self.financial_columns] = self.fin_transformer.transform(X_new[self.financial_columns])
         # encode categorical
-        X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
-        return X_new
+        X_new.loc[:, self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
+        X_result[X_new.columns] = X_new[X_new.columns].values
+        return X_result
 
     def get_config(self, deep=True):
         return {
@@ -93,7 +95,7 @@ class BaselinePreprocessor(OxariPreprocessor):
 
 class ImprovedBaselinePreprocessor(BaselinePreprocessor):
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         X_new = X.copy()
         self.scope_columns = X.columns[X.columns.str.startswith('tg_numc')]
         self.financial_columns = X.columns[X.columns.str.startswith('ft_num')]
@@ -122,9 +124,9 @@ class IIDPreprocessor(BaselinePreprocessor):
 
     def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(fin_transformer, cat_transformer, **kwargs)
-        self.overall_scaler = prep.StandardScaler()
+        self.overall_scaler = OxariFeatureTransformerWrapper(transformer=prep.StandardScaler()) 
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "BaselinePreprocessor":
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # NOTE: Using fit_transform here leads to recursion.
         super().fit(X, y, **kwargs)
         X_new = super().transform(X, **kwargs)
@@ -133,7 +135,7 @@ class IIDPreprocessor(BaselinePreprocessor):
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_new = super().transform(X, **kwargs)
-        X_new = pd.DataFrame(self.overall_scaler.transform(X_new), index=X_new.index, columns=X_new.columns)
+        X_new = self.overall_scaler.transform(X_new)
         return X_new
 
 
@@ -144,9 +146,9 @@ class NormalizedIIDPreprocessor(IIDPreprocessor):
 
     def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
         super().__init__(fin_transformer, cat_transformer, **kwargs)
-        self.overall_scaler_2 = prep.MinMaxScaler()
+        self.overall_scaler_2 = OxariFeatureTransformerWrapper(transformer=prep.MinMaxScaler())
 
-    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "NormalizedIIDPreprocessor":
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # NOTE: Using fit_transform here leads to recursion.
         super().fit(X, y, **kwargs)
         X_new = super().transform(X, **kwargs)

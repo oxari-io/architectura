@@ -9,6 +9,7 @@ from base import (DefaultClassificationEvaluator, OxariClassifier, OxariOptimize
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
 from base.metrics import classification_metric
 from sklearn.metrics import (classification_report, confusion_matrix)
+import pandas as pd
 
 
 

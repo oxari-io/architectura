@@ -57,9 +57,9 @@ fig.set_ylim(0.22, 0.28)
 fig.set_title('bubble plot, size indicates time')
 # %%
 plt.figure(figsize=(17,10))
-fig = sns.scatterplot(data=results, x="time", y="test.sMAPE", hue="n_components")
-fig.set_xlabel('time')
-fig.set_ylabel('sMAPE')
+fig = sns.scatterplot(data=results, x="n_components", y="variance")
+fig.set_xlabel('n_components')
+fig.set_ylabel('variance')
 fig.set_title('scree plot')
 
 # %%

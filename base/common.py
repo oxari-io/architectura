@@ -17,7 +17,7 @@ import sklearn
 from pmdarima.metrics import smape
 from sklearn.base import MetaEstimatorMixin, MultiOutputMixin, BaseEstimator, TransformerMixin, OneToOneFeatureMixin
 from sklearn.impute import _base
-from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, precision_recall_fscore_support, r2_score, silhouette_score, median_absolute_error)
+from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, precision_recall_fscore_support, r2_score, silhouette_score, median_absolute_error, classification_report, confusion_matrix)
 from sklearn.model_selection import train_test_split
 from typing_extensions import Self
 from sklearn.preprocessing import minmax_scale
@@ -134,6 +134,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
                 "95%": percentile_deviation[3]
             },
         }
+        print(f"Here's the sMAPE value of the regressor evaluator: {smape(y_true, y_pred) / 100}")
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
         return super().evaluate(y_true, y_pred, **error_metrics)
@@ -178,12 +179,22 @@ class DefaultClassificationEvaluator(OxariEvaluator):
         """
         precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average="weighted")
         acc = balanced_accuracy_score(y_true, y_pred)
+
+        # v_label = np.concatenate([y for _, y in validation_dataset], axis=0)
+        conf_matrix = confusion_matrix(y_true, y_pred)
+        class_report = classification_report(y_true, y_pred)
+
         error_metrics = {
             "balanced_accuracy": acc,
             "balanced_precision": precision,
             "balanced_recall": recall,
             "balanced_f1": f1,
+            # "conf_matrix": conf_matrix,
+            # "classification_report": class_report
         }
+
+        # print(f"Here's the classification report of the BucketClassifier evaluator: {class_report}")
+
         return super().evaluate(y_true, y_pred, **error_metrics)
 
 

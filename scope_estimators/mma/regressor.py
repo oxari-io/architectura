@@ -235,6 +235,7 @@ class BucketRegressor(OxariRegressor):
         # self.scope = check_scope(scope)
         self.voting_regressors_: Dict[int, VotingRegressor] = {}
         self.bucket_specifics_ = {"scores":{}}
+        # self.bucket_specifics_ = {}
 
     def fit(self, X, y, **kwargs):
         """
@@ -270,6 +271,12 @@ class BucketRegressor(OxariRegressor):
             y_hat = self.voting_regressors_[bucket].predict(X[selector] if is_any else X)
             y_true = y[selector] if is_any else y
             self.bucket_specifics_["scores"][bucket] = self.evaluate(y_true, y_hat)
+            # self.bucket_specifics_[bucket] = self.evaluate(y_true, y_hat)
+        
+        self.bucket_specifics_["scores"] = pd.DataFrame.from_dict(self.bucket_specifics_["scores"])
+        self.bucket_specifics_["scores"] = self.bucket_specifics_["scores"].transpose()
+        # print(type(self.bucket_specifics_["scores"]))
+        # print(self.bucket_specifics_["scores"])
         return self
 
     def _construct_voting_regressor(self, X, y, trained_candidates, selector, is_any):

@@ -1,3 +1,0 @@
-,time,scope,imputer,preprocessor,feature_selector,scope_estimator,test.evaluator,test.sMAPE,test.R2,test.MAE,test.RMSE,test.MAPE
-0,0.939237117767334,1,RevenueQuantileBucketImputer,IIDPreprocessor,FeatureAgglomeration,SupportVectorEstimator,DefaultRegressorEvaluator,0.14681117857230594,0.532182914056292,1.5907174886813076,2.0741434585162084,16.6158188572143
-1,0.9374370574951172,1,RevenueQuantileBucketImputer,IIDPreprocessor,FeatureAgglomeration,SupportVectorEstimator,DefaultRegressorEvaluator,0.15731471535151412,0.5074894577610014,1.696205969163127,2.222804650893273,17.91737997703669

@@ -158,26 +158,26 @@ if __name__ == "__main__":
 
     all_meta_models = [
         PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_gdc").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
-        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
+        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_gdc").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     all_lar_models = [
         PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar_gdc").set_object(lar_model).set_datatarget(LocalDestination(path="model-data/output")),
-        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
+        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar_gdc").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
     all_data_scope_imputations = [
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations_gdc").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING, "key_year":ASCENDING})),
+        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations_gdc").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations_gdc").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING, "key_year":ASCENDING})),
     ]
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_LARS)
     all_data_lar_imputations = [
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations_gdc").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING})),
+        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations_gdc").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_lar_imputations_gdc").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING})),
     ]
 
 

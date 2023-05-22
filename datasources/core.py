@@ -17,17 +17,11 @@ class DefaultDataManager(OxariDataManager):
     # TODO: Test if all combinations of loaders work (exclude standard loaders)
     # TODO: Introduce another file which has all the ISIN-YEAR keys
     def __init__(self,
-                 scope_loader: Datasource = LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
-                 financial_loader: Datasource = LocalDatasource(path=DATA_DIR / "financials_auto.csv"),
-                 categorical_loader: Datasource = LocalDatasource(path=DATA_DIR / "categoricals_auto.csv"),
-                 other_loaders: List[PartialLoader] = [],
+                 *loaders: PartialLoader,
                  verbose=False,
                  **kwargs):
         super().__init__(
-            scope_loader=ScopeLoader(datasource=scope_loader),
-            financial_loader=FinancialLoader(datasource=financial_loader),
-            categorical_loader=CategoricalLoader(datasource=categorical_loader),
-            other_loaders=other_loaders,
+            *loaders,
             verbose=verbose,
             **kwargs,
         )

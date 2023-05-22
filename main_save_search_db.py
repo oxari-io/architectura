@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     # Data prepared for saving
     cmb_ld = dataset.categorical_loader
-    for ld in dataset.other_loaders:
+    for ld in dataset.loaders:
         cmb_ld = cmb_ld + ld
 
     df = dataset.categorical_loader._data.merge(cmb_ld.data, on="key_isin", how="left", suffixes=('', '_DROP')).filter(regex='^(?!.*_DROP)')

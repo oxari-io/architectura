@@ -342,31 +342,22 @@ class OxariDataManager(OxariMixin):
 
     def __init__(
             self,
-            scope_loader: PartialLoader = None,
-            financial_loader: PartialLoader = None,
-            categorical_loader: PartialLoader = None,
-            other_loaders: List[PartialLoader] = [],
+            *loaders: List[PartialLoader],
             data_filter: DataFilter = DataFilter(),
             verbose=False,
             **kwargs,
     ):
         super().__init__(**kwargs)
-        self.scope_loader = scope_loader
-        # self.scope_transformer = scope_transformer or LogarithmScaler(scope_features=self.DEPENDENT_FEATURES)
-        self.financial_loader = financial_loader
-        self.categorical_loader = categorical_loader
-        self.other_loaders = other_loaders
+        self.loaders = loaders
         self.data_filter = data_filter
         self.verbose = verbose
         self._dataset_stack = []
         self.threshold = kwargs.pop("threshold", 5)
 
     def run(self, **kwargs) -> Self:
-        main_loaders = [self.financial_loader, self.scope_loader, self.categorical_loader]
-
         merged_loader = EmptyLoader()
         self.logger.info(f"Remaining data points {len(merged_loader.data)}")
-        for idx, loader in enumerate(main_loaders + self.other_loaders):
+        for idx, loader in enumerate(self.loaders):
             loaded = loader.load()
             loader_name = f"loader_{loaded.name.lower()}"
             merged_loader += loaded

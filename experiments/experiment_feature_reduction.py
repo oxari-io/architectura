@@ -5,7 +5,7 @@ import pandas as pd
 
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
-from datasources.core import FSExperimentDataLoader
+from datasources.core import FSExperimentDataLoader, get_small_datamanager_configuration
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAnalysisFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer, SparseRandProjectionFeatureReducer)
 # from imputers.revenue_bucket import RevenueBucketImputer
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     all_results = []  # dictionary where key=feature selection method, value = evaluation results
     for i in range(num_reps):
-        dataset = FSExperimentDataLoader().run()
+        dataset = get_small_datamanager_configuration().run()
         X = dataset.get_features(OxariDataManager.ORIGINAL)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1

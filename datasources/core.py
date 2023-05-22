@@ -5,7 +5,7 @@ from typing import Dict, List
 import pandas as pd
 
 from base.constants import DATA_DIR
-from base.dataset_loader import (CategoricalLoader, Datasource,
+from base.dataset_loader import (CategoricalLoader, CompanyDataFilter, Datasource,
                                  FinancialLoader, OxariDataManager,
                                  PartialLoader, ScopeLoader)
 from datasources.loaders import RegionLoader
@@ -58,3 +58,11 @@ def get_default_datamanager_configuration():
         CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
         RegionLoader(),
     )
+
+def get_small_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    ).set_filter(CompanyDataFilter())

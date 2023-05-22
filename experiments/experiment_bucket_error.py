@@ -8,7 +8,7 @@ import pandas as pd
 from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver, OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
-from datasources.core import PreviousScopeFeaturesDataManager
+from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from feature_reducers import DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
@@ -29,11 +29,7 @@ N_STARTUP_TRIALS = 1
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
 
-    dataset = PreviousScopeFeaturesDataManager(
-        LocalDatasource(path=DATA_DIR / 'scopes_auto.csv'),
-        LocalDatasource(path=DATA_DIR / 'financials_auto.csv'),
-        LocalDatasource(path=DATA_DIR / 'categoricals_auto.csv'),
-    ).run()
+    dataset = get_default_datamanager_configuration().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

@@ -4,7 +4,7 @@ import pandas as pd
 
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
-from datasources.core import FSExperimentDataLoader
+from datasources.core import FSExperimentDataLoader, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer, DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer, BaselineImputer
 from pipeline.core import DefaultPipeline
@@ -17,7 +17,7 @@ from experiments.experiment_argument_parser import BucketingExperimentCommandLin
 if __name__ == "__main__":
     all_results = []
     for rep in range(10):
-        dataset = FSExperimentDataLoader().run() 
+        dataset = get_small_datamanager_configuration().run() 
         X = dataset.get_features(OxariDataManager.ORIGINAL)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1

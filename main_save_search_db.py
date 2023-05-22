@@ -8,6 +8,7 @@ from sklearn.preprocessing import PowerTransformer
 
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
+from base.dataset_loader import CategoricalLoader, EmptyLoader, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
 from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from datasources.loaders import NetZeroIndexLoader, RegionLoader
@@ -30,13 +31,13 @@ N_STARTUP_TRIALS = 5
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
-    dataset = get_default_datamanager_configuration().add_loader(NetZeroIndexLoader()).run()
-    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    X = dataset.get_features(OxariDataManager.ORIGINAL)
-    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
-    SPLIT_1 = bag.scope_1
-    SPLIT_2 = bag.scope_2
-    SPLIT_3 = bag.scope_3
+    # dataset = get_default_datamanager_configuration().add_loader(NetZeroIndexLoader()).run()
+    # DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    # X = dataset.get_features(OxariDataManager.ORIGINAL)
+    # bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+    # SPLIT_1 = bag.scope_1
+    # SPLIT_2 = bag.scope_2
+    # SPLIT_3 = bag.scope_3
 
     keys = {
         "key_isin": "text",
@@ -59,17 +60,21 @@ if __name__ == "__main__":
     }
 
     # Data prepared for saving
-    cmb_ld = dataset.categorical_loader
-    for ld in dataset.loaders:
-        cmb_ld = cmb_ld + ld
+    ld_fin = FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")).load()
+    ld_scp = ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")).load()
+    ld_cat = CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")).load()    
+    ld_reg = RegionLoader().load()    
+    cmb_ld = EmptyLoader()
+    
+    cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
 
-    df = dataset.categorical_loader._data.merge(cmb_ld.data, on="key_isin", how="left", suffixes=('', '_DROP')).filter(regex='^(?!.*_DROP)')
+    df = ld_cat._data.merge((ld_cat + ld_reg).data, on="key_isin", how="left", suffixes=('', '_DROP')).filter(regex='^(?!.*_DROP)')
     df[df.select_dtypes('object').columns] = df[df.select_dtypes('object').columns].fillna("NA")
     df[df.select_dtypes('category').columns] = df[df.select_dtypes('category').columns].astype(str).replace("nan", "NA")
 
-    df_fin = dataset.financial_loader._data
+    df_fin = ld_fin.data
 
-    df_statistics = dataset.scope_loader._data.merge(df, on="key_isin").filter(regex="^(ft|tg|key)", axis=1).drop([
+    df_statistics = (ld_scp + ld_cat + ld_reg).data.drop([
         'key_isin',
         'key_country_code',
         'ft_catm_near_target_status',
@@ -78,7 +83,7 @@ if __name__ == "__main__":
         'ft_catm_near_target_class',
         'ft_catm_orga_type',
         'ft_catb_committed',
-    ],axis=1)
+    ],axis=1, errors='ignore')
     df_scope_stats = df_statistics.groupby(df_statistics.select_dtypes('object').columns.tolist() + ['key_year']).mean().reset_index().fillna("NA")
 
     dateformat = 'T%Y%m%d'
@@ -87,8 +92,8 @@ if __name__ == "__main__":
         CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(LocalDestination(path="model-data/output")),
         CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(
             LocalDestination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(S3Destination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(dateformat)
                               ).set_name("p_companies").set_object(df).set_datatarget(MongoDestination(index=keys, path="model-data/output", options=options)),
         MongoSaver().set_time(time.strftime(dateformat)).set_name("p_financials").set_object(df_fin).set_datatarget(

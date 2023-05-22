@@ -6,7 +6,7 @@ import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.dataset_loader import SplitBag
 from base.helper import LogTargetScaler
-from datasources.core import FSExperimentDataLoader, PreviousScopeFeaturesDataManager
+from datasources.core import FSExperimentDataLoader, PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAnalysisFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer, SparseRandProjectionFeatureReducer)
 # from imputers.revenue_bucket import RevenueBucketImputer
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     print("reduction_methods: ", configurations)
 
     all_results = []  # dictionary where key=feature selection method, value = evaluation results
-    dataset = PreviousScopeFeaturesDataManager().run()
+    dataset = get_default_datamanager_configuration().run()
     for i in range(num_reps):
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1

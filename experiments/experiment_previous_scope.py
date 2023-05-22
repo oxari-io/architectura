@@ -5,7 +5,7 @@ import time
 import pandas as pd
 
 from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, DummyConfidenceEstimator, ConformalKNNConfidenceEstimator, JacknifeConfidenceEstimator
-from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
+from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     num_repeats = 10
     # loads the data just like CSVDataLoader, but a selection of the data
 
-    dataset = PreviousScopeFeaturesDataManager().run()  # run() calls _transform()
+    dataset = get_default_datamanager_configuration().run()  # run() calls _transform()
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
     for i in tqdm.tqdm(range(num_repeats), desc="Overall"):
         SPLIT_1 = bag.scope_1

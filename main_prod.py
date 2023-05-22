@@ -8,8 +8,9 @@ from sklearn.preprocessing import PowerTransformer
 
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
+from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
-from datasources.core import PreviousScopeFeaturesDataManager
+from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
@@ -23,7 +24,7 @@ from datasources.local import LocalDatasource
 from lar_calculator.lar_model import OxariUnboundLAR
 from pymongo import TEXT, DESCENDING, ASCENDING
 
-DATA_DIR = pathlib.Path('local/data')
+DATA_DIR = pathlib.Path('model-data/data/input')
 
 DATE_FORMAT = 'T%Y%m%d'
 
@@ -32,28 +33,22 @@ N_STARTUP_TRIALS = 5
 STAGE = "p_"
 
 # TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)
-# TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_) 
-# TODO: Use constant STAGE to specify names for intermediate savings (p_, q_, t_, d_) 
+# TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_)
+# TODO: Use constant STAGE to specify names for intermediate savings (p_, q_, t_, d_)
 # TODO: Modify saver to save all generated dataframes in OXariDataManager
 # TODO: Reverse date format for saving
 # TODO: Change MongoDb destiantion so that path is incorporated (Split by "database-name/collection-name")
 # TODO: Remove redundant lar step from other main_* experiments too
-# TODO: Introduce OxariPostprocessing piepline 
-# TODO: Extend CLI Runner to also include a training option  
+# TODO: Introduce OxariPostprocessing piepline
+# TODO: Extend CLI Runner to also include a training option
 # TODO: Delete all model results and run experiments again
 # TODO: Convert some of the main_*.py scripts to experiments.
 
 if __name__ == "__main__":
     today = time.strftime(DATE_FORMAT)
 
-    dataset = PreviousScopeFeaturesDataManager(
-        LocalDatasource(path='model-data/input/scopes_auto.csv'),
-        LocalDatasource(path='model-data/input/financials_auto.csv'),
-        LocalDatasource(path='model-data/input/categoricals_auto.csv'),
-        other_loaders=[RegionLoader()]
-    ).run()
+    dataset = get_default_datamanager_configuration().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    # X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
     SPLIT_1 = bag.scope_1
     SPLIT_2 = bag.scope_2
@@ -168,18 +163,24 @@ if __name__ == "__main__":
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
     all_data_scope_imputations = [
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
+            LocalDestination(path="model-data/output")),
         # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING, "key_year":ASCENDING})),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations").set_object(df).set_datatarget(
+            MongoDestination(path="model-data/output", index={
+                "key_isin": ASCENDING,
+                "key_year": ASCENDING
+            })),
     ]
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_LARS)
     all_data_lar_imputations = [
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(
+            LocalDestination(path="model-data/output")),
         # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING})),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)
+                              ).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin": ASCENDING})),
     ]
-
 
     SavingManager = OxariSavingManager(
         *all_meta_models,

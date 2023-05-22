@@ -6,7 +6,7 @@ import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
 from base.dataset_loader import CompanyDataFilter, SimpleDataFilter
 from base.helper import LogTargetScaler
-from datasources.core import DefaultDataManager
+from datasources.core import DefaultDataManager, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource
@@ -28,11 +28,7 @@ if __name__ == "__main__":
     # - Vertical interpolation interpolates the NA's the column independently of other columns. Usually grouped by company.
     # - Horizontal interpolation does not take any other row into account for imputation. Basically making it time-independent.
     difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    dataset = DefaultDataManager(
-        S3Datasource(path='model-input-data/scopes_auto.csv'),
-        S3Datasource(path='model-input-data/financials_auto.csv'),
-        S3Datasource(path='model-input-data/categoricals_auto.csv'),
-    ).set_filter(CompanyDataFilter(1, drop_single_rows=False)).run()
+    dataset = get_small_datamanager_configuration().run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
         # BaselineImputer(),

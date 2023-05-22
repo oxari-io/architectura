@@ -5,9 +5,10 @@ from typing import Dict, List
 import pandas as pd
 
 from base.constants import DATA_DIR
-from base.dataset_loader import (CategoricalLoader, Datasource,
+from base.dataset_loader import (CategoricalLoader, CompanyDataFilter, Datasource,
                                  FinancialLoader, OxariDataManager,
                                  PartialLoader, ScopeLoader)
+from datasources.loaders import RegionLoader
 from datasources.local import LocalDatasource
 
 
@@ -17,17 +18,11 @@ class DefaultDataManager(OxariDataManager):
     # TODO: Test if all combinations of loaders work (exclude standard loaders)
     # TODO: Introduce another file which has all the ISIN-YEAR keys
     def __init__(self,
-                 scope_loader: Datasource = LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
-                 financial_loader: Datasource = LocalDatasource(path=DATA_DIR / "financials_auto.csv"),
-                 categorical_loader: Datasource = LocalDatasource(path=DATA_DIR / "categoricals_auto.csv"),
-                 other_loaders: List[PartialLoader] = [],
+                 *loaders: PartialLoader,
                  verbose=False,
                  **kwargs):
         super().__init__(
-            scope_loader=ScopeLoader(datasource=scope_loader),
-            financial_loader=FinancialLoader(datasource=financial_loader),
-            categorical_loader=CategoricalLoader(datasource=categorical_loader),
-            other_loaders=other_loaders,
+            *loaders,
             verbose=verbose,
             **kwargs,
         )
@@ -54,3 +49,20 @@ class PreviousScopeFeaturesDataManager(DefaultDataManager):
         self.logger.info("Taking all previous year scopes")
         df:pd.DataFrame = df.sort_values(key_cols, ascending=True).groupby('key_isin', group_keys=False).progress_apply(self._take_previous_scopes)
         return super()._transform(df)
+
+
+def get_default_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    )
+
+def get_small_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    ).set_filter(CompanyDataFilter())

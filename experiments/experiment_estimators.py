@@ -1,3 +1,4 @@
+from datasources.core import get_small_datamanager_configuration
 from pipeline.core import DefaultPipeline, FSExperimentPipeline
 from dataset_loader.csv_loader import FSExperimentDataLoader, DefaultDataManager
 from base import OxariDataManager, OxariSavingManager, LocalMetaModelSaver, LocalLARModelSaver, LocalDataSaver
@@ -27,7 +28,7 @@ if __name__ == "__main__":
         # configurations = [MiniModelArmyEstimator(), MiniModelPartyEstimator(), BaselineEstimator(), PredictMedianEstimator()]
         configurations = [ MLPEstimator()]
         # configurations = [SupportVectorEstimator(), XGBEstimator(), SGDEstimator(), DummyEstimator()]
-        dataset = DefaultDataManager().run()  # run() calls _transform()
+        dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         SPLIT_2 = bag.scope_2

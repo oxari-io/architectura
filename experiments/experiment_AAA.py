@@ -6,7 +6,7 @@ import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.dataset_loader import SplitBag
 from base.helper import ArcSinhTargetScaler, DummyTargetScaler, LogTargetScaler
-from datasources.core import FSExperimentDataLoader, PreviousScopeFeaturesDataManager
+from datasources.core import FSExperimentDataLoader, PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAnalysisFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer, SparseRandProjectionFeatureReducer)
 from feature_reducers.core import LDAFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     print("results file: ", results_file)
 
     all_results = []  # dictionary where key=feature selection method, value = evaluation results
-    dataset = PreviousScopeFeaturesDataManager().run()
+    dataset = get_default_datamanager_configuration().run()
     for i in range(num_reps):
         model_list = [
             # DummyEstimator(n_trials=5, n_startup_trials=5),

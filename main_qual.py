@@ -10,7 +10,7 @@ from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
-from datasources.core import PreviousScopeFeaturesDataManager
+from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
@@ -49,12 +49,7 @@ STAGE = "p_"
 if __name__ == "__main__":
     today = time.strftime(DATE_FORMAT)
 
-    dataset = PreviousScopeFeaturesDataManager(
-        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
-        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
-        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
-        RegionLoader(),
-    ).run()
+    dataset = get_default_datamanager_configuration().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

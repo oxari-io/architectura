@@ -8,6 +8,7 @@ from base.constants import DATA_DIR
 from base.dataset_loader import (CategoricalLoader, Datasource,
                                  FinancialLoader, OxariDataManager,
                                  PartialLoader, ScopeLoader)
+from datasources.loaders import RegionLoader
 from datasources.local import LocalDatasource
 
 
@@ -48,3 +49,12 @@ class PreviousScopeFeaturesDataManager(DefaultDataManager):
         self.logger.info("Taking all previous year scopes")
         df:pd.DataFrame = df.sort_values(key_cols, ascending=True).groupby('key_isin', group_keys=False).progress_apply(self._take_previous_scopes)
         return super()._transform(df)
+
+
+def get_default_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    )

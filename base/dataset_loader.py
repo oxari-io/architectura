@@ -51,6 +51,7 @@ class Datasource(OxariLoggerMixin, abc.ABC):
 class PartialLoader(OxariLoggerMixin, abc.ABC):
     PATTERN = ""
     COL_MAPPING = {}
+
     def __init__(self, datasource: Datasource = None, verbose=False, **kwargs) -> None:
         super().__init__()
         self.verbose = verbose
@@ -89,12 +90,12 @@ class PartialLoader(OxariLoggerMixin, abc.ABC):
         return self
 
     def load(self, **kwargs) -> Self:
-        # TODO: Add caching here! 
+        # TODO: Add caching here!
         # 1. create .caching folder if not exist
         # 2. specify standard file name for loader based on loader name
         # 3. save loaded data after load function
         # 4. on subsquent load check if file exits locally and load if it does
-        # 5. on error save what ever was successfully loaded to caching folder 
+        # 5. on error save what ever was successfully loaded to caching folder
         self.logger.info(f'Loading...')
         stime = time.time()
         self._load(**kwargs)
@@ -300,10 +301,12 @@ class SimpleDataFilter(DataFilter):
         self.logger.info(f'Filtered dataset from {len(X)} to {len(X_new)} data points')
         return X_new
 
+
 class CompanyDataFilter(DataFilter):
+
     def __init__(self, frac: float = 0.1, drop_single_rows=False, name=None, **kwargs) -> None:
         super().__init__(frac, name, **kwargs)
-        self.drop_single_rows=drop_single_rows
+        self.drop_single_rows = drop_single_rows
 
     def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
         if self.drop_single_rows:
@@ -342,13 +345,13 @@ class OxariDataManager(OxariMixin):
 
     def __init__(
             self,
-            *loaders: List[PartialLoader],
+            *loaders: PartialLoader,
             data_filter: DataFilter = DataFilter(),
             verbose=False,
             **kwargs,
     ):
         super().__init__(**kwargs)
-        self.loaders = loaders
+        self.loaders = list(loaders)
         self.data_filter = data_filter
         self.verbose = verbose
         self._dataset_stack = []
@@ -376,19 +379,6 @@ class OxariDataManager(OxariMixin):
         self.col_others = list(_df_original.columns.difference(self.col_targets).difference(self.col_features))
         return self
 
-    # def _reduced(self, df, **kwargs):
-    #     num_inititial = df.shape[0]
-    #     tmp_targets = [col for col in df.columns if col.startswith("tg_")]
-    #     # tmp_keys = [col for col in df.columns if col.startswith("key_")]
-    #     # dropping datapoints that have no scopes
-    #     df = df.dropna(how="all", subset=tmp_targets)
-    #     # dropping all data points with leaky keys
-    #     # df = df.dropna(how="any", subset=tmp_keys)
-
-    #     num_remaining = df.shape[0]
-    #     self.logger.info(f"From {num_inititial} initial data points removed {num_inititial - num_remaining} data points.")
-    #     return df
-
     #TODO: JUST OVERWRITE THIS ONE
     def _transform(self, df, **kwargs):
         return df.drop_duplicates(['key_isin', 'key_year'])
@@ -397,6 +387,13 @@ class OxariDataManager(OxariMixin):
         self.logger.info(f"Added {name} to {self.__class__.__name__}")
         self._dataset_stack.append((name, df, descr))
         return df
+
+    def add_loader(self, loader: PartialLoader, to_beginning=False):
+        if not to_beginning:
+            self.loaders.append(loader)
+        if to_beginning:
+            self.loaders.insert(0, loader)
+        return self
 
     @property
     def data(self) -> pd.DataFrame:

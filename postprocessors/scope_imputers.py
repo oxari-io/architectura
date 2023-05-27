@@ -14,7 +14,7 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
     def __init__(self, estimator: OxariMetaModel, **kwargs):
         super().__init__(**kwargs)
         self.estimator = estimator
-        self.jump_rate_evaluator = JumpRateEvaluator(self.estimator)
+        self.jump_rate_evaluator = kwargs.get('jump_rate_evaluator') or JumpRateEvaluator(self.estimator)
         self.imputed = {"tg_numc_scope_1": "N/A", "tg_numc_scope_2": "N/A", "tg_numc_scope_3": "N/A"}
 
     def run(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
@@ -96,3 +96,4 @@ class JumpRateEvaluator(OxariLoggerMixin):
         self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('key_isin').agg(['median', 'mean', 'std', 'max', 'min'])
         self.jump_rates_agg.columns = self.jump_rates_agg.columns.map('|'.join).str.strip('|')
         return self
+    

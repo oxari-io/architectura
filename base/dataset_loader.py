@@ -222,7 +222,7 @@ class SplitBag():
     class Pair:
 
         def __init__(self, X, y) -> None:
-            self.X = X
+            self.X:pd.DataFrame = X
             self.y = y
             self._iter = [self.X, self.y]
 
@@ -380,8 +380,9 @@ class OxariDataManager(OxariMixin):
         return self
 
     #TODO: JUST OVERWRITE THIS ONE
-    def _transform(self, df, **kwargs):
-        return df.drop_duplicates(['key_isin', 'key_year'])
+    def _transform(self, df:pd.DataFrame, **kwargs):
+        # key_cols = list(df.columns[df.columns.str.startswith('key')])
+        return df.drop_duplicates(['key_isin', 'key_year']).sort_values(['key_isin', 'key_year'], ascending=True)
 
     def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> pd.DataFrame:
         self.logger.info(f"Added {name} to {self.__class__.__name__}")

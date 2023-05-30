@@ -72,28 +72,28 @@ if __name__ == "__main__":
     num_repeats = 20
     # loads the data just like CSVDataLoader, but a selection of the data
 
-    dataset = TemporalFeaturesDataManager(
-        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
-        RegionLoader(),
-    ).set_filter(CompanyDataFilter(1, drop_single_rows=True)).run()  # run() calls _transform()
-    evaluator = DefaultRegressorEvaluator()
-
-    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
-    len_powerset = len(list(powerset([1, 2, 3, 4])))
-    pbar = tqdm.tqdm(total=num_repeats * len_powerset, desc="Overall")
-    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    pbar = tqdm.tqdm(total=num_repeats * len(list(powerset([1,2,3,4]))), desc="Overall")
 
     for i in range(num_repeats):
+        dataset = TemporalFeaturesDataManager(
+            FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
+            ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
+            CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+            RegionLoader(),
+        ).set_filter(CompanyDataFilter(0.25, drop_single_rows=True)).run()  # run() calls _transform()
+        evaluator = DefaultRegressorEvaluator()
+
+        bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+        DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+        columns = set(DATA.filter(regex=f"^{PreviousScopeFeaturesDataManager.PREFIX}", axis=1).columns)
+        columns.add("ft_numd_year")
+        all_combinations = list(powerset(columns))
+        all_combinations.reverse()
         SPLIT_1 = bag.scope_1
         SPLIT_2 = bag.scope_2
         SPLIT_3 = bag.scope_3
 
         X, y = SPLIT_1.train
-        columns = set(X.filter(regex=f"^{PreviousScopeFeaturesDataManager.PREFIX}", axis=1).columns)
-        columns.add("ft_numd_year")
-        all_combinations = powerset(columns)
 
         for to_drop in all_combinations:
 
@@ -103,8 +103,8 @@ if __name__ == "__main__":
             X_train, y_train = SPLIT_1.train
             X_val, y_val = SPLIT_1.val
 
-            X_train: pd.DataFrame = X_train.drop(list(to_drop), axis=1) if len(to_drop) else X_train
-            X_val: pd.DataFrame = X_val.drop(list(to_drop), axis=1) if len(to_drop) else X_val
+            X_train_normal: pd.DataFrame = X_train.drop(list(to_drop), axis=1) if len(to_drop) else X_train
+            X_val_normal: pd.DataFrame = X_val.drop(list(to_drop), axis=1) if len(to_drop) else X_val
 
             start = time.time()
             remaining_cols = "|".join(columns.difference(to_drop))
@@ -116,11 +116,11 @@ if __name__ == "__main__":
                 scope_estimator=MiniModelArmyEstimator(),
                 ci_estimator=None,
                 scope_transformer=LogTargetScaler(),
-            ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.train, *SPLIT_1.val)
+            ).optimise(X_train_normal, y_train).fit(X_train_normal, y_train).evaluate(X_train_normal, y_train, X_val_normal, y_val)
 
             # CLUELESS PREDICTION
-            X_val_no_info = X_val.copy().drop(list(columns), axis=1, errors='ignore')
-            clueless_results = evaluator.evaluate(y_val.values, ppl1.predict(X_val_no_info))
+            X_val_clueless = X_val.copy().drop(list(columns), axis=1, errors='ignore')
+            clueless_results = evaluator.evaluate(y_val.values, ppl1.predict(X_val_clueless))
 
             # JUMP RATE EVALUATION
             jr_results = evaluate_jump_rates(ppl1, DATA.copy())

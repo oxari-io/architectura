@@ -33,32 +33,32 @@ def keep_important_cols(df):
 # %%
 cwd = pathlib.Path(__file__).parent
 
-# dataset = PreviousScopeFeaturesDataManager(
-#         FinancialLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/financials_auto.csv")),
-#         ScopeLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/scopes_auto.csv")),
-#         CategoricalLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/categoricals_auto.csv")),
-#         RegionLoader(),
-#     ).set_filter(CompanyDataFilter(1, True)).run()
-# # %%
-# DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-# bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
-# SPLIT_1 = bag.scope_1
-# SPLIT_2 = bag.scope_2
-# SPLIT_3 = bag.scope_3
+dataset = PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    ).set_filter(CompanyDataFilter(1, True)).run()
+# %%
+DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+SPLIT_1 = bag.scope_1
+SPLIT_2 = bag.scope_2
+SPLIT_3 = bag.scope_3
 
-# company = list(set(DATA.key_isin))
+company = list(set(DATA.key_isin))
 
-# X,y = SPLIT_1.train
-# X
+X,y = SPLIT_1.train
+X
 
-# # %%
-# preprocessor = IIDPreprocessor(fin_transformer=PowerTransformer()).set_imputer(RevenueQuantileBucketImputer(5)).fit(X, y)
-# data_preprocessed = preprocessor.transform(DATA)
-# data_preprocessed
-# # %%
-# my_imputer = DerivativeMissingYearImputer().fit(data_preprocessed)
-# DATA_FOR_IMPUTE = my_imputer.transform(data_preprocessed)
-# DATA_FOR_IMPUTE
+# %%
+preprocessor = IIDPreprocessor(fin_transformer=PowerTransformer()).set_imputer(RevenueQuantileBucketImputer(5)).fit(X, y)
+data_preprocessed = preprocessor.transform(DATA)
+data_preprocessed
+# %%
+my_imputer = DerivativeMissingYearImputer().fit(data_preprocessed)
+DATA_FOR_IMPUTE = my_imputer.transform(data_preprocessed)
+DATA_FOR_IMPUTE
 # %%
 data_scope_inputed = pd.read_csv(cwd.parent/'local/prod_runs/model_imputations_T202306031714.csv', index_col=0)
 data_scope_inputed

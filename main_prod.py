@@ -105,15 +105,17 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
 
-    # print("\n", "Missing Year Imputation")
-    # data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
-    # my_imputer = DerivativeMissingYearImputer().fit(data_filled)
-    # DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
+    DATA_FOR_IMPUTE = DATA
+
+    print("\n", "Missing Year Imputation")
+    data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
+    my_imputer = DerivativeMissingYearImputer().fit(data_filled)
+    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
 
     print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA)
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE)
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    scope_imputer.data.merge(DATA, left_on=["key_isin", "key_year"]).to_csv(f'local/prod_runs/model_imputations_{now}.csv')
+    scope_imputer.data.merge(DATA, how='left', on=["key_isin", "key_year"]).to_csv(f'local/prod_runs/model_imputations_{now}.csv')
 
 
     # print('Compute jump rates')

@@ -64,7 +64,7 @@ if __name__ == "__main__":
         imputer=RevenueQuantileBucketImputer(10),
         scope_estimator=MiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=DummyTargetScaler(),
+        scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
@@ -96,9 +96,9 @@ if __name__ == "__main__":
     ### EVALUATION RESULTS ###
     print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
-    print(eval_results)
+    print(eval_results.T)
     eval_results.T.to_csv(f'local/prod_runs/model_pipelines_{now}.csv')
-    print("Predict with Pipeline")
+    # print("Predict with Pipeline")
     # print(dp1.predict(X))
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
@@ -109,10 +109,13 @@ if __name__ == "__main__":
     DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
 
     print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE).evaluate()
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE)
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
-    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
+    
+    # print('Compute jump rates')
+    # scope_imputer.evaluate()
+    # dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
+    # dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
 
     # scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates.csv')
     # scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg.csv')
@@ -169,18 +172,18 @@ if __name__ == "__main__":
     #     PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
     # ]
 
-    # df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
-    # all_data_scope_imputations = [
-    #     CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
-    #         LocalDestination(path="model-data/output")),
-    #     CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
-    #         S3Destination(path="model-data/output")),
-    #     MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations").set_object(df).set_datatarget(
-    #         MongoDestination(path="model-data/output", index={
-    #             "key_isin": ASCENDING,
-    #             "key_year": ASCENDING
-    #         })),
-    # ]
+    df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
+    all_data_scope_imputations = [
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
+            LocalDestination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
+        #     S3Destination(path="model-data/output")),
+        # MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations").set_object(df).set_datatarget(
+        #     MongoDestination(path="model-data/output", index={
+        #         "key_isin": ASCENDING,
+        #         "key_year": ASCENDING
+        #     })),
+    ]
 
     # df = dataset.get_data_by_name(OxariDataManager.IMPUTED_LARS)
     # all_data_lar_imputations = [

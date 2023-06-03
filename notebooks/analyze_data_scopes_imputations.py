@@ -60,7 +60,7 @@ cwd = pathlib.Path(__file__).parent
 # DATA_FOR_IMPUTE = my_imputer.transform(data_preprocessed)
 # DATA_FOR_IMPUTE
 # %%
-data_scope_inputed = pd.read_csv(cwd.parent/'model-data/output/T20230602_p_scope_imputations.csv', index_col=0)
+data_scope_inputed = pd.read_csv(cwd.parent/'model-data/output/T20230603_p_scope_imputations.csv', index_col=0)
 data_scope_inputed
  
 # %%

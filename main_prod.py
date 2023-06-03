@@ -18,7 +18,7 @@ from imputers import RevenueQuantileBucketImputer
 from imputers.iterative import OldOxariImputer
 from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
-from postprocessors.missing_year_imputers import DerivativeMissingYearImputer
+from postprocessors.missing_year_imputers import DerivativeMissingYearImputer, SimpleMissingYearImputer
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
 from datasources.online import S3Datasource
@@ -109,13 +109,13 @@ if __name__ == "__main__":
 
     print("\n", "Missing Year Imputation")
     data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
-    my_imputer = DerivativeMissingYearImputer().fit(data_filled)
+    my_imputer = SimpleMissingYearImputer().fit(data_filled)
     DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
 
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE)
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    scope_imputer.data.merge(DATA, how='left', on=["key_isin", "key_year"]).to_csv(f'local/prod_runs/model_imputations_{now}.csv')
+    scope_imputer.data.merge(DATA, how='left', on=["key_isin", "key_year"], suffixes=[None, "_y"]).to_csv(f'local/prod_runs/model_imputations_{now}.csv')
 
 
     # print('Compute jump rates')

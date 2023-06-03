@@ -60,7 +60,7 @@ cwd = pathlib.Path(__file__).parent
 # DATA_FOR_IMPUTE = my_imputer.transform(data_preprocessed)
 # DATA_FOR_IMPUTE
 # %%
-data_scope_inputed = pd.read_csv(cwd.parent/'local/prod_runs/model_imputations_T202306031102.csv', index_col=0)
+data_scope_inputed = pd.read_csv(cwd.parent/'local/prod_runs/model_imputations_T202306031148.csv', index_col=0)
 data_scope_inputed
  
 # %%
@@ -95,8 +95,8 @@ df_scopes
 
 # %%
 for idx, df_grp in df_scopes.groupby('key_isin'):
-    ax = sns.lineplot(data=df_grp, y='tg_numc_scope_1', x='key_year', color='grey')
-    sns.scatterplot(data=df_grp, y='tg_numc_scope_1', x='key_year', hue='predicted_s1')
+    ax = sns.lineplot(data=df_grp, y=col_to_normalize, x='key_year', color='grey')
+    sns.scatterplot(data=df_grp, y=col_to_normalize, x='key_year', hue='predicted_s1')
     ax.set_title(idx)
     plt.show()
 # %%
@@ -115,8 +115,8 @@ plt.show()
 company = df_scopes.key_isin.unique()
 idx = 0
 fig, ax= plt.subplots(1,1, figsize=(13,8))
-sns.lineplot(data=get_company(data_scope_inputed, company[idx]),y='tg_numc_scope_1', x='key_year', hue='key_isin', legend=False)
-sns.scatterplot(data=get_company(data_scope_inputed, company[idx]),y='tg_numc_scope_1', x='key_year', hue='predicted_s1', s=100)
+sns.lineplot(data=get_company(data_scope_inputed, company[idx]),y=col_to_normalize, x='key_year', hue='key_isin', legend=False)
+sns.scatterplot(data=get_company(data_scope_inputed, company[idx]),y=col_to_normalize, x='key_year', hue='predicted_s1', s=100)
 plt.show()
 # %%
 get_company(df_scopes, company[idx]).iloc[:, [1,2,3, 4, 6,7]]

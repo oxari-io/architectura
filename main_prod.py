@@ -9,14 +9,16 @@ from sklearn.preprocessing import PowerTransformer
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
-from base.helper import LogTargetScaler
+from base.helper import DummyTargetScaler, LogTargetScaler
 from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer
+from imputers.iterative import OldOxariImputer
 from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
+from postprocessors.missing_year_imputers import DerivativeMissingYearImputer
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
 from datasources.online import S3Datasource
@@ -28,7 +30,7 @@ DATA_DIR = pathlib.Path('model-data/data/input')
 
 DATE_FORMAT = 'T%Y%m%d'
 
-N_TRIALS = 5
+N_TRIALS = 20
 N_STARTUP_TRIALS = 5
 STAGE = "p_"
 
@@ -58,26 +60,26 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        imputer=RevenueQuantileBucketImputer(10),
         scope_estimator=MiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogTargetScaler(),
+        scope_transformer=DummyTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        imputer=RevenueQuantileBucketImputer(10),
         scope_estimator=MiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogTargetScaler(),
+        scope_transformer=DummyTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        imputer=RevenueQuantileBucketImputer(10),
         scope_estimator=MiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=LogTargetScaler(),
+        scope_transformer=DummyTargetScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
 
     model = OxariMetaModel()
@@ -100,8 +102,13 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
 
+    print("\n", "Missing Year Imputation")
+    data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
+    my_imputer = DerivativeMissingYearImputer().fit(data_filled)
+    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
+
     print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE).evaluate()
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
     dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
@@ -153,19 +160,20 @@ if __name__ == "__main__":
 
     all_meta_models = [
         PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
-        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     all_lar_models = [
         PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(LocalDestination(path="model-data/output")),
-        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
     all_data_scope_imputations = [
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
             LocalDestination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
+            S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations").set_object(df).set_datatarget(
             MongoDestination(path="model-data/output", index={
                 "key_isin": ASCENDING,
@@ -177,7 +185,7 @@ if __name__ == "__main__":
     all_data_lar_imputations = [
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(
             LocalDestination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(DATE_FORMAT)
                               ).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin": ASCENDING})),
     ]

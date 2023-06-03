@@ -46,12 +46,7 @@ if __name__ == "__main__":
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
 
-    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    X = dataset.get_features(OxariDataManager.ORIGINAL)
-    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
-    SPLIT_1 = bag.scope_1
-    SPLIT_2 = bag.scope_2
-    SPLIT_3 = bag.scope_3
+
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(

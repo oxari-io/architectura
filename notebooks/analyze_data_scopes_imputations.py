@@ -23,7 +23,7 @@ from base import OxariDataManager
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from datasources.online import S3Datasource
 # sns.set_palette('viridis')
-
+pd.set_option('display.float_format', lambda x: '%.5f' % x)
 def get_company(df, key_isin):
     return df[df.key_isin==key_isin]
 def keep_important_cols(df):
@@ -111,12 +111,19 @@ plt.show()
 #     sns.scatterplot(data=df_grp, y='tg_numc_scope_1', x='key_year', hue='predicted_s1')
 #     plt.show()
 # %%
+
 company = df_scopes.key_isin.unique()
-idx = 4
+idx = 0
 fig, ax= plt.subplots(1,1, figsize=(13,8))
 sns.lineplot(data=get_company(data_scope_inputed, company[idx]),y='tg_numc_scope_1', x='key_year', hue='key_isin', legend=False)
 sns.scatterplot(data=get_company(data_scope_inputed, company[idx]),y='tg_numc_scope_1', x='key_year', hue='predicted_s1', s=100)
 plt.show()
 # %%
 get_company(df_scopes, company[idx]).iloc[:, [1,2,3, 4, 6,7]]
+# %%
+get_company(df_scopes, company[idx+1]).iloc[:, [1,2,3, 4, 6,7]]
+
+# %%
+get_company(df_scopes, company[idx+2]).iloc[:, [1,2,3, 4, 6,7]]
+
 # %%

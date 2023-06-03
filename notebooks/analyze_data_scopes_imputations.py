@@ -60,7 +60,7 @@ cwd = pathlib.Path(__file__).parent
 # DATA_FOR_IMPUTE = my_imputer.transform(data_preprocessed)
 # DATA_FOR_IMPUTE
 # %%
-data_scope_inputed = pd.read_csv(cwd.parent/'local/prod_runs/model_imputations_T202306031201.csv', index_col=0)
+data_scope_inputed = pd.read_csv(cwd.parent/'local/prod_runs/model_imputations_T202306031632.csv', index_col=0)
 data_scope_inputed
  
 # %%
@@ -104,26 +104,21 @@ fig, ax= plt.subplots(1,1, figsize=(20,8))
 sns.lineplot(data=df_scopes,y='normalized_scope_1', x='key_year', hue='key_isin', legend=False)
 sns.scatterplot(data=df_scopes,y='normalized_scope_1', x='key_year', hue='key_isin', style='predicted_s1', s=100)
 plt.show()
-# for idx, df_grp in df_scopes.groupby('key_isin'):
-#     df_tmp = df_grp.copy()
-#     df_tmp['tg_numc_scope_1']
-#     sns.lineplot(data=df_grp, y='tg_numc_scope_1', x='key_year', color='grey', ax=ax)
-#     sns.scatterplot(data=df_grp, y='tg_numc_scope_1', x='key_year', hue='predicted_s1')
-#     plt.show()
-# %%
-
-company = df_scopes.key_isin.unique()
-idx = 0
-fig, ax= plt.subplots(1,1, figsize=(13,8))
-sns.lineplot(data=get_company(data_scope_inputed, company[idx]),y=col_to_normalize, x='key_year', hue='key_isin', legend=False)
-sns.scatterplot(data=get_company(data_scope_inputed, company[idx]),y=col_to_normalize, x='key_year', hue='predicted_s1', s=100)
-plt.show()
-# %%
-get_company(df_scopes, company[idx]).iloc[:, [1,2,3, 4, 6,7]]
-# %%
-get_company(df_scopes, company[idx+1]).iloc[:, [1,2,3, 4, 6,7]]
 
 # %%
-get_company(df_scopes, company[idx+2]).iloc[:, [1,2,3, 4, 6,7]]
+from IPython.display import display
+# company = df_scopes.key_isin.unique()
+def display_company(data_scope_inputed, col_to_normalize):
+    fig, ax= plt.subplots(1,1, figsize=(13,8))
+    sns.lineplot(data=data_scope_inputed,y=col_to_normalize, x='key_year', hue='key_isin', legend=False)
+    sns.scatterplot(data=data_scope_inputed,y=col_to_normalize, x='key_year', hue='predicted_s1', s=100)
+    display(data_scope_inputed.iloc[:, [2,0,3, 4, 6,7]])
+    plt.show()
+
+display_company(get_company(data_scope_inputed, 'US1720621010'), col_to_normalize)
+# %%
+display_company(get_company(data_scope_inputed, 'ZAE000003257'), col_to_normalize)
+# %%
+display_company(get_company(data_scope_inputed, 'ZAE000203238'), col_to_normalize)
 
 # %%

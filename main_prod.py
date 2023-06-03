@@ -61,26 +61,26 @@ if __name__ == "__main__":
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
+        preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=MiniModelArmyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
+        preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=MiniModelArmyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=DummyTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
+        preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=MiniModelArmyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=DummyTargetScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
@@ -107,10 +107,10 @@ if __name__ == "__main__":
 
     DATA_FOR_IMPUTE = DATA
 
-    print("\n", "Missing Year Imputation")
-    data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
-    my_imputer = SimpleMissingYearImputer().fit(data_filled)
-    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
+    # print("\n", "Missing Year Imputation")
+    # data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
+    # my_imputer = SimpleMissingYearImputer().fit(data_filled)
+    # DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
 
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE)

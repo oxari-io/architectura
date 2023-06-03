@@ -107,10 +107,10 @@ if __name__ == "__main__":
 
     DATA_FOR_IMPUTE = DATA
 
-    # print("\n", "Missing Year Imputation")
-    # data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
-    # my_imputer = SimpleMissingYearImputer().fit(data_filled)
-    # DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
+    print("\n", "Missing Year Imputation")
+    data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
+    my_imputer = SimpleMissingYearImputer().fit(data_filled)
+    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
 
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE)

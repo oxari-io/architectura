@@ -56,8 +56,8 @@ preprocessor = IIDPreprocessor(fin_transformer=PowerTransformer()).set_imputer(R
 data_preprocessed = preprocessor.transform(DATA)
 data_preprocessed
 # %%
-my_imputer = DerivativeMissingYearImputer().fit(data_preprocessed)
-DATA_FOR_IMPUTE = my_imputer.transform(data_preprocessed)
+my_imputer = DerivativeMissingYearImputer().fit(DATA)
+DATA_FOR_IMPUTE = my_imputer.transform(DATA)
 DATA_FOR_IMPUTE
 # %%
 data_scope_inputed = pd.read_csv(cwd.parent/'local/prod_runs/model_imputations_T202306031714.csv', index_col=0)

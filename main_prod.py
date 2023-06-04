@@ -64,7 +64,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=SupportVectorEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=SupportVectorEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=SupportVectorEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=SupportVectorEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=DummyTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=SupportVectorEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=SupportVectorEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=DummyTargetScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
@@ -108,9 +108,8 @@ if __name__ == "__main__":
     DATA_FOR_IMPUTE = DATA.copy()
 
     print("\n", "Missing Year Imputation")
-    data_filled = model.get_pipeline(1).preprocessor.transform(DATA)
-    my_imputer = SimpleMissingYearImputer().fit(data_filled)
-    DATA_FOR_IMPUTE = my_imputer.transform(data_filled)
+    my_imputer = SimpleMissingYearImputer().fit(DATA_FOR_IMPUTE)
+    DATA_FOR_IMPUTE = my_imputer.transform(DATA_FOR_IMPUTE)
 
     print("Impute scopes with Model")
     scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE)

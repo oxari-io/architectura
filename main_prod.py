@@ -10,6 +10,7 @@ from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
 from base.helper import DummyTargetScaler, LogTargetScaler
+from base.run_utils import compute_lar, impute_missing_years, impute_scopes
 from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
@@ -47,6 +48,11 @@ STAGE = "p_"
 # TODO: Extend CLI Runner to also include a training option
 # TODO: Delete all model results and run experiments again
 # TODO: Convert some of the main_*.py scripts to experiments.
+
+
+
+
+
 
 if __name__ == "__main__":
     today = time.strftime(DATE_FORMAT)
@@ -105,30 +111,19 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
 
+
+
     DATA_FOR_IMPUTE = DATA.copy()
-
-    print("\n", "Missing Year Imputation")
-    my_imputer = DerivativeMissingYearImputer().fit(DATA_FOR_IMPUTE)
-    DATA_FOR_IMPUTE = my_imputer.transform(DATA_FOR_IMPUTE)
-
-    print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE)
-    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    scope_imputer.data.merge(DATA, how='left', on=["key_isin", "key_year"], suffixes=[None, "_y"]).to_csv(f'local/prod_runs/model_imputations_{now}.csv')
+    DATA_FOR_IMPUTE = impute_missing_years(DATA_FOR_IMPUTE)
+    scope_imputer, imputed_data = impute_scopes(model, DATA_FOR_IMPUTE)
+    lar_model, lar_imputed_data = compute_lar(imputed_data)
 
     print('Compute jump rates')
-    scope_imputer.evaluate()
-    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
-    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
-
     scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates.csv')
     scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg.csv')
 
-    print("\n", "Predict LARs on Mock data")
-    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
-    print(lar_imputed_data)
+
+
 
     # print("Explain Effects of features")
     # explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=100).fit(*SPLIT_1.train).explain(*SPLIT_1.val)

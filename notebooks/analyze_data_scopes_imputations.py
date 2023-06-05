@@ -33,34 +33,34 @@ def keep_important_cols(df):
 # %%
 cwd = pathlib.Path(__file__).parent
 
-dataset = PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/categoricals_auto.csv")),
-        RegionLoader(),
-    ).set_filter(CompanyDataFilter(1, True)).run()
-# %%
-DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
-SPLIT_1 = bag.scope_1
-SPLIT_2 = bag.scope_2
-SPLIT_3 = bag.scope_3
+# dataset = PreviousScopeFeaturesDataManager(
+#         FinancialLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/financials_auto.csv")),
+#         ScopeLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/scopes_auto.csv")),
+#         CategoricalLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/categoricals_auto.csv")),
+#         RegionLoader(),
+#     ).set_filter(CompanyDataFilter(1, True)).run()
+# # %%
+# DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+# bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+# SPLIT_1 = bag.scope_1
+# SPLIT_2 = bag.scope_2
+# SPLIT_3 = bag.scope_3
 
-company = list(set(DATA.key_isin))
+# company = list(set(DATA.key_isin))
 
-X,y = SPLIT_1.train
-X
+# X,y = SPLIT_1.train
+# X
 
+# # %%
+# preprocessor = IIDPreprocessor(fin_transformer=PowerTransformer()).set_imputer(RevenueQuantileBucketImputer(5)).fit(X, y)
+# data_preprocessed = preprocessor.transform(DATA)
+# data_preprocessed
+# # %%
+# my_imputer = DerivativeMissingYearImputer().fit(DATA)
+# DATA_FOR_IMPUTE = my_imputer.transform(DATA)
+# DATA_FOR_IMPUTE
 # %%
-preprocessor = IIDPreprocessor(fin_transformer=PowerTransformer()).set_imputer(RevenueQuantileBucketImputer(5)).fit(X, y)
-data_preprocessed = preprocessor.transform(DATA)
-data_preprocessed
-# %%
-my_imputer = DerivativeMissingYearImputer().fit(DATA)
-DATA_FOR_IMPUTE = my_imputer.transform(DATA)
-DATA_FOR_IMPUTE
-# %%
-data_scope_inputed = pd.read_csv(cwd.parent/'local/prod_runs/model_imputations_T202306031714.csv', index_col=0)
+data_scope_inputed = pd.read_csv(cwd.parent/'local/prod_runs/model_imputations_T202306040920.csv', index_col=0)
 data_scope_inputed
  
 # %%
@@ -89,7 +89,7 @@ def sample_groups(df, group_by_col, num_groups, filter_col=None):
     return sampled_df
 
 col_to_normalize='tg_numc_scope_1'
-df_scopes = sample_groups(data_scope_inputed, 'key_isin', 20, filter_col='predicted_s1')
+df_scopes = sample_groups(data_scope_inputed, 'key_isin', 10, filter_col='predicted_s1')
 df_scopes['normalized_scope_1'] = df_scopes.groupby('key_isin')[col_to_normalize].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
 df_scopes
 
@@ -100,7 +100,7 @@ for idx, df_grp in df_scopes.groupby('key_isin'):
     ax.set_title(idx)
     plt.show()
 # %%
-fig, ax= plt.subplots(1,1, figsize=(20,8))
+fig, ax= plt.subplots(1,1, figsize=(20,10))
 sns.lineplot(data=df_scopes,y='normalized_scope_1', x='key_year', hue='key_isin', legend=False)
 sns.scatterplot(data=df_scopes,y='normalized_scope_1', x='key_year', hue='key_isin', style='predicted_s1', s=100)
 plt.show()
@@ -120,5 +120,7 @@ display_company(get_company(data_scope_inputed, 'US1720621010'), col_to_normaliz
 display_company(get_company(data_scope_inputed, 'ZAE000003257'), col_to_normalize)
 # %%
 display_company(get_company(data_scope_inputed, 'ZAE000203238'), col_to_normalize)
+# %%
+display_company(get_company(data_scope_inputed, 'CH0012549785'), col_to_normalize)
 
 # %%

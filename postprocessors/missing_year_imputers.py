@@ -38,7 +38,7 @@ class SimpleMissingYearImputer(OxariImputer):
         data_transformed: pd.DataFrame = data_extended.infer_objects().groupby(self.COL_GROUP, group_keys=False).progress_apply(self._interpolate).reset_index(drop=True)
         X_result = data_transformed.copy() 
         # Fill categorical vals
-        data_completed = data_transformed.filter(regex=f'^(ft_cat|{self.COL_GROUP})', axis=1).groupby(self.COL_GROUP, group_keys=False).apply(lambda x: x.bfill().ffill())
+        data_completed = data_transformed.filter(regex=f'^(ft_cat|{self.COL_GROUP}|key_country)', axis=1).groupby(self.COL_GROUP, group_keys=False).apply(lambda x: x.bfill().ffill())
         X_result[data_completed.columns] = data_completed[data_completed.columns].values
         return X_result
 

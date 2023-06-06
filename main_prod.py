@@ -10,7 +10,7 @@ from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
 from base.helper import DummyTargetScaler, LogTargetScaler
-from base.run_utils import compute_lar, impute_missing_years, impute_scopes
+from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
 from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
@@ -113,14 +113,7 @@ if __name__ == "__main__":
 
 
 
-    DATA_FOR_IMPUTE = DATA.copy()
-    DATA_FOR_IMPUTE = impute_missing_years(DATA_FOR_IMPUTE)
-    scope_imputer, imputed_data = impute_scopes(model, DATA_FOR_IMPUTE)
-    lar_model, lar_imputed_data = compute_lar(imputed_data)
 
-    print('Compute jump rates')
-    scope_imputer.jump_rates.to_csv('local/eval_results/model_jump_rates.csv')
-    scope_imputer.jump_rates_agg.to_csv('local/eval_results/model_jump_rates_agg.csv')
 
 
 
@@ -166,37 +159,9 @@ if __name__ == "__main__":
         PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
-    all_lar_models = [
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
-    ]
 
-    df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
-    all_data_scope_imputations = [
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
-            LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_scope_imputations").set_object(df).set_datatarget(
-            S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("p_scope_imputations").set_object(df).set_datatarget(
-            MongoDestination(path="model-data/output", index={
-                "key_isin": ASCENDING,
-                "key_year": ASCENDING
-            })),
-    ]
-
-    df = dataset.get_data_by_name(OxariDataManager.IMPUTED_LARS)
-    all_data_lar_imputations = [
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(
-            LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("p_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)
-                              ).set_name("p_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin": ASCENDING})),
-    ]
 
     SavingManager = OxariSavingManager(
         *all_meta_models,
-        *all_lar_models,
-        *all_data_scope_imputations,
-        *all_data_lar_imputations,
     )
     SavingManager.run()

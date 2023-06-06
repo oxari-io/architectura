@@ -8,13 +8,12 @@ import tqdm
 from base.common import OxariLoggerMixin
 
 
-
 class ScopeImputerPostprocessor(OxariPostprocessor):
 
     def __init__(self, estimator: OxariMetaModel, **kwargs):
         super().__init__(**kwargs)
         self.estimator = estimator
-        self.jump_rate_evaluator = kwargs.get('jump_rate_evaluator') or JumpRateEvaluator(self.estimator)
+        # self.jump_rate_evaluator = kwargs.get('jump_rate_evaluator') or JumpRateEvaluator(self.estimator)
         self.imputed = {"tg_numc_scope_1": "N/A", "tg_numc_scope_2": "N/A", "tg_numc_scope_3": "N/A"}
 
     def run(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
@@ -47,11 +46,11 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         self.data = data
         return self
 
-    def evaluate(self, **kwargs) -> Self:
-        self.jump_rate_evaluator.evaluate(self.data, **kwargs)
-        self.jump_rates = self.jump_rate_evaluator.jump_rates
-        self.jump_rates_agg = self.jump_rate_evaluator.jump_rates_agg
-        return self
+    # def evaluate(self, **kwargs) -> Self:
+    #     self.jump_rate_evaluator.evaluate(self.data, **kwargs)
+    #     self.jump_rates = self.jump_rate_evaluator.jump_rates
+    #     self.jump_rates_agg = self.jump_rate_evaluator.jump_rates_agg
+    #     return self
 
     def __repr__(self):
         return f"@{self.__class__.__name__}[ Count of imputed {self.imputed} ]"
@@ -59,9 +58,8 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
 
 class JumpRateEvaluator(OxariLoggerMixin):
 
-    def __init__(self, estimator: OxariMetaModel, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.estimator = estimator
         self.metrics = []
 
     def _compute_jump_rates(self, df_company: pd.DataFrame):
@@ -84,16 +82,18 @@ class JumpRateEvaluator(OxariLoggerMixin):
 
         return result_series
 
-    def evaluate(self, X: pd.DataFrame) -> Self:
+    def fit(self, X, y=None, **kwargs) -> Self:
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         companies = X.groupby('key_isin', group_keys=True)
         self.logger.info("Compute Jump Ratios (yearly)")
         jump_rates: pd.DataFrame = companies.progress_apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
-        self.logger.info("Compute Jump Ratios (aggregated)")
-        estimation_stats: pd.DataFrame = companies.progress_apply(self._compute_estimate_to_fact_ratio).reset_index()
-        self.logger.info("Merge yearly jum rates with aggregated stats")
-        self.jump_rates = jump_rates.merge(estimation_stats, left_on="key_isin", right_on="key_isin").drop('index', axis=1)
-        # self.jump_rates = self.jump_rates.drop('level_1', axis=1)
-        self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('key_isin').agg(['median', 'mean', 'std', 'max', 'min'])
-        self.jump_rates_agg.columns = self.jump_rates_agg.columns.map('|'.join).str.strip('|')
-        return self
-    
+        # self.logger.info("Compute Jump Ratios (aggregated)")
+        # estimation_stats: pd.DataFrame = companies.progress_apply(self._compute_estimate_to_fact_ratio).reset_index()
+        # self.logger.info("Merge yearly jum rates with aggregated stats")
+        # self.jump_rates = jump_rates.merge(estimation_stats, left_on="key_isin", right_on="key_isin").drop('index', axis=1)
+        # # self.jump_rates = self.jump_rates.drop('level_1', axis=1)
+        # self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('key_isin').agg(['median', 'mean', 'std', 'max', 'min'])
+        # self.jump_rates_agg.columns = self.jump_rates_agg.columns.map('|'.join).str.strip('|')
+        return jump_rates

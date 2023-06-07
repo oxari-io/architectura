@@ -32,7 +32,7 @@ MODEL_OUTPUT_DIR = pathlib.Path('model-data/output')
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
-    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(0.01)).run()
+    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20230604_p_model.pkl', 'rb'))
 

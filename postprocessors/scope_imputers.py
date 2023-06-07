@@ -37,9 +37,8 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         # TODO: Include logging how many predicted values where imputed.
 
         # retrieving only the relevant columns
-        meta_keys = list(data.columns[data.columns.str.startswith('key_')])
-        scope_keys = list(data.columns[data.columns.str.startswith('tg_numc_')])
-        data = data[meta_keys + scope_keys + ["predicted_s1", "predicted_s2", "predicted_s3"]]
+        meta_keys = list(data.filter(regex='^(key_|meta_|tg_numc_)', axis=1).columns)
+        data = data[meta_keys + ["predicted_s1", "predicted_s2", "predicted_s3"]]
         # how many unique companies?
         # print("Number of unique companies in the data: ", len(data["isin"].unique()))
         self.logger.debug(f"Number of unique companies in the data: {len(data['key_isin'].unique())}")

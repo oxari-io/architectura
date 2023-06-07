@@ -39,7 +39,7 @@ class SimpleMissingYearImputer(OxariImputer):
         filter_str = f'^(ft_cat|{self.COL_GROUP}|key_country)'
         data_completed = data_transformed.filter(regex=filter_str, axis=1).groupby(self.COL_GROUP, group_keys=False).apply(lambda x: x.bfill().ffill())
         X_result[data_completed.columns] = data_completed[data_completed.columns].values
-        X_result_marked = self.__mark_additional_rows(X_result, data, ['key_isin', 'key_year'], 'is_year_imputed')
+        X_result_marked = self.__mark_additional_rows(X_result, data, ['key_isin', 'key_year'], 'meta_is_imputed_year')
         return X_result_marked
 
     def _trim(self, df_company: pd.DataFrame):
@@ -123,12 +123,13 @@ class SimpleMissingYearImputer(OxariImputer):
         data_trimmed: pd.DataFrame = data_trimmed.groupby(self.COL_GROUP, group_keys=False).progress_apply(self._trim)
         data_trimmed = data_trimmed.reset_index(drop=True)
 
-        X_true = data_trimmed.infer_objects()
+        X_eval = data_trimmed.infer_objects()
+        X_true = X_eval.copy()
+
         X_true_features = X_true.filter(regex="^ft_num", axis=1)
         ft_cols = X_true_features.columns
 
         mask = list(it.chain(*X_true.groupby(self.COL_GROUP, group_keys=False).apply(self._get_drop_indices).values))
-        X_eval = X_true.copy()
         X_eval = X_eval.drop(mask)
 
         X_pred = self.transform(X_eval, **kwargs)

@@ -67,25 +67,25 @@ display(data_merged_with_input.describe().T)
 # %% [markdown]
 # ### Amount of imputed data counts
 # The amount of data points that where imputed.
-display(scope_imputer.data[["predicted_s1", "predicted_s2", "predicted_s3"]].sum())
+display(scope_imputer.data[["meta_is_pred_s1", "meta_is_pred_s2", "meta_is_pred_s3"]].sum())
 # %% [markdown]
 # ## Correlation Analysis
 # ### No predictions
 display("Scope 1 Correlation (no predictions)")
-display(data_merged_with_input[data_merged_with_input["predicted_s1"]==False][["tg_numc_scope_1_x", "ft_numc_revenue"]].corr())
+display(data_merged_with_input[data_merged_with_input["meta_is_pred_s1"]==False][["tg_numc_scope_1_x", "ft_numc_revenue"]].corr())
 display("Scope 2 Correlation (no predictions)")
-display(data_merged_with_input[data_merged_with_input["predicted_s2"]==False][["tg_numc_scope_2_x", "ft_numc_revenue"]].corr())
+display(data_merged_with_input[data_merged_with_input["meta_is_pred_s2"]==False][["tg_numc_scope_2_x", "ft_numc_revenue"]].corr())
 display("Scope 3 Correlation (no predictions)")
-display(data_merged_with_input[data_merged_with_input["predicted_s3"]==False][["tg_numc_scope_3_x", "ft_numc_revenue"]].corr())
+display(data_merged_with_input[data_merged_with_input["meta_is_pred_s3"]==False][["tg_numc_scope_3_x", "ft_numc_revenue"]].corr())
 
 # %% [markdown]
 # ### Only predictions
 display("Scope 1 Correlation (only predictions)")
-display(data_merged_with_input[data_merged_with_input["predicted_s1"]==True][["tg_numc_scope_1_x", "ft_numc_revenue"]].corr())
+display(data_merged_with_input[data_merged_with_input["meta_is_pred_s1"]==True][["tg_numc_scope_1_x", "ft_numc_revenue"]].corr())
 display("Scope 2 Correlation (only predictions)")
-display(data_merged_with_input[data_merged_with_input["predicted_s2"]==True][["tg_numc_scope_2_x", "ft_numc_revenue"]].corr())
+display(data_merged_with_input[data_merged_with_input["meta_is_pred_s2"]==True][["tg_numc_scope_2_x", "ft_numc_revenue"]].corr())
 display("Scope 3 Correlation (only predictions)")
-display(data_merged_with_input[data_merged_with_input["predicted_s3"]==True][["tg_numc_scope_3_x", "ft_numc_revenue"]].corr())
+display(data_merged_with_input[data_merged_with_input["meta_is_pred_s3"]==True][["tg_numc_scope_3_x", "ft_numc_revenue"]].corr())
 
 # %% [markdown]
 # ### Overall

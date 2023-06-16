@@ -20,25 +20,25 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         # we are only interested in the most recent years
         # data = X.loc[X["key_year"].isin(list(range(2016, 2022)))].copy()
         data = X.copy()
-        predicted_scope_1 = self.estimator.predict(data, scope=1)
-        predicted_scope_2 = self.estimator.predict(data, scope=2)
-        predicted_scope_3 = self.estimator.predict(data, scope=3)
+        meta_is_pred_scope_1 = self.estimator.predict(data, scope=1)
+        meta_is_pred_scope_2 = self.estimator.predict(data, scope=2)
+        meta_is_pred_scope_3 = self.estimator.predict(data, scope=3)
 
         # adding a column that indicates whether the scope has been predicted or was reported
-        data = data.assign(predicted_s1=np.where(data['tg_numc_scope_1'].isnull(), True, False))
-        data = data.assign(predicted_s2=np.where(data['tg_numc_scope_2'].isnull(), True, False))
-        data = data.assign(predicted_s3=np.where(data['tg_numc_scope_3'].isnull(), True, False))
-        self.imputed = {f"tg_numc_scope_{k.split('_')[1][1]}": v for k, v in dict((data[['predicted_s1', 'predicted_s2', 'predicted_s3']] == True).sum()).items()}
+        data = data.assign(meta_is_pred_s1=np.where(data['tg_numc_scope_1'].isnull(), True, False))
+        data = data.assign(meta_is_pred_s2=np.where(data['tg_numc_scope_2'].isnull(), True, False))
+        data = data.assign(meta_is_pred_s3=np.where(data['tg_numc_scope_3'].isnull(), True, False))
+        self.imputed = {f"tg_numc_scope_{k.split('_')[1][1]}": v for k, v in dict((data[['meta_is_pred_s1', 'meta_is_pred_s2', 'meta_is_pred_s3']] == True).sum()).items()}
 
         # filling missing values of scopes with model predictions
-        data["tg_numc_scope_1"] = np.where(data['tg_numc_scope_1'].isnull(), predicted_scope_1, data['tg_numc_scope_1'])
-        data["tg_numc_scope_2"] = np.where(data['tg_numc_scope_2'].isnull(), predicted_scope_2, data['tg_numc_scope_2'])
-        data["tg_numc_scope_3"] = np.where(data['tg_numc_scope_3'].isnull(), predicted_scope_3, data['tg_numc_scope_3'])
+        data["tg_numc_scope_1"] = np.where(data['tg_numc_scope_1'].isnull(), meta_is_pred_scope_1, data['tg_numc_scope_1'])
+        data["tg_numc_scope_2"] = np.where(data['tg_numc_scope_2'].isnull(), meta_is_pred_scope_2, data['tg_numc_scope_2'])
+        data["tg_numc_scope_3"] = np.where(data['tg_numc_scope_3'].isnull(), meta_is_pred_scope_3, data['tg_numc_scope_3'])
         # TODO: Include logging how many predicted values where imputed.
 
         # retrieving only the relevant columns
         meta_keys = list(data.filter(regex='^(key_|meta_|tg_numc_)', axis=1).columns)
-        data = data[meta_keys + ["predicted_s1", "predicted_s2", "predicted_s3"]]
+        data = data[meta_keys + ["meta_is_pred_s1", "meta_is_pred_s2", "meta_is_pred_s3"]]
         # how many unique companies?
         # print("Number of unique companies in the data: ", len(data["isin"].unique()))
         self.logger.debug(f"Number of unique companies in the data: {len(data['key_isin'].unique())}")
@@ -70,7 +70,7 @@ class JumpRateEvaluator(OxariLoggerMixin):
         return jump_rate.drop('key_year', axis=1)
 
     def _compute_estimate_to_fact_ratio(self, df_company: pd.DataFrame):
-        columns_predicted = ["predicted_s1", "predicted_s2", "predicted_s3"]
+        columns_predicted = ["meta_is_pred_s1", "meta_is_pred_s2", "meta_is_pred_s3"]
         df_tmp = df_company[columns_predicted]
         num_datapoints = len(df_tmp)
 

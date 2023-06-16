@@ -38,15 +38,15 @@ def compute_jump_rates(df_company: pd.DataFrame):
 
 
 def evaluate_jump_rates(ppl1, data):
-    predicted_scope_1 = ppl1.predict(data)
+    meta_is_pred_scope_1 = ppl1.predict(data)
     # adding a column that indicates whether the scope has been predicted or was reported
-    data = data.assign(predicted_s1=np.where(data['tg_numc_scope_1'].isnull(), True, False))
+    data = data.assign(meta_is_pred_s1=np.where(data['tg_numc_scope_1'].isnull(), True, False))
     # filling missing values of scopes with model predictions
-    data["tg_numc_scope_1"] = np.where(data['tg_numc_scope_1'].isnull(), predicted_scope_1, data['tg_numc_scope_1'])
+    data["tg_numc_scope_1"] = np.where(data['tg_numc_scope_1'].isnull(), meta_is_pred_scope_1, data['tg_numc_scope_1'])
     # retrieving only the relevant columns
     meta_keys = list(data.columns[data.columns.str.startswith('key_')])
     scope_keys = list(data.columns[data.columns.str.startswith('tg_numc_')])
-    data = data[meta_keys + scope_keys + ["predicted_s1"]]
+    data = data[meta_keys + scope_keys + ["meta_is_pred_s1"]]
 
     companies = data.groupby('key_isin', group_keys=True)
     jump_rates: pd.DataFrame = companies.progress_apply(compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()

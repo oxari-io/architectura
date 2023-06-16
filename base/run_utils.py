@@ -1,13 +1,13 @@
 from base.dataset_loader import OxariDataManager
 from lar_calculator.lar_model import OxariUnboundLAR
-from postprocessors.missing_year_imputers import CubicSplineMissingYearImputer, DerivativeMissingYearImputer
+from postprocessors.missing_year_imputers import CubicSplineMissingYearImputer, DerivativeMissingYearImputer, SimpleMissingYearImputer
 from postprocessors.scope_imputers import JumpRateEvaluator, ScopeImputerPostprocessor
 import pandas as pd
 
 
 def impute_missing_years(data: pd.DataFrame):
     print("\n", "Missing Year Imputation")
-    my_imputer = CubicSplineMissingYearImputer().fit(data)
+    my_imputer = SimpleMissingYearImputer().fit(data)
     data = my_imputer.transform(data)
     return data
 

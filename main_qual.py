@@ -17,6 +17,7 @@ from feature_reducers import DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
+from postprocessors.missing_year_imputers import SimpleMissingYearImputer
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
 from datasources.online import S3Datasource
@@ -35,14 +36,14 @@ N_STARTUP_TRIALS = 5
 STAGE = "p_"
 
 # TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)
-# TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_) 
-# TODO: Use constant STAGE to specify names for intermediate savings (p_, q_, t_, d_) 
+# TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_)
+# TODO: Use constant STAGE to specify names for intermediate savings (p_, q_, t_, d_)
 # TODO: Modify saver to save all generated dataframes in OXariDataManager
 # TODO: Reverse date format for saving
 # TODO: Change MongoDb destiantion so that path is incorporated (Split by "database-name/collection-name")
 # TODO: Remove redundant lar step from other main_* experiments too
-# TODO: Introduce OxariPostprocessing piepline 
-# TODO: Extend CLI Runner to also include a training option  
+# TODO: Introduce OxariPostprocessing piepline
+# TODO: Extend CLI Runner to also include a training option
 # TODO: Delete all model results and run experiments again
 # TODO: Convert some of the main_*.py scripts to experiments.
 
@@ -103,8 +104,14 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
 
+    DATA_FOR_IMPUTE = DATA.copy()
+
+    print("\n", "Missing Year Imputation")
+    my_imputer = SimpleMissingYearImputer().fit(DATA_FOR_IMPUTE)
+    DATA_FOR_IMPUTE = my_imputer.transform(DATA_FOR_IMPUTE)
+
     print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA).evaluate()
+    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE).evaluate()
     dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
     dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
     dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
@@ -166,18 +173,25 @@ if __name__ == "__main__":
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
     all_data_scope_imputations = [
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_scope_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_scope_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("q_scope_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING, "key_year":ASCENDING})),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_scope_imputations").set_object(df).set_datatarget(
+            LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_scope_imputations").set_object(df).set_datatarget(
+            S3Destination(path="model-data/output")),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("q_scope_imputations").set_object(df).set_datatarget(
+            MongoDestination(path="model-data/output", index={
+                "key_isin": ASCENDING,
+                "key_year": ASCENDING
+            })),
     ]
 
     df = dataset.get_data_by_name(OxariDataManager.IMPUTED_LARS)
     all_data_lar_imputations = [
-        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_lar_imputations").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_lar_imputations").set_object(df).set_datatarget(
+            LocalDestination(path="model-data/output")),
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("q_lar_imputations").set_object(df).set_datatarget(MongoDestination(path="model-data/output", index={"key_isin":ASCENDING})),
+        MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("q_lar_imputations").set_object(df).set_datatarget(
+            MongoDestination(path="model-data/output", index={"key_isin": ASCENDING})),
     ]
-
 
     SavingManager = OxariSavingManager(
         *all_meta_models,

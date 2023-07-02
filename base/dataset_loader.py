@@ -12,6 +12,17 @@ from base import OxariLoggerMixin, OxariMixin
 from base.common import OxariTransformer
 from base.oxari_types import ArrayLike
 
+def drop_sparse_rows(df:pd.DataFrame, less_than=0.10):
+    # get the feature columns
+    feature_cols = df.columns[df.columns.str.startswith('ft_')]
+    
+    # calculate the proportion of features that are not null for each row
+    feature_prop = df[feature_cols].notnull().mean(axis=1)
+    
+    # drop rows where the proportion is less than 0.15
+    df_dropped = df.loc[feature_prop >= less_than]
+    
+    return df_dropped
 
 class Datasource(OxariLoggerMixin, abc.ABC):
     KEYS: List[str] = None
@@ -194,7 +205,7 @@ class ScopeLoader(OldScopeLoader):
         return self
 
 
-class FinancialLoader(PartialLoader):
+class OldFinancialLoader(PartialLoader):
     PATTERN = "ft_num"
 
     def __init__(self, **kwargs) -> None:
@@ -203,6 +214,15 @@ class FinancialLoader(PartialLoader):
     @property
     def data(self):
         return self._data[self.columns]
+
+
+class FinancialLoader(PartialLoader):
+    PATTERN = "ft_num"
+
+    def _load(self, **kwargs) -> Self:
+        super()._load(**kwargs)
+        self._data = drop_sparse_rows(self._data) 
+        return self
 
 
 class CategoricalLoader(PartialLoader):
@@ -222,7 +242,7 @@ class SplitBag():
     class Pair:
 
         def __init__(self, X, y) -> None:
-            self.X = X
+            self.X:pd.DataFrame = X
             self.y = y
             self._iter = [self.X, self.y]
 
@@ -380,8 +400,9 @@ class OxariDataManager(OxariMixin):
         return self
 
     #TODO: JUST OVERWRITE THIS ONE
-    def _transform(self, df, **kwargs):
-        return df.drop_duplicates(['key_isin', 'key_year'])
+    def _transform(self, df:pd.DataFrame, **kwargs):
+        # key_cols = list(df.columns[df.columns.str.startswith('key')])
+        return df.drop_duplicates(['key_isin', 'key_year']).sort_values(['key_isin', 'key_year'], ascending=True)
 
     def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> pd.DataFrame:
         self.logger.info(f"Added {name} to {self.__class__.__name__}")

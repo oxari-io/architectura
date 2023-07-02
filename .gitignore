@@ -13,6 +13,7 @@ local/data/*
 model-data/*
 # objects
 local/objects/**/*
+local/prod_runs/model_imputations*
 !**/.gitkeep
 
 

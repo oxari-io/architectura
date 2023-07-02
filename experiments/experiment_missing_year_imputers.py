@@ -5,7 +5,7 @@ import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
 from base.dataset_loader import CompanyDataFilter
 from base.helper import LogTargetScaler
-from datasources.core import DefaultDataManager, get_small_datamanager_configuration
+from datasources.core import DefaultDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource
@@ -34,13 +34,13 @@ if __name__ == "__main__":
     ]
     with tqdm.tqdm(total=len(repeats) * len(configurations) * len(difficulties)) as pbar:
         for i in repeats:
-            dataset = get_small_datamanager_configuration().run()
+            dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(drop_single_rows=False)).run()
             data = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-            data_filled = preprocessor.fit_transform(data)
+            # data_filled = preprocessor.fit_transform(data)
             for Imputer in configurations:
                 imputer: SimpleMissingYearImputer = Imputer()
                 for dff in difficulties:
-                    imputer.fit(data_filled).evaluate(difficulty=dff)
+                    imputer.fit(data).evaluate(difficulty=dff)
                     all_results.append({"repetition": i, "difficulty": dff, **imputer.evaluation_results, **imputer.get_config()})
                     concatenated = pd.json_normalize(all_results)
                     fname = __loader__.name.split(".")[-1]

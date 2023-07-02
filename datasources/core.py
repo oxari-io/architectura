@@ -59,10 +59,10 @@ def get_default_datamanager_configuration():
         RegionLoader(),
     )
 
-def get_small_datamanager_configuration():
+def get_small_datamanager_configuration(frac=0.1):
     return PreviousScopeFeaturesDataManager(
         FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
         ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
         CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
         RegionLoader(),
-    ).set_filter(CompanyDataFilter())
+    ).set_filter(CompanyDataFilter(frac=frac))

@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     df_fin = ld_fin.data
 
-    df_statistics = (ld_scp + ld_cat + ld_reg).data.drop(
+    df_statistics = (cmb_ld).data.drop(
         [
             'key_isin',
             'key_country_code',
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         axis=1,
         errors='ignore',
     )
-    df_scope_stats = df_statistics.groupby(df_statistics.select_dtypes('object').columns.tolist() + ['key_year']).mean().reset_index().fillna("NA")
+    df_scope_stats = df_statistics.groupby(df_statistics.select_dtypes('object').columns.tolist() + ['key_year']).median().reset_index().fillna("NA")
 
     dateformat = 'T%Y%m%d'
     all_data_features = [

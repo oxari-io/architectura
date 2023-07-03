@@ -1,5 +1,6 @@
 from typing import Union
 from typing_extensions import Self
+from base.common import OxariFeatureTransformer
 from base.oxari_types import ArrayLike
 import category_encoders as ce
 import numpy as np
@@ -69,15 +70,24 @@ class BaselinePreprocessor(OxariPreprocessor):
         self.logger.info(f'{len(self.financial_columns)} numerical, {len(self.categorical_columns)} categorical columns')
         return self
 
+
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_result = X.copy()
-        X_new = X.filter(regex='ft_', axis=1)
+        X_new = X.filter(regex='ft_', axis=1).copy()
         # impute all the missing columns
-        X_new.loc[:, self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
+        financial_data = X_new[self.financial_columns].astype(float)
+        imputed_values = self.imputer.transform(financial_data)
+        X_new.loc[:, self.financial_columns] = imputed_values
         # transform numerical
-        X_new.loc[:, self.financial_columns] = self.fin_transformer.transform(X_new[self.financial_columns])
+        financial_data = X_new[self.financial_columns].copy()
+        transformed_values = self.fin_transformer.transform(financial_data)
+        X_new.loc[:, self.financial_columns] = transformed_values
         # encode categorical
-        X_new.loc[:, self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
+        categorical_data = X_new[self.categorical_columns].copy()
+        transformed_cat_data = self.cat_transformer.transform(categorical_data)
+        X_new.loc[:, self.categorical_columns] = transformed_cat_data
+
+        # Set all the values
         X_result[X_new.columns] = X_new[X_new.columns].values
         return X_result
 

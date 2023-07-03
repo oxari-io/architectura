@@ -18,7 +18,7 @@ results_smape
 plt.figure(figsize=(10, 5))
 plt.xticks(rotation=90)
 fig = sns.scatterplot(
-    data=results[results["y_pred"]],
+    data=results,
     x="y_pred",
     y="standardized_residuals",
     hue='metric'

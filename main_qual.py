@@ -10,6 +10,7 @@ from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
+from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
 from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
@@ -104,28 +105,15 @@ if __name__ == "__main__":
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))
 
-    DATA_FOR_IMPUTE = DATA.copy()
 
-    print("\n", "Missing Year Imputation")
-    my_imputer = SimpleMissingYearImputer().fit(DATA_FOR_IMPUTE)
-    DATA_FOR_IMPUTE = my_imputer.transform(DATA_FOR_IMPUTE)
-
-    print("Impute scopes with Model")
-    scope_imputer = ScopeImputerPostprocessor(estimator=model).run(X=DATA_FOR_IMPUTE).evaluate()
-    dataset.add_data(OxariDataManager.IMPUTED_SCOPES, scope_imputer.data, f"This data has all scopes imputed by the model on {today} at {time.localtime()}")
-    dataset.add_data(OxariDataManager.JUMP_RATES, scope_imputer.jump_rates, f"This data has jump rates per yearly transition of each company")
-    dataset.add_data(OxariDataManager.JUMP_RATES_AGG, scope_imputer.jump_rates_agg, f"This data has summaries of jump-rates per company")
-
-    scope_imputer.jump_rates.to_csv('local/eval_results/mini_model_jump_rates.csv')
-    scope_imputer.jump_rates_agg.to_csv('local/eval_results/mini_model_jump_rates_agg.csv')
-
-    print("\n", "Predict LARs on Mock data")
-    lar_model = OxariUnboundLAR().fit(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    lar_imputed_data = lar_model.transform(dataset.get_scopes(OxariDataManager.IMPUTED_SCOPES))
-    dataset.add_data(OxariDataManager.IMPUTED_LARS, lar_imputed_data, f"This data has all LAR values imputed by the model on {today} at {time.localtime()}")
-    print(lar_imputed_data)
-
-    print("Explain Effects of features")
+    data_to_impute = DATA.copy()
+    data_to_impute = impute_missing_years(data_to_impute)
+    scope_imputer, imputed_data = impute_scopes(model, data_to_impute)
+    lar_model, lar_imputed_data = compute_lar(imputed_data)
+    jump_rate_evaluator, jump_rates = compute_jump_rates(imputed_data)
+    
+    
+    # print("Explain Effects of features")
     # explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=100).fit(*SPLIT_1.train).explain(*SPLIT_1.val)
     # fig, ax = explainer0.visualize()
     # fig.savefig(f'local/eval_results/importance_explainer{0}.png')

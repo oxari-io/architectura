@@ -11,7 +11,7 @@ from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
-from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
+from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
@@ -34,7 +34,7 @@ DATE_FORMAT = 'T%Y%m%d'
 
 N_TRIALS = 5
 N_STARTUP_TRIALS = 5
-STAGE = "p_"
+STAGE = "q_"
 
 # TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)
 # TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_)
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     today = time.strftime(DATE_FORMAT)
     now = time.strftime('T%Y%m%d%H%M')
 
-    dataset = get_default_datamanager_configuration().run()
+    dataset = get_small_datamanager_configuration().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("q_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
-    df = dataset.get_data_by_name(OxariDataManager.IMPUTED_SCOPES)
+    df = imputed_data
     all_data_scope_imputations = [
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_scope_imputations").set_object(df).set_datatarget(
             LocalDestination(path="model-data/output")),
@@ -193,7 +193,7 @@ if __name__ == "__main__":
             })),
     ]
 
-    df = dataset.get_data_by_name(OxariDataManager.IMPUTED_LARS)
+    df = lar_imputed_data
     all_data_lar_imputations = [
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_lar_imputations").set_object(df).set_datatarget(
             LocalDestination(path="model-data/output")),

@@ -85,6 +85,26 @@ if __name__ == "__main__":
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
 
+    # model = OxariMetaModel()
+    # model.add_pipeline(scope=1, pipeline=dp1)
+    # model.add_pipeline(scope=2, pipeline=dp2)
+    # model.add_pipeline(scope=3, pipeline=dp3)
+
+    # print("Parameter Configuration")
+    # print(dp1.get_config(deep=True))
+    # print(dp2.get_config(deep=True))
+    # print(dp3.get_config(deep=True))
+
+    # ### EVALUATION RESULTS ###
+    # print("Eval results")
+    # eval_results = pd.json_normalize(model.collect_eval_results())
+    # print(eval_results)
+    # eval_results.T.to_csv('local/eval_results/model_pipelines.csv')
+    # print("Predict with Pipeline")
+    # # print(dp1.predict(X))
+    # print("Predict with Model only SCOPE1")
+    # print(model.predict(SPLIT_1.val.X, scope=1))
+
     model = OxariMetaModel()
     model.add_pipeline(scope=1, pipeline=dp1)
     model.add_pipeline(scope=2, pipeline=dp2)
@@ -98,9 +118,9 @@ if __name__ == "__main__":
     ### EVALUATION RESULTS ###
     print("Eval results")
     eval_results = pd.json_normalize(model.collect_eval_results())
-    print(eval_results)
-    eval_results.T.to_csv('local/eval_results/model_pipelines.csv')
-    print("Predict with Pipeline")
+    print(eval_results.T)
+    eval_results.T.to_csv(f'local/prod_runs/model_pipelines_{now}.csv')
+    # print("Predict with Pipeline")
     # print(dp1.predict(X))
     print("Predict with Model only SCOPE1")
     print(model.predict(SPLIT_1.val.X, scope=1))

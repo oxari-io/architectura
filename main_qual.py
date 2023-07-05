@@ -50,6 +50,7 @@ STAGE = "p_"
 
 if __name__ == "__main__":
     today = time.strftime(DATE_FORMAT)
+    now = time.strftime('T%Y%m%d%H%M')
 
     dataset = get_default_datamanager_configuration().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)

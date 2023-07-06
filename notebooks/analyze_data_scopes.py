@@ -1,11 +1,11 @@
 # %%
 import sys
+sys.path.append("..")
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
 from datasources.loaders import RegionLoader
 
 from datasources.local import LocalDatasource
 
-sys.path.append("..")
 import pathlib
 
 import matplotlib.pyplot as plt
@@ -21,13 +21,8 @@ from datasources.online import S3Datasource
 sns.set_palette('viridis')
 
 # %%
-dataset = PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
-        RegionLoader(),
-    ).run()
-DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+cwd = pathlib.Path(__file__).parent
+DATA = pd.read_csv(cwd.parent/'model-data/input/scopes_auto.csv', index_col=0)
 DATA
 # %%
 df_scopes = DATA
@@ -45,6 +40,8 @@ df_scopes
 df_scopes['grp_scope_1'].value_counts()
 # %%
 sns.histplot(data=df_scopes[df_scopes["tg_numc_scope_1"] > 0], x="tg_numc_scope_1", bins=100)
+# %%
+# sns.histplot(data=df_scopes[(df_scopes["tg_numc_scope_1"] > 0) & (df_scopes["tg_numc_scope_1"] < 1e4)], x="tg_numc_scope_1", bins=100)
 # %%
 sns.histplot(data=df_scopes[df_scopes["tg_numc_scope_1"] > 0], x="tg_numc_scope_1", bins=100, log_scale=True)
 # %%
@@ -105,3 +102,5 @@ ax.invert_xaxis()
 ax.view_init(20, 25)
 fig.tight_layout()
 plt.show()
+
+# %%

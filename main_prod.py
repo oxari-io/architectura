@@ -21,7 +21,7 @@ from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
 from postprocessors.missing_year_imputers import DerivativeMissingYearImputer, SimpleMissingYearImputer
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
-from scope_estimators import MiniModelArmyEstimator
+from scope_estimators import MiniModelArmyEstimator, SupportVectorEstimator
 from datasources.online import S3Datasource
 from datasources.local import LocalDatasource
 from lar_calculator.lar_model import OxariUnboundLAR
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         imputer=RevenueQuantileBucketImputer(10),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=DummyTargetScaler(),
+        scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         imputer=RevenueQuantileBucketImputer(10),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
-        scope_transformer=DummyTargetScaler(),
+        scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
 
     model = OxariMetaModel()

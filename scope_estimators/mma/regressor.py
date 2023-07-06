@@ -228,6 +228,126 @@ class RegressorOptimizer(OxariOptimizer):
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
+# Optimizer used in 'experiment_optuna_metric'
+class ExperimentOptimizer(RegressorOptimizer):
+    def __init__(self, metric, **kwargs):
+        super().__init__(**kwargs)
+        self.metric = metric
+    
+    def score_trial(self, trial: optuna.Trial, regr_name: str, X_train, y_train, X_val, y_val):
+        # TODO: add docstring here
+        # TODO: Try MSLE as optimization objective https://machinelearningmastery.com/how-to-choose-loss-functions-when-training-deep-learning-neural-networks/
+        if regr_name == "GBR":
+
+            param_space = {
+                # The number of boosting stages to perform
+                "n_estimators": trial.suggest_int("n_estimators", 100, 500, step=100),
+                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
+                "max_depth": trial.suggest_int("max_depth", 3, 21, 3),
+                # The fraction of samples to be used for fitting the individual base learners
+                "subsample": trial.suggest_float("subsample", 0.5, 0.9, step=0.1),
+                # The number of features to consider when looking for the best split
+                "max_features": trial.suggest_categorical("max_features", [None, "sqrt"]),
+            }
+
+            model = GradientBoostingRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "RFR":
+            #  definin search space of RandomForest
+            param_space = {
+                # this parameter means using the GPU when training our model to speedup the training process
+                # 'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 500, 100),
+                'max_features': trial.suggest_float('max_features', 0.2, 0.8, step=0.2),
+                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 2, 20, 2),
+                'criterion': trial.suggest_categorical('criterion', ['squared_error', 'friedman_mse', 'poisson']),
+                # The number of features to consider when looking for the best split
+                # 'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
+                "n_jobs": trial.suggest_categorical('n_jobs', [-1])
+            }
+
+            model = RandomForestRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "KNN":
+            #  definin search space of KNN
+            param_space = {
+                'n_neighbors': trial.suggest_int("n_neighbors", 3, 11, 2),
+                'p': trial.suggest_categorical('p', [1,2]),
+                "n_jobs": trial.suggest_categorical('n_jobs', [-1])
+            }
+
+            model = KNeighborsRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "EXF":
+            #  definin search space of KNN
+            param_space = {
+                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
+                'max_features': trial.suggest_float('max_features', 0.2, 0.8, step=0.2),
+                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 2, 20, 2),
+                'criterion': trial.suggest_categorical('criterion', ['squared_error', 'friedman_mse', 'poisson']),
+                # The number of features to consider when looking for the best split
+                # 'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
+                "n_jobs": trial.suggest_categorical('n_jobs', [-1])
+            }
+
+            model = ExtraTreesRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "XGB":
+
+            param_space = {
+                # L2 regularization term on weights.
+                # 'lambda': trial.suggest_loguniform('lambda', 1e-3, 10.0),
+                # # L1 regularization term on weights.
+                # 'alpha': trial.suggest_loguniform('alpha', 1e-3, 10.0),
+                # Subsample ratio of columns when constructing each tree.
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.4, 0.7, step=0.1),
+                # Subsample ratio of the training instances.
+                'subsample': trial.suggest_float('subsample', 0.4, 0.7, step=0.1),
+                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
+
+                # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+
+                # 'random_state': trial.suggest_categorical('random_state', [2020]),
+                # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning.
+                'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, 1),
+            }
+
+            model = xgb.XGBRegressor(**param_space)
+            model.fit(X_train, y_train)
+        if regr_name == "LGB":
+
+            param_space = {
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
+                'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
+                'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
+                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
+            }
+
+            model = lgb.LGBMRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        # if regr_name == "ADB":
+        #     param_space = {
+        #         "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
+        #         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
+        #         'splitter': trial.suggest_categorical('max_depth', ["best", "random"]),
+        #         'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+        #     }
+
+        #     model = AdaBoostRegressor(**param_space)
+        #     model.fit(X_train, y_train)
+
+        y_pred = model.predict(X_val)
+
+        return optuna_metric(y_true=y_val, y_pred=y_pred, metric=self.metric)
 
 class BucketRegressor(OxariRegressor):
     # TODO: add docstring

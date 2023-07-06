@@ -17,8 +17,8 @@ from pmdarima.metrics import smape
 if __name__ == "__main__":
     all_results = []
 
-    # dataset = get_default_datamanager_configuration().run()
-    dataset = get_small_datamanager_configuration().run()
+    dataset = get_default_datamanager_configuration().run()
+    #dataset = get_small_datamanager_configuration().run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
     # loop start here
@@ -84,4 +84,4 @@ if __name__ == "__main__":
 
             fname = __loader__.name.split(".")[-1]
 
-            concatenated.to_csv(f'local/eval_results/{fname}_10_reps.csv', header=True)
+            concatenated.to_csv(f'local/eval_results/{fname}.csv', header=True)

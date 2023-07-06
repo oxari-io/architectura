@@ -42,5 +42,5 @@ if __name__ == "__main__":
             concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "n_trials", "n_startup_trials", "data_split", "rep", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
         
             fname = __loader__.name.split(".")[-1]
-            concatenated.to_csv(f'local/eval_results/{fname}_10_splits.csv', header=True)
+            concatenated.to_csv(f'local/eval_results/{fname}.csv', header=True)
             

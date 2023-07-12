@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+import numpy as np
 # %%
 cwd = pathlib.Path(__file__).parent
 results = pd.read_csv(cwd.parent/'local/eval_results/experiment_MMA_n_trials_n_startup_trials.csv', index_col=0)
@@ -25,6 +26,22 @@ fig.set_title('two y axes: smape (blue) and time (green) vs n_startup_trials')
 # %%
 np_n_trials = results["n_trials"].to_numpy()
 np_n_startup_trials = results["n_startup_trials"].to_numpy()
+
+#%%
+plt.figure(figsize=(20, 10))
+sns.heatmap(results.pivot_table(index='n_startup_trials', columns='n_trials', values='test.sMAPE', aggfunc=np.mean), annot=True, fmt=".2f", cmap="YlGnBu")
+plt.title('Heatmap: n_trials vs n_startup_trials, heat is sMAPE')
+plt.xlabel('n_trials')
+plt.ylabel('n_startup_trials')
+plt.show()
+
+#%%
+plt.figure(figsize=(20, 10))
+sns.heatmap(results.pivot_table(index='n_startup_trials', columns='n_trials', values='time', aggfunc=np.mean), annot=True, fmt=".2f", cmap="YlGnBu")
+plt.title('Heatmap: n_trials vs n_startup_trials, heat is runtime')
+plt.xlabel('n_trials')
+plt.ylabel('n_startup_trials')
+plt.show()
 # %%
 # import matplotlib.pyplot as plt
 # import numpy as np

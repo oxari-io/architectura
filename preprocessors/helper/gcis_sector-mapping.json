@@ -1,0 +1,266 @@
+{
+    "Non-Energy Materials": {
+        "gcis_sector": "Materials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Industrials": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Industrial Goods": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Business Services": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Non-Cyclical": {
+        "gcis_sector": "Consumer Staples",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Healthcare": {
+        "gcis_sector": "Health Care",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Finance": {
+        "gcis_sector": "Financials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Financial Services": {
+        "gcis_sector": "Financials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Financial": {
+        "gcis_sector": "Financials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Technology": {
+        "gcis_sector": "Information Technology",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Telecommunications": {
+        "gcis_sector": "Communications Services",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Goods": {
+        "gcis_sector": "Consumer Staples",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Basic Materials": {
+        "gcis_sector": "Materials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Commercial Services": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Communication Services": {
+        "gcis_sector": "Communication Services",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Communications": {
+        "gcis_sector": "Communication Services",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Cyclical": {
+        "gcis_sector": "Consumer Discretionary",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Defensive": {
+        "gcis_sector": "Consumer Staples",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Discretionary": {
+        "gcis_sector": "Consumer Discretionary",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Durables": {
+        "gcis_sector": "Consumer Discretionary",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Non-Durables": {
+        "gcis_sector": "Consumer Staples",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Services": {
+        "gcis_sector": "Consumer Discretionary",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Consumer Staples": {
+        "gcis_sector": "Consumer Staples",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Distribution Services": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Electronic Technology": {
+        "gcis_sector": "Information Technology",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Energy": {
+        "gcis_sector": "Energy",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Energy Minerals": {
+        "gcis_sector": "Energy",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Financials": {
+        "gcis_sector": "Financials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Health Care": {
+        "gcis_sector": "Health Care",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Health Services": {
+        "gcis_sector": "Health Care",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Health Technology": {
+        "gcis_sector": "Health Care",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Industrial Services": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Information Technology": {
+        "gcis_sector": "Information Technology",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Materials": {
+        "gcis_sector": "Materials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Miscellaneous": {
+        "gcis_sector": "Miscellaneous",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Non-Energy Minerals": {
+        "gcis_sector": "Materials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Process Industries": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Producer Manufacturing": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Real Estate": {
+        "gcis_sector": "Real Estate",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Retail Trade": {
+        "gcis_sector": "Consumer Discretionary",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Services": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Technology Services": {
+        "gcis_sector": "Information Technology",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Transportation": {
+        "gcis_sector": "Industrials",
+        "source": [
+            "RBICS"
+        ]
+    },
+    "Utilities": {
+        "gcis_sector": "Utilities",
+        "source": [
+            "RBICS"
+        ]
+    }
+}

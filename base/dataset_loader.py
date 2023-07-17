@@ -12,7 +12,7 @@ from base import OxariLoggerMixin, OxariMixin
 from base.common import OxariTransformer
 from base.oxari_types import ArrayLike
 
-def drop_sparse_rows(df:pd.DataFrame, less_than=0.10):
+def drop_sparse_rows(df:pd.DataFrame, less_than=0.027):
     # get the feature columns
     feature_cols = df.columns[df.columns.str.startswith('ft_')]
     
@@ -196,7 +196,7 @@ class OldScopeLoader(PartialLoader):
         return self._data
 
 
-class ScopeLoader(OldScopeLoader):
+class ScopeLoader(SpecialLoader):
 
     def _load(self) -> Self:
         # TODO: before logging some scopes have very small values so we discard them.
@@ -204,6 +204,13 @@ class ScopeLoader(OldScopeLoader):
         self._data = _data
         return self
 
+    @property
+    def lkeys(self):
+        return ["key_isin", "key_year"]
+
+    @property
+    def rkeys(self):
+        return ["key_isin", "key_year"]
 
 class OldFinancialLoader(PartialLoader):
     PATTERN = "ft_num"
@@ -221,6 +228,9 @@ class FinancialLoader(PartialLoader):
 
     def _load(self, **kwargs) -> Self:
         super()._load(**kwargs)
+        #
+        self._data = self._data.dropna(subset=["key_year", "key_isin"], how='any')
+        self._data["key_year"] = self._data["key_year"].astype(int)
         self._data = drop_sparse_rows(self._data) 
         return self
 

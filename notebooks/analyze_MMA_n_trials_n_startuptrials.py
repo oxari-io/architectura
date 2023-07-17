@@ -28,20 +28,30 @@ np_n_trials = results["n_trials"].to_numpy()
 np_n_startup_trials = results["n_startup_trials"].to_numpy()
 
 #%%
+# Binned heatmap: min sMAPE value for each bin
+bins_x = np.arange(0, results['n_trials'].max() + 20, 20)
+bins_y = np.arange(0, results['n_startup_trials'].max() + 2, 2)
+
+results['n_trials_bin'] = pd.cut(results['n_trials'], bins=bins_x, right=False)
+results['n_startup_trials_bin'] = pd.cut(results['n_startup_trials'], bins=bins_y, right=False)
+
+pivot_table_sMAPE = results.pivot_table(index='n_startup_trials_bin', columns='n_trials_bin', values='test.sMAPE', aggfunc=np.min)
+# pivot_table_time = results.pivot_table(index='n_startup_trials_bin', columns='n_trials_bin', values='time', aggfunc=np.mean)
+
 plt.figure(figsize=(20, 10))
-sns.heatmap(results.pivot_table(index='n_startup_trials', columns='n_trials', values='test.sMAPE', aggfunc=np.mean), annot=True, fmt=".2f", cmap="YlGnBu")
-plt.title('Heatmap: n_trials vs n_startup_trials, heat is sMAPE')
+sns.heatmap(pivot_table_sMAPE, annot=True, fmt=".3f", cmap="YlGnBu")
+plt.title('Binned heatmap: n_trials vs n_startup_trials, heat is sMAPE')
 plt.xlabel('n_trials')
 plt.ylabel('n_startup_trials')
 plt.show()
 
-#%%
-plt.figure(figsize=(20, 10))
-sns.heatmap(results.pivot_table(index='n_startup_trials', columns='n_trials', values='time', aggfunc=np.mean), annot=True, fmt=".2f", cmap="YlGnBu")
-plt.title('Heatmap: n_trials vs n_startup_trials, heat is runtime')
-plt.xlabel('n_trials')
-plt.ylabel('n_startup_trials')
-plt.show()
+# plt.figure(figsize=(20, 10))
+# sns.heatmap(pivot_table_time, annot=True, fmt=".3f", cmap="YlGnBu")
+# plt.title('Binned heatmap: n_trials vs n_startup_trials, heat is time')
+# plt.xlabel('n_trials')
+# plt.ylabel('n_startup_trials')
+# plt.show()
+
 # %%
 # import matplotlib.pyplot as plt
 # import numpy as np
@@ -68,8 +78,14 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 # %%
 results.rename(columns = {'test.sMAPE':'sMAPE'}, inplace = True)
+
+#%%
+# Results with lowest sMAPE
+results_head = results.sort_values(by=['sMAPE']).head(10)
+print(results_head[['n_trials', 'n_startup_trials', 'sMAPE', 'time']])
+
 # %%
-results.head()
+# results.head()
 # %%
 md = smf.mixedlm("sMAPE ~ n_trials + n_startup_trials", results, groups=results["data_split"])
 mdf = md.fit(method=["lbfgs"])

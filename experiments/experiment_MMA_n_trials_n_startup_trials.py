@@ -5,7 +5,7 @@ import numpy as np
 
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
-from datasources.core import get_small_datamanager_configuration
+from datasources.core import get_default_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
 from imputers import BaselineImputer
 from pipeline.core import DefaultPipeline
@@ -15,17 +15,16 @@ from experiments.experiment_argument_parser import BucketingExperimentCommandLin
 
 if __name__ == "__main__":
     all_results = []
-    
+    dataset = get_default_datamanager_configuration().run()
+
     for data_split in range(10):
         print("data split: ", data_split)
-        dataset = get_small_datamanager_configuration().run()
-        DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
-        for rep in range(25):
-            
+
+        for rep in range(25):    
             print("rep: ", rep, " data split: ", data_split)
-            n_trials = np.random.randint(1, 50)
+            n_trials = np.random.randint(1, 100)
             n_startup_trials = np.random.randint(1, 20)
             start = time.time()
             ppl1 = DefaultPipeline(

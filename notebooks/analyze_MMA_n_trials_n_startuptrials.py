@@ -13,13 +13,13 @@ results = pd.read_csv(cwd.parent/'local/eval_results/experiment_MMA_n_trials_n_s
 results
 # %%
 plt.figure(figsize=(10,10))
-fig = sns.regplot(data=results, x="n_trials", y="test.sMAPE", order=3, color="blue")
+fig = sns.regplot(data=results, x="n_trials", y="raw.sMAPE", order=3, color="blue")
 ax2 = plt.twinx()
 fig = sns.lineplot(data=results, x="n_trials", y="time", color="green", ax=ax2)
 fig.set_title('two y axes: smape (blue) and time (green) vs n_trials')
 # %%
 plt.figure(figsize=(10,10))
-fig = sns.regplot(data=results, x="n_startup_trials", y="test.sMAPE", order=3, color="blue")
+fig = sns.regplot(data=results, x="n_startup_trials", y="raw.sMAPE", order=3, color="blue")
 ax2 = plt.twinx()
 fig = sns.lineplot(data=results, x="n_startup_trials", y="time", color="green", ax=ax2)
 fig.set_title('two y axes: smape (blue) and time (green) vs n_startup_trials')
@@ -35,12 +35,12 @@ bins_y = np.arange(0, results['n_startup_trials'].max() + 2, 2)
 results['n_trials_bin'] = pd.cut(results['n_trials'], bins=bins_x, right=False)
 results['n_startup_trials_bin'] = pd.cut(results['n_startup_trials'], bins=bins_y, right=False)
 
-pivot_table_sMAPE = results.pivot_table(index='n_startup_trials_bin', columns='n_trials_bin', values='test.sMAPE', aggfunc=np.min)
+pivot_table_sMAPE = results.pivot_table(index='n_startup_trials_bin', columns='n_trials_bin', values='raw.sMAPE', aggfunc=np.min)
 # pivot_table_time = results.pivot_table(index='n_startup_trials_bin', columns='n_trials_bin', values='time', aggfunc=np.mean)
 
 plt.figure(figsize=(20, 10))
 sns.heatmap(pivot_table_sMAPE, annot=True, fmt=".3f", cmap="YlGnBu")
-plt.title('Binned heatmap: n_trials vs n_startup_trials, heat is sMAPE')
+plt.title('Binned heatmap: n_trials vs n_startup_trials, heat is RAW sMAPE')
 plt.xlabel('n_trials')
 plt.ylabel('n_startup_trials')
 plt.show()

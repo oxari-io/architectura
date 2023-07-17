@@ -25,7 +25,7 @@ if __name__ == "__main__":
         for rep in range(25):    
             print("rep: ", rep, " data split: ", data_split)
             n_trials = np.random.randint(1, 100)
-            n_startup_trials = np.random.randint(1, 20)
+            n_startup_trials = np.random.randint(1, 50)
             start = time.time()
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
@@ -38,8 +38,7 @@ if __name__ == "__main__":
             time_elapsed_1 = time.time() - start
             all_results.append({"time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results, "n_trials": n_trials, "n_startup_trials": n_startup_trials, "data_split": data_split, "rep": rep})
 
-            concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "n_trials", "n_startup_trials", "data_split", "rep", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"]]
-        
+            concatenated = pd.json_normalize(all_results)
             fname = __loader__.name.split(".")[-1]
             concatenated.to_csv(f'local/eval_results/{fname}.csv', header=True)
             

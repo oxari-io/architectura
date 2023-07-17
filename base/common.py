@@ -681,8 +681,11 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def predict(self, X, **kwargs) -> ArrayLike:
         return_std = kwargs.pop('return_ci', False)
         # return_raw = kwargs.pop('return_raw', False) #
+
+        # This is some feature cleanups to handle unexpected cases (feature format, missing features, unseen features) during inference
         X_mod = self._convert_input(X)
         X_mod = self._extend_missing_features(X_mod, self.feature_names_in_)
+        X_mod = self._remove_unseen_features(X_mod, self.feature_names_in_)
         if return_std:
             preds = self.ci_estimator.predict(X_mod, **kwargs)
             return preds  # Alread reversed
@@ -813,6 +816,26 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         extended_df = pd.concat([df, missing_features_df], axis=1)
         
         return extended_df
+
+    def _remove_unseen_features(self, df: pd.DataFrame, feature_names: List[str]) -> pd.DataFrame:
+        """
+
+        """
+        
+        # Find the missing feature columns
+        additional_features = set(df.columns) - set(feature_names) 
+        if not len(additional_features):
+            return df.copy()
+        
+        if len(additional_features):
+            self.logger.warning(f"Features {list(additional_features)} were never seen during training. They are removed. ")
+
+            
+        
+        # Remove additional features from the input DataFrame 
+        reduced_df = df.drop(additional_features, axis=1)
+        
+        return reduced_df
 
 class Test(OxariPipeline):
 

@@ -5,6 +5,7 @@ from base.common import OxariTransformer
 from base.oxari_types import ArrayLike
 from typing_extensions import Self
 from pathlib import Path
+from country_converter import CountryConverter
 
 MODULE_PATH = Path(__file__).absolute().parent
 INDUSTRY_MAPPING_PATHS = [
@@ -56,6 +57,25 @@ class IndustryNameCatColumnNormalizer(OxariCatColumnNormalizer):
             with io.open(path, "r") as f:
                 tmp_mapping: dict[str, dict[str, str]] = json.load(f)
                 self.mapping.update({key.lower().strip() :v.get("gcis_industry", "").lower().strip() for key, v in tmp_mapping.items()})
+        return self
+    
+    def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
+        X_new = X.copy()
+        X_new[self.col_name] = X_new[self.col_name].astype(str).str.lower().str.strip().replace(self.mapping) 
+        return X_new
+
+
+class CountryCodeCatColumnNormalizer(OxariCatColumnNormalizer):
+
+    def __init__(self, col_name = "ft_catm_country_code", code_from = "ISO2", code_to = "ISO3", **kwargs) -> None:
+        super().__init__(col_name, **kwargs)
+        self.mapping: dict[str, str] = {}
+        self.code_from = code_from
+        self.code_to = code_to
+
+    def fit(self, X: ArrayLike, y: ArrayLike = None, **kwargs) -> Self:
+        correspondence = CountryConverter().get_correspondence_dict(self.code_from, self.code_to)
+        self.mapping = {key.lower().strip() :v[0].lower().strip() for key, v in correspondence.items()}
         return self
     
     def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:

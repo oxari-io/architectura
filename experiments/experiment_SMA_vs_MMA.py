@@ -26,13 +26,15 @@ if __name__ == "__main__":
     results_file = args.file
 
     all_results = []
+    dataset = get_default_datamanager_configuration().run()
+    
     for i in range(num_reps):
         configurations = [
             DirectSectorModelArmyEstimator(),
             SectorModelArmyEstimator(),
             MiniModelArmyEstimator()
         ]
-        dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
+          # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         for estimator in configurations:

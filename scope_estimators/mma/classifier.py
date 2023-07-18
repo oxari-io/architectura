@@ -134,6 +134,7 @@ class ClassifierOptimizer(OxariOptimizer):
 class BucketClassifier(OxariClassifier):
 
     def __init__(self, n_buckets=10, **kwargs):
+        super().__init__(**kwargs)
         self.n_buckets = n_buckets
         self._estimator = lgb.LGBMClassifier(**kwargs)
         self.bucket_metrics_ = {"scores":{}}

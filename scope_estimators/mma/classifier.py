@@ -8,7 +8,7 @@ from base import (DefaultClassificationEvaluator, OxariClassifier, OxariOptimize
 # from model.misc.hyperparams_tuning import tune_hps_classifier
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
 from base.metrics import classification_metric
-from sklearn.metrics import (classification_report, confusion_matrix)
+from sklearn.metrics import (classification_report, confusion_matrix, balanced_accuracy_score)
 import pandas as pd
 
 
@@ -30,7 +30,7 @@ class BucketClassifierEvauator(DefaultClassificationEvaluator):
         """
         n_buckets = kwargs.get('n_buckets', len(np.unique(y_test)))
         error_metrics = {
-            # "vanilla_acc": balanced_accuracy_score(y_test, y_pred),
+            # vanilla accuracy is inherited from DefaultClassificationEvaluator
             "adj_lenient_acc": self.lenient_adjacent_accuracy_score(y_test, y_pred),
             "adj_strict_acc": self.strict_adjacent_accuracy_score(y_test, y_pred, n_buckets),
         }

@@ -4,6 +4,7 @@ from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
+from feature_reducers.core import DummyFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
@@ -11,7 +12,7 @@ from preprocessors import IIDPreprocessor
 from scope_estimators import (MiniModelArmyEstimator, UnderfittedClsMiniModelArmyEstimator)
 from experiments.experiment_argument_parser import ClassifierPerformanceExperimentCommandLineParser
 from scope_estimators.mini_model_army import MajorityClsMiniModelArmyEstimator, RandomGuessClsMiniModelArmyEstimator
-from scope_estimators.sector_model_army import SectorModelArmyEstimator
+from scope_estimators.sector_model_army import DirectSectorModelArmyEstimator, SectorModelArmyEstimator
 
 if __name__ == "__main__":
     parser = ClassifierPerformanceExperimentCommandLineParser(
@@ -27,8 +28,9 @@ if __name__ == "__main__":
     all_results = []
     for i in range(num_reps):
         configurations = [
+            DirectSectorModelArmyEstimator(),
             SectorModelArmyEstimator(),
-            MiniModelArmyEstimator(),
+            MiniModelArmyEstimator()
         ]
         dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -37,7 +39,7 @@ if __name__ == "__main__":
             start = time.time()
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(),
+                feature_reducer=DummyFeatureReducer(),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -50,7 +52,7 @@ if __name__ == "__main__":
                 SPLIT_3 = bag.scope_3
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(),
+                    feature_reducer=DummyFeatureReducer(),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=estimator,
                     ci_estimator=BaselineConfidenceEstimator(),
@@ -60,7 +62,7 @@ if __name__ == "__main__":
                 
                 ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(),
+                    feature_reducer=DummyFeatureReducer(),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=estimator,
                     ci_estimator=BaselineConfidenceEstimator(),

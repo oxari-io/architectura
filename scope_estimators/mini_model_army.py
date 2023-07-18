@@ -17,16 +17,10 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         super().__init__(**kwargs)
         self.n_buckets = n_buckets
         self.discretizer = BucketScopeDiscretizer(self.n_buckets)
-        if cls_optimizer is None:
-            self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
-        else:
-            self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(cls_optimizer).set_evaluator(BucketClassifierEvauator())
-        
-        if rgs_optimizer is None:
-            self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
-        else:
-            self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(rgs_optimizer).set_evaluator(DefaultRegressorEvaluator())
 
+        self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(cls_optimizer or ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+        self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(rgs_optimizer or RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
+      
     def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
         # NOTE: Question is whether the linkage between bucket_cl prediction and regression makes sense. I start to believe it does not. 
         # If the classfier predicts one class only the regressor will just use the full data.

@@ -1,3 +1,5 @@
+from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
 from base import OxariScopeEstimator, OxariOptimizer
 import numpy as np
 import pandas as pd
@@ -7,11 +9,11 @@ from base.metrics import optuna_metric
 from base import OxariTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
+from sklearn.ensemble import AdaBoostRegressor
+from typing_extensions import Self
 
 
-from sklearn.svm import LinearSVR
-
-class LinearSVROptimizer(OxariOptimizer):
+class AdaboostOptimizer(OxariOptimizer):
 
     def __init__(self, n_trials=10, n_startup_trials=1, sampler=None, **kwargs) -> None:
         super().__init__(
@@ -41,7 +43,7 @@ class LinearSVROptimizer(OxariOptimizer):
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
         study = optuna.create_study(
-            study_name=f"linear_svr_process_hp_tuning",
+            study_name=f"xgboost_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
         )
@@ -54,63 +56,48 @@ class LinearSVROptimizer(OxariOptimizer):
 
         return study.best_params, df
 
-    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        
-        param_space = {
-            "epsilon": trial.suggest_float("epsilon", 1.0, 20.24), # depends on scale of target value, range: [0, 20.24 (y_train_max)]
-            "C": trial.suggest_float("C", 0.1, 1000, log=True),
-            "loss": trial.suggest_categorical("loss", ["epsilon_insensitive", "squared_epsilon_insensitive"]),
-            "intercept_scaling": trial.suggest_float("intercept_scaling", 1.0, 150.0, step=0.5),
-            "max_iter": trial.suggest_categorical("max_iter", [7000])
-        }
-        
-        degree = trial.suggest_int("degree", 1, 10)
+    def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
 
-        preprocessor = LinearSVREstimator._make_model_specific_preprocessor(X_train, y_train, degree=degree)
-        X_train = preprocessor.transform(X_train)
-        X_val = preprocessor.transform(X_val)        
-        model = LinearSVR(**param_space).fit(X_train, y_train)
+        # n_estimators: The number of trees in the ensemble, often increased until no further improvements are seen.
+
+        # https://medium.com/@chaudhurysrijani/tuning-of-adaboost-with-computational-complexity-8727d01a9d20
+        param_space = {
+            # 'estimator': trial.suggest_categorical('estimator', [DecisionTreeRegressor(), LinearRegression()]),
+            'n_estimators': trial.suggest_categorical('n_estimators', [10, 50, 100, 500, 1000]),
+            'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+            'loss': trial.suggest_categorical('loss', ['linear', 'square', 'exponential']),
+        }
+
+        model = AdaBoostRegressor(**param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
 
-class LinearSVREstimator(OxariScopeEstimator):
+
+class AdaboostEstimator(OxariScopeEstimator):
+
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = LinearSVR()
-        self._optimizer = optimizer or LinearSVROptimizer()
+        self._estimator = AdaBoostRegressor()
+        self._optimizer = optimizer or AdaboostOptimizer()
+        #
 
-    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
-        degree = self.params.pop("degree", 1)
-        self._sub_preprocessor = LinearSVREstimator._make_model_specific_preprocessor(X, y, degree=degree)
-        X_ = self._sub_preprocessor.transform(X)
-        max_size = len(X)
-        sample_size = int(max_size*0.1)
-        indices = np.random.randint(0, max_size, sample_size)
-        X_ = pd.DataFrame(X_)
+    def fit(self, X, y=None, **kwargs) -> Self:
+        self.n_features_in_ = X.shape[1]
+        X_ = pd.DataFrame(X)
         y = pd.DataFrame(y)
-        self._estimator = self._estimator.set_params(**self.params).fit(X_.iloc[indices], y.iloc[indices].values.ravel())
+        self._estimator = self._estimator.set_params(**self.params).fit(X_, y.values.ravel())
+
         return self
-    
-    @staticmethod
-    def _make_model_specific_preprocessor(X, y, **kwargs) -> OxariTransformer:
-        return Pipeline([
-            ('polinomial', PolynomialFeatures(degree=kwargs.pop("degree"), include_bias=False)),
-        ]).fit(X, y, **kwargs)
-       
+
     def predict(self, X) -> ArrayLike:
         return self._estimator.predict(X)
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
-        best_params = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
-        return best_params
-    
-    def evaluate(self, y_true, y_pred, **kwargs):
-        return self._evaluator.evaluate(y_true, y_pred, **kwargs)     
+        return self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
 
-    def check_conformance(self):
-        pass
+    def evaluate(self, y_true, y_pred, **kwargs):
+        return self._evaluator.evaluate(y_true, y_pred, **kwargs)
 
     def get_config(self, deep=True):
         return {**self._estimator.get_params(), **super().get_config(deep)}
-        

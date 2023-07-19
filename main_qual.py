@@ -8,7 +8,7 @@ from sklearn.preprocessing import PowerTransformer
 
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
-from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
+from base.dataset_loader import CategoricalLoader, CompanyDataFilter, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
 from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
@@ -21,6 +21,7 @@ from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
 from postprocessors.missing_year_imputers import SimpleMissingYearImputer
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
+from preprocessors.helper.custom_cat_normalizers import OxariCategoricalNormalizer
 from scope_estimators import MiniModelArmyEstimator
 from datasources.online import S3Datasource
 from datasources.local import LocalDatasource
@@ -54,7 +55,14 @@ if __name__ == "__main__":
     today = time.strftime(DATE_FORMAT)
     now = time.strftime('T%Y%m%d%H%M')
 
-    dataset = get_small_datamanager_configuration().run()
+    # dataset = get_small_datamanager_configuration().run()
+    dataset = PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto_old.csv")),
+        RegionLoader(),
+    ).set_filter(CompanyDataFilter(frac=0.1)).run()
+
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

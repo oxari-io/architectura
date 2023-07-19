@@ -6,7 +6,7 @@ import logging
 import os
 import time
 from numbers import Number
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, TYPE_CHECKING
 import sys
 import platform
 import matplotlib.pyplot as plt
@@ -22,11 +22,17 @@ from sklearn.model_selection import train_test_split
 from typing_extensions import Self
 from sklearn.preprocessing import minmax_scale
 from .metrics import dunn_index, mape, optuna_metric
+from base.oxari_types import ArrayLike
 from .oxari_types import ArrayLike
 import colorlog
 import time as tm
 import datetime as dt
 import cloudpickle as pkl
+
+
+if TYPE_CHECKING:
+    from preprocessors.helper.custom_cat_normalizers import  OxariCategoricalNormalizer
+
 
 os.environ["LOGLEVEL"] = "DEBUG"
 LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
@@ -267,6 +273,7 @@ class DefaultOptimizer(OxariOptimizer):
     """
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
+        self.logger.warn("Careful! This Model will not Optimize as no Optimizer was Specified")
         return super().optimize(X_train, y_train, X_val, y_val, **kwargs)
 
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs) -> Number:
@@ -432,9 +439,11 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
 
+
+
 class OxariPreprocessor(OxariTransformer, abc.ABC):
 
-    def __init__(self, imputer: OxariImputer = None, **kwargs):
+    def __init__(self, imputer: OxariImputer = None, cat_normalizer:OxariCategoricalNormalizer = None, **kwargs):
         super().__init__(**kwargs)
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments

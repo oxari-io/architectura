@@ -27,7 +27,7 @@ if __name__ == "__main__":
     # loads the data just like CSVDataLoader, but a selection of the data
     for i in range(10):
         # configurations = [MiniModelArmyEstimator(), BaselineEstimator(), PredictMedianEstimator()]
-        configurations = [AdaboostEstimator(), MLPEstimator(), BaselineEstimator(), PredictMedianEstimator()]
+        configurations = [AdaboostEstimator(), MiniModelArmyEstimator(), BaselineEstimator(), PredictMedianEstimator()]
         # configurations = [SupportVectorEstimator(), XGBEstimator(), SGDEstimator(), DummyEstimator()]
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
@@ -67,9 +67,7 @@ if __name__ == "__main__":
             ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
             all_results.append({"time": time.time() - start, "scope": 3, **ppl3.evaluation_results})
             ### EVALUATION RESULTS ###
-            concatenated = pd.json_normalize(all_results)[[
-                "time", "scope", "imputer", "preprocessor", "feature_selector", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE"
-            ]]
+            concatenated = pd.json_normalize(all_results)
 
             fname = __loader__.name.split(".")[-1]
             concatenated.to_csv(f'local/eval_results/{fname}.csv')

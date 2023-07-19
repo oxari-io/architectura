@@ -226,7 +226,7 @@ class RegressorOptimizer(OxariOptimizer):
 
         y_pred = model.predict(X_val)
 
-        return optuna_metric(y_true=y_val, y_pred=y_pred)
+        return self.metric(y_val, y_pred)
 
 # Optimizer used in 'experiment_optuna_metric'
 class ExperimentOptimizer(RegressorOptimizer):

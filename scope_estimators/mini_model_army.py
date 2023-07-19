@@ -7,7 +7,7 @@ from scope_estimators.mma.classifier import (BucketClassifier, UnderfittedBucket
 from scope_estimators.mma.regressor import (BucketRegressor,
                                             EvenWeightBucketRegressor,
                                             RegressorOptimizer)
-
+from typing_extensions import Self
 N_TRIALS = 1
 N_STARTUP_TRIALS = 1
 
@@ -27,7 +27,7 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         else:
             self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(rgs_optimizer).set_evaluator(DefaultRegressorEvaluator())
 
-    def fit(self, X, y, **kwargs) -> "OxariScopeEstimator":
+    def fit(self, X, y, **kwargs) -> Self:
         # NOTE: Question is whether the linkage between bucket_cl prediction and regression makes sense. I start to believe it does not. 
         # If the classfier predicts one class only the regressor will just use the full data.
         # If the classifier predicts the majority class the model will have one powerful bucket and others are weak.

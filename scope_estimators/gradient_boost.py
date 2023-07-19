@@ -90,8 +90,7 @@ class XGBOptimizer(OxariOptimizer):
         model = XGBRegressor(**param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
-        return optuna_metric(y_true=y_val, y_pred=y_pred)
-
+        return self.metric(y_val, y_pred)
 
 
 
@@ -99,9 +98,9 @@ class XGBEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
         self._estimator = XGBRegressor()
-        self._optimizer = optimizer or XGBOptimizer()
+        self.set_optimizer(optimizer or XGBOptimizer())
 
-    def fit(self, X, y, **kwargs) -> "XGBEstimator":
+    def fit(self, X, y, **kwargs) -> Self:
         self.n_features_in_ = X.shape[1]
         X = pd.DataFrame(X)
         y = pd.DataFrame(y)
@@ -125,7 +124,7 @@ class LGBEstimator(XGBEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
         self._estimator = LGBMRegressor()
-        self._optimizer = optimizer or XGBOptimizer()
+        self.set_optimizer(optimizer or XGBOptimizer())
 
         
        

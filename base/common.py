@@ -21,7 +21,7 @@ from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_
 from sklearn.model_selection import train_test_split
 from typing_extensions import Self
 from sklearn.preprocessing import minmax_scale
-from .metrics import dunn_index, mape
+from .metrics import dunn_index, mape, optuna_metric
 from .oxari_types import ArrayLike
 import colorlog
 import time as tm
@@ -203,11 +203,12 @@ class DefaultClassificationEvaluator(OxariEvaluator):
 # TODO: Integrate optuna visualisation as method
 class OxariOptimizer(OxariLoggerMixin, abc.ABC):
 
-    def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, metric=optuna_metric, **kwargs) -> None:
         super().__init__()
         self.n_trials = n_trials
         self.sampler = sampler or optuna.samplers.TPESampler()
         self.sampler._n_startup_trials = n_startup_trials
+        self.metric = metric
 
     @abc.abstractmethod
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, pd.DataFrame]:
@@ -252,6 +253,13 @@ class OxariOptimizer(OxariLoggerMixin, abc.ABC):
         """
         return 0
 
+    def set_n_trials(self, n_trials=1)-> Self:
+        self.n_trials = n_trials
+        return self
+
+    def set_n_startup_trials(self, n_startup_trials=10)-> Self:
+        self.sampler._n_startup_trials = n_startup_trials
+        return self
 
 class DefaultOptimizer(OxariOptimizer):
     """
@@ -626,7 +634,7 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     # TODO: Needs to be optimized for automatic feature detection.
     def merge(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
         new_data.columns = [f"ft_{i}" for i in range(len(new_data.columns))]
-        return old_data.filter(regex='^!ft', axis=1).merge(new_data, left_index=True, right_index=True)
+        return pd.concat([old_data.filter(regex='^!ft', axis=1), new_data], axis=1)
 
     def merge_with_ignored_columns(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
         '''

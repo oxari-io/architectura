@@ -11,14 +11,14 @@ results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_optuna_metric.
 results["standardized_residuals"] = (results["residual"] - results["residual"].mean())/results["residual"].std()
 # IMPORTANT: The residuals are small because they are standardized
 # %%
-results['abs_residuals'] = results['standardized_residuals'].abs()
-results.groupby('metric').sum()['abs_residuals']
+results['abs_residuals'] = results['residual'].abs()
+results.groupby('metric')['abs_residuals'].agg(['median', 'mean', 'std', 'sum', 'min', 'max'])
 
 # %%
 plt.figure(figsize=(10, 5))
 plt.xticks(rotation=90)
 fig = sns.scatterplot(
-    data=results[(results["abs_residuals"] > 40)],
+    data=results,
     x="y_pred",
     y="abs_residuals",
     hue='metric'

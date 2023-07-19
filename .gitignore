@@ -1,4 +1,6 @@
-/**/experiment_optuna_metric.csv
+# /**/experiment_optuna_metric.csv
+# local/eval_results/experiment_optuna_metric.csv
+
 junk
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -218,4 +220,3 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
-local/eval_results/experiment_optuna_metric.csv

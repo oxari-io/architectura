@@ -9,6 +9,7 @@ import sklearn.preprocessing as prep
 
 from base import OxariPreprocessor
 from base.helper import DummyTargetScaler, OxariFeatureTransformerWrapper
+from preprocessors.helper.custom_cat_normalizers import CountryCodeCatColumnNormalizer, OxariCategoricalNormalizer, SectorNameCatColumnNormalizer, IndustryNameCatColumnNormalizer
 
 
 class DummyPreprocessor(OxariPreprocessor):
@@ -44,10 +45,17 @@ class DummyPreprocessor(OxariPreprocessor):
 
 class BaselinePreprocessor(OxariPreprocessor):
 
-    def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
+    def __init__(self, fin_transformer=None, cat_transformer=None, cat_normalizer:OxariCategoricalNormalizer=None, **kwargs):
         super().__init__(**kwargs)
         self.fin_transformer = fin_transformer or prep.RobustScaler()
         self.cat_transformer = cat_transformer or ce.TargetEncoder()
+        self.cat_normalizer = cat_normalizer or OxariCategoricalNormalizer(
+            col_transformers=[
+                SectorNameCatColumnNormalizer(),
+                IndustryNameCatColumnNormalizer(),
+                CountryCodeCatColumnNormalizer()
+            ]
+        )
         # self.scope_transformer = scope_transformer or LogarithmScaler()
         # self.scope_columns = NumMapping.get_targets()
         # self.financial_columns = FinancialLoader.columns
@@ -62,8 +70,14 @@ class BaselinePreprocessor(OxariPreprocessor):
 
         # transform numerical
         self.fin_transformer = self.fin_transformer.fit(data.loc[:, self.financial_columns])
+        
+        # Normalize categorical columns
+        self.cat_normalizer = self.cat_normalizer.fit(data.loc[:, self.categorical_columns], y=np.array(y))
+        data_new = self.cat_normalizer.transform(data.loc[:, self.categorical_columns], y=np.array(y))
+        
         # encode categorical
-        self.cat_transformer = self.cat_transformer.fit(data.loc[:, self.categorical_columns], y=np.array(y))
+        self.cat_transformer = self.cat_transformer.fit(data_new.loc[:, self.categorical_columns], y=np.array(y))
+
         # fill missing values
         self.imputer = self.imputer.fit(data.loc[:, self.financial_columns])
         self.logger.info(f'Preprocessed {len(self.original_features)} features to {len(self.financial_columns) + len(self.cat_transformer.cols)}')
@@ -84,7 +98,8 @@ class BaselinePreprocessor(OxariPreprocessor):
         X_new.loc[:, self.financial_columns] = transformed_values
         # encode categorical
         categorical_data = X_new[self.categorical_columns].copy()
-        transformed_cat_data = self.cat_transformer.transform(categorical_data)
+        normalized_cat_data = self.cat_normalizer.transform(categorical_data)
+        transformed_cat_data = self.cat_transformer.transform(normalized_cat_data)
         X_new.loc[:, self.categorical_columns] = transformed_cat_data
 
         # Set all the values

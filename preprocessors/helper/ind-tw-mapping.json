@@ -1,0 +1,1143 @@
+{
+    "Advertising Agencies": {
+        "gcis_industry": "Professional Services",
+        "gcis_industry_code": "202020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Aerospace & Defense": {
+        "gcis_industry": "Aerospace & Defense",
+        "gcis_industry_code": "201010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Agricultural Inputs": {
+        "gcis_industry": "Chemicals",
+        "gcis_industry_code": "151010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Airports & Air Services": {
+        "gcis_industry": "Air Freight & Logistics",
+        "gcis_industry_code": "203010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Airlines": {
+        "gcis_industry": "Passenger Airlines",
+        "gcis_industry_code": "203020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Aluminum": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Apparel Manufacturing": {
+        "gcis_industry": "Textiles, Apparel & Luxury Goods",
+        "gcis_industry_code": "252030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Apparel Retail": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Asset Management": {
+        "gcis_industry": "Capital Markets",
+        "gcis_industry_code": "402030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Auto & Truck Dealerships": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Auto Parts": {
+        "gcis_industry": "Automobile Components",
+        "gcis_industry_code": "251010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Banks\u2014Diversified": {
+        "gcis_industry": "Banks",
+        "gcis_industry_code": "401010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Banks\u2014Regional": {
+        "gcis_industry": "Banks",
+        "gcis_industry_code": "401010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Beverages - Wineries & Distillers": {
+        "gcis_industry": "Beverages",
+        "gcis_industry_code": "302010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Beverages\u2014Brewers": {
+        "gcis_industry": "Beverages",
+        "gcis_industry_code": "302010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Beverages\u2014Non-Alcoholic": {
+        "gcis_industry": "Beverages",
+        "gcis_industry_code": "302010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Beverages\u2014Wineries & Distilleries": {
+        "gcis_industry": "Beverages",
+        "gcis_industry_code": "302010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Biotechnology": {
+        "gcis_industry": "Biotechnology",
+        "gcis_industry_code": "352010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Broadcasting": {
+        "gcis_industry": "Media",
+        "gcis_industry_code": "502010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Building Materials": {
+        "gcis_industry": "Building Products",
+        "gcis_industry_code": "201020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Building Products & Equipment": {
+        "gcis_industry": "Building Products",
+        "gcis_industry_code": "201020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Business Equipment & Supplies": {
+        "gcis_industry": "Technology Hardware, Storage & Peripherals",
+        "gcis_industry_code": "452020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Business Services": {
+        "gcis_industry": "Professional Services",
+        "gcis_industry_code": "202020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "CATV Systems": {
+        "gcis_industry": "Media",
+        "gcis_industry_code": "502010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Capital Markets": {
+        "gcis_industry": "Capital Markets",
+        "gcis_industry_code": "402030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Chemicals": {
+        "gcis_industry": "Chemicals",
+        "gcis_industry_code": "151010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Chemicals - Major Diversified": {
+        "gcis_industry": "Chemicals",
+        "gcis_industry_code": "151010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Computer Hardware": {
+        "gcis_industry": "Technology Hardware, Storage & Peripherals",
+        "gcis_industry_code": "452020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Conglomerates": {
+        "gcis_industry": "Financial Services",
+        "gcis_industry_code": "402010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Confectioners": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Consulting Services": {
+        "gcis_industry": "Professional Services",
+        "gcis_industry_code": "202020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Coking Coal": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Copper": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Credit Services": {
+        "gcis_industry": "Consumer Finance",
+        "gcis_industry_code": "402020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Department Stores": {
+        "gcis_industry": "Broadline Retail",
+        "gcis_industry_code": "255030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Diagnostic & Research": {
+        "gcis_industry": "Life Sciences Tools & Services",
+        "gcis_industry_code": "352030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Diversified Electronics": {
+        "gcis_industry": "Electronic Equipment, Instruments & Components",
+        "gcis_industry_code": "452030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Diversified Machinery": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Diversified Utilities": {
+        "gcis_industry": "Multi-Utilities",
+        "gcis_industry_code": "551030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Drug Manufacturers\u2014General": {
+        "gcis_industry": "Pharmaceuticals",
+        "gcis_industry_code": "352020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Drug Manufacturers\u2014Specialty & Generic": {
+        "gcis_industry": "Pharmaceuticals",
+        "gcis_industry_code": "352020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Education & Training Services": {
+        "gcis_industry": "Diversified Consumer Services",
+        "gcis_industry_code": "253020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Electronic Components": {
+        "gcis_industry": "Electronic Equipment, Instruments & Components",
+        "gcis_industry_code": "452030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Electronic Gaming & Multimedia": {
+        "gcis_industry": "Entertainment",
+        "gcis_industry_code": "502020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Electronics & Computer Distribution": {
+        "gcis_industry": "Electronic Equipment, Instruments & Components",
+        "gcis_industry_code": "452030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Engineering & Construction": {
+        "gcis_industry": "Construction & Engineering",
+        "gcis_industry_code": "201030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Entertainment": {
+        "gcis_industry": "Entertainment",
+        "gcis_industry_code": "502020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Farm & Heavy Construction Machinery": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Farm Products": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Financial Conglomerates": {
+        "gcis_industry": "Financial Services",
+        "gcis_industry_code": "402010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Financial Data & Stock Exchanges": {
+        "gcis_industry": "Financial Services",
+        "gcis_industry_code": "402010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Food - Major Diversified": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Food Distribution": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Footwear & Accessories": {
+        "gcis_industry": "Textiles, Apparel & Luxury Goods",
+        "gcis_industry_code": "252030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Furnishings, Fixtures & Appliances": {
+        "gcis_industry": "Household Durables",
+        "gcis_industry_code": "252010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Gambling": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "General Building Materials": {
+        "gcis_industry": "Building Products",
+        "gcis_industry_code": "201020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "General Contractors": {
+        "gcis_industry": "Construction & Engineering",
+        "gcis_industry_code": "201030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Gold": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Grocery Stores": {
+        "gcis_industry": "Consumer Staples Distribution & Retail",
+        "gcis_industry_code": "301010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Health Information Services": {
+        "gcis_industry": "Health Care Technology",
+        "gcis_industry_code": "351030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Healthcare Plans": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Home Improvement Retail": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Household & Personal Products": {
+        "gcis_industry": "Household Products",
+        "gcis_industry_code": "303010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Industrial Distribution": {
+        "gcis_industry": "Trading Companies & Distributors",
+        "gcis_industry_code": "201070",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Industrial Equipment Wholesale": {
+        "gcis_industry": "Trading Companies & Distributors",
+        "gcis_industry_code": "201070",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Industrial Metals & Minerals": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Information Technology Services": {
+        "gcis_industry": "IT Services",
+        "gcis_industry_code": "451020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Independent Oil & Gas": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Infrastructure Operations": {
+        "gcis_industry": "Construction & Engineering",
+        "gcis_industry_code": "201030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Integrated Freight & Logistics": {
+        "gcis_industry": "Air Freight & Logistics",
+        "gcis_industry_code": "203010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Insurance\u2014Diversified": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Insurance\u2014Life": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Insurance\u2014Property & Casualty": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Insurance\u2014Reinsurance": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Insurance\u2014Specialty": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Insurance Brokers": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Internet Content & Information": {
+        "gcis_industry": "Interactive Media & Services",
+        "gcis_industry_code": "502030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Internet Retail": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Lodging": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Lumber & Wood Production": {
+        "gcis_industry": "Paper & Forest Products",
+        "gcis_industry_code": "151050",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Luxury Goods": {
+        "gcis_industry": "Textiles, Apparel & Luxury Goods",
+        "gcis_industry_code": "252030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Marine Shipping": {
+        "gcis_industry": "Marine Transportation",
+        "gcis_industry_code": "203030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Medical Care Facilities": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Medical Devices": {
+        "gcis_industry": "Health Care Equipment & Supplies",
+        "gcis_industry_code": "351010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Medical Distribution": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Medical Instruments & Supplies": {
+        "gcis_industry": "Health Care Equipment & Supplies",
+        "gcis_industry_code": "351010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Metal Fabrication": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Mortgage Finance": {
+        "gcis_industry": "Financial Services",
+        "gcis_industry_code": "402010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Oil & Gas Drilling": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Oil & Gas E&P": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Oil & Gas Equipment & Services": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Oil & Gas Integrated": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Oil & Gas Midstream": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Oil & Gas Refining & Marketing": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Other Industrial Metals & Mining": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Other Precious Metals & Mining": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Packaged Foods": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Packaging & Containers": {
+        "gcis_industry": "Containers & Packaging",
+        "gcis_industry_code": "151030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Paper & Paper Products": {
+        "gcis_industry": "Paper & Forest Products",
+        "gcis_industry_code": "151050",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Personal Services": {
+        "gcis_industry": "Diversified Consumer Services",
+        "gcis_industry_code": "253020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Pharmaceutical Retailers": {
+        "gcis_industry": "Consumer Staples Distribution & Retail",
+        "gcis_industry_code": "301010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Pollution & Treatment Controls": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Publishing": {
+        "gcis_industry": "Media",
+        "gcis_industry_code": "502010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT - Diversified": {
+        "gcis_industry": "Diversified REITs",
+        "gcis_industry_code": "601010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Diversified": {
+        "gcis_industry": "Diversified REITs",
+        "gcis_industry_code": "601010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Healthcare Facilities": {
+        "gcis_industry": "Health Care REITs",
+        "gcis_industry_code": "601050",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Hotel & Motel": {
+        "gcis_industry": "Hotel & Resort REITs",
+        "gcis_industry_code": "601030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Industrial": {
+        "gcis_industry": "Industrial REITs",
+        "gcis_industry_code": "601025",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Mortgage": {
+        "gcis_industry": "Mortgage Real Estate Investment Trusts (REITs)",
+        "gcis_industry_code": "402040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Office": {
+        "gcis_industry": "Office REITs",
+        "gcis_industry_code": "601040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Residential": {
+        "gcis_industry": "Residential REITs",
+        "gcis_industry_code": "601060",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Retail": {
+        "gcis_industry": "Retail REITs",
+        "gcis_industry_code": "601070",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "REIT\u2014Specialty": {
+        "gcis_industry": "Specialized REITs",
+        "gcis_industry_code": "601080",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Railroads": {
+        "gcis_industry": "Transportation Infrastructure",
+        "gcis_industry_code": "203050",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Rental & Leasing Services": {
+        "gcis_industry": "Commercial Services & Supplies",
+        "gcis_industry_code": "202010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Residential Construction": {
+        "gcis_industry": "Household Durables",
+        "gcis_industry_code": "252010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Resorts & Casinos": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Restaurants": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Rubber & Plastics": {
+        "gcis_industry": "Chemicals",
+        "gcis_industry_code": "151010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Scientific & Technical Instruments": {
+        "gcis_industry": "Electronic Equipment, Instruments & Components",
+        "gcis_industry_code": "452030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Security & Protection Services": {
+        "gcis_industry": "Commercial Services & Supplies",
+        "gcis_industry_code": "202010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Semiconductor - Broad Line": {
+        "gcis_industry": "Semiconductors & Semiconductor Equipment",
+        "gcis_industry_code": "453010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Semiconductor Equipment & Materials": {
+        "gcis_industry": "Semiconductors & Semiconductor Equipment",
+        "gcis_industry_code": "453010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Semiconductors": {
+        "gcis_industry": "Semiconductors & Semiconductor Equipment",
+        "gcis_industry_code": "453010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Shell Companies": {
+        "gcis_industry": "Financial Services",
+        "gcis_industry_code": "402010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Silver": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Software\u2014Application": {
+        "gcis_industry": "Software",
+        "gcis_industry_code": "451030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Software\u2014Infrastructure": {
+        "gcis_industry": "Software",
+        "gcis_industry_code": "451030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Solar": {
+        "gcis_industry": "Independent Power and Renewable Electricity Producers",
+        "gcis_industry_code": "551050",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Specialty Business Services": {
+        "gcis_industry": "Professional Services",
+        "gcis_industry_code": "202020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Specialty Chemicals": {
+        "gcis_industry": "Chemicals",
+        "gcis_industry_code": "151010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Specialty Industrial Machinery": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Specialty Retail": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Staffing & Employment Services": {
+        "gcis_industry": "Professional Services",
+        "gcis_industry_code": "202020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Steel": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Telecom Services": {
+        "gcis_industry": "Diversified Telecommunication Services",
+        "gcis_industry_code": "501010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Textile Manufacturing": {
+        "gcis_industry": "Textiles, Apparel & Luxury Goods",
+        "gcis_industry_code": "252030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Thermal Coal": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Tools & Accessories": {
+        "gcis_industry": "Household Durables",
+        "gcis_industry_code": "252010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Travel Services": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Trucking": {
+        "gcis_industry": "Transportation Infrastructure",
+        "gcis_industry_code": "203050",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Uranium": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Utilities\u2014Diversified": {
+        "gcis_industry": "Multi-Utilities",
+        "gcis_industry_code": "551030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Utilities\u2014Independent Power Producers": {
+        "gcis_industry": "Independent Power and Renewable Electricity Producers",
+        "gcis_industry_code": "551050",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Utilities\u2014Regulated Electric": {
+        "gcis_industry": "Electric Utilities",
+        "gcis_industry_code": "551010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Utilities\u2014Regulated Gas": {
+        "gcis_industry": "Gas Utilities",
+        "gcis_industry_code": "551020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Utilities\u2014Regulated Water": {
+        "gcis_industry": "Water Utilities",
+        "gcis_industry_code": "551040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Utilities\u2014Renewable": {
+        "gcis_industry": "Independent Power and Renewable Electricity Producers",
+        "gcis_industry_code": "551050",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Waste Management": {
+        "gcis_industry": "Commercial Services & Supplies",
+        "gcis_industry_code": "202010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Auto Manufacturers": {
+        "gcis_industry": "Automobiles",
+        "gcis_industry_code": "251020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Communication Equipment": {
+        "gcis_industry": "Communications Equipment",
+        "gcis_industry_code": "452010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Consumer Electronics": {
+        "gcis_industry": "Electronic Equipment, Instruments & Components",
+        "gcis_industry_code": "452030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Diagnostics & Research": {
+        "gcis_industry": "Life Sciences Tools & Services",
+        "gcis_industry_code": "352030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Discount Stores": {
+        "gcis_industry": "Broadline Retail",
+        "gcis_industry_code": "255030",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Electric Utilities": {
+        "gcis_industry": "Electric Utilities",
+        "gcis_industry_code": "551010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Electrical Equipment & Parts": {
+        "gcis_industry": "Electrical Equipment",
+        "gcis_industry_code": "201040",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Leisure": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Real Estate Services": {
+        "gcis_industry": "Real Estate Management & Development",
+        "gcis_industry_code": "602010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Real Estate\u2014Development": {
+        "gcis_industry": "Real Estate Management & Development",
+        "gcis_industry_code": "602010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Real Estate\u2014Diversified": {
+        "gcis_industry": "Diversified REITs",
+        "gcis_industry_code": "601010",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Recreational Vehicles": {
+        "gcis_industry": "Automobiles",
+        "gcis_industry_code": "251020",
+        "source": [
+            "TwelveData"
+        ]
+    },
+    "Tobacco": {
+        "gcis_industry": "Tobacco",
+        "gcis_industry_code": "302030",
+        "source": [
+            "TwelveData"
+        ]
+    }
+}

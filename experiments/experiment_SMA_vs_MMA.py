@@ -24,6 +24,7 @@ if __name__ == "__main__":
     num_reps = args.num_reps
     scope = args.scope
     results_file = args.file
+    ignored_features = ['ft_catm_sector_name']
 
     all_results = []
     dataset = get_default_datamanager_configuration().run()
@@ -41,7 +42,7 @@ if __name__ == "__main__":
             start = time.time()
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=DummyFeatureReducer(),
+                feature_reducer=PCAFeatureReducer(ignored_features=ignored_features),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -54,7 +55,7 @@ if __name__ == "__main__":
                 SPLIT_3 = bag.scope_3
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=DummyFeatureReducer(),
+                    feature_reducer=PCAFeatureReducer(ignored_features=ignored_features),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=estimator,
                     ci_estimator=BaselineConfidenceEstimator(),
@@ -64,7 +65,7 @@ if __name__ == "__main__":
                 
                 ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=DummyFeatureReducer(),
+                    feature_reducer=PCAFeatureReducer(ignored_features=ignored_features),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=estimator,
                     ci_estimator=BaselineConfidenceEstimator(),

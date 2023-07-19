@@ -58,10 +58,9 @@ class DropFeatureReducer(OxariFeatureReducer):
 class PCAFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector uses PCA to reduce the dimensionality of the features first"""
 
-    def __init__(self, n_components=10, ignored_features=[], **kwargs):
+    def __init__(self, n_components=10, **kwargs):
         super().__init__(**kwargs)
         self.n_components_ = n_components
-        self.ignored_features_ = ignored_features
         self._dimensionality_reducer: PCA = PCA(n_components=n_components)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:

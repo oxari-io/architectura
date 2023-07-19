@@ -587,10 +587,10 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, ignored_features=[], **kwargs):
         super().__init__(**kwargs)
         self.n_components_ = None
-        self.ignored_features_ = []
+        self.ignored_features_ = ignored_features
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":

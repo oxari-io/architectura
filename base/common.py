@@ -634,7 +634,7 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     # TODO: Needs to be optimized for automatic feature detection.
     def merge(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
         new_data.columns = [f"ft_{i}" for i in range(len(new_data.columns))]
-        return pd.concat([old_data.filter(regex='^!ft', axis=1), new_data], axis=1)
+        return pd.concat([old_data.filter(regex='^(?!ft)', axis=1), new_data], axis=1)
 
     def merge_with_ignored_columns(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
         '''
@@ -647,7 +647,7 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
         Returns:
             pd.DataFrame: Reduced data with the ignored columns
         '''
-        return old_data[self.ignored_features_].merge(new_data, left_index=True, right_index=True)
+        return pd.concat([old_data[self.ignored_features_], new_data], axis=1)
 
     def get_config(self, deep=True):
         return {'n_components_': self.n_components_, **super().get_config(deep)}

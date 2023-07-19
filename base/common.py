@@ -265,6 +265,7 @@ class DefaultOptimizer(OxariOptimizer):
     """
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
+        self.logger.warn("Careful! This Model will not Optimize as no Optimizer was Specified")
         return super().optimize(X_train, y_train, X_val, y_val, **kwargs)
 
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs) -> Number:

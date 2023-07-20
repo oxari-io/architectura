@@ -4,7 +4,7 @@ import pandas as pd
 
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
-from datasources.core import FSExperimentDataLoader, get_small_datamanager_configuration
+from datasources.core import FSExperimentDataLoader, get_default_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer, DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer, BaselineImputer
 from pipeline.core import DefaultPipeline
@@ -16,21 +16,21 @@ from experiments.experiment_argument_parser import BucketingExperimentCommandLin
 
 if __name__ == "__main__":
     all_results = []
+    dataset = get_default_datamanager_configuration().run() 
+
     for rep in range(10):
-        dataset = get_small_datamanager_configuration().run() 
-        X = dataset.get_features(OxariDataManager.ORIGINAL)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         # if (scope == True):
         #     SPLIT_2 = bag.scope_2
         #     SPLIT_3 = bag.scope_3
-        for i in range(1, 18):
+        for i in range(1, 101, 10):
             start = time.time()
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
                 feature_reducer=PCAFeatureReducer(n_components=i),
                 imputer=BaselineImputer(),
-                scope_estimator=MiniModelArmyEstimator(),
+                scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -62,8 +62,7 @@ if __name__ == "__main__":
             #     all_results.append({"time": time_elapsed_2, "scope": 2, **ppl2.evaluation_results})
             #     all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results})
             print(all_results)
-            concatenated = pd.json_normalize(all_results)[["time", "scope", "imputer", "preprocessor", "feature_selector", "n_components", "scope_estimator", "test.evaluator", "test.sMAPE", "test.R2", "test.MAE", "test.RMSE", "test.MAPE", "repetition", "variance"]]
-            
+            concatenated = pd.json_normalize(all_results)
             fname = __loader__.name.split(".")[-1]
             concatenated.to_csv(f'local/eval_results/{fname}.csv')
 

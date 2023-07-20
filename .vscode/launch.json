@@ -64,7 +64,7 @@
       "name": "Run Specific Experiment",
       "type": "python",
       "request": "launch",
-      "module": "experiments.experiment_missing_value_imputers",
+      "module": "experiments.experiment_SMA_vs_MMA",
       "justMyCode": true
     },
     {

@@ -39,6 +39,8 @@ LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
 WRITE_TO = "./logger.log"  # "cout"
 logging.root.setLevel(LOGLEVEL)
 
+# To be decided after checking correlation between features
+IGNORED_FEATURES: list(str) = []
 
 # FEEDBACK:
 # - Logger had no formatting
@@ -594,9 +596,10 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, ignored_features=[], **kwargs):
         super().__init__(**kwargs)
         self.n_components_ = None
+        self.ignored_features_ = ignored_features
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -641,6 +644,19 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     def merge(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
         new_data.columns = [f"ft_{i}" for i in range(len(new_data.columns))]
         return pd.concat([old_data.filter(regex='^(?!ft)', axis=1), new_data], axis=1)
+
+    def merge_with_ignored_columns(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
+        '''
+        Adds the ignored columns to the reduced data
+
+        Args:
+            old_data (pd.DataFrame): The original data, containing the ignored columns
+            new_data (pd.DataFrame): The reduced data, without the ignored columns
+
+        Returns:
+            pd.DataFrame: Reduced data with the ignored columns
+        '''
+        return pd.concat([old_data[self.ignored_features_], new_data], axis=1)
 
     def get_config(self, deep=True):
         return {'n_components_': self.n_components_, **super().get_config(deep)}

@@ -1,14 +1,13 @@
 # %%
 import sys
-from base.dataset_loader import CategoricalLoader, CompanyDataFilter, FinancialLoader, ScopeLoader
-from datasources.loaders import RegionLoader
-
-from datasources.local import LocalDatasource
 
 sys.path.append("..")
 import pathlib
 from IPython.display import display
 
+from datasources.loaders import RegionLoader
+from datasources.local import LocalDatasource
+from base.dataset_loader import CategoricalLoader, CompanyDataFilter, FinancialLoader, ScopeLoader
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -19,6 +18,7 @@ from base import OxariDataManager
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from datasources.online import S3Datasource
 from pathlib import Path
+
 sns.set_palette('viridis')
 
 PARENT_PATH = Path('..').absolute().resolve().as_posix()
@@ -92,13 +92,14 @@ fig.tight_layout()
 plt.show()
 
 # %%
-thresh=0.5
+thresh = 0.5
+from sklearn.impute import KNNImputer, SimpleImputer
 
 # %%
 correlations_original = numerical_features.corr()
 correlations_original
 # %%
-plt.figure(figsize=(25,20))
+plt.figure(figsize=(25, 20))
 sns.heatmap(correlations_original.abs(), vmin=-1, vmax=1, cmap='bwr')
 
 # %%
@@ -108,24 +109,31 @@ while flag:
     highest_corrs = list(np.sum(correlations.abs() > thresh).sort_values().items())[-1]
     if highest_corrs[1] < 2:
         break
-    print(f"Going to remove {highest_corrs}")
+    # print(f"Going to remove {highest_corrs}")
     correlations = correlations.drop(highest_corrs[0], axis=1).drop(highest_corrs[0], axis=0)
     # display(correlations)
-# %%    
-plt.figure(figsize=(25,20))
-sns.heatmap(correlations.abs(), vmin=-1, vmax=1,cmap='bwr')
+print('Iterative elimination\n')
+print(f"features_iterative_corr_elimination = {list(correlations.columns)}")      
+# %%
+plt.figure(figsize=(25, 20))
+sns.heatmap(correlations.abs(), vmin=-1, vmax=1, cmap='bwr')
 # %%
 correlations_strict = correlations_original.copy()
 l_highest_corrs = list(np.sum(correlations_strict.abs() > thresh).sort_values(ascending=0).items())
 reversed(l_highest_corrs)
 for key, val in l_highest_corrs:
-    if val > 1: 
-        print(f"Going to remove {(key, val)}")
-        correlations_strict = correlations_strict.drop(key, axis=1).drop(key, axis=0) 
-# %%
-plt.figure(figsize=(25,20))
-sns.heatmap(correlations_strict.abs(), vmin=-1, vmax=1,cmap='bwr')
+    if val > 1:
+        # print(f"Going to remove {(key, val)}")
+        correlations_strict = correlations_strict.drop(key, axis=1).drop(key, axis=0)
 
+print('Strict elimination\n')
+print(f"features_strict_corr_elimination = {list(correlations_strict.columns)}")  
+# %%
+plt.figure(figsize=(25, 20))
+sns.heatmap(correlations_strict.abs(), vmin=-1, vmax=1, cmap='bwr')
+# %%
+numerical_features = pd.DataFrame(SimpleImputer(strategy='median').fit_transform(numerical_features), columns=numerical_features.columns, index=numerical_features.index)
+numerical_features
 # %%
 # https://www.projectpro.io/recipes/drop-out-highly-correlated-features-in-python
 
@@ -139,17 +147,17 @@ k = 10
 
 # perform feature selection
 y = DATA['tg_numc_scope_1']
-selector = SelectKBest(f_regression, k=k).fit(numerical_features.fillna(1), y.fillna(1))
-X_new = selector.transform(numerical_features.fillna(1))
+selector = SelectKBest(f_regression, k=k).fit(numerical_features[~y.isna()], y[~y.isna()])
+X_new = selector.transform(numerical_features)
 # get feature names of selected features
 
 selected_features = numerical_features.columns[selector.get_support()]
 
 # print selected features
-
-print(selected_features)
+print('SelectKBest elimination\n')
+print(f"features_select_k_best = {list(selected_features)}")
 # %%
-plt.figure(figsize=(25,20))
+plt.figure(figsize=(25, 20))
 sns.heatmap(numerical_features[selected_features].corr().abs(), vmin=-1, vmax=1, cmap='bwr')
 
 # %%
@@ -160,29 +168,37 @@ from tqdm import tqdm
 
 vif = pd.DataFrame()
 
-vif["VIF Factor"] = [variance_inflation_factor(numerical_features.fillna(0).values, i) for i in tqdm(range(numerical_features.shape[1]))]
+vif["VIF Factor"] = [variance_inflation_factor(numerical_features, i) for i in tqdm(range(numerical_features.shape[1]))]
 
 vif["features"] = numerical_features.columns
 
 # print VIF values
-
-print(vif)
 # %%
-vif[vif["VIF Factor"] < 10].features.tolist()
+print('VIF elimination\n')
+print(f"features_VIF_under_10 = {vif[vif['VIF Factor'] < 10].features.tolist()}")
 # %%
-plt.figure(figsize=(25,20))
+plt.figure(figsize=(25, 20))
 sns.heatmap(numerical_features[vif[vif["VIF Factor"] < 10].features.tolist()].corr().abs(), vmin=-1, vmax=1, cmap='bwr')
+# %%
+print('VIF elimination\n')
+print(f"features_VIF_under_5 = {vif[vif['VIF Factor'] < 5].features.tolist()}")
+# %%
+plt.figure(figsize=(25, 20))
+sns.heatmap(numerical_features[vif[vif["VIF Factor"] < 5].features.tolist()].corr().abs(), vmin=-1, vmax=1, cmap='bwr')
 # %%
 from sklearn.feature_selection import RFECV
 from xgboost import XGBRegressor
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.ensemble import RandomForestRegressor
 
-estimator = XGBRegressor()
-selector = RFECV(estimator, step=1, cv=5, verbose=True)
+estimator = RandomForestRegressor()
+selector = RFECV(estimator, step=0.1, cv=10, verbose=True)
 selector = selector.fit(numerical_features[~y.isna()], y[~y.isna()])
 
 # %%
 
-plt.figure(figsize=(25,20))
-sns.heatmap(numerical_features[selector.support_].corr().abs(), vmin=-1, vmax=1, cmap='bwr')
+plt.figure(figsize=(25, 20))
+sns.heatmap(numerical_features.iloc[:, selector.support_].corr().abs(), vmin=-1, vmax=1, cmap='bwr')
 
 # %%

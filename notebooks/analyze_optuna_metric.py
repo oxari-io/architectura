@@ -6,9 +6,11 @@ import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 # %%
+X_var = "y_true"
 cwd = pathlib.Path(__file__).parent
 results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_optuna_metric.csv', index_col=0)
 results["standardized_residuals"] = (results["residual"] - results["residual"].mean())/results["residual"].std()
+results["buckets"] = pd.qcut(results[X_var], 5)
 # IMPORTANT: The residuals are small because they are standardized
 # %%
 results['abs_residuals'] = results['residual'].abs()
@@ -19,7 +21,7 @@ plt.figure(figsize=(10, 5))
 plt.xticks(rotation=90)
 fig = sns.scatterplot(
     data=results,
-    x="y_pred",
+    x=X_var,
     y="abs_residuals",
     hue='metric'
 )
@@ -32,9 +34,38 @@ fig.set_title('predicted value vs residuals')
 # %%
 plt.figure(figsize=(10, 5))
 plt.xticks(rotation=90)
+fig = sns.boxplot(
+    data=results,
+    # x="buckets",
+    y="abs_residuals",
+    x='metric'
+)
+# plt.xscale('log')
+plt.yscale('log')
+fig.set_xlabel('Pred Value')
+fig.set_ylabel('Residuals')
+fig.set_title('predicted value vs residuals')
+# %%
+plt.figure(figsize=(10, 5))
+plt.xticks(rotation=90)
+fig = sns.boxplot(
+    data=results,
+    x="buckets",
+    y="abs_residuals",
+    hue='metric'
+)
+# plt.xscale('log')
+plt.yscale('log')
+fig.set_xlabel('Pred Value')
+fig.set_ylabel('Residuals')
+fig.set_title('predicted value vs residuals')
+
+# %%
+plt.figure(figsize=(10, 5))
+plt.xticks(rotation=90)
 fig = sns.scatterplot(
     data=results,
-    x="y_pred",
+    x=X_var,
     y="abs_residuals",
     hue='metric'
 )
@@ -49,7 +80,7 @@ plt.figure(figsize=(10, 5))
 plt.xticks(rotation=90)
 fig = sns.scatterplot(
     data=results,
-    x="y_pred",
+    x=X_var,
     y="abs_residuals",
     hue='metric'
 )

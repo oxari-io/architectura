@@ -17,6 +17,8 @@ from experiments.experiment_argument_parser import FeatureReductionExperimentCom
 import textdistance
 import numpy as np
 
+from scope_estimators.mini_model_army import MiniModelArmyEstimator
+
 if __name__ == "__main__":
     parser = FeatureReductionExperimentCommandLineParser(
         description=
@@ -34,6 +36,7 @@ if __name__ == "__main__":
 
     all_results = []  # dictionary where key=feature selection method, value = evaluation results
     dataset = get_default_datamanager_configuration().run()
+
     old_features = [
         'ft_numc_cash',
         'ft_numd_employees', 
@@ -51,14 +54,160 @@ if __name__ == "__main__":
         'ft_numc_total_liabilities'
     ]
 
+    features_iterative_corr_elimination = [
+        'ft_numc_acrued_expenses',
+        'ft_numc_common_stock_dividends',
+        'ft_numc_deferred_liabilities',
+        'ft_numc_diluted_shares_outstanding',
+        'ft_numc_eps_diluted',
+        'ft_numc_financial_assets',
+        'ft_numc_financing_activities.common_stock_issuance',
+        'ft_numc_financing_activities.common_stock_repurchase',
+        'ft_numc_financing_activities.short_term_debt_issuance',
+        'ft_numc_goodwill',
+        'ft_numc_hedging_assets',
+        'ft_numc_interest_paid',
+        'ft_numc_investing_activities_purchase_of_investments',
+        'ft_numc_investing_actvities.net_acquisitions',
+        'ft_numc_investing_actvities.net_intangibles',
+        'ft_numc_minority_interests',
+        'ft_numc_operating_activities.accounts_payable',
+        'ft_numc_operating_activities.other_assets_liabilities',
+        'ft_numc_operating_activities.other_non_cash_items',
+        'ft_numc_other_current_assets',
+        'ft_numc_other_financing_charges',
+        'ft_numc_other_income_expense',
+        'ft_numc_other_non_current_assets',
+        'ft_numc_other_non_current_liabilities',
+        'ft_numc_other_shareholders_equity',
+        'ft_numc_preferred_stock_dividends',
+        'ft_numc_prior_tg_numc_scope_1',
+        'ft_numc_prior_tg_numc_scope_2',
+        'ft_numc_prior_tg_numc_scope_3',
+        'ft_numc_restricted_cash',
+        'ft_numc_roa',
+        'ft_numc_roe',
+        'ft_numc_tax_payable',
+        'ft_numc_tresury_stock'
+    ]
+
+    features_strict_corr_elimination = [
+        'ft_numc_hedging_assets',
+        'ft_numc_investing_actvities.net_acquisitions',
+        'ft_numc_other_financing_charges',
+        'ft_numc_prior_tg_numc_scope_1',
+        'ft_numc_prior_tg_numc_scope_2',
+        'ft_numc_prior_tg_numc_scope_3',
+        'ft_numc_roa',
+        'ft_numc_roe'
+    ]
+
+    features_select_k_best = [
+        'ft_numc_basic_shares_outstanding', 
+        'ft_numc_deferred_liabilities',
+        'ft_numc_diluted_shares_outstanding', 
+        'ft_numc_hedging_assets', 
+        'ft_numc_minority_interest', 
+        'ft_numc_operating_activities.depreciation', 
+        'ft_numc_prior_tg_numc_scope_1', 
+        'ft_numc_prior_tg_numc_scope_2', 
+        'ft_numc_prior_tg_numc_scope_3', 
+        'ft_numc_tax_payable'
+    ]
+
+    features_VIF_under_10 = [
+        'ft_numc_acrued_expenses', 
+        'ft_numc_additional_paid_in_capital', 
+        'ft_numc_assets_held_for_sale', 
+        'ft_numc_cash', 
+        'ft_numc_cash_equivalents', 
+        'ft_numc_derivative_product_liabilities',
+        'ft_numc_financial_assets', 
+        'ft_numc_free_cash_flow', 
+        'ft_numc_goodwill', 
+        'ft_numc_hedging_assets', 
+        'ft_numc_income', 
+        'ft_numc_income_tax_paid', 
+        'ft_numc_intangible_assets', 
+        'ft_numc_interest_paid', 
+        'ft_numc_investing_actvities.net_intangibles', 
+        'ft_numc_investment_properties', 
+        'ft_numc_investments_and_advances', 
+        'ft_numc_leases', 
+        'ft_numc_long_term_provisions', 
+        'ft_numc_minority_interest', 
+        'ft_numc_minority_interests', 
+        'ft_numc_other_current_assets', 
+        'ft_numc_other_income_expense', 
+        'ft_numc_other_non_current_assets', 
+        'ft_numc_other_operating_expenses', 
+        'ft_numc_other_receivables', 
+        'ft_numc_other_shareholders_equity', 
+        'ft_numc_other_short_term_investments', 
+        'ft_numc_pensions', 
+        'ft_numc_preferred_stock_dividends', 
+        'ft_numc_prepaid_assets', 
+        'ft_numc_prior_tg_numc_scope_1', 
+        'ft_numc_prior_tg_numc_scope_2', 
+        'ft_numc_prior_tg_numc_scope_3', 
+        'ft_numc_rd_expenses', 
+        'ft_numc_restricted_cash',
+        'ft_numc_roa', 
+        'ft_numc_roe', 
+        'ft_numc_total_assets', 
+        'ft_numc_tresury_stock'
+    ]
+
+    features_VIF_under_5 = [
+        'ft_numc_acrued_expenses', 
+        'ft_numc_additional_paid_in_capital', 
+        'ft_numc_assets_held_for_sale', 
+        'ft_numc_cash_equivalents', 
+        'ft_numc_derivative_product_liabilities', 
+        'ft_numc_financial_assets', 
+        'ft_numc_goodwill', 
+        'ft_numc_hedging_assets', 
+        'ft_numc_income_tax_paid', 
+        'ft_numc_interest_paid', 
+        'ft_numc_investing_actvities.net_intangibles', 
+        'ft_numc_investment_properties', 
+        'ft_numc_leases', 
+        'ft_numc_long_term_provisions', 
+        'ft_numc_minority_interests', 
+        'ft_numc_other_current_assets', 
+        'ft_numc_other_income_expense', 
+        'ft_numc_other_non_current_assets', 
+        'ft_numc_other_operating_expenses', 
+        'ft_numc_other_shareholders_equity', 
+        'ft_numc_other_short_term_investments', 
+        'ft_numc_preferred_stock_dividends', 
+        'ft_numc_prepaid_assets', 
+        'ft_numc_prior_tg_numc_scope_1', 
+        'ft_numc_prior_tg_numc_scope_2', 
+        'ft_numc_prior_tg_numc_scope_3', 
+        'ft_numc_rd_expenses', 
+        'ft_numc_roa', 
+        'ft_numc_roe', 
+        'ft_numc_tresury_stock'
+    ]
+
     #TODO: write Monday task to correct ft_numc_rd_expenses and ft_numc_total_liabilities in frontend
     #TODO: new data misses ft_numc_market_cap, ft_numd_employees, ft_numc_stock_return
     #TODO: choose two proxies for the missing ones from the new dataset
+    
+    initial_features = dataset.get_data_by_name(OxariDataManager.ORIGINAL).filter(regex='^ft_', axis=1).columns.tolist()
 
-    feature_lists = [
-        old_features
-    ]
+    feature_lists = {
+        'old_features': old_features,
+        'features_iterative_corr_elimination': features_iterative_corr_elimination,
+        'features_strict_corr_elimination': features_strict_corr_elimination,
+        'features_select_k_best': features_select_k_best,
+        'features_VIF_under_10': features_VIF_under_10,
+        'features_VIF_under_5': features_VIF_under_5,
+        'initial_features': initial_features
+    }
 
+    
     for i in range(num_reps):
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
@@ -66,45 +215,45 @@ if __name__ == "__main__":
             SPLIT_2 = bag.scope_2
             SPLIT_3 = bag.scope_3
 
-        for feature_list in feature_lists:
+        for list_name, feature_list in feature_lists.items():
             start = time.time()
 
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
                 feature_reducer=SelectionFeatureReducer(features=feature_list),
                 imputer=RevenueQuantileBucketImputer(buckets_number=5),
-                scope_estimator=SupportVectorEstimator(),
+                scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=40),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
             time_elapsed_1 = time.time() - start
             start = time.time()
-            all_results.append({"time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results})
+            all_results.append({"time": time_elapsed_1, "scope": 1, "list_name": list_name, **ppl1.evaluation_results})
             
             if (scope == True):
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=SelectionFeatureReducer(features=feature_list),
                     imputer=RevenueQuantileBucketImputer(buckets_number=5),
-                    scope_estimator=SupportVectorEstimator(),
+                    scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=40),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
                 time_elapsed_2 = time.time() - start
-                all_results.append({"time": time_elapsed_2, "scope": 2, **ppl2.evaluation_results})
+                all_results.append({"time": time_elapsed_2, "scope": 2, "list_name": list_name, **ppl2.evaluation_results})
                 
                 start = time.time()
                 ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=SelectionFeatureReducer(features=feature_list),
                     imputer=RevenueQuantileBucketImputer(buckets_number=5),
-                    scope_estimator=SupportVectorEstimator(),
+                    scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=40),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
                 time_elapsed_3 = time.time() - start
 
-                all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results})
+                all_results.append({"time": time_elapsed_3, "scope": 3, "list_name": list_name, **ppl3.evaluation_results})
 
             concatenated = pd.json_normalize(all_results)
             fname = __loader__.name.split(".")[-1]

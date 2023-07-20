@@ -15,6 +15,7 @@ from datasources.core import PreviousScopeFeaturesDataManager, get_default_datam
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
+from feature_reducers.core import PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
@@ -36,6 +37,7 @@ DATE_FORMAT = 'T%Y%m%d'
 N_TRIALS = 5
 N_STARTUP_TRIALS = 5
 STAGE = "q_"
+IGNORED_FEATURES = []
 
 # TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)
 # TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_)
@@ -71,7 +73,7 @@ if __name__ == "__main__":
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
-        feature_reducer=DummyFeatureReducer(),
+        feature_reducer=PCAFeatureReducer(ignored_features=IGNORED_FEATURES),
         imputer=RevenueQuantileBucketImputer(buckets_number=10),
         scope_estimator=LGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
@@ -79,7 +81,7 @@ if __name__ == "__main__":
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
-        feature_reducer=DummyFeatureReducer(),
+        feature_reducer=PCAFeatureReducer(ignored_features=IGNORED_FEATURES),
         imputer=RevenueQuantileBucketImputer(buckets_number=10),
         scope_estimator=LGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
@@ -87,7 +89,7 @@ if __name__ == "__main__":
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
-        feature_reducer=DummyFeatureReducer(),
+        feature_reducer=PCAFeatureReducer(ignored_features=IGNORED_FEATURES),
         imputer=RevenueQuantileBucketImputer(buckets_number=10),
         scope_estimator=LGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),

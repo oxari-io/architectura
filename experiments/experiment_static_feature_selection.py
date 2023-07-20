@@ -222,7 +222,7 @@ if __name__ == "__main__":
                 preprocessor=IIDPreprocessor(),
                 feature_reducer=SelectionFeatureReducer(features=feature_list),
                 imputer=RevenueQuantileBucketImputer(buckets_number=5),
-                scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=40),
+                scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -235,7 +235,7 @@ if __name__ == "__main__":
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=SelectionFeatureReducer(features=feature_list),
                     imputer=RevenueQuantileBucketImputer(buckets_number=5),
-                    scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=40),
+                    scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
@@ -247,7 +247,7 @@ if __name__ == "__main__":
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=SelectionFeatureReducer(features=feature_list),
                     imputer=RevenueQuantileBucketImputer(buckets_number=5),
-                    scope_estimator=MiniModelArmyEstimator(n_trials=5, n_startup_trials=40),
+                    scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)

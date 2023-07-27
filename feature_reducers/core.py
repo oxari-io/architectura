@@ -86,7 +86,7 @@ class PCAFeatureReducer(OxariFeatureReducer):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # take only the names of features that should be reduced
-        self.feature_names_in_ = set(X.filter(regex="^ft_", axis=1).columns).difference(set(self.ignored_features_))
+        self.feature_names_in_ = list(set(X.filter(regex="^ft_", axis=1).columns).difference(set(self.ignored_features_)))
         self._dimensionality_reducer.fit(X[self.feature_names_in_], y)
         self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} columns to {self.n_components_} columns.')
         return self

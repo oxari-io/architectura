@@ -33,8 +33,8 @@ DATA_DIR = pathlib.Path('model-data/data/input')
 
 DATE_FORMAT = 'T%Y%m%d'
 
-N_TRIALS = 20
-N_STARTUP_TRIALS = 5
+N_TRIALS = 40
+N_STARTUP_TRIALS = 20
 STAGE = "p_"
 
 # TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)

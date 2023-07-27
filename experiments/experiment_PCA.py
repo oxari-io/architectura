@@ -12,18 +12,28 @@ from preprocessors import IIDPreprocessor, BaselinePreprocessor
 from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator, SupportVectorEstimator,
                               PredictMedianEstimator,
                               SingleBucketVotingArmyEstimator)
-from experiments.experiment_argument_parser import BucketingExperimentCommandLineParser
+from experiments.experiment_argument_parser import BucketingExperimentCommandLineParser, ExperimentCommandLineParser, FeatureReductionExperimentCommandLineParser
 
 if __name__ == "__main__":
+    parser = ExperimentCommandLineParser(
+        description=
+        'Experiment arguments: number of repetitions, what scopes to incorporate (-s for all 3 scopes), what file to write to (-a to append to existing file) and what feature reduction methods to compare (write -c before specifying). Defaults: 10 repititions, scope 1 only, new file, all reduction methods (DummyFeatureReducer, PCAFeatureReducer, DropFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer, SparseRandProjectionFeatureReducer, FactorAnalysisFeatureReducer).'
+    )
+
+    args = parser.parse_args()
+    num_reps = args.num_reps
+    scope = args.scope
+    results_file = args.file
+    
     all_results = []
     dataset = get_default_datamanager_configuration().run() 
 
-    for rep in range(10):
+    for rep in range(num_reps):
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
-        # if (scope == True):
-        #     SPLIT_2 = bag.scope_2
-        #     SPLIT_3 = bag.scope_3
+        if (scope == True):
+            SPLIT_2 = bag.scope_2
+            SPLIT_3 = bag.scope_3
         for i in range(1, 101, 10):
             start = time.time()
             ppl1 = DefaultPipeline(
@@ -38,29 +48,32 @@ if __name__ == "__main__":
             time_elapsed_1 = time.time() - start
             start = time.time()
             all_results.append({"time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results, "n_components": i, "repetition": rep, "variance": explained_var})
-            # if (scope == True):
-            #     ppl2 = DefaultPipeline(
-            #         preprocessor=BaselinePreprocessor(),
-            #         feature_reducer=DummyFeatureReducer(),
-            #         imputer=BaselineImputer(),
-            #         scope_estimator=BaselineEstimator(),
-            #         ci_estimator=BaselineConfidenceEstimator(),
-            #         scope_transformer=LogTargetScaler(),
-            #     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
-            #     time_elapsed_2 = time.time() - start
-            #     start = time.time()
-            #     ppl3 = DefaultPipeline(
-            #         preprocessor=BaselinePreprocessor(),
-            #         feature_reducer=DummyFeatureReducer(),
-            #         imputer=BaselineImputer(),
-            #         scope_estimator=BaselineEstimator(),
-            #         ci_estimator=BaselineConfidenceEstimator(),
-            #         scope_transformer=LogTargetScaler(),
-            #     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
-            #     time_elapsed_3 = time.time() - start
+            if (scope == True):
+                ppl2 = DefaultPipeline(
+                    preprocessor=IIDPreprocessor(),
+                    feature_reducer=PCAFeatureReducer(n_components=i),
+                    imputer=BaselineImputer(),
+                    scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
+                    ci_estimator=BaselineConfidenceEstimator(),
+                    scope_transformer=LogTargetScaler(),
+                ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
+                explained_var = ppl2.feature_selector._dimensionality_reducer.explained_variance_[-1]
+                time_elapsed_2 = time.time() - start
+                all_results.append({"time": time_elapsed_2, "scope": 2, **ppl2.evaluation_results, "n_components": i, "repetition": rep, "variance": explained_var})
 
-            #     all_results.append({"time": time_elapsed_2, "scope": 2, **ppl2.evaluation_results})
-            #     all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results})
+                start = time.time()
+                ppl3 = DefaultPipeline(
+                    preprocessor=IIDPreprocessor(),
+                    feature_reducer=PCAFeatureReducer(n_components=i),
+                    imputer=BaselineImputer(),
+                    scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
+                    ci_estimator=BaselineConfidenceEstimator(),
+                    scope_transformer=LogTargetScaler(),
+                ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
+                explained_var = ppl3.feature_selector._dimensionality_reducer.explained_variance_[-1]
+                time_elapsed_3 = time.time() - start
+                all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results, "n_components": i, "repetition": rep, "variance": explained_var})
+            
             print(all_results)
             concatenated = pd.json_normalize(all_results)
             fname = __loader__.name.split(".")[-1]

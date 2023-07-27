@@ -44,7 +44,7 @@ fig = sns.lineplot(data=results, x="n_components", y="time", color="green", ax=a
 fig.set_title('two y axes: smape (blue) and time (green) vs n_components')
 # %%
 plt.figure(figsize=(17,10))
-fig = sns.regplot(data=results, x="time", y="test.sMAPE")
+fig = sns.regplot(data=results[results['time']<400], x="time", y="test.sMAPE")
 fig.set_xlabel('time')
 fig.set_ylabel('sMAPE')
 fig.set_title('smape vs time (ROC plot)')

@@ -1,6 +1,7 @@
 
 import time
 import pandas as pd
+import numpy as np
 
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
@@ -27,6 +28,7 @@ if __name__ == "__main__":
     
     all_results = []
     dataset = get_default_datamanager_configuration().run() 
+    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
     for rep in range(num_reps):
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
@@ -34,7 +36,7 @@ if __name__ == "__main__":
         if (scope == True):
             SPLIT_2 = bag.scope_2
             SPLIT_3 = bag.scope_3
-        for i in range(1, 101, 10):
+        for i in np.random.randint(1, len(DATA.columns)):
             start = time.time()
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),

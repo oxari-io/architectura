@@ -11,6 +11,8 @@ import statsmodels.formula.api as smf
 # See full results of the experiment for SCOPE 1
 cwd = pathlib.Path(__file__).parent
 results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_SMA_vs_MMA.csv', index_col=0)
+results["balanced_acc"] = results["test.classifier.balanced_accuracy"].fillna(0)
+results["smape"] = results["raw.sMAPE"]
 results.head()
 
 # %%
@@ -64,3 +66,19 @@ plt.ylabel('raw.sMAPE value')
 plt.xticks(rotation=45, ha='right')
 
 plt.tight_layout()
+
+# %%
+# %%
+formula = "smape ~ balanced_acc + repetition"
+mod1 = smf.mixedlm(formula=formula, data=results[results['scope_estimator'] == "MiniModelArmyEstimator"], groups="scope").fit()
+# mod1 = smf.glm(formula=formula, data=results[results['scope_estimator'] == "MiniModelArmyEstimator"]).fit()
+mod1.summary()
+# %%
+ax = plt.gca()
+ax.scatter(mod1.mu, mod1.resid_pearson)
+ax.hlines(0, 0, 1)
+ax.set_xlim(0, 1)
+ax.set_title('Residual Dependence Plot')
+ax.set_ylabel('Pearson Residuals')
+ax.set_xlabel('Fitted values')
+# %%

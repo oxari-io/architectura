@@ -42,7 +42,6 @@ yapf = "^0.32.0"
 openpyxl = "^3.1.0"
 pygraphviz = "^1.10"
 cdt = "^0.6.0"
-torch = "^1.13.1"
 pgmpy = "^0.1.21"
 autoimpute = "^0.13.0"
 missingno = "^0.5.1"
@@ -63,6 +62,9 @@ pyinstaller = "^5.7.0"
 auto-py-to-exe = "^2.27.0"
 autoflake = "^2.0.1"
 unimport = "^0.13.0"
+
+[tool.poetry.extras]
+gpu = ["torch"]
 
 [tool.pytest.ini_options]
 testpaths = ["./tests"]

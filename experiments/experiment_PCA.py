@@ -36,7 +36,7 @@ if __name__ == "__main__":
         if (scope == True):
             SPLIT_2 = bag.scope_2
             SPLIT_3 = bag.scope_3
-        i = np.random.randint(1, len(DATA.columns))
+        i = np.random.randint(1, len(DATA.columns) // 2)
         start = time.time()
         ppl1 = DefaultPipeline(
             preprocessor=IIDPreprocessor(),

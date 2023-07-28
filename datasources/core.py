@@ -8,6 +8,7 @@ from base.constants import DATA_DIR
 from base.dataset_loader import (CategoricalLoader, CompanyDataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader)
 from datasources.loaders import RegionLoader
 from datasources.local import LocalDatasource
+from datasources.online import S3Datasource
 
 
 class DefaultDataManager(OxariDataManager):
@@ -66,6 +67,14 @@ def get_default_datamanager_configuration():
         FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
         ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
         CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    )
+
+def get_remote_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=S3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=S3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=S3Datasource(path="model-data/input/categoricals_auto.csv")),
         RegionLoader(),
     )
 

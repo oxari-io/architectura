@@ -11,7 +11,7 @@ from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, CompanyDataFilter, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
-from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
+from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
@@ -56,12 +56,13 @@ if __name__ == "__main__":
     now = time.strftime('T%Y%m%d%H%M')
 
     # dataset = get_small_datamanager_configuration().run()
-    dataset = PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto_old.csv")),
-        RegionLoader(),
-    ).set_filter(CompanyDataFilter(frac=0.1)).run()
+    # dataset = PreviousScopeFeaturesDataManager(
+    #     FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
+    #     ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
+    #     CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto_old.csv")),
+    #     RegionLoader(),
+    # ).set_filter(CompanyDataFilter(frac=0.1)).run()
+    dataset = get_remote_datamanager_configuration().run()
 
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)

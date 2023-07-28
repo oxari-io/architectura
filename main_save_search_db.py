@@ -34,7 +34,7 @@ if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
     dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20230711_p_model.pkl', 'rb'))
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20230728_p_model_scope_imputation.pkl', 'rb'))
 
     data_to_impute = DATA.copy()
     data_to_impute = impute_missing_years(data_to_impute)
@@ -44,11 +44,11 @@ if __name__ == "__main__":
 
     keys = {
         "key_isin": "text",
-        "company_name": "text",
+        "key_ticker": "text",
+        "meta_company_name": "text",
+        "meta_country_name": "text",
         "ft_catm_industry_name": "text",
         "ft_catm_sector": "text",
-        "ticker": "text",
-        "country_name": "text",
         "ft_catm_region": "text",
         "ft_catm_sub_region": "text"
     }
@@ -56,8 +56,8 @@ if __name__ == "__main__":
     options = {
         "weights": {
             "key_isin": 10,
-            "company_name": 5,
-            "ticker": 10,
+            "key_ticker": 10,
+            "meta_company_name": 5,
         },
         "name": "TextIndex"
     }

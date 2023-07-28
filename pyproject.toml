@@ -59,6 +59,7 @@ autoflake = "^2.0.1"
 unimport = "^0.13.0"
 
 [tool.poetry.extras]
+gpu = ["torch", "pgmpy"]
 visuals = ["pygraphviz"]
 
 [tool.pytest.ini_options]

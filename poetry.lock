@@ -5261,9 +5261,10 @@ files = [
 requests = "*"
 
 [extras]
+gpu = []
 visuals = []
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "008a3d328e1dc2a1a8a300a24da3c6e6f71876f6f7daef66c2f866327eeceac0"
+content-hash = "2d886e38d8ebb5418b31eff7407b92d37ba73793eaf33e65bbefab481f3117f3"

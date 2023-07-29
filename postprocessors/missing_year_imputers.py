@@ -37,9 +37,13 @@ class SimpleMissingYearImputer(OxariImputer):
         X_result = data_transformed.copy()
         # Fill categorical vals
         filter_str = f'^(ft_cat|{self.COL_GROUP}|key_country)'
-        data_completed = data_transformed.filter(regex=filter_str, axis=1).groupby(self.COL_GROUP, group_keys=False).apply(lambda x: x.bfill().ffill())
+
+        self.logger.info('Ffill and bfill categorical, meta and key fields')
+        data_completed = data_transformed.filter(regex=filter_str, axis=1).groupby(self.COL_GROUP, group_keys=False).progress_apply(lambda x: x.bfill().ffill())
         X_result[data_completed.columns] = data_completed[data_completed.columns].values
+        self.logger.info('Mark rows that where added during this process')
         X_result_marked = self.__mark_additional_rows(X_result, data, ['key_isin', 'key_year'], 'meta_is_imputed_year')
+        self.logger.info('Done iwth scope imputation')
         return X_result_marked
 
     def _trim(self, df_company: pd.DataFrame):

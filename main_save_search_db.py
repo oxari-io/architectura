@@ -72,8 +72,8 @@ if __name__ == "__main__":
     cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
 
     df = ld_cat._data.merge((ld_cat + ld_reg).data, on="key_isin", how="left", suffixes=('', '_DROP')).filter(regex='^(?!.*_DROP)')
-    df[df.select_dtypes('object').columns] = df[df.select_dtypes('object').columns].fillna("NA")
-    df[df.select_dtypes('category').columns] = df[df.select_dtypes('category').columns].astype(str).replace("nan", "NA")
+    # df[df.select_dtypes('object').columns] = df[df.select_dtypes('object').columns].fillna("NA")
+    # df[df.select_dtypes('category').columns] = df[df.select_dtypes('category').columns].astype(str).replace("nan", "NA")
 
     df_fin = ld_fin.data
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         axis=1,
         errors='ignore',
     )
-    df_scope_stats = df_statistics.groupby(df_statistics.select_dtypes('object').columns.tolist() + ['key_year']).median().reset_index().fillna("NA")
+    df_scope_stats = df_statistics.groupby(df_statistics.select_dtypes('object').columns.tolist() + ['key_year']).median().reset_index() #.fillna("NA")
 
     dateformat = 'T%Y%m%d'
     all_data_features = [

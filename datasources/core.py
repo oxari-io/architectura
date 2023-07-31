@@ -8,7 +8,7 @@ from base.constants import DATA_DIR
 from base.dataset_loader import (CategoricalLoader, CompanyDataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader)
 from datasources.loaders import RegionLoader
 from datasources.local import LocalDatasource
-from datasources.online import S3Datasource
+from datasources.online import CachingS3Datasource, S3Datasource
 
 
 class DefaultDataManager(OxariDataManager):
@@ -64,9 +64,9 @@ class TemporalFeaturesDataManager(PreviousScopeFeaturesDataManager, CurrentYearF
 
 def get_default_datamanager_configuration():
     return PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
         RegionLoader(),
     )
 
@@ -80,8 +80,8 @@ def get_remote_datamanager_configuration():
 
 def get_small_datamanager_configuration(frac=0.1):
     return PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
         RegionLoader(),
     ).set_filter(CompanyDataFilter(frac=frac))

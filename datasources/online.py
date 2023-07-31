@@ -50,13 +50,16 @@ class CachingS3Datasource(S3Datasource):
     def __init__(self, **kwargs):
         # path needs to be the location of the file UNDER the bucket
         super().__init__(**kwargs)
+        self.is_fresh_download = False
 
     def _load(self) -> Self:
         # https://docs.digitalocean.com/reference/api/spaces-api/
         local_file_path = Path(self.path)
         if not local_file_path.exists():
+            self.is_fresh_download = True
             response = self.client.get_object(Bucket=self.do_spaces_bucket, Key=self.path)
             self._data = pd.read_csv(response['Body'])
+            self._data.to_csv(local_file_path)
         else:
             self._data = pd.read_csv(local_file_path)
         return self

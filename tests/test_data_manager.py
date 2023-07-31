@@ -1,3 +1,4 @@
+from pathlib import Path
 import pytest
 from base.constants import DATA_DIR
 from base.dataset_loader import CategoricalLoader, CompanyDataFilter, DataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader, SimpleDataFilter
@@ -5,9 +6,10 @@ from base.dataset_loader import CategoricalLoader, CompanyDataFilter, DataFilter
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from datasources.loaders import NetZeroIndexLoader, RegionLoader
 from datasources.local import LocalDatasource
-from datasources.online import OnlineCSVDatasource, OnlineExcelDatasource, S3Datasource
+from datasources.online import CachingS3Datasource, OnlineCSVDatasource, OnlineExcelDatasource, S3Datasource
 import pandas as pd
 import logging
+import os
 
 from tests.fixtures import const_dataset_filtered, const_dataset_full, const_data_manager
 
@@ -17,13 +19,38 @@ from tests.fixtures import const_dataset_filtered, const_dataset_full, const_dat
 
 @pytest.mark.parametrize("datasource", [
     LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
-    S3Datasource(path="model-input-data/scopes_auto.csv"),
+    S3Datasource(path="model-data/input/scopes_auto.csv"),
     OnlineExcelDatasource(path="https://sciencebasedtargets.org/download/excel"),
     OnlineCSVDatasource(path="https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv")
 ])
 def test_datasources(datasource: Datasource):
     loaded = datasource.fetch()
     assert len(loaded.data) > 0
+
+@pytest.mark.parametrize("datasource", [
+    CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")
+])
+def test_datasources_not_cached_download(datasource: Datasource):
+    local_path = Path(datasource.path)
+    if local_path.exists():
+        os.remove(local_path)
+    assert not local_path.exists(), "File was not deleted"
+    assert not datasource.is_fresh_download, "File was downloaded"
+    loaded = datasource.fetch()
+    assert datasource.is_fresh_download, "File was not downloaded"
+    assert len(loaded.data) > 0, "File does not contain data"
+    assert local_path.exists(), "File does not exist locally"
+    os.remove(local_path)
+
+@pytest.mark.parametrize("datasource", [
+    CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")
+])
+def test_datasources_cached_download(datasource: Datasource):
+    local_path = Path(datasource.path)
+    assert local_path.exists()
+    loaded = datasource.fetch()
+    assert len(loaded.data) > 0
+    assert not datasource.is_fresh_download
 
 
 @pytest.mark.parametrize("loader", [

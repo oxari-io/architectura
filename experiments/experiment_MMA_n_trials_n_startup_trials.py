@@ -19,19 +19,19 @@ if __name__ == "__main__":
     all_results = []
     dataset = get_default_datamanager_configuration().run()
 
-    for data_split in range(10):
+    for data_split in range(30):
         print("data split: ", data_split)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
 
-        for rep in range(25):    
+        for rep in range(10):    
             print("rep: ", rep, " data split: ", data_split)
             n_trials = np.random.randint(1, 100)
             n_startup_trials = np.random.randint(1, 50)
             start = time.time()
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
+                feature_reducer=PCAFeatureReducer(n_components=30),
                 imputer=BaselineImputer(),
                 scope_estimator=MiniModelArmyEstimator(n_trials=n_trials, n_startup_trials=n_startup_trials),
                 ci_estimator=BaselineConfidenceEstimator(),

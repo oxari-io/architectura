@@ -18,33 +18,34 @@ results.groupby('metric')['abs_residuals'].agg(['median', 'mean', 'std', 'sum', 
 
 # %%
 plt.figure(figsize=(10, 5))
-plt.xticks(rotation=90)
 fig = sns.scatterplot(
     data=results,
     x=X_var,
     y="abs_residuals",
     hue='metric'
 )
-plt.xscale('log')
-# plt.yscale('log')
-fig.set_xlabel('Pred Value')
+fig.set_xlabel('Y-True')
 fig.set_ylabel('Residuals')
 fig.set_title('predicted value vs residuals')
-
+plt.xscale('log')
+plt.xticks(rotation=90)
+# plt.yscale('log')
+plt.show()
 # %%
 plt.figure(figsize=(10, 5))
-plt.xticks(rotation=90)
 fig = sns.boxplot(
     data=results,
     # x="buckets",
     y="abs_residuals",
     x='metric'
 )
-# plt.xscale('log')
-plt.yscale('log')
 fig.set_xlabel('Pred Value')
 fig.set_ylabel('Residuals')
 fig.set_title('predicted value vs residuals')
+# plt.xscale('log')
+plt.yscale('log')
+plt.xticks(rotation=90)
+plt.show()
 # %%
 plt.figure(figsize=(10, 5))
 plt.xticks(rotation=90)
@@ -59,6 +60,7 @@ plt.yscale('log')
 fig.set_xlabel('Pred Value')
 fig.set_ylabel('Residuals')
 fig.set_title('predicted value vs residuals')
+plt.show()
 
 # %%
 plt.figure(figsize=(10, 5))
@@ -74,6 +76,7 @@ plt.yscale('log')
 fig.set_xlabel('Pred Value')
 fig.set_ylabel('Residuals')
 fig.set_title('predicted value vs residuals')
+plt.show()
 
 # %%
 plt.figure(figsize=(10, 5))
@@ -89,5 +92,6 @@ fig = sns.scatterplot(
 fig.set_xlabel('Pred Value')
 fig.set_ylabel('Residuals')
 fig.set_title('predicted value vs residuals')
+plt.show()
 
 # %%

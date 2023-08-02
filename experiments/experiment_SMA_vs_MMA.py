@@ -42,7 +42,7 @@ if __name__ == "__main__":
             start = time.time()
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(ignored_features=ignored_features),
+                feature_reducer=PCAFeatureReducer(ignored_features=ignored_features, n_components=30),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -55,7 +55,7 @@ if __name__ == "__main__":
                 SPLIT_3 = bag.scope_3
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(ignored_features=ignored_features),
+                    feature_reducer=PCAFeatureReducer(ignored_features=ignored_features, n_components=30),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=estimator,
                     ci_estimator=BaselineConfidenceEstimator(),
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 
                 ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(ignored_features=ignored_features),
+                    feature_reducer=PCAFeatureReducer(ignored_features=ignored_features, n_components=30),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=estimator,
                     ci_estimator=BaselineConfidenceEstimator(),

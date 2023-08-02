@@ -4,9 +4,11 @@ import pandas as pd
 import numpy as np
 
 from base import BaselineConfidenceEstimator, OxariDataManager
+from base.constants import FEATURE_SET_VIF_UNDER_10
 from base.helper import LogTargetScaler
 from datasources.core import get_default_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
+from feature_reducers.core import SelectionFeatureReducer
 from imputers import BaselineImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
@@ -29,7 +31,7 @@ if __name__ == "__main__":
             start = time.time()
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(n_components=6),
+                feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
                 imputer=BaselineImputer(),
                 scope_estimator=MiniModelArmyEstimator(n_trials=n_trials, n_startup_trials=n_startup_trials),
                 ci_estimator=BaselineConfidenceEstimator(),

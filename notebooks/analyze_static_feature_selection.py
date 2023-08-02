@@ -39,6 +39,7 @@ fig = sns.boxplot(
 add_median_labels(fig)
 plt.title('raw.sMAPE vs list_name')
 plt.xlabel('list_name')
+plt.xticks(rotation=30)
 plt.ylabel('raw.sMAPE')
 plt.legend(title = 'scope')
 
@@ -53,6 +54,7 @@ fig = sns.boxplot(
 add_median_labels(fig)
 plt.title('time vs list_name')
 plt.xlabel('list_name')
+plt.xticks(rotation=30)
 plt.ylabel('time')
 plt.legend(title = 'scope')
 
@@ -111,3 +113,17 @@ fig = sns.scatterplot(
 plt.title('time vs raw.sMAPE - scope 3')
 plt.xlabel('time')
 plt.ylabel('raw.sMAPE')
+
+#%%
+plt.figure(figsize=(17,10))
+fig = sns.kdeplot(
+    data=results[results['time'] < 5000],
+    x='time', 
+    y='raw.sMAPE', 
+    hue='list_name'
+)
+plt.title('time vs raw.sMAPE - best illustration possible')
+plt.xlabel('time')
+plt.ylabel('raw.sMAPE')
+
+# %%

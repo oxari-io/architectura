@@ -112,6 +112,8 @@ class ClassifierOptimizer(OxariOptimizer):
 
         # TODO: add docstring here pls
         y_train = y_train.ravel()
+
+        # TODO: the param space should be defined as an attribute of the class {review this idea}
         param_space = {
             'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
             'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
@@ -129,7 +131,6 @@ class ClassifierOptimizer(OxariOptimizer):
         # choose weighted average
         val = classification_metric(y_true=y_val, y_pred=y_pred)
         return val
-
 
 class BucketClassifier(OxariClassifier):
 

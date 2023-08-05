@@ -34,9 +34,8 @@ if TYPE_CHECKING:
     from preprocessors.helper.custom_cat_normalizers import  OxariCategoricalNormalizer
 
 
-os.environ["LOGLEVEL"] = "DEBUG"
-LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
-WRITE_TO = "./logger.log"  # "cout"
+LOGLEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+LOG_FILE = os.environ.get('LOG_FILE', 'cout')  # "cout"
 logging.root.setLevel(LOGLEVEL)
 
 # To be decided after checking correlation between features
@@ -81,9 +80,9 @@ class OxariLoggerMixin(abc.ABC):
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
-        if not WRITE_TO == "cout":
+        if not LOG_FILE == "cout":
             formatter = logging.Formatter(OxariLoggerMixin._format)
-            fhandler = logging.FileHandler(WRITE_TO)
+            fhandler = logging.FileHandler(LOG_FILE)
             fhandler.setFormatter(formatter)
             self.logger.addHandler(fhandler)
         return None

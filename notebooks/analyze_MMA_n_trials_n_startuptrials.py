@@ -8,25 +8,37 @@ import statsmodels.formula.api as smf
 import numpy as np
 # %%
 cwd = pathlib.Path(__file__).parent
-results_olu = pd.read_csv(cwd.parent/'local/eval_results/experiment_MMA_n_trials_n_startup_trials_olu_1.csv', index_col=0)
-results_mada = pd.read_csv(cwd.parent/'local/eval_results/experiment_MMA_n_trials_n_startup_trials_mada_full.csv', index_col=0)
-results_olu["experiment"] = "Olu1"
-results_mada["experiment"] = "Mada1"
-results = pd.concat([results_mada, results_olu])
+
+results = pd.concat([
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_MMA_n_trials_n_startup_trials_olu_1.csv', index_col=0).assign(experiment="Olu1"),
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_MMA_n_trials_n_startup_trials_olu_2.csv', index_col=0).assign(experiment="Olu2"),
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_MMA_n_trials_n_startup_trials_srv_1.csv', index_col=0).assign(experiment="Srv1"),
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_MMA_n_trials_n_startup_trials_srv_2.csv', index_col=0).assign(experiment="Srv2"),
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_MMA_n_trials_n_startup_trials_srv_3.csv', index_col=0).assign(experiment="Srv3"),
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_MMA_n_trials_n_startup_trials_srv_4.csv', index_col=0).assign(experiment="Srv4"),
+])
 # %%
 results
 # %%
-plt.figure(figsize=(10,10))
+fig, (ax1,ax2) = plt.subplots(2,1,figsize=(10, 10))
+sns.histplot(data=results, x="n_trials", ax=ax1, binwidth=3)
+sns.histplot(data=results, x="n_startup_trials", ax=ax2, binwidth=3)
+fig.suptitle('Histogram showing the sampled n_trials and n_startup_trials')
+plt.show()
+# %%
+plt.figure(figsize=(10, 10))
 fig = sns.regplot(data=results, x="n_trials", y="raw.sMAPE", order=3, color="blue")
 ax2 = plt.twinx()
-fig = sns.lineplot(data=results, x="n_trials", y="time", color="green", ax=ax2)
+fig = sns.regplot(data=results, x="n_trials", y="time", color="green", ax=ax2)
 fig.set_title('two y axes: smape (blue) and time (green) vs n_trials')
+plt.show()
 # %%
-plt.figure(figsize=(10,10))
+plt.figure(figsize=(10, 10))
 fig = sns.regplot(data=results, x="n_startup_trials", y="raw.sMAPE", order=3, color="blue")
 ax2 = plt.twinx()
-fig = sns.lineplot(data=results, x="n_startup_trials", y="time", color="green", ax=ax2)
+fig = sns.regplot(data=results, x="n_startup_trials", y="time", color="green", ax=ax2)
 fig.set_title('two y axes: smape (blue) and time (green) vs n_startup_trials')
+plt.show()
 # %%
 np_n_trials = results["n_trials"].to_numpy()
 np_n_startup_trials = results["n_startup_trials"].to_numpy()
@@ -100,7 +112,7 @@ plt.show()
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 # %%
-results.rename(columns = {'test.sMAPE':'sMAPE'}, inplace = True)
+results.rename(columns={'test.sMAPE': 'sMAPE'}, inplace=True)
 
 #%%
 # Results with lowest sMAPE

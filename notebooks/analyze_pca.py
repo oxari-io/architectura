@@ -5,9 +5,15 @@ import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
+import numpy as np
+
 # %%
 cwd = pathlib.Path(__file__).parent
-results = pd.read_csv(cwd.parent/'local/eval_results/experiment_PCA.csv', index_col=0)
+results_1 = pd.read_csv(cwd.parent/'local/eval_results/experiment_PCA_run_1.csv', index_col=0).assign(run=1)
+results_2 = pd.read_csv(cwd.parent/'local/eval_results/experiment_PCA_run_2.csv', index_col=0).assign(run=2)
+results_3 = pd.read_csv(cwd.parent/'local/eval_results/experiment_PCA_run_3.csv', index_col=0).assign(run=3)
+results_4 = pd.read_csv(cwd.parent/'local/eval_results/experiment_PCA_run_4.csv', index_col=0).assign(run=4)
+results = pd.concat([results_1, results_2, results_3, results_4])
 # %%
 # %%
 av_sMAPE = []
@@ -38,31 +44,74 @@ n_comps = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
 # fig.set_title('sMAPE vs time, color indicates n_components')
 # %%
 plt.figure(figsize=(17,10))
-fig = sns.regplot(data=results, x="n_components", y="test.sMAPE", order=3, color="blue")
+fig = sns.regplot(data=results, x="n_components", y="raw.sMAPE", order=3, color="blue")
 ax2 = plt.twinx()
-fig = sns.lineplot(data=results, x="n_components", y="time", color="green", ax=ax2)
+fig = sns.regplot(data=results[results['time']<2500], x="n_components", y="time", color="green", order=3, ax=ax2)
 fig.set_title('two y axes: smape (blue) and time (green) vs n_components')
+plt.show()
 # %%
 plt.figure(figsize=(17,10))
-fig = sns.regplot(data=results, x="time", y="test.sMAPE")
+fig = sns.regplot(data=results[results['time']<400], x="time", y="test.sMAPE")
 fig.set_xlabel('time')
 fig.set_ylabel('sMAPE')
 fig.set_title('smape vs time (ROC plot)')
+plt.show()
 # %%
 plt.figure(figsize=(17,10))
-fig = sns.scatterplot(data=results, x="n_components", y="test.sMAPE", size="time")
+fig = sns.scatterplot(data=results, x="n_components", y="test.sMAPE", size="time", hue='run')
 fig.set_xlabel('n_components')
 fig.set_ylabel('sMAPE')
 fig.set_ylim(0.22, 0.28)
 fig.set_title('bubble plot, size indicates time')
+plt.show()
 # %%
 plt.figure(figsize=(17,10))
-fig = sns.scatterplot(data=results, x="n_components", y="variance")
+fig = sns.scatterplot(data=results, x="n_components", y="variance", hue='run')
 fig.set_xlabel('n_components')
 fig.set_ylabel('variance')
 fig.set_title('scree plot')
+plt.show()
 
 # %%
 # idea 1: two y axes: smape and time vs n_components
 # idea 2: smape vs time (ROC plot)
 # bubble plot 
+
+#%%
+plt.figure(figsize=(17,10))
+fig = sns.regplot(data=results, x='n_components', y='time', order=3)
+fig.set_xlabel('n_components')
+fig.set_ylabel('time')
+fig.set_title('time vs n_components')
+plt.show()
+# %%
+bins_x = np.arange(0, results['n_components'].max() + 5, 5)
+bins_y = np.arange(0, results['time'].max() + 100, 100)
+results['n_components_bin'] = pd.cut(results['n_components'], bins=bins_x, right=False)
+results['time_bin'] = pd.cut(results['time'], bins=bins_y, right=False)
+plt.figure(figsize=(17,10))
+fig = sns.regplot(data=results.groupby('n_components_bin').mean(), x='n_components', y='time', order=3)
+fig.set_xlabel('n_components')
+fig.set_ylabel('time')
+fig.set_title('time vs n_components')
+plt.show()
+# %%
+plt.figure(figsize=(17,10))
+fig = sns.boxplot(data=results, x='n_components_bin', y='time')
+fig.set_xlabel('n_components')
+fig.set_ylabel('time')
+fig.set_title('time vs n_components')
+plt.show()
+# %%
+print(len(results))
+
+# %%
+plt.figure(figsize=(17,10))
+fig = sns.heatmap(results.pivot_table(index='n_components_bin', columns='time_bin', values='raw.sMAPE', aggfunc=np.median), annot=True, fmt=".3f", cmap="YlGnBu")
+ax = plt.gca()
+ax.invert_yaxis()
+fig.set_xlabel('time')
+fig.set_ylabel('n_components')
+fig.set_title('time vs n_components')
+plt.show()
+# %%

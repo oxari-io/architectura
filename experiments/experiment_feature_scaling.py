@@ -5,7 +5,7 @@ import time
 import pandas as pd
 
 from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, DummyConfidenceEstimator, ConformalKNNConfidenceEstimator, JacknifeConfidenceEstimator
-from datasources.core import DefaultDataManager
+from datasources.core import DefaultDataManager, get_small_datamanager_configuration
 from experiments.experiment_argument_parser import FeatureScalingExperimentCommandLineParser
 from feature_reducers import PCAFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     pbar = tqdm.tqdm(total=len(ft_configurations) * len(tg_configurations) * num_reps)
     for i in range(num_reps):
-        dataset = DefaultDataManager().run()  # run() calls _transform()
+        dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         SPLIT_2 = bag.scope_2

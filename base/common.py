@@ -6,7 +6,7 @@ import logging
 import os
 import time
 from numbers import Number
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, TYPE_CHECKING
 import sys
 import platform
 import matplotlib.pyplot as plt
@@ -21,18 +21,25 @@ from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_
 from sklearn.model_selection import train_test_split
 from typing_extensions import Self
 from sklearn.preprocessing import minmax_scale
-from .metrics import dunn_index, mape
+from .metrics import dunn_index, mape, optuna_metric
+from base.oxari_types import ArrayLike
 from .oxari_types import ArrayLike
 import colorlog
 import time as tm
 import datetime as dt
 import cloudpickle as pkl
 
-os.environ["LOGLEVEL"] = "DEBUG"
-LOGLEVEL = os.environ.get('LOGLEVEL', 'DEBUG').upper()
-WRITE_TO = "./logger.log"  # "cout"
+
+if TYPE_CHECKING:
+    from preprocessors.helper.custom_cat_normalizers import  OxariCategoricalNormalizer
+
+
+LOGLEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+LOG_FILE = os.environ.get('LOG_FILE', 'cout')  # "cout"
 logging.root.setLevel(LOGLEVEL)
 
+# To be decided after checking correlation between features
+IGNORED_FEATURES: list(str) = []
 
 # FEEDBACK:
 # - Logger had no formatting
@@ -73,9 +80,9 @@ class OxariLoggerMixin(abc.ABC):
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
-        if not WRITE_TO == "cout":
+        if not LOG_FILE == "cout":
             formatter = logging.Formatter(OxariLoggerMixin._format)
-            fhandler = logging.FileHandler(WRITE_TO)
+            fhandler = logging.FileHandler(LOG_FILE)
             fhandler.setFormatter(formatter)
             self.logger.addHandler(fhandler)
         return None
@@ -201,11 +208,12 @@ class DefaultClassificationEvaluator(OxariEvaluator):
 # TODO: Integrate optuna visualisation as method
 class OxariOptimizer(OxariLoggerMixin, abc.ABC):
 
-    def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, **kwargs) -> None:
+    def __init__(self, n_trials=2, n_startup_trials=1, sampler=None, metric=optuna_metric, **kwargs) -> None:
         super().__init__()
         self.n_trials = n_trials
         self.sampler = sampler or optuna.samplers.TPESampler()
         self.sampler._n_startup_trials = n_startup_trials
+        self.metric = metric
 
     @abc.abstractmethod
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, pd.DataFrame]:
@@ -250,6 +258,13 @@ class OxariOptimizer(OxariLoggerMixin, abc.ABC):
         """
         return 0
 
+    def set_n_trials(self, n_trials=1)-> Self:
+        self.n_trials = n_trials
+        return self
+
+    def set_n_startup_trials(self, n_startup_trials=10)-> Self:
+        self.sampler._n_startup_trials = n_startup_trials
+        return self
 
 class DefaultOptimizer(OxariOptimizer):
     """
@@ -257,6 +272,7 @@ class DefaultOptimizer(OxariOptimizer):
     """
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs) -> Tuple[dict, Any]:
+        self.logger.warn("Careful! This Model will not Optimize as no Optimizer was Specified")
         return super().optimize(X_train, y_train, X_val, y_val, **kwargs)
 
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs) -> Number:
@@ -422,9 +438,11 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
 
+
+
 class OxariPreprocessor(OxariTransformer, abc.ABC):
 
-    def __init__(self, imputer: OxariImputer = None, **kwargs):
+    def __init__(self, imputer: OxariImputer = None, cat_normalizer:OxariCategoricalNormalizer = None, **kwargs):
         super().__init__(**kwargs)
         # Only data independant hyperparams.
         # Hyperparams only as keyword arguments
@@ -577,9 +595,10 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     Handles removal of unimportant features. Fit and Transform have to be implemented accordingly.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, ignored_features=[], **kwargs):
         super().__init__(**kwargs)
         self.n_components_ = None
+        self.ignored_features_ = ignored_features
 
     @abc.abstractmethod
     def fit(self, X, y=None, **kwargs) -> "OxariFeatureReducer":
@@ -623,7 +642,20 @@ class OxariFeatureReducer(OxariTransformer, abc.ABC):
     # TODO: Needs to be optimized for automatic feature detection.
     def merge(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
         new_data.columns = [f"ft_{i}" for i in range(len(new_data.columns))]
-        return old_data.filter(regex='^!ft', axis=1).merge(new_data, left_index=True, right_index=True)
+        return pd.concat([old_data.filter(regex='^(?!ft)', axis=1), new_data], axis=1)
+
+    def merge_with_ignored_columns(self, old_data: pd.DataFrame, new_data: pd.DataFrame, **kwargs):
+        '''
+        Adds the ignored columns to the reduced data
+
+        Args:
+            old_data (pd.DataFrame): The original data, containing the ignored columns
+            new_data (pd.DataFrame): The reduced data, without the ignored columns
+
+        Returns:
+            pd.DataFrame: Reduced data with the ignored columns
+        '''
+        return pd.concat([old_data[self.ignored_features_], new_data], axis=1)
 
     def get_config(self, deep=True):
         return {'n_components_': self.n_components_, **super().get_config(deep)}
@@ -681,8 +713,11 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def predict(self, X, **kwargs) -> ArrayLike:
         return_std = kwargs.pop('return_ci', False)
         # return_raw = kwargs.pop('return_raw', False) #
+
+        # This is some feature cleanups to handle unexpected cases (feature format, missing features, unseen features) during inference
         X_mod = self._convert_input(X)
         X_mod = self._extend_missing_features(X_mod, self.feature_names_in_)
+        X_mod = self._remove_unseen_features(X_mod, self.feature_names_in_)
         if return_std:
             preds = self.ci_estimator.predict(X_mod, **kwargs)
             return preds  # Alread reversed
@@ -813,6 +848,26 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         extended_df = pd.concat([df, missing_features_df], axis=1)
         
         return extended_df
+
+    def _remove_unseen_features(self, df: pd.DataFrame, feature_names: List[str]) -> pd.DataFrame:
+        """
+
+        """
+        
+        # Find the missing feature columns
+        additional_features = set(df.columns) - set(feature_names) 
+        if not len(additional_features):
+            return df.copy()
+        
+        if len(additional_features):
+            self.logger.warning(f"Features {list(additional_features)} were never seen during training. They are removed. ")
+
+            
+        
+        # Remove additional features from the input DataFrame 
+        reduced_df = df.drop(additional_features, axis=1)
+        
+        return reduced_df
 
 class Test(OxariPipeline):
 

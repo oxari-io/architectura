@@ -6,7 +6,7 @@ import pandas as pd
 
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
-from datasources.core import DefaultDataManager
+from datasources.core import DefaultDataManager, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
@@ -49,11 +49,10 @@ if __name__ == "__main__":
     print("results file: ", results_file)
     print("estimators: ", estimators)
 
-    exit()
 
     all_results = []
     for i in range(num_reps):
-        dataset = DefaultDataManager().run()  # run() calls _transform()
+        dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         if (scope == True):

@@ -12,6 +12,17 @@ from base import OxariLoggerMixin, OxariMixin
 from base.common import OxariTransformer
 from base.oxari_types import ArrayLike
 
+def drop_sparse_rows(df:pd.DataFrame, less_than=0.027):
+    # get the feature columns
+    feature_cols = df.columns[df.columns.str.startswith('ft_')]
+    
+    # calculate the proportion of features that are not null for each row
+    feature_prop = df[feature_cols].notnull().mean(axis=1)
+    
+    # drop rows where the proportion is less than 0.15
+    df_dropped = df.loc[feature_prop >= less_than]
+    
+    return df_dropped
 
 class Datasource(OxariLoggerMixin, abc.ABC):
     KEYS: List[str] = None
@@ -51,6 +62,7 @@ class Datasource(OxariLoggerMixin, abc.ABC):
 class PartialLoader(OxariLoggerMixin, abc.ABC):
     PATTERN = ""
     COL_MAPPING = {}
+
     def __init__(self, datasource: Datasource = None, verbose=False, **kwargs) -> None:
         super().__init__()
         self.verbose = verbose
@@ -89,12 +101,12 @@ class PartialLoader(OxariLoggerMixin, abc.ABC):
         return self
 
     def load(self, **kwargs) -> Self:
-        # TODO: Add caching here! 
+        # TODO: Add caching here!
         # 1. create .caching folder if not exist
         # 2. specify standard file name for loader based on loader name
         # 3. save loaded data after load function
         # 4. on subsquent load check if file exits locally and load if it does
-        # 5. on error save what ever was successfully loaded to caching folder 
+        # 5. on error save what ever was successfully loaded to caching folder
         self.logger.info(f'Loading...')
         stime = time.time()
         self._load(**kwargs)
@@ -184,7 +196,7 @@ class OldScopeLoader(PartialLoader):
         return self._data
 
 
-class ScopeLoader(OldScopeLoader):
+class ScopeLoader(SpecialLoader):
 
     def _load(self) -> Self:
         # TODO: before logging some scopes have very small values so we discard them.
@@ -192,8 +204,15 @@ class ScopeLoader(OldScopeLoader):
         self._data = _data
         return self
 
+    @property
+    def lkeys(self):
+        return ["key_isin", "key_year"]
 
-class FinancialLoader(PartialLoader):
+    @property
+    def rkeys(self):
+        return ["key_isin", "key_year"]
+
+class OldFinancialLoader(PartialLoader):
     PATTERN = "ft_num"
 
     def __init__(self, **kwargs) -> None:
@@ -202,6 +221,18 @@ class FinancialLoader(PartialLoader):
     @property
     def data(self):
         return self._data[self.columns]
+
+
+class FinancialLoader(PartialLoader):
+    PATTERN = "ft_num"
+
+    def _load(self, **kwargs) -> Self:
+        super()._load(**kwargs)
+        #
+        self._data = self._data.dropna(subset=["key_year", "key_isin"], how='any')
+        self._data["key_year"] = self._data["key_year"].astype(int)
+        self._data = drop_sparse_rows(self._data) 
+        return self
 
 
 class CategoricalLoader(PartialLoader):
@@ -221,7 +252,7 @@ class SplitBag():
     class Pair:
 
         def __init__(self, X, y) -> None:
-            self.X = X
+            self.X:pd.DataFrame = X
             self.y = y
             self._iter = [self.X, self.y]
 
@@ -300,10 +331,12 @@ class SimpleDataFilter(DataFilter):
         self.logger.info(f'Filtered dataset from {len(X)} to {len(X_new)} data points')
         return X_new
 
+
 class CompanyDataFilter(DataFilter):
+
     def __init__(self, frac: float = 0.1, drop_single_rows=False, name=None, **kwargs) -> None:
         super().__init__(frac, name, **kwargs)
-        self.drop_single_rows=drop_single_rows
+        self.drop_single_rows = drop_single_rows
 
     def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
         if self.drop_single_rows:
@@ -342,31 +375,22 @@ class OxariDataManager(OxariMixin):
 
     def __init__(
             self,
-            scope_loader: PartialLoader = None,
-            financial_loader: PartialLoader = None,
-            categorical_loader: PartialLoader = None,
-            other_loaders: List[PartialLoader] = [],
+            *loaders: PartialLoader,
             data_filter: DataFilter = DataFilter(),
             verbose=False,
             **kwargs,
     ):
         super().__init__(**kwargs)
-        self.scope_loader = scope_loader
-        # self.scope_transformer = scope_transformer or LogarithmScaler(scope_features=self.DEPENDENT_FEATURES)
-        self.financial_loader = financial_loader
-        self.categorical_loader = categorical_loader
-        self.other_loaders = other_loaders
+        self.loaders = list(loaders)
         self.data_filter = data_filter
         self.verbose = verbose
         self._dataset_stack = []
         self.threshold = kwargs.pop("threshold", 5)
 
     def run(self, **kwargs) -> Self:
-        main_loaders = [self.financial_loader, self.scope_loader, self.categorical_loader]
-
         merged_loader = EmptyLoader()
         self.logger.info(f"Remaining data points {len(merged_loader.data)}")
-        for idx, loader in enumerate(main_loaders + self.other_loaders):
+        for idx, loader in enumerate(self.loaders):
             loaded = loader.load()
             loader_name = f"loader_{loaded.name.lower()}"
             merged_loader += loaded
@@ -385,27 +409,22 @@ class OxariDataManager(OxariMixin):
         self.col_others = list(_df_original.columns.difference(self.col_targets).difference(self.col_features))
         return self
 
-    # def _reduced(self, df, **kwargs):
-    #     num_inititial = df.shape[0]
-    #     tmp_targets = [col for col in df.columns if col.startswith("tg_")]
-    #     # tmp_keys = [col for col in df.columns if col.startswith("key_")]
-    #     # dropping datapoints that have no scopes
-    #     df = df.dropna(how="all", subset=tmp_targets)
-    #     # dropping all data points with leaky keys
-    #     # df = df.dropna(how="any", subset=tmp_keys)
-
-    #     num_remaining = df.shape[0]
-    #     self.logger.info(f"From {num_inititial} initial data points removed {num_inititial - num_remaining} data points.")
-    #     return df
-
     #TODO: JUST OVERWRITE THIS ONE
-    def _transform(self, df, **kwargs):
-        return df.drop_duplicates(['key_isin', 'key_year'])
+    def _transform(self, df:pd.DataFrame, **kwargs):
+        # key_cols = list(df.columns[df.columns.str.startswith('key')])
+        return df.drop_duplicates(['key_isin', 'key_year']).sort_values(['key_isin', 'key_year'], ascending=True)
 
     def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> pd.DataFrame:
         self.logger.info(f"Added {name} to {self.__class__.__name__}")
         self._dataset_stack.append((name, df, descr))
         return df
+
+    def add_loader(self, loader: PartialLoader, to_beginning=False):
+        if not to_beginning:
+            self.loaders.append(loader)
+        if to_beginning:
+            self.loaders.insert(0, loader)
+        return self
 
     @property
     def data(self) -> pd.DataFrame:

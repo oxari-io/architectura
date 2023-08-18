@@ -1,9 +1,14 @@
+/**/experiment_optuna_metric.csv
+local/eval_results/experiment_optuna_metric.csv
+dataset_combined.csv
+dataset_combined_2.csv
 
 junk
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+local/.DS_Store
 
 # C extensions
 *.so
@@ -13,6 +18,7 @@ local/data/*
 model-data/*
 # objects
 local/objects/**/*
+local/prod_runs/model_imputations*
 !**/.gitkeep
 
 
@@ -216,4 +222,3 @@ fabric.properties
 
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
-

@@ -53,6 +53,27 @@ class DropFeatureReducer(OxariFeatureReducer):
         new_X = X.drop(columns=self._features)
         return new_X
 
+class SelectionFeatureReducer(OxariFeatureReducer):
+    """ This Feature Selector selects features according to a list of predefined features. 
+    This is useful if a supervised feature selection algorithm was used. 
+    """
+
+    def __init__(self, features=[], **kwargs):
+        super().__init__(**kwargs)
+        self._features = features
+
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
+        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
+        self.selected_features_ = set(X.columns).intersection(set(self._features))
+        self.n_components_ = len(self.selected_features_)
+        self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} columns to {self.n_components_} columns.')
+        return self
+
+    def transform(self, X: pd.DataFrame, **kwargs) -> ArrayLike:
+        X_reduced = X[self.selected_features_]
+        # TODO: add merge function with metadata
+        return X_reduced
+
 
 # TODO: Align names
 class PCAFeatureReducer(OxariFeatureReducer):
@@ -64,7 +85,8 @@ class PCAFeatureReducer(OxariFeatureReducer):
         self._dimensionality_reducer: PCA = PCA(n_components=n_components)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
+        # take only the names of features that should be reduced
+        self.feature_names_in_ = list(set(X.filter(regex="^ft_", axis=1).columns).difference(set(self.ignored_features_)))
         self._dimensionality_reducer.fit(X[self.feature_names_in_], y)
         self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} columns to {self.n_components_} columns.')
         return self
@@ -74,7 +96,8 @@ class PCAFeatureReducer(OxariFeatureReducer):
         X_new = X[self.feature_names_in_]
         X_reduced = pd.DataFrame(self._dimensionality_reducer.transform(X_new), index=X_new.index)
         X_new_reduced = self.merge(X_new, X_reduced)
-        return X_new_reduced
+        X_complete = self.merge_with_ignored_columns(X, X_new_reduced)
+        return X_complete
 
     def get_params(self, deep=False):
         return {**self._dimensionality_reducer.get_params(deep)}

@@ -8,7 +8,7 @@ from base import (DefaultClassificationEvaluator, OxariClassifier, OxariOptimize
 # from model.misc.hyperparams_tuning import tune_hps_classifier
 # from model.misc.ML_toolkit import add_bucket_label,check_scope
 from base.metrics import classification_metric
-from sklearn.metrics import (classification_report, confusion_matrix)
+from sklearn.metrics import (classification_report, confusion_matrix, balanced_accuracy_score)
 import pandas as pd
 
 
@@ -30,7 +30,7 @@ class BucketClassifierEvauator(DefaultClassificationEvaluator):
         """
         n_buckets = kwargs.get('n_buckets', len(np.unique(y_test)))
         error_metrics = {
-            # "vanilla_acc": balanced_accuracy_score(y_test, y_pred),
+            # vanilla accuracy is inherited from DefaultClassificationEvaluator
             "adj_lenient_acc": self.lenient_adjacent_accuracy_score(y_test, y_pred),
             "adj_strict_acc": self.strict_adjacent_accuracy_score(y_test, y_pred, n_buckets),
         }
@@ -112,6 +112,8 @@ class ClassifierOptimizer(OxariOptimizer):
 
         # TODO: add docstring here pls
         y_train = y_train.ravel()
+
+        # TODO: the param space should be defined as an attribute of the class {review this idea}
         param_space = {
             'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
             'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
@@ -130,10 +132,10 @@ class ClassifierOptimizer(OxariOptimizer):
         val = classification_metric(y_true=y_val, y_pred=y_pred)
         return val
 
-
 class BucketClassifier(OxariClassifier):
 
     def __init__(self, n_buckets=10, **kwargs):
+        super().__init__(**kwargs)
         self.n_buckets = n_buckets
         self._estimator = lgb.LGBMClassifier(**kwargs)
         self.bucket_metrics_ = {"scores":{}}

@@ -1,0 +1,912 @@
+{
+    "Advertising/Marketing Services": {
+        "gcis_industry": "Professional Services",
+        "gcis_industry_code": "202020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Aerospace & Defense": {
+        "gcis_industry": "Aerospace & Defense",
+        "gcis_industry_code": "201010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Agricultural Commodities/Milling": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Air Freight/Couriers": {
+        "gcis_industry": "Air Freight & Logistics",
+        "gcis_industry_code": "203010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Airlines": {
+        "gcis_industry": "Passenger Airlines",
+        "gcis_industry_code": "203020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Aluminum": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Alternative Power Generation": {
+        "gcis_industry": "Independent Power and Renewable Electricity Producers",
+        "gcis_industry_code": "551050",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Apparel/Footwear": {
+        "gcis_industry": "Textiles, Apparel & Luxury Goods",
+        "gcis_industry_code": "252030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Apparel/Footwear Retail": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Auto Parts: OEM": {
+        "gcis_industry": "Automobile Components",
+        "gcis_industry_code": "251010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Automotive Aftermarket": {
+        "gcis_industry": "Automobile Components",
+        "gcis_industry_code": "251010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Beverages: Alcoholic": {
+        "gcis_industry": "Beverages",
+        "gcis_industry_code": "302010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Beverages: Non-Alcoholic": {
+        "gcis_industry": "Beverages",
+        "gcis_industry_code": "302010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Biotechnology": {
+        "gcis_industry": "Biotechnology",
+        "gcis_industry_code": "352010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Broadcasting": {
+        "gcis_industry": "Media",
+        "gcis_industry_code": "502010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Building Products": {
+        "gcis_industry": "Building Products",
+        "gcis_industry_code": "201020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Cable/Satellite TV": {
+        "gcis_industry": "Media",
+        "gcis_industry_code": "502010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Casinos/Gaming": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Catalog/Specialty Distribution": {
+        "gcis_industry": "Distributors",
+        "gcis_industry_code": "255010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Chemicals: Agricultural": {
+        "gcis_industry": "Chemicals",
+        "gcis_industry_code": "151010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Chemicals: Major Diversified": {
+        "gcis_industry": "Chemicals",
+        "gcis_industry_code": "151010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Chemicals: Specialty": {
+        "gcis_industry": "Chemicals",
+        "gcis_industry_code": "151010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Coal": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Commercial Printing/Forms": {
+        "gcis_industry": "Commercial Services & Supplies",
+        "gcis_industry_code": "202010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Computer Communications": {
+        "gcis_industry": "Communications Equipment",
+        "gcis_industry_code": "452010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Computer Peripherals": {
+        "gcis_industry": "Technology Hardware, Storage & Peripherals",
+        "gcis_industry_code": "452020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Computer Processing Hardware": {
+        "gcis_industry": "Technology Hardware, Storage & Peripherals",
+        "gcis_industry_code": "452020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Construction Materials": {
+        "gcis_industry": "Construction Materials",
+        "gcis_industry_code": "151020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Containers/Packaging": {
+        "gcis_industry": "Containers & Packaging",
+        "gcis_industry_code": "151030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Contract Drilling": {
+        "gcis_industry": "Energy Equipment & Services",
+        "gcis_industry_code": "101010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Data Processing Services": {
+        "gcis_industry": "IT Services",
+        "gcis_industry_code": "451020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Department Stores": {
+        "gcis_industry": "Broadline Retail",
+        "gcis_industry_code": "255030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Discount Stores": {
+        "gcis_industry": "Broadline Retail",
+        "gcis_industry_code": "255030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Drugstore Chains": {
+        "gcis_industry": "Broadline Retail",
+        "gcis_industry_code": "255030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Electric Utilities": {
+        "gcis_industry": "Electric Utilities",
+        "gcis_industry_code": "551010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Electrical Products": {
+        "gcis_industry": "Electrical Equipment",
+        "gcis_industry_code": "201040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Electronics Distributors": {
+        "gcis_industry": "Electronic Equipment, Instruments & Components",
+        "gcis_industry_code": "452030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Electronics/Appliance Stores": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Electronics/Appliances": {
+        "gcis_industry": "Household Durables",
+        "gcis_industry_code": "252010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Engineering & Construction": {
+        "gcis_industry": "Construction & Engineering",
+        "gcis_industry_code": "201030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Environmental Services": {
+        "gcis_industry": "Commercial Services & Supplies",
+        "gcis_industry_code": "202010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Finance/Rental/Leasing": {
+        "gcis_industry": "Consumer Finance",
+        "gcis_industry_code": "402020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Financial Conglomerates": {
+        "gcis_industry": "Financial Services",
+        "gcis_industry_code": "402010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Financial Publishing/Services": {
+        "gcis_industry": "Professional Services",
+        "gcis_industry_code": "202020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Food Distributors": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Food Retail": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Food: Major Diversified": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Food: Meat/Fish/Dairy": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Food: Specialty/Candy": {
+        "gcis_industry": "Food Products",
+        "gcis_industry_code": "302020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Forest Products": {
+        "gcis_industry": "Paper & Forest Products",
+        "gcis_industry_code": "151050",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Gas Distributors": {
+        "gcis_industry": "Gas Utilities",
+        "gcis_industry_code": "551020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Home Furnishings": {
+        "gcis_industry": "Household Durables",
+        "gcis_industry_code": "252010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Home Improvement Chains": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Homebuilding": {
+        "gcis_industry": "Construction & Engineering",
+        "gcis_industry_code": "201030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Hotels/Resorts/Cruiselines": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Household/Personal Care": {
+        "gcis_industry": "Household Products",
+        "gcis_industry_code": "303010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Industrial Conglomerates": {
+        "gcis_industry": "Industrial Conglomerates",
+        "gcis_industry_code": "201050",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Industrial Machinery": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Industrial Specialties": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Information Technology Services": {
+        "gcis_industry": "IT Services",
+        "gcis_industry_code": "451020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Insurance Brokers/Services": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Integrated Oil": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Internet Retail": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Internet Software/Services": {
+        "gcis_industry": "Interactive Media & Services",
+        "gcis_industry_code": "502030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Investment Banks/Brokers": {
+        "gcis_industry": "Capital Markets",
+        "gcis_industry_code": "402030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Investment Managers": {
+        "gcis_industry": "Capital Markets",
+        "gcis_industry_code": "402030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Investment Trusts/Mutual Funds": {
+        "gcis_industry": "Capital Markets",
+        "gcis_industry_code": "402030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Life/Health Insurance": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Major Banks": {
+        "gcis_industry": "Banks",
+        "gcis_industry_code": "401010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Major Telecommunications": {
+        "gcis_industry": "Diversified Telecommunication Services",
+        "gcis_industry_code": "501010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Managed Health Care": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Marine Shipping": {
+        "gcis_industry": "Marine Transportation",
+        "gcis_industry_code": "203030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Media Conglomerates": {
+        "gcis_industry": "Media",
+        "gcis_industry_code": "502010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Medical Distributors": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Medical Specialties": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Medical/Nursing Services": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Metal Fabrication": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Mining/Precious Metals": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Miscellaneous Commercial Services": {
+        "gcis_industry": "Commercial Services & Supplies",
+        "gcis_industry_code": "202010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Miscellaneous Manufacturing": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Movies/Entertainment": {
+        "gcis_industry": "Entertainment",
+        "gcis_industry_code": "502020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Multi-Line Insurance": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Office Equipment/Supplies": {
+        "gcis_industry": "Commercial Services & Supplies",
+        "gcis_industry_code": "202010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Oil & Gas Pipelines": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Oil & Gas Production": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Oil Refining/Marketing": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Oilfield Services/Equipment": {
+        "gcis_industry": "Oil, Gas & Consumable Fuels",
+        "gcis_industry_code": "101020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Other Consumer Services": {
+        "gcis_industry": "Diversified Consumer Services",
+        "gcis_industry_code": "253020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Other Consumer Specialties": {
+        "gcis_industry": "Diversified Consumer Services",
+        "gcis_industry_code": "253020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Other Metals/Minerals": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Other Transportation": {
+        "gcis_industry": "Ground Transportation",
+        "gcis_industry_code": "203040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Packaged Software": {
+        "gcis_industry": "Software",
+        "gcis_industry_code": "451030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Personnel Services": {
+        "gcis_industry": "Professional Services",
+        "gcis_industry_code": "202020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Pharmaceuticals: Generic": {
+        "gcis_industry": "Pharmaceuticals",
+        "gcis_industry_code": "352020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Pharmaceuticals: Major": {
+        "gcis_industry": "Pharmaceuticals",
+        "gcis_industry_code": "352020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Pharmaceuticals: Other": {
+        "gcis_industry": "Pharmaceuticals",
+        "gcis_industry_code": "352020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Pulp & Paper": {
+        "gcis_industry": "Paper & Forest Products",
+        "gcis_industry_code": "151050",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Publishing: Books/Magazines": {
+        "gcis_industry": "Media",
+        "gcis_industry_code": "502010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Publishing: Newspapers": {
+        "gcis_industry": "Media",
+        "gcis_industry_code": "502010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Railroads": {
+        "gcis_industry": "Ground Transportation",
+        "gcis_industry_code": "203040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Real Estate Development": {
+        "gcis_industry": "Real Estate Management & Development",
+        "gcis_industry_code": "602010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Real Estate Investment Trusts": {
+        "gcis_industry": "Real Estate Management & Development",
+        "gcis_industry_code": "602010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Recreational Products": {
+        "gcis_industry": "Leisure Products",
+        "gcis_industry_code": "252020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Regional Banks": {
+        "gcis_industry": "Banks",
+        "gcis_industry_code": "401010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Restaurants": {
+        "gcis_industry": "Hotels, Restaurants & Leisure",
+        "gcis_industry_code": "253010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Savings Banks": {
+        "gcis_industry": "Banks",
+        "gcis_industry_code": "401010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Services to the Health Industry": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Semiconductors": {
+        "gcis_industry": "Semiconductors & Semiconductor Equipment",
+        "gcis_industry_code": "453010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Specialty Insurance": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Specialty Stores": {
+        "gcis_industry": "Specialty Retail",
+        "gcis_industry_code": "255040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Specialty Telecommunications": {
+        "gcis_industry": "Wireless Telecommunication Services",
+        "gcis_industry_code": "501020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Steel": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Telecommunications Equipment": {
+        "gcis_industry": "Communications Equipment",
+        "gcis_industry_code": "452010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Textiles": {
+        "gcis_industry": "Textiles, Apparel & Luxury Goods",
+        "gcis_industry_code": "252030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Tobacco": {
+        "gcis_industry": "Tobacco",
+        "gcis_industry_code": "302030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Tools & Hardware": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Trucking": {
+        "gcis_industry": "Ground Transportation",
+        "gcis_industry_code": "203040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Trucks/Construction/Farm Machinery": {
+        "gcis_industry": "Machinery",
+        "gcis_industry_code": "201060",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Water Utilities": {
+        "gcis_industry": "Water Utilities",
+        "gcis_industry_code": "551040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Wholesale Distributors": {
+        "gcis_industry": "Distributors",
+        "gcis_industry_code": "255010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Wireless Telecommunications": {
+        "gcis_industry": "Wireless Telecommunication Services",
+        "gcis_industry_code": "501020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Consumer Sundries": {
+        "gcis_industry": "Household Products",
+        "gcis_industry_code": "303010",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Electronic Components": {
+        "gcis_industry": "Electronic Equipment, Instruments & Components",
+        "gcis_industry_code": "452030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Electronic Equipment/Instruments": {
+        "gcis_industry": "Electronic Equipment, Instruments & Components",
+        "gcis_industry_code": "452030",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Electronic Production Equipment": {
+        "gcis_industry": "Technology Hardware, Storage & Peripherals",
+        "gcis_industry_code": "452020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Hospital/Nursing Management": {
+        "gcis_industry": "Health Care Providers & Services",
+        "gcis_industry_code": "351020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Miscellaneous": {
+        "gcis_industry": "Diversified Consumer Services",
+        "gcis_industry_code": "253020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Motor Vehicles": {
+        "gcis_industry": "Automobiles",
+        "gcis_industry_code": "251020",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Precious Metals": {
+        "gcis_industry": "Metals & Mining",
+        "gcis_industry_code": "151040",
+        "source": [
+            "GDC"
+        ]
+    },
+    "Property/Casualty Insurance": {
+        "gcis_industry": "Insurance",
+        "gcis_industry_code": "403010",
+        "source": [
+            "GDC"
+        ]
+    }
+}

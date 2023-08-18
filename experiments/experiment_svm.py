@@ -7,7 +7,7 @@ from pipeline import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator, FastSupportVectorEstimator
 from base.helper import LogTargetScaler
-from datasources.core import DefaultDataManager
+from datasources.core import DefaultDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer, DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource
@@ -19,11 +19,7 @@ if __name__ == "__main__":
     # TODO: Finish this experiment by adding LinearSVR
     all_results = []
     # loads the data just like CSVDataLoader, but a selection of the data
-    dataset = DefaultDataManager(
-        S3Datasource(path='model-input-data/scopes_auto.csv'),
-        S3Datasource(path='model-input-data/financials_auto.csv'),
-        S3Datasource(path='model-input-data/categoricals_auto.csv'),
-    ).run()
+    dataset = get_default_datamanager_configuration().run()
     configurations: list[OxariImputer] = [
         SupportVectorEstimator(), 
         FastSupportVectorEstimator(),

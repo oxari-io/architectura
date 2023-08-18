@@ -89,7 +89,7 @@ class LinearSVREstimator(OxariScopeEstimator):
         indices = np.random.randint(0, max_size, sample_size)
         X_ = pd.DataFrame(X_)
         y = pd.DataFrame(y)
-        self._estimator = self._estimator.set_params(**self.params).fit(X.iloc[indices], y.iloc[indices].values.ravel())
+        self._estimator = self._estimator.set_params(**self.params).fit(X_.iloc[indices], y.iloc[indices].values.ravel())
         return self
     
     @staticmethod

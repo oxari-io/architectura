@@ -3,7 +3,7 @@ import io
 import cloudpickle as pkl
 from jmespath.ast import index
 from statsmodels.multivariate.factor_rotation import target_rotation
-
+import numpy as np
 import base
 import feature_reducers
 import imputers
@@ -205,14 +205,14 @@ class MongoDestination(DataTarget):
             yield iterable[ndx:min(ndx + n, l)]
 
     def connect(self) -> MongoClient:
-        self.client = MongoClient(self._connection_string, server_api=ServerApi('1'), connectTimeoutMS=120000)
+        self.client = MongoClient(self._connection_string, server_api=ServerApi('1'), connectTimeoutMS=480000)
         return self.client
 
     def _save(self, obj:list[dict], name, **kwargs) -> bool:
         
-        bsize = 50000
+        bsize = 5000
         client = self.connect()    
-        db = client['companies']
+        db = client[env.get('MONGO_COLLECTION', 'test')]
         
         collection = db[name]
         collection.drop()
@@ -246,7 +246,8 @@ class MongoSaver(PartialSaver, abc.ABC):
     def _convert(self, obj, **kwargs) -> list[dict]:
         if not isinstance(obj, pd.DataFrame):
             raise Exception(f'Object is not a dataframe but {obj.__class__}')
-        records = obj.to_dict('records')
+        # https://stackoverflow.com/a/62691803/4162265
+        records = obj.replace([np.nan], [None]).to_dict('records')
         return records
 
 # class DataSaver(PartialSaver, abc.ABC):
@@ -334,10 +335,11 @@ class OxariSavingManager(OxariLoggerMixin):
 
     def run(self, **kwargs) -> Self:
         for saver in tqdm.tqdm(self.savers):
-            self.logger.info(f"Saved {saver.name} via {saver.__class__}")
+            self.logger.info(f"Saving {saver.name} via {saver.__class__}")
             success = saver.save(**kwargs)
             if not success:
                 self.logger.error("SOMETHING FAILED HERE")
+            self.logger.info(f"Saving {saver.name} via {saver.__class__} completed")
 
     def _register_all_modules_to_pickle(self):
         # https://oegedijk.github.io/blog/pickle/dill/python/2020/11/10/serializing-dill-references.html

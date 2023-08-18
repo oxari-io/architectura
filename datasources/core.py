@@ -5,29 +5,20 @@ from typing import Dict, List
 import pandas as pd
 
 from base.constants import DATA_DIR
-from base.dataset_loader import (CategoricalLoader, Datasource,
-                                 FinancialLoader, OxariDataManager,
-                                 PartialLoader, ScopeLoader)
+from base.dataset_loader import (CategoricalLoader, CompanyDataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader)
+from datasources.loaders import RegionLoader
 from datasources.local import LocalDatasource
+from datasources.online import CachingS3Datasource, S3Datasource
 
 
 class DefaultDataManager(OxariDataManager):
-    # TODO: Follow loader structure of special loaders. 
+    # TODO: Follow loader structure of special loaders.
     # TODO: Remove named attributes and pass everything as a list of loaders.
     # TODO: Test if all combinations of loaders work (exclude standard loaders)
     # TODO: Introduce another file which has all the ISIN-YEAR keys
-    def __init__(self,
-                 scope_loader: Datasource = LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
-                 financial_loader: Datasource = LocalDatasource(path=DATA_DIR / "financials_auto.csv"),
-                 categorical_loader: Datasource = LocalDatasource(path=DATA_DIR / "categoricals_auto.csv"),
-                 other_loaders: List[PartialLoader] = [],
-                 verbose=False,
-                 **kwargs):
+    def __init__(self, *loaders: PartialLoader, verbose=False, **kwargs):
         super().__init__(
-            scope_loader=ScopeLoader(datasource=scope_loader),
-            financial_loader=FinancialLoader(datasource=financial_loader),
-            categorical_loader=CategoricalLoader(datasource=categorical_loader),
-            other_loaders=other_loaders,
+            *loaders,
             verbose=verbose,
             **kwargs,
         )
@@ -43,6 +34,7 @@ class FSExperimentDataLoader(DefaultDataManager):
 
 class PreviousScopeFeaturesDataManager(DefaultDataManager):
     PREFIX = "ft_numc_prior_"
+
     def _take_previous_scopes(self, df: pd.DataFrame):
         df_tmp = df.iloc[:, df.columns.str.startswith('tg_numc_')].shift(1)
         df_tmp.columns = [f"{self.PREFIX}{col}" for col in df_tmp.columns]
@@ -50,7 +42,46 @@ class PreviousScopeFeaturesDataManager(DefaultDataManager):
         return df
 
     def _transform(self, df: pd.DataFrame):
-        key_cols = list(df.columns[df.columns.str.startswith('key')])
         self.logger.info("Taking all previous year scopes")
-        df:pd.DataFrame = df.sort_values(key_cols, ascending=True).groupby('key_isin', group_keys=False).progress_apply(self._take_previous_scopes)
+        df: pd.DataFrame = df.groupby('key_isin', group_keys=False).progress_apply(self._take_previous_scopes)
         return super()._transform(df)
+
+
+class CurrentYearFeatureDataManager(DefaultDataManager):
+
+    def _transform(self, df: pd.DataFrame):
+        self.logger.info("Taking current year as feature")
+        df["ft_numd_year"] = df["key_year"]
+        return super()._transform(df)
+
+class TemporalFeaturesDataManager(PreviousScopeFeaturesDataManager, CurrentYearFeatureDataManager):
+    def _transform(self, df: pd.DataFrame):
+        self.logger.info("Running two data managers")
+        df = super(PreviousScopeFeaturesDataManager, self)._transform(df)
+        df = super(CurrentYearFeatureDataManager, self)._transform(df)
+        return super()._transform(df)
+
+
+def get_default_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    )
+
+def get_remote_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=S3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=S3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=S3Datasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    )
+
+def get_small_datamanager_configuration(frac=0.1):
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    ).set_filter(CompanyDataFilter(frac=frac))

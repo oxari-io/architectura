@@ -48,12 +48,14 @@ fig = sns.regplot(data=results, x="n_components", y="raw.sMAPE", order=3, color=
 ax2 = plt.twinx()
 fig = sns.regplot(data=results[results['time']<2500], x="n_components", y="time", color="green", order=3, ax=ax2)
 fig.set_title('two y axes: smape (blue) and time (green) vs n_components')
+plt.show()
 # %%
 plt.figure(figsize=(17,10))
 fig = sns.regplot(data=results[results['time']<400], x="time", y="test.sMAPE")
 fig.set_xlabel('time')
 fig.set_ylabel('sMAPE')
 fig.set_title('smape vs time (ROC plot)')
+plt.show()
 # %%
 plt.figure(figsize=(17,10))
 fig = sns.scatterplot(data=results, x="n_components", y="test.sMAPE", size="time", hue='run')
@@ -61,12 +63,14 @@ fig.set_xlabel('n_components')
 fig.set_ylabel('sMAPE')
 fig.set_ylim(0.22, 0.28)
 fig.set_title('bubble plot, size indicates time')
+plt.show()
 # %%
 plt.figure(figsize=(17,10))
 fig = sns.scatterplot(data=results, x="n_components", y="variance", hue='run')
 fig.set_xlabel('n_components')
 fig.set_ylabel('variance')
 fig.set_title('scree plot')
+plt.show()
 
 # %%
 # idea 1: two y axes: smape and time vs n_components
@@ -79,6 +83,7 @@ fig = sns.regplot(data=results, x='n_components', y='time', order=3)
 fig.set_xlabel('n_components')
 fig.set_ylabel('time')
 fig.set_title('time vs n_components')
+plt.show()
 # %%
 bins_x = np.arange(0, results['n_components'].max() + 5, 5)
 bins_y = np.arange(0, results['time'].max() + 100, 100)
@@ -89,12 +94,14 @@ fig = sns.regplot(data=results.groupby('n_components_bin').mean(), x='n_componen
 fig.set_xlabel('n_components')
 fig.set_ylabel('time')
 fig.set_title('time vs n_components')
+plt.show()
 # %%
 plt.figure(figsize=(17,10))
 fig = sns.boxplot(data=results, x='n_components_bin', y='time')
 fig.set_xlabel('n_components')
 fig.set_ylabel('time')
 fig.set_title('time vs n_components')
+plt.show()
 # %%
 print(len(results))
 
@@ -106,4 +113,5 @@ ax.invert_yaxis()
 fig.set_xlabel('time')
 fig.set_ylabel('n_components')
 fig.set_title('time vs n_components')
+plt.show()
 # %%

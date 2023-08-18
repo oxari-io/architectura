@@ -40,10 +40,17 @@ df_scopes
 df_scopes['grp_scope_1'].value_counts()
 # %%
 sns.histplot(data=df_scopes[df_scopes["tg_numc_scope_1"] > 0], x="tg_numc_scope_1", bins=100)
+plt.show()
 # %%
+corrs = df_scopes[["key_year","tg_numc_scope_1","tg_numc_scope_2","tg_numc_scope_3"]].corr()
+print(corrs)
+sns.heatmap(corrs, vmin=-1, vmax=1)
+plt.show()
+
 # sns.histplot(data=df_scopes[(df_scopes["tg_numc_scope_1"] > 0) & (df_scopes["tg_numc_scope_1"] < 1e4)], x="tg_numc_scope_1", bins=100)
 # %%
 sns.histplot(data=df_scopes[df_scopes["tg_numc_scope_1"] > 0], x="tg_numc_scope_1", bins=100, log_scale=True)
+plt.show()
 # %%
 df_scopes[df_scopes["grp_scope_1"] != "Zero Emissions"].groupby('key_year').var()
 # %%

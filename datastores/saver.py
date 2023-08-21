@@ -212,7 +212,7 @@ class MongoDestination(DataTarget):
         
         bsize = 5000
         client = self.connect()    
-        db = client[env.get('MONGO_COLLECTION', 'test')]
+        db = client[env.get('MONGO_DATABASE_NAME', 'd_data')]
         
         collection = db[name]
         collection.drop()

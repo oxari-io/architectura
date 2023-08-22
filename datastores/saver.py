@@ -228,8 +228,8 @@ class MongoDestination(DataTarget):
 
 class PickleSaver(PartialSaver, abc.ABC):
 
-    def _convert(self, obj:pd.DataFrame, **kwargs) -> bytes:
-        new_obj = pkl.dumps(obj)
+    def _convert(self, obj:pd.DataFrame, **kwargs) -> pd.DataFrame:
+        new_obj = pkl.dump(obj)
         return super()._convert(new_obj, **kwargs)
 
 class CSVSaver(PartialSaver, abc.ABC):

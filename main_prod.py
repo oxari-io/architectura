@@ -136,8 +136,8 @@ if __name__ == "__main__":
     now = time.strftime('T%Y%m%d%H%M')
 
     dataset = get_default_datamanager_configuration().run()
-    # Scope Imputation model - comm back in TODO
-    # model_si = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
+    # Scope Imputation model 
+    model_si = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
     # Live Prediciton model
     model_lp = train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset)
 
@@ -148,11 +148,10 @@ if __name__ == "__main__":
     # print(model_si.get_pipeline(3).get_config(deep=True))
 
     ### EVALUATION RESULTS ###
-    # Comm back in TODO
-    # print("Eval results")
-    # eval_results_1 = pd.json_normalize(model_si.collect_eval_results())
-    # eval_results_2 = pd.json_normalize(model_lp.collect_eval_results())
-    # pd.concat([eval_results_1, eval_results_2]).T.to_csv(f'local/prod_runs/model_pipelines_{now}.csv')
+    print("Eval results")
+    eval_results_1 = pd.json_normalize(model_si.collect_eval_results())
+    eval_results_2 = pd.json_normalize(model_lp.collect_eval_results())
+    pd.concat([eval_results_1, eval_results_2]).T.to_csv(f'local/prod_runs/model_pipelines_{now}.csv')
 
     # TODO: Convert to a pytest 
     # print("Predict with Pipeline")
@@ -205,8 +204,8 @@ if __name__ == "__main__":
     ## SAVE OBJECTS ###
 
     all_meta_models = [
-        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_scope_imputation").set_object(model_si).set_datatarget(LocalDestination(path="model-data/output")),
-        # PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_scope_imputation").set_object(model_si).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_scope_imputation").set_object(model_si).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_scope_imputation").set_object(model_si).set_datatarget(S3Destination(path="model-data/output")),
         PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
         PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
     ]

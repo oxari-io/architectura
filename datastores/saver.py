@@ -179,9 +179,8 @@ class S3Destination(DataTarget):
         test = self.session.get_available_resources()
 
     def _save(self, obj, name, **kwargs):
-        pkl_stream = pkl.dumps(obj)
         _key = self._path / f"{name}"
-        self.client.put_object(Body=pkl_stream, Bucket=self.do_spaces_bucket, Key=_key.as_posix())
+        self.client.put_object(Body=obj, Bucket=self.do_spaces_bucket, Key=_key.as_posix())
         return True
 
 class MongoDestination(DataTarget):
@@ -228,7 +227,7 @@ class MongoDestination(DataTarget):
 
 class PickleSaver(PartialSaver, abc.ABC):
 
-    def _convert(self, obj:pd.DataFrame, **kwargs) -> pd.DataFrame:
+    def _convert(self, obj:bytes, **kwargs) -> bytes:
         new_obj = pkl.dumps(obj)
         return super()._convert(new_obj, **kwargs)
 

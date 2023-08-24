@@ -718,6 +718,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         X_mod = self._convert_input(X)
         X_mod = self._extend_missing_features(X_mod, self.feature_names_in_)
         X_mod = self._remove_unseen_features(X_mod, self.feature_names_in_)
+        X_mod  = self._order_features(X_mod, self.feature_names_in_)
         if return_std:
             preds = self.ci_estimator.predict(X_mod, **kwargs)
             return preds  # Alread reversed
@@ -868,6 +869,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         reduced_df = df.drop(additional_features, axis=1)
         
         return reduced_df
+    
+    def _order_features(self, X: pd.DataFrame, feature_names) -> pd.DataFrame:
+        return X[feature_names]
 
 class Test(OxariPipeline):
 

@@ -136,7 +136,7 @@ if __name__ == "__main__":
     now = time.strftime('T%Y%m%d%H%M')
 
     dataset = get_default_datamanager_configuration().run()
-    # Scope Imputation model
+    # Scope Imputation model 
     model_si = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
     # Live Prediciton model
     model_lp = train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset)

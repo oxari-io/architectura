@@ -64,7 +64,8 @@ class SelectionFeatureReducer(OxariFeatureReducer):
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.feature_names_in_ = list(X.filter(regex="^ft_", axis=1).columns)
-        self.selected_features_ = set(X.columns).intersection(set(self._features))
+        features_set = set(self._features)
+        self.selected_features_ = [col for col in X.columns if col in features_set]
         self.n_components_ = len(self.selected_features_)
         self.logger.info(f'Reduces features from {len(X[self.feature_names_in_].columns)} columns to {self.n_components_} columns.')
         return self

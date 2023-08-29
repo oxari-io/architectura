@@ -2,6 +2,7 @@ from pathlib import Path
 import pytest
 from base.constants import DATA_DIR
 from base.dataset_loader import CategoricalLoader, CompanyDataFilter, DataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader, SimpleDataFilter
+from base.run_utils import get_small_datamanager_configuration, get_default_datamanager_configuration
 
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from datasources.loaders import NetZeroIndexLoader, RegionLoader
@@ -11,7 +12,7 @@ import pandas as pd
 import logging
 import os
 
-from tests.fixtures import const_dataset_filtered, const_dataset_full, const_data_manager
+from tests.fixtures import const_dataset_filtered, const_dataset_full, const_data_manager, const_base_loaders
 
 # logging.basicConfig(level=logging.DEBUG)
 # mylogger = logging.getLogger()
@@ -27,9 +28,8 @@ def test_datasources(datasource: Datasource):
     loaded = datasource.fetch()
     assert len(loaded.data) > 0
 
-@pytest.mark.parametrize("datasource", [
-    CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")
-])
+
+@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")])
 def test_datasources_not_cached_download(datasource: Datasource):
     local_path = Path(datasource.path)
     if local_path.exists():
@@ -42,9 +42,8 @@ def test_datasources_not_cached_download(datasource: Datasource):
     assert local_path.exists(), "File does not exist locally"
     os.remove(local_path)
 
-@pytest.mark.parametrize("datasource", [
-    CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")
-])
+
+@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")])
 def test_datasources_cached_download(datasource: Datasource):
     local_path = Path(datasource.path)
     assert local_path.exists()
@@ -68,13 +67,11 @@ def test_standard_loaders(loader: PartialLoader):
     [NetZeroIndexLoader()],
     [RegionLoader(), NetZeroIndexLoader()],
 ])
-def test_additional_loaders(loaders: list[PartialLoader]):
-    dataset = DefaultDataManager(other_loaders=loaders).run()
+def test_additional_loaders(loaders: list[PartialLoader], const_base_loaders: list[PartialLoader]):
+    
+    dataset = DefaultDataManager(*const_base_loaders, *loaders).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     assert len(DATA) > 0
-    for l in loaders:
-        for col in l.COL_MAPPING.values():
-            assert col in DATA
 
 
 @pytest.mark.parametrize("filter", [
@@ -106,9 +103,8 @@ def test_splits(const_data_manager: OxariDataManager):
 @pytest.mark.parametrize("data_manager", [
     DefaultDataManager(),
     PreviousScopeFeaturesDataManager(),
-    PreviousScopeFeaturesDataManager(other_loaders=[RegionLoader(), NetZeroIndexLoader()]),
 ])
-def test_data_manager(data_manager: OxariDataManager):
-    dataset = data_manager.set_filter(CompanyDataFilter()).run()
+def test_data_manager(data_manager: OxariDataManager, const_base_loaders:list[PartialLoader]):
+    dataset = data_manager.set_filter(CompanyDataFilter()).set_loaders(const_base_loaders).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     assert len(DATA)

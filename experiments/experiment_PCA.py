@@ -5,7 +5,7 @@ import numpy as np
 
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
-from datasources.core import FSExperimentDataLoader, get_default_datamanager_configuration, get_small_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer, DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer, BaselineImputer
 from pipeline.core import DefaultPipeline

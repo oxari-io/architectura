@@ -4,7 +4,7 @@ from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 
 from base.dataset_loader import CompanyDataFilter, OxariDataManager
 from base.helper import LogTargetScaler, data_point
-from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 import pandas as pd
 from feature_reducers.core import PCAFeatureReducer
 from imputers.revenue_bucket import RevenueQuantileBucketImputer

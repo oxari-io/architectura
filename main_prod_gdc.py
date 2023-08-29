@@ -9,7 +9,8 @@ from sklearn.preprocessing import PowerTransformer
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.helper import LogTargetScaler
-from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
+from datasources.core import PreviousScopeFeaturesDataManager
+from base.run_utils import get_default_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer

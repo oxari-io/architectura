@@ -1,4 +1,6 @@
 import io
+import os
+import pathlib
 
 import cloudpickle as pkl
 from jmespath.ast import index
@@ -60,9 +62,17 @@ class DataTarget(OxariLoggerMixin, abc.ABC):
     def _save(self, obj, name, **kwargs) -> bool:
         target_destination = self._path / name
         with io.open(target_destination, "wb") as file:
-            
             file.write(obj)
-        return target_destination.absolute()
+        return True
+
+    @abc.abstractmethod
+    def _delete(self, name, **kwargs) -> bool:
+        target_destination = self._path / name
+        final_local_path = pathlib.Path(target_destination).absolute()
+        if final_local_path.exists():
+            os.remove(final_local_path.as_posix())
+            self.logger.info(f"Deleted: {final_local_path}")
+        return True
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}[to:{self._path}]"
@@ -131,6 +141,15 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
             self.logger.error(f"ERROR: Something went horribly wrong while saving '{self._name}' -> {e}")
             return False
 
+    def delete(self, **kwargs) -> bool:
+        try:
+            self.datatarget._check_if_destination_accessible(**kwargs)
+            self.datatarget._delete(self.name, **kwargs)
+            return True
+        except Exception as e:
+            self.logger.error(f"ERROR: Something went horribly wrong while deletion '{self._name}' -> {e}")
+            return False
+
 
 class LocalDestination(DataTarget):
 
@@ -148,6 +167,9 @@ class LocalDestination(DataTarget):
 
     def _save(self, obj, name, **kwargs) -> bool:
         return super()._save(obj, name, **kwargs)
+    
+    def _delete(self, name, **kwargs) -> bool:
+        return super()._delete(name, **kwargs)
 
 
 class S3Destination(DataTarget):
@@ -182,6 +204,11 @@ class S3Destination(DataTarget):
         _key = self._path / f"{name}"
         self.client.put_object(Body=obj, Bucket=self.do_spaces_bucket, Key=_key.as_posix())
         return True
+    
+    def _delete(self, name, **kwargs) -> bool:
+        _key = self._path / f"{name}"
+        self.client.delete_object(Bucket=self.do_spaces_bucket, Key=_key.as_posix())
+        return True
 
 class MongoDestination(DataTarget):
 
@@ -191,6 +218,7 @@ class MongoDestination(DataTarget):
         self.options=options
         self._path = Path(self._path) if self._path else Path('.')
         self._connection_string = env.get('MONGO_CONNECTION_STRING')
+        self._db_name = env.get('MONGO_DATABASE_NAME', 'd_data')
         
 
     def _check_if_destination_accessible(self):
@@ -211,7 +239,7 @@ class MongoDestination(DataTarget):
         
         bsize = 5000
         client = self.connect()    
-        db = client[env.get('MONGO_DATABASE_NAME', 'd_data')]
+        db = client[self._db_name]
         
         collection = db[name]
         collection.drop()
@@ -223,6 +251,15 @@ class MongoDestination(DataTarget):
             collection.create_index(keys=list(self.index.items()), **self.options)
 
         self.logger.info(f"Inserted {len(inserted.inserted_ids)} rows.")
+        return True
+    
+    def _delete(self, name, **kwargs) -> bool:
+        client = self.connect()    
+        db = client[self._db_name]
+        
+        collection = db[name]
+        collection.drop()
+        self.logger.info(f"Dropped collection '{db.name}/{collection.name}'")
         return True
 
 class PickleSaver(PartialSaver, abc.ABC):

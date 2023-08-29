@@ -4,7 +4,7 @@ from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 
 from base.dataset_loader import CompanyDataFilter, OxariDataManager
 from base.helper import LogTargetScaler, data_point
-from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
+from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
 import pandas as pd
 from feature_reducers.core import PCAFeatureReducer
 from imputers.revenue_bucket import RevenueQuantileBucketImputer
@@ -18,7 +18,7 @@ from scope_estimators.svm import SupportVectorEstimator
 
 @pytest.fixture(scope="session")
 def const_data_manager():
-    dataset = DefaultDataManager().set_filter(CompanyDataFilter(0.05)).run()
+    dataset = get_small_datamanager_configuration().run()
     return dataset
 
 
@@ -30,7 +30,7 @@ def const_dataset_filtered(const_data_manager: OxariDataManager):
 
 @pytest.fixture(scope="session")
 def const_dataset_full():
-    DATA = DefaultDataManager().run().get_data_by_name(OxariDataManager.ORIGINAL)
+    DATA = get_default_datamanager_configuration().run().get_data_by_name(OxariDataManager.ORIGINAL)
     return DATA
 
 
@@ -106,11 +106,11 @@ def const_example_dict_multi_rows():
     d_point = data_point()
     return [d_point, d_point]
 
-
+# TODO: This fixture could be its own seperate test. The fixture might just return a predefined dataset
 @pytest.fixture(scope="session")
 def const_data_for_scope_imputation(const_meta_model:OxariMetaModel, const_data_manager:OxariDataManager):
     DATA = const_data_manager.get_data_by_name(OxariDataManager.ORIGINAL)
     data_filled = const_meta_model.get_pipeline(1).preprocessor.transform(DATA)
     data_year_imputed = DerivativeMissingYearImputer().fit_transform(data_filled)
-    scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=data_year_imputed).evaluate()
+    scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=data_year_imputed)
     return scope_imputer.data

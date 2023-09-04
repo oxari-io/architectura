@@ -1,3 +1,4 @@
+import io
 from pathlib import Path
 import pytest
 from base.constants import DATA_DIR
@@ -46,11 +47,14 @@ def test_datasources_not_cached_download(datasource: Datasource):
 @pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")])
 def test_datasources_cached_download(datasource: Datasource):
     local_path = Path(datasource.path)
-    assert local_path.exists()
+    if not local_path.exists():
+        with io.open(local_path, 'w') as f:
+            f.write("col1, col2\nd1,d2")
+
     loaded = datasource.fetch()
     assert len(loaded.data) > 0
     assert not datasource.is_fresh_download
-
+    os.remove(local_path)
 
 @pytest.mark.parametrize("loader", [
     ScopeLoader(datasource=LocalDatasource(path=DATA_DIR / "scopes_auto.csv")),

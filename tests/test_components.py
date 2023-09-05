@@ -2,14 +2,19 @@ from typing import Type
 # from postprocessors.core import DecisionExplainer, JumpRateExplainer, ResidualExplainer, TreeBasedExplainerMixin
 import pytest
 from base.common import OxariPreprocessor, OxariFeatureReducer, OxariImputer
+from base.helper import LogTargetScaler
 from feature_reducers.core import AgglomerateFeatureReducer, DummyFeatureReducer, PCAFeatureReducer
+from imputers.categorical import CategoricalStatisticsImputer
 from imputers.core import DummyImputer
+from imputers.iterative import MVEImputer
+from imputers.kcluster_bucket import KMeansBucketImputer, KMedianBucketImputer
 from imputers.revenue_bucket import RevenueBucketImputer, RevenueQuantileBucketImputer
 from preprocessors.core import BaselinePreprocessor, DummyPreprocessor, IIDPreprocessor, ImprovedBaselinePreprocessor, NormalizedIIDPreprocessor
 from base.dataset_loader import OxariDataManager
 from tests.fixtures import const_data_manager, const_pipeline, const_meta_model, const_example_df, const_example_df_multi_rows, const_example_dict, const_example_dict_multi_rows, const_example_series, const_dataset_filtered, const_data_for_scope_imputation
 import numpy as np
 import pandas as pd
+
 
 @pytest.mark.parametrize("preprocessor", [IIDPreprocessor(), BaselinePreprocessor(), ImprovedBaselinePreprocessor(), NormalizedIIDPreprocessor()])
 def test_preprocessors(preprocessor: OxariPreprocessor, const_data_manager: OxariDataManager):
@@ -29,8 +34,17 @@ def test_feature_reducers(feature_reducer: OxariFeatureReducer, const_data_manag
     assert data_reduced.shape[1] < data_prep.shape[1]
 
 
-@pytest.mark.parametrize("imputer", [RevenueBucketImputer(), RevenueQuantileBucketImputer()])
+@pytest.mark.parametrize("imputer", [
+    RevenueBucketImputer(),
+    RevenueQuantileBucketImputer(),
+    CategoricalStatisticsImputer(),
+    KMeansBucketImputer(),
+    KMedianBucketImputer(),
+    MVEImputer(),
+])
 def test_imputers(imputer: OxariImputer, const_dataset_filtered: pd.DataFrame):
-    data_prep:pd.DataFrame = imputer.fit_transform(const_dataset_filtered)
+    data_prep: pd.DataFrame = imputer.fit_transform(const_dataset_filtered)
     assert len(data_prep) > 0
     assert data_prep.filter(regex="ft_num", axis=1).isna().sum().sum() == 0
+
+

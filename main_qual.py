@@ -29,6 +29,7 @@ from lar_calculator.lar_model import OxariUnboundLAR
 from pymongo import TEXT, DESCENDING, ASCENDING
 
 from scope_estimators.gradient_boost import LGBEstimator
+from scope_estimators.linear_models import LinearRegressionEstimator
 
 DATA_DIR = pathlib.Path('local/data')
 
@@ -74,9 +75,9 @@ if __name__ == "__main__":
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
-        feature_reducer=PCAFeatureReducer(ignored_features=IGNORED_FEATURES),
+        feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(buckets_number=10),
-        scope_estimator=LGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)

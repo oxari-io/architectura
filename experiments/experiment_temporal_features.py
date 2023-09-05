@@ -8,7 +8,8 @@ import numpy as np
 from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, DummyConfidenceEstimator, ConformalKNNConfidenceEstimator, JacknifeConfidenceEstimator
 from base.common import DefaultRegressorEvaluator
 from base.dataset_loader import CategoricalLoader, CompanyDataFilter, FinancialLoader, ScopeLoader
-from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager, TemporalFeaturesDataManager, get_default_datamanager_configuration
+from datasources.core import PreviousScopeFeaturesDataManager, TemporalFeaturesDataManager
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datasources.local import LocalDatasource
 from feature_reducers import PCAFeatureReducer

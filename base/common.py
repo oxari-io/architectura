@@ -452,7 +452,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
         self.logger.debug("Preprocessor initialized!")
 
     @abc.abstractmethod
-    def fit(self, X, y=None, **kwargs) -> "OxariPreprocessor":
+    def fit(self, X, y=None, **kwargs) -> Self:
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f�X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})�).
         # Set self.n_features_in_ = X.shape[1]
@@ -467,7 +467,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
     def transform(self, X, y=None, **kwargs) -> ArrayLike:
         pass
 
-    def set_imputer(self, imputer: OxariImputer) -> "OxariPreprocessor":
+    def set_imputer(self, imputer: OxariImputer) -> Self:
         self.imputer = imputer
         return self
 

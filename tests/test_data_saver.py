@@ -17,6 +17,7 @@ def test_model_destinations(destination: DataTarget, const_meta_model:OxariMetaM
     saver = saver.set_object(const_meta_model)
     saver = saver.set_datatarget(destination)
     assert saver.save(), f"Saving {const_meta_model} to {destination} failed"
+    assert saver.delete(), f"Deleting {const_meta_model} from {destination} failed"
 
 @pytest.mark.parametrize("destination", [
     LocalDestination(path="model-data/output"),
@@ -29,6 +30,8 @@ def test_csv_destinations(destination: DataTarget, const_data_for_scope_imputati
     saver = saver.set_object(const_data_for_scope_imputation)
     saver = saver.set_datatarget(destination)
     assert saver.save(), f"Saving data to {destination} failed"
+    assert saver.delete(), f"Deleting {const_meta_model} from {destination} failed"
+
 
 @pytest.mark.parametrize("destination", [
     MongoDestination(path="model-data/output"),

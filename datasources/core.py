@@ -62,26 +62,3 @@ class TemporalFeaturesDataManager(PreviousScopeFeaturesDataManager, CurrentYearF
         return super()._transform(df)
 
 
-def get_default_datamanager_configuration():
-    return PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
-        RegionLoader(),
-    )
-
-def get_remote_datamanager_configuration():
-    return PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=S3Datasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=S3Datasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=S3Datasource(path="model-data/input/categoricals_auto.csv")),
-        RegionLoader(),
-    )
-
-def get_small_datamanager_configuration(frac=0.1):
-    return PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
-        RegionLoader(),
-    ).set_filter(CompanyDataFilter(frac=frac))

@@ -37,7 +37,7 @@ class KMeansBucketImputer(BucketImputerBase):
     def evaluate(self, X, y=None, **kwargs):
         return super().evaluate(X, y, **kwargs)
 
-
+# TODO: Does not seem to work
 class KMedianBucketImputer(BucketImputerBase):
     def __init__(self, buckets_number=3, **kwargs):
         super().__init__(buckets_number, **kwargs)
@@ -52,7 +52,7 @@ class KMedianBucketImputer(BucketImputerBase):
         self.centroids = self._estimator.cluster_centers_
         return self
 
-    def transform(self, X, **kwargs) -> ArrayLike:
+    def transform(self, X:pd.DataFrame, **kwargs) -> ArrayLike:
         X_num = X.filter(regex="^ft_num")
         X_copy = self._helper_imputer.transform(X_num)
         # TODO: Write a version with a weighted average based on distance space form transform function

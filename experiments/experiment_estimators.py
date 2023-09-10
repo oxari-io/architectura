@@ -19,6 +19,7 @@ import pandas as pd
 import time
 
 from scope_estimators.adaboost import AdaboostEstimator
+from scope_estimators.linear_models import LinearRegressionEstimator
 
 if __name__ == "__main__":
 
@@ -26,9 +27,7 @@ if __name__ == "__main__":
     dataset = get_default_datamanager_configuration().run()  # run() calls _transform()
     # loads the data just like CSVDataLoader, but a selection of the data
     for i in range(10):
-        # configurations = [MiniModelArmyEstimator(), BaselineEstimator(), PredictMedianEstimator()]
-        configurations = [AdaboostEstimator(), MiniModelArmyEstimator(), BaselineEstimator(), PredictMedianEstimator()]
-        # configurations = [SupportVectorEstimator(), XGBEstimator(), SGDEstimator(), DummyEstimator()]
+        configurations = [MiniModelArmyEstimator(), MLPEstimator(), LinearRegressionEstimator(), KNNEstimator(), AdaboostEstimator(), XGBEstimator(), SGDEstimator(), SupportVectorEstimator(), BaselineEstimator()]
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         SPLIT_2 = bag.scope_2
@@ -41,7 +40,7 @@ if __name__ == "__main__":
 
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(),
+                feature_reducer=PCAFeatureReducer(n_components=30),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -50,7 +49,7 @@ if __name__ == "__main__":
             all_results.append({"time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
             ppl2 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(),
+                feature_reducer=PCAFeatureReducer(n_components=30),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -59,7 +58,7 @@ if __name__ == "__main__":
             all_results.append({"time": time.time() - start, "scope": 2, **ppl2.evaluation_results})
             ppl3 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(),
+                feature_reducer=PCAFeatureReducer(n_components=30),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),

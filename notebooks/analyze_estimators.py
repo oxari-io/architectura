@@ -29,25 +29,29 @@ def add_median_labels(ax, fmt='.1f'):
 # %%
 # See full results of the experiment
 cwd = pathlib.Path(__file__).parent
-results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators.csv', index_col=0)
+results = pd.concat([
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators_0_mada.csv', index_col=0).assign(experiment="Mada0"),
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators_1_mada.csv', index_col=0).assign(experiment="Mada1"),
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators_2_mada.csv', index_col=0).assign(experiment="Mada2"),
+    pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators.csv', index_col=0).assign(experiment="Mada3"),
+])
 
+# # %%
+# grouped_data = results.groupby(['scope_estimator', 'scope'])['test.sMAPE'].mean().reset_index()
 
-# %%
-grouped_data = results.groupby(['scope_estimator', 'scope'])['test.sMAPE'].mean().reset_index()
-
-plt.figure(figsize=(10, 6))
-fig = sns.barplot(
-    data=grouped_data, 
-    x='scope_estimator', 
-    y='test.sMAPE', 
-    hue='scope'
-)
-plt.title('test.sMAPE value for each estimator')
-plt.xlabel('Estimator')
-plt.ylabel('test.sMAPE Value')
-plt.legend(title='Scope')
-plt.xticks(rotation=45, ha='right')
-plt.tight_layout()
+# plt.figure(figsize=(10, 6))
+# fig = sns.barplot(
+#     data=grouped_data, 
+#     x='scope_estimator', 
+#     y='test.sMAPE', 
+#     hue='scope'
+# )
+# plt.title('test.sMAPE value for each estimator')
+# plt.xlabel('Estimator')
+# plt.ylabel('test.sMAPE Value')
+# plt.legend(title='Scope')
+# plt.xticks(rotation=45, ha='right')
+# plt.tight_layout()
 
 
 # %%
@@ -60,50 +64,85 @@ fig = sns.barplot(
     y='raw.sMAPE', 
     hue='scope'
 )
-plt.title('raw.sMAPE value for each estimator')
+plt.title('sMAPE value for each estimator')
 plt.xlabel('Estimator')
-plt.ylabel('raw.sMAPE Value')
+plt.ylabel('sMAPE Value')
 plt.legend(title='Scope')
 plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
 
 
+# # %%
+# closer_results = results[results['scope_estimator'].isin(['AdaboostEstimator', 'MiniModelArmyEstimator'])]
+
+# grouped_data = closer_results.groupby(['scope_estimator', 'scope'])['test.sMAPE'].mean().reset_index()
+
+# plt.figure(figsize=(10, 6))
+# fig = sns.barplot(
+#     data=grouped_data, 
+#     x='scope_estimator', 
+#     y='test.sMAPE', 
+#     hue='scope'
+# )
+# plt.title('test.sMAPE value for each estimator')
+# plt.xlabel('Estimator')
+# plt.ylabel('test.sMAPE Value')
+# plt.legend(title='Scope')
+# plt.xticks(rotation=45, ha='right')
+# plt.tight_layout()
+
 # %%
-closer_results = results[results['scope_estimator'].isin(['AdaboostEstimator', 'MiniModelArmyEstimator'])]
-
-grouped_data = closer_results.groupby(['scope_estimator', 'scope'])['test.sMAPE'].mean().reset_index()
-
-plt.figure(figsize=(10, 6))
-fig = sns.barplot(
-    data=grouped_data, 
-    x='scope_estimator', 
-    y='test.sMAPE', 
-    hue='scope'
-)
-plt.title('test.sMAPE value for each estimator')
-plt.xlabel('Estimator')
-plt.ylabel('test.sMAPE Value')
-plt.legend(title='Scope')
-plt.xticks(rotation=45, ha='right')
-plt.tight_layout()
-
-# %%
-closer_results = results[results['scope_estimator'].isin(['AdaboostEstimator', 'MiniModelArmyEstimator'])]
+# Scope 1
+closer_results = results[results["scope"] == 1]
 
 plt.figure(figsize=(10, 6))
 fig = sns.boxplot(
     data=closer_results, 
     x='scope_estimator', 
-    y='raw.sMAPE', 
-    hue='scope'
+    y='raw.sMAPE'
 )
 
 add_median_labels(fig)
 
-plt.title('raw.sMAPE value for each estimator')
-plt.xlabel('estimator')
-plt.ylabel('raw.sMAPE Value')
-plt.legend(title='Scope')
+plt.title('sMAPE value for each estimator - Scope 1')
+plt.xlabel('Estimator')
+plt.ylabel('sMAPE Value')
 plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
 # %%
+# Scope 2
+closer_results = results[results["scope"] == 2]
+
+plt.figure(figsize=(10, 6))
+fig = sns.boxplot(
+    data=closer_results, 
+    x='scope_estimator', 
+    y='raw.sMAPE'
+)
+
+add_median_labels(fig)
+
+plt.title('sMAPE value for each estimator - Scope 2')
+plt.xlabel('Estimator')
+plt.ylabel('sMAPE Value')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+
+# %%
+# Scope 3
+closer_results = results[results["scope"] == 3]
+
+plt.figure(figsize=(10, 6))
+fig = sns.boxplot(
+    data=closer_results, 
+    x='scope_estimator', 
+    y='raw.sMAPE'
+)
+
+add_median_labels(fig)
+
+plt.title('sMAPE value for each estimator - Scope 3')
+plt.xlabel('Estimator')
+plt.ylabel('sMAPE Value')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()

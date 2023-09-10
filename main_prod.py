@@ -12,7 +12,7 @@ from base.constants import FEATURE_SET_VIF_UNDER_10
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
 from base.helper import DummyTargetScaler, LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
-from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     now = time.strftime('T%Y%m%d%H%M')
 
     dataset = get_default_datamanager_configuration().run()
-    # Scope Imputation model
+    # Scope Imputation model 
     model_si = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
     # Live Prediciton model
     model_lp = train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset)

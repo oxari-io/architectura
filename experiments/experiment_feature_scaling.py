@@ -5,7 +5,7 @@ import time
 import pandas as pd
 
 from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator, DummyConfidenceEstimator, ConformalKNNConfidenceEstimator, JacknifeConfidenceEstimator
-from datasources.core import DefaultDataManager, get_small_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from experiments.experiment_argument_parser import FeatureScalingExperimentCommandLineParser
 from feature_reducers import PCAFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer

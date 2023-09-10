@@ -425,6 +425,14 @@ class OxariDataManager(OxariMixin):
         if to_beginning:
             self.loaders.insert(0, loader)
         return self
+    
+    def extend_loaders(self, loaders: list[PartialLoader]) -> Self:
+        self.loaders(loaders)
+        return self
+
+    def set_loaders(self, loaders: list[PartialLoader]) -> Self:
+        self.loaders = loaders
+        return self
 
     @property
     def data(self) -> pd.DataFrame:

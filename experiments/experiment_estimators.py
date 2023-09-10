@@ -1,4 +1,4 @@
-from datasources.core import get_default_datamanager_configuration, get_small_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers.core import PCAFeatureReducer
 from pipeline.core import DefaultPipeline, FSExperimentPipeline
 from base import OxariDataManager

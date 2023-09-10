@@ -5,7 +5,7 @@ import pandas as pd
 
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
-from datasources.core import FSExperimentDataLoader, get_small_datamanager_configuration, get_default_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import (SelectionFeatureReducer, DropFeatureReducer, DummyFeatureReducer, FactorAnalysisFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer, SparseRandProjectionFeatureReducer)
 # from imputers.revenue_bucket import RevenueBucketImputer

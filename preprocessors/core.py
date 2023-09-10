@@ -22,7 +22,7 @@ class DummyPreprocessor(OxariPreprocessor):
     def fit(self, X: pd.DataFrame, y, **kwargs) -> Self:
         data = X
         self.logger.info(f'number of original features: {len(data.columns)}')
-        self.scope_columns = ["scope_1", "scope_2", "scope_3"]
+        self.scope_columns = X.columns[X.columns.str.startswith('tg_num')]
         self.financial_columns = X.columns[X.columns.str.startswith('ft_num')]
         self.categorical_columns = X.columns[X.columns.str.startswith('ft_cat')]
         # # log scaling the scopes
@@ -30,15 +30,21 @@ class DummyPreprocessor(OxariPreprocessor):
         # transform numerical
         self.fin_transformer = self.fin_transformer.fit(data[self.financial_columns])
         # encode categorical
-        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=(data[self.scope_columns][0]))
-        return data
+        self.cat_transformer = self.cat_transformer.fit(X=data[self.categorical_columns], y=y)
+        self.imputer = self.imputer.fit(data.loc[:, self.financial_columns])
+        return self
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         data = X
         # transform numerical
+        financial_data = data[self.financial_columns].astype(float)
+        imputed_values = self.imputer.transform(financial_data)        
+        data.loc[:, self.financial_columns] = imputed_values
         data[self.financial_columns] = self.fin_transformer.transform(data[self.financial_columns])
+
+
         # encode categorical
-        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns], y=(data[self.scope_columns[0]]))
+        data[self.categorical_columns] = self.cat_transformer.transform(X=data[self.categorical_columns])
         self.logger.info(f'number of features after preprocessing: {len(data.columns)}')
         return data
 

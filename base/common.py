@@ -129,7 +129,7 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         # NOTE RMSE: Tends to grow with sample size, which is undesirable https://medium.com/human-in-a-machine-world/mae-and-rmse-which-metric-is-better-e60ac3bde13d
         error_metrics = {
             "sMAPE": smape(y_true, y_pred) / 100,
-            "R2": r2_score(y_true, y_pred),
+            # "R2": r2_score(y_true, y_pred),
             "MAE": median_absolute_error(y_true, y_pred),
             "RMSE": mean_squared_error(y_true, y_pred, squared=False),
             # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),

@@ -25,8 +25,8 @@ def custom_masker(mask, x):
     x_ = x.copy()
     x_[~mask] = None
 
-    return x_.reshape(1, len(x))  # in this simple example we just zero out the features we are masking
-    # return pd.Series(zip(features, x_)).to_frame() # in this simple example we just zero out the features we are masking
+    # return x_.reshape(1, len(x))  # in this simple example we just zero out the features we are masking
+    return pd.DataFrame(x_) # in this simple example we just zero out the features we are masking
 
 
 class OxariExplainer(abc.ABC):
@@ -100,7 +100,10 @@ class ShapExplainer(OxariExplainer):
         return self
 
     def explain(self, X, y, **kwargs):
-        self.X = X.sample(self.sample_size)
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError("Input 'X' must be a pandas DataFrame.")
+    
+        self.X: pd.DataFrame = X.sample(self.sample_size) if len(X) > self.sample_size else X
         self.shap_values = self.ex(self.X)
         return self
 

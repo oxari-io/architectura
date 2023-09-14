@@ -63,7 +63,7 @@ if __name__ == "__main__":
     #     CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto_old.csv")),
     #     RegionLoader(),
     # ).set_filter(CompanyDataFilter(frac=0.1)).run()
-    dataset = get_remote_datamanager_configuration().run()
+    dataset = get_default_datamanager_configuration().run()
 
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)

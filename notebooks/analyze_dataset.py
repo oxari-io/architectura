@@ -43,9 +43,9 @@ from datasources.loaders import NetZeroIndexLoader
 #                              other_loaders=[NetZeroIndexLoader()]).run()
 # dataset = PreviousScopeFeaturesDataManager().run()
 dataset = PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=LocalDatasource(path="../model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=LocalDatasource(path="../model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=LocalDatasource(path="../model-data/input/categoricals_auto.csv")),
+        FinancialLoader(datasource=CachingS3Datasource(path="../model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="../model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="../model-data/input/categoricals_auto.csv")),
         RegionLoader(),).run()
 
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)

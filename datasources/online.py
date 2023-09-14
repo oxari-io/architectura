@@ -1,4 +1,5 @@
 from os import environ as env
+import os
 from pathlib import Path
 
 import boto3
@@ -51,6 +52,12 @@ class CachingS3Datasource(S3Datasource):
         # path needs to be the location of the file UNDER the bucket
         super().__init__(**kwargs)
         self.is_fresh_download = False
+
+    def _check_if_data_exists(self) -> bool:
+        local_file_path = Path(self.path)
+        if local_file_path.exists():
+            return True
+        return self._check_if_data_exists()
 
     def _load(self) -> Self:
         # https://docs.digitalocean.com/reference/api/spaces-api/

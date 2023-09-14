@@ -59,7 +59,7 @@ class CachingS3Datasource(S3Datasource):
             self.is_fresh_download = True
             response = self.client.get_object(Bucket=self.do_spaces_bucket, Key=self.path)
             self._data = pd.read_csv(response['Body'])
-            self._data.to_csv(local_file_path)
+            self._data.to_csv(local_file_path, index=False)
         else:
             self._data = pd.read_csv(local_file_path)
         return self

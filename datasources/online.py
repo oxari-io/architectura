@@ -57,7 +57,7 @@ class CachingS3Datasource(S3Datasource):
         local_file_path = Path(self.path)
         if local_file_path.exists():
             return True
-        return self._check_if_data_exists()
+        return super()._check_if_data_exists()
 
     def _load(self) -> Self:
         # https://docs.digitalocean.com/reference/api/spaces-api/

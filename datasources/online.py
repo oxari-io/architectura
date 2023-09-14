@@ -70,6 +70,7 @@ class CachingS3Datasource(S3Datasource):
         else:
             self._data = pd.read_csv(local_file_path)
         return self
+##
 
 
 class OnlineDatasource(Datasource):

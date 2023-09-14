@@ -3,45 +3,60 @@ import sys
 
 sys.path.append("..")
 
-import pathlib
+# import pathlib
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-import pathlib
+# import pathlib
 import time
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import KBinsDiscretizer
-from base import (LocalDataSaver, LocalLARModelSaver, LocalMetaModelSaver, OxariDataManager, OxariMetaModel, OxariSavingManager, helper)
-from base.common import OxariLoggerMixin
-from base.confidence_intervall_estimator import BaselineConfidenceEstimator
-from base.helper import LogTargetScaler
-from datasources.core import DefaultDataManager
-from datasources.online import S3Datasource
-from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer, FactorAnalysisFeatureReducer, GaussRandProjectionFeatureReducer, IsomapDimensionalityFeatureReducer, SparseRandProjectionFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer
-from imputers import RevenueQuantileBucketImputer
-from pipeline.core import DefaultPipeline
-from preprocessors import IIDPreprocessor
-from scope_estimators import SupportVectorEstimator
+# from sklearn.preprocessing import KBinsDiscretizer
+from base import ( OxariDataManager)
+# from base.common import OxariLoggerMixin
+# from base.confidence_intervall_estimator import BaselineConfidenceEstimator
+# from base.helper import LogTargetScaler
+from datasources.core import DefaultDataManager,PreviousScopeFeaturesDataManager
+from datasources.online import S3Datasource,CachingS3Datasource
+from datasources.local import LocalDatasource
+from base.run_utils import get_default_datamanager_configuration
+from base.dataset_loader import (CategoricalLoader, CompanyDataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader)
+from datasources.loaders import RegionLoader
+# from feature_reducers import AgglomerateFeatureReducer, PCAFeatureReducer, FactorAnalysisFeatureReducer, GaussRandProjectionFeatureReducer, IsomapDimensionalityFeatureReducer, SparseRandProjectionFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer
+# from imputers import RevenueQuantileBucketImputer
+# from pipeline.core import DefaultPipeline
+# from preprocessors import IIDPreprocessor
+# from scope_estimators import SupportVectorEstimator
 import missingno as msno
 from datasources.loaders import NetZeroIndexLoader
+
 # %%
 # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),
-                             S3Datasource(path='model-input-data/financials_auto.csv'),
-                             S3Datasource(path='model-input-data/categoricals_auto.csv'),
-                             other_loaders=[NetZeroIndexLoader()]).run()
+# dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),
+#                              S3Datasource(path='model-input-data/financials_auto.csv'),
+#                              S3Datasource(path='model-input-data/categoricals_auto.csv'),
+#                              other_loaders=[NetZeroIndexLoader()]).run()
 # dataset = PreviousScopeFeaturesDataManager().run()
+dataset = PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=LocalDatasource(path="../model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=LocalDatasource(path="../model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=LocalDatasource(path="../model-data/input/categoricals_auto.csv")),
+        RegionLoader(),).run()
+
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
 SPLIT_1 = bag.scope_1
 SPLIT_2 = bag.scope_2
 SPLIT_3 = bag.scope_3
+
+# %%
+DATA
+
 # %%
 X, y = SPLIT_1.train
 X

@@ -17,7 +17,7 @@ import sklearn
 from pmdarima.metrics import smape
 from sklearn.base import MetaEstimatorMixin, MultiOutputMixin, BaseEstimator, TransformerMixin, OneToOneFeatureMixin
 from sklearn.impute import _base
-from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, precision_recall_fscore_support, r2_score, silhouette_score, median_absolute_error, classification_report, confusion_matrix)
+from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, mean_squared_log_error, precision_recall_fscore_support, r2_score, silhouette_score, median_absolute_error, classification_report, confusion_matrix)
 from sklearn.model_selection import train_test_split
 from typing_extensions import Self
 from sklearn.preprocessing import minmax_scale
@@ -127,24 +127,20 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         # NOTE MAPE: Important interpretation https://medium.com/@davide.sarra/how-to-interpret-smape-just-like-mape-bf799ba03bdc
         # NOTE R2: Why it's useless https://data.library.virginia.edu/is-r-squared-useless/
         # NOTE RMSE: Tends to grow with sample size, which is undesirable https://medium.com/human-in-a-machine-world/mae-and-rmse-which-metric-is-better-e60ac3bde13d
-        try:
-            error_metrics = {
-                        "sMAPE": smape(y_true, y_pred) / 100,
-                        # "R2": r2_score(y_true, y_pred),
-                        "MAE": median_absolute_error(y_true, y_pred),
-                        "RMSE": mean_squared_error(y_true, y_pred, squared=False),
-                        # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
-                        "MAPE": mape(y_true, y_pred),
-                        "offset_percentile": {
-                            "50%": percentile_deviation[0],
-                            "75%": percentile_deviation[1],
-                            "90%": percentile_deviation[2],
-                            "95%": percentile_deviation[3]
-                        },
-            }
-        except Exception as e:
-            print("======================================================")            
-            print(e)            
+        error_metrics = {
+                    "sMAPE": smape(y_true, y_pred) / 100,
+                    "R2": r2_score(y_true, y_pred),
+                    "MAE": median_absolute_error(y_true, y_pred),
+                    "RMSE": mean_squared_error(y_true, y_pred, squared=False),
+                    # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
+                    "MAPE": mape(y_true, y_pred),
+                    "offset_percentile": {
+                        "50%": percentile_deviation[0],
+                        "75%": percentile_deviation[1],
+                        "90%": percentile_deviation[2],
+                        "95%": percentile_deviation[3]
+                    },
+        }
         print(f"Here's the sMAPE value of the regressor evaluator: {smape(y_true, y_pred) / 100}")
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 

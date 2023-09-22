@@ -17,7 +17,7 @@ import sklearn
 from pmdarima.metrics import smape
 from sklearn.base import MetaEstimatorMixin, MultiOutputMixin, BaseEstimator, TransformerMixin, OneToOneFeatureMixin
 from sklearn.impute import _base
-from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, precision_recall_fscore_support, r2_score, silhouette_score, median_absolute_error, classification_report, confusion_matrix)
+from sklearn.metrics import (balanced_accuracy_score, mean_absolute_error, mean_squared_error, mean_squared_log_error, precision_recall_fscore_support, r2_score, silhouette_score, median_absolute_error, classification_report, confusion_matrix)
 from sklearn.model_selection import train_test_split
 from typing_extensions import Self
 from sklearn.preprocessing import minmax_scale
@@ -128,18 +128,18 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         # NOTE R2: Why it's useless https://data.library.virginia.edu/is-r-squared-useless/
         # NOTE RMSE: Tends to grow with sample size, which is undesirable https://medium.com/human-in-a-machine-world/mae-and-rmse-which-metric-is-better-e60ac3bde13d
         error_metrics = {
-            "sMAPE": smape(y_true, y_pred) / 100,
-            "R2": r2_score(y_true, y_pred),
-            "MAE": median_absolute_error(y_true, y_pred),
-            "RMSE": mean_squared_error(y_true, y_pred, squared=False),
-            # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
-            "MAPE": mape(y_true, y_pred),
-            "offset_percentile": {
-                "50%": percentile_deviation[0],
-                "75%": percentile_deviation[1],
-                "90%": percentile_deviation[2],
-                "95%": percentile_deviation[3]
-            },
+                    "sMAPE": smape(y_true, y_pred) / 100,
+                    "R2": r2_score(y_true, y_pred),
+                    "MAE": median_absolute_error(y_true, y_pred),
+                    "RMSE": mean_squared_error(y_true, y_pred, squared=False),
+                    # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
+                    "MAPE": mape(y_true, y_pred),
+                    "offset_percentile": {
+                        "50%": percentile_deviation[0],
+                        "75%": percentile_deviation[1],
+                        "90%": percentile_deviation[2],
+                        "95%": percentile_deviation[3]
+                    },
         }
         print(f"Here's the sMAPE value of the regressor evaluator: {smape(y_true, y_pred) / 100}")
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
@@ -452,7 +452,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
         self.logger.debug("Preprocessor initialized!")
 
     @abc.abstractmethod
-    def fit(self, X, y=None, **kwargs) -> "OxariPreprocessor":
+    def fit(self, X, y=None, **kwargs) -> Self:
         # Takes X and y and trains regressor.
         # Include If X.shape[0] == y.shape[0]: raise ValueError(f�X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})�).
         # Set self.n_features_in_ = X.shape[1]
@@ -467,7 +467,7 @@ class OxariPreprocessor(OxariTransformer, abc.ABC):
     def transform(self, X, y=None, **kwargs) -> ArrayLike:
         pass
 
-    def set_imputer(self, imputer: OxariImputer) -> "OxariPreprocessor":
+    def set_imputer(self, imputer: OxariImputer) -> Self:
         self.imputer = imputer
         return self
 
@@ -718,6 +718,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         X_mod = self._convert_input(X)
         X_mod = self._extend_missing_features(X_mod, self.feature_names_in_)
         X_mod = self._remove_unseen_features(X_mod, self.feature_names_in_)
+        X_mod  = self._order_features(X_mod, self.feature_names_in_)
         if return_std:
             preds = self.ci_estimator.predict(X_mod, **kwargs)
             return preds  # Alread reversed
@@ -868,6 +869,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         reduced_df = df.drop(additional_features, axis=1)
         
         return reduced_df
+    
+    def _order_features(self, X: pd.DataFrame, feature_names) -> pd.DataFrame:
+        return X[feature_names]
 
 class Test(OxariPipeline):
 

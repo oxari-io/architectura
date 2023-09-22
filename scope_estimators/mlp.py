@@ -51,7 +51,7 @@ class MLPOptimizer(OxariOptimizer):
         return study.best_params, df
 
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
-        num_hidden_layers = trial.suggest_int("num_hidden_layers", 0, 5)
+        num_hidden_layers = trial.suggest_int("num_hidden_layers", 1, 5)
         param_space = {
             # "hidden_layer_sizes": trial.suggest_categorical("hidden_layer_sizes", [sizes]),
             "alpha": trial.suggest_float("alpha", 0.0001, 1, log=True),
@@ -62,8 +62,10 @@ class MLPOptimizer(OxariOptimizer):
             "early_stopping": trial.suggest_categorical("early_stopping", [True]),
            
         }
-        hidden_layers = [trial.suggest_int("hidden_layers", 1, 5) for i in range(num_hidden_layers)]
-        
+        hidden_layers = [trial.suggest_int(f"hidden_layers_{i}", 1, 5) for i in range(num_hidden_layers)]
+        # hidden_layers_picked = [np.random.randint(1, 5) for i in range(num_hidden_layers)]
+        # hidden_layers = trial.suggest_categorical("hidden_layer_sizes", [hidden_layers_picked])
+
         model = MLPRegressor(hidden_layer_sizes=hidden_layers, **param_space).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
@@ -80,7 +82,10 @@ class MLPEstimator(OxariScopeEstimator):
         X = pd.DataFrame(X)
         y = pd.DataFrame(y)
         self.params.pop("num_hidden_layers")
-        self.params.pop("hidden_layers")
+        # self.params.pop("hidden_layers")
+        keys_to_remove = [key for key in self.params if key.startswith("hidden_layers_")]
+        for key in keys_to_remove:
+            self.params.pop(key)
         self._estimator = self._estimator.set_params(**self.params).fit(X, y)
         # self.coef_ = self._estimator.coef_
         return self

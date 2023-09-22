@@ -3,6 +3,38 @@ from lar_calculator.lar_model import OxariUnboundLAR
 from postprocessors.missing_year_imputers import CubicSplineMissingYearImputer, DerivativeMissingYearImputer, SimpleMissingYearImputer
 from postprocessors.scope_imputers import JumpRateEvaluator, ScopeImputerPostprocessor
 import pandas as pd
+from base.dataset_loader import (CategoricalLoader, CompanyDataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader)
+from datasources.loaders import RegionLoader
+from datasources.local import LocalDatasource
+from datasources.online import CachingS3Datasource, S3Datasource
+from datasources import PreviousScopeFeaturesDataManager
+
+
+def get_default_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    )
+
+
+def get_remote_datamanager_configuration():
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=S3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=S3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=S3Datasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    )
+
+
+def get_small_datamanager_configuration(frac=0.1):
+    return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
+        RegionLoader(),
+    ).set_filter(CompanyDataFilter(frac=frac))
 
 
 def impute_missing_years(data: pd.DataFrame):
@@ -24,6 +56,7 @@ def compute_lar(imputed_data):
     lar_model = OxariUnboundLAR().fit(imputed_data)
     lar_imputed_data = lar_model.transform(imputed_data)
     return lar_model, lar_imputed_data
+
 
 def compute_jump_rates(imputed_data):
     print("\n", "Compute all the jump rates")

@@ -7,7 +7,7 @@ from pipeline import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import SupportVectorEstimator, FastSupportVectorEstimator
 from base.helper import LogTargetScaler
-from datasources.core import DefaultDataManager, get_default_datamanager_configuration, get_small_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer, DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource

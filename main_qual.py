@@ -11,7 +11,7 @@ from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, CompanyDataFilter, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
-from datasources.core import PreviousScopeFeaturesDataManager, get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
@@ -29,6 +29,7 @@ from lar_calculator.lar_model import OxariUnboundLAR
 from pymongo import TEXT, DESCENDING, ASCENDING
 
 from scope_estimators.gradient_boost import LGBEstimator
+from scope_estimators.linear_models import LinearRegressionEstimator
 
 DATA_DIR = pathlib.Path('local/data')
 
@@ -62,7 +63,7 @@ if __name__ == "__main__":
     #     CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto_old.csv")),
     #     RegionLoader(),
     # ).set_filter(CompanyDataFilter(frac=0.1)).run()
-    dataset = get_remote_datamanager_configuration().run()
+    dataset = get_default_datamanager_configuration().run()
 
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)
@@ -74,9 +75,9 @@ if __name__ == "__main__":
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
-        feature_reducer=PCAFeatureReducer(ignored_features=IGNORED_FEATURES),
+        feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(buckets_number=10),
-        scope_estimator=LGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)

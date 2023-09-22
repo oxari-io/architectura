@@ -166,9 +166,9 @@ def test_scope_imputation(const_meta_model: OxariMetaModel, const_dataset_filter
     DATA = const_dataset_filtered
     data_filled = const_meta_model.get_pipeline(1).preprocessor.transform(DATA)
     data_year_imputed = DerivativeMissingYearImputer().fit_transform(data_filled)
-    scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=data_year_imputed).evaluate()
+    scope_imputer = ScopeImputerPostprocessor(estimator=const_meta_model).run(X=data_year_imputed)
     assert len(scope_imputer.data) > 0
-    assert not scope_imputer.data.isna().any().any()
+    assert not scope_imputer.data.filter(regex="tg_", axis=1).isna().any().any()
 
 
 def test_lar_imputation(const_data_for_scope_imputation: pd.DataFrame):

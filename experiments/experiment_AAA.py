@@ -6,7 +6,7 @@ import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.dataset_loader import SplitBag
 from base.helper import ArcSinhTargetScaler, DummyTargetScaler, LogTargetScaler
-from datasources.core import FSExperimentDataLoader, PreviousScopeFeaturesDataManager, get_default_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAnalysisFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer, SparseRandProjectionFeatureReducer)
 from feature_reducers.core import LDAFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer

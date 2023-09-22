@@ -14,7 +14,7 @@ These variables need to be set in order to get the data saving process to work.
 | `S3_REGION`               | `ams3`                                             | The AWS region where your S3 bucket resides. |
 | `S3_BUCKET`               | `oxari-storage`                                    | The name of the S3 bucket.                   |
 | `MONGO_CONNECTION_STRING` | `mongodb://username:password@localhost:27017/mydb` | Connection string to MongoDB server.         |
-| `MONGO_COLLECTION`        | `dev`                                              | The MongoDB collection to use.               |
+| `MONGO_DATABASE_NAME`        | `d_data`                                              | The MongoDB database to use.               |
 
 
 # DataLoader

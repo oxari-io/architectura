@@ -6,7 +6,7 @@ import time
 from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
 from base.metrics import mape
-from datasources.core import get_default_datamanager_configuration, get_small_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
 from imputers import BaselineImputer
 from imputers.revenue_bucket import RevenueQuantileBucketImputer

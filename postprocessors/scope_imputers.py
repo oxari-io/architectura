@@ -7,7 +7,7 @@ import tqdm
 
 from base.common import OxariLoggerMixin
 
-
+#  TODO: Use fit transform instead
 class ScopeImputerPostprocessor(OxariPostprocessor):
 
     def __init__(self, estimator: OxariMetaModel, **kwargs):

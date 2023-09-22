@@ -1,4 +1,5 @@
 from os import environ as env
+import os
 from pathlib import Path
 
 import boto3
@@ -52,6 +53,12 @@ class CachingS3Datasource(S3Datasource):
         super().__init__(**kwargs)
         self.is_fresh_download = False
 
+    def _check_if_data_exists(self) -> bool:
+        local_file_path = Path(self.path)
+        if local_file_path.exists():
+            return True
+        return super()._check_if_data_exists()
+
     def _load(self) -> Self:
         # https://docs.digitalocean.com/reference/api/spaces-api/
         local_file_path = Path(self.path)
@@ -59,7 +66,7 @@ class CachingS3Datasource(S3Datasource):
             self.is_fresh_download = True
             response = self.client.get_object(Bucket=self.do_spaces_bucket, Key=self.path)
             self._data = pd.read_csv(response['Body'])
-            self._data.to_csv(local_file_path)
+            self._data.to_csv(local_file_path, index=False)
         else:
             self._data = pd.read_csv(local_file_path)
         return self

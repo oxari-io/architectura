@@ -74,10 +74,10 @@ class OxariFeatureTransformerWrapper(OxariFeatureTransformer):
         self.feature_names_in_ = X.columns.tolist()
         return self.transformer.fit(X, y, **kwargs)
     
-    def transform(self, X:ArrayLike, y=None, **kwargs) -> ArrayLike:
+    def transform(self, X:ArrayLike, **kwargs) -> ArrayLike:
         X_result = X.copy()
         X_ft = X[self.feature_names_in_]
-        X_new = pd.DataFrame(self.transformer.transform(X_ft, y, **kwargs), columns=X_ft.columns, index=X_ft.index)
+        X_new = pd.DataFrame(self.transformer.transform(X_ft, **kwargs), columns=X_ft.columns, index=X_ft.index)
         X_result[X_new.columns]=X_new[X_new.columns].values
         return X_result
     
@@ -137,7 +137,11 @@ class LogTargetScaler(OxariScopeTransformer):
         return np.log1p(y.copy())
 
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
-        return np.expm1(y.copy())
+        transfomed_y = np.expm1(y.copy())
+        # This is a failsafe in case the model spits out a number waaaay too high and np.expm1 becomes infinite
+        position_inf = np.isinf(transfomed_y)
+        transfomed_y[position_inf] = np.finfo(float).max
+        return transfomed_y
 
 
 class ArcSinhTargetScaler(OxariScopeTransformer):

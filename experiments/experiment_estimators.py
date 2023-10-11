@@ -1,5 +1,6 @@
+from base.constants import FEATURE_SET_VIF_UNDER_10
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
-from feature_reducers.core import PCAFeatureReducer
+from feature_reducers.core import DummyFeatureReducer, PCAFeatureReducer, SelectionFeatureReducer
 from pipeline.core import DefaultPipeline, FSExperimentPipeline
 from base import OxariDataManager
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
@@ -40,7 +41,7 @@ if __name__ == "__main__":
 
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(n_components=30),
+                feature_reducer=DummyFeatureReducer(),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -49,7 +50,7 @@ if __name__ == "__main__":
             all_results.append({"time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
             ppl2 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(n_components=30),
+                feature_reducer=DummyFeatureReducer(),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -58,7 +59,7 @@ if __name__ == "__main__":
             all_results.append({"time": time.time() - start, "scope": 2, **ppl2.evaluation_results})
             ppl3 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(n_components=30),
+                feature_reducer=DummyFeatureReducer(),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=estimator,
                 ci_estimator=BaselineConfidenceEstimator(),

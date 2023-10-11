@@ -29,12 +29,10 @@ def add_median_labels(ax, fmt='.1f'):
 # %%
 # See full results of the experiment
 cwd = pathlib.Path(__file__).parent
-results = pd.concat([
-    pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators_0_mada.csv', index_col=0).assign(experiment="Mada0"),
-    pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators_1_mada.csv', index_col=0).assign(experiment="Mada1"),
-    pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators_2_mada.csv', index_col=0).assign(experiment="Mada2"),
-    pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators.csv', index_col=0).assign(experiment="Mada3"),
-])
+# results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators_select_features_full.csv', index_col=0)
+
+# Replace the line above with this to test the results of the experiment with PCA
+results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_estimators_pca_full.csv', index_col=0)
 
 # # %%
 # grouped_data = results.groupby(['scope_estimator', 'scope'])['test.sMAPE'].mean().reset_index()

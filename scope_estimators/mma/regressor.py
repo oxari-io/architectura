@@ -14,6 +14,7 @@ from sklearn.ensemble import (ExtraTreesRegressor, GradientBoostingRegressor,
                               RandomForestRegressor, VotingRegressor)
 from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.preprocessing import normalize
 from tqdm import tqdm
 
 from base.common import OxariOptimizer, OxariRegressor
@@ -404,13 +405,14 @@ class BucketRegressor(OxariRegressor):
 
     def _compute_model_score(self, X, y, trained_candidates, name, candidate_data, model):
         model_score = np.mean(cross_val_score(model, X, y, scoring=self._cv_metric)) 
-        trained_candidates[name] = {"model": model, "score": 100-model_score, **candidate_data}
+        trained_candidates[name] = {"model": model, "score": 1/(model_score + np.finfo(np.float64).eps), **candidate_data}
         return trained_candidates
 
     def _construct_voting_regressor(self, X, y, trained_candidates):
         weights = np.array([v["score"] for _, v in trained_candidates.items()])
+        normalised_weights = weights / np.sum(weights)
         models = [(name, v["model"]) for name, v in trained_candidates.items()]
-        v_regressor = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X, y)
+        v_regressor = VotingRegressor(estimators=models, weights=normalised_weights, n_jobs=-1).fit(X, y)
         return v_regressor
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
@@ -452,14 +454,15 @@ class BucketRegressor(OxariRegressor):
 class EvenWeightBucketRegressor(BucketRegressor):
     def _construct_voting_regressor(self, X, y, trained_candidates):
         weights = np.array([1 for _, v in trained_candidates.items()])
+        normalised_weights = weights / np.sum(weights)
         models = [(name, v["model"]) for name, v in trained_candidates.items()]
-        v_regressor = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X, y)
+        v_regressor = VotingRegressor(estimators=models, weights=normalised_weights, n_jobs=-1).fit(X, y)
         return v_regressor
 
 class AlternativeCVMetricBucketRegressor(BucketRegressor):
     def _compute_model_score(self, X, y, trained_candidates, name, candidate_data, model):
         model_score = np.mean(cross_val_score(model, X, y, scoring=self._cv_metric)) 
-        trained_candidates[name] = {"model": model, "score": 1/model_score, **candidate_data}
+        trained_candidates[name] = {"model": model, "score": 1/(model_score + np.finfo(np.float64).eps), **candidate_data}
         return trained_candidates
     
     def _cv_metric(self, estimator, X, y):

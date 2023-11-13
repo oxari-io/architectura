@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(),
+                feature_reducer=PCAFeatureReducer(n_components=40),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=Estimator(),
                 ci_estimator=BaselineConfidenceEstimator(),
@@ -80,7 +80,7 @@ if __name__ == "__main__":
             if (scope == True):
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(),
+                    feature_reducer=PCAFeatureReducer(n_components=40),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=Estimator(),
                     ci_estimator=BaselineConfidenceEstimator(),
@@ -88,7 +88,7 @@ if __name__ == "__main__":
                 ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
                 ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(),
+                    feature_reducer=PCAFeatureReducer(n_components=40),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=Estimator(),
                     ci_estimator=BaselineConfidenceEstimator(),

@@ -130,7 +130,7 @@ class WeightedVotingExperimentCommandLineParser(ExperimentCommandLineParser):
 
     def set_experiment_specific_arguments(self):
         self.parser.add_argument('-c',
-                                 default=[BaselineEstimator, MiniModelArmyEstimator, PredictMedianEstimator, EvenWeightMiniModelArmyEstimator],
+                                 default=[BaselineEstimator, MiniModelArmyEstimator, PredictMedianEstimator, EvenWeightMiniModelArmyEstimator, AlternativeCVMiniModelArmyEstimator],
                                  dest='configurations',
                                  help='Names of estimators to compare',
                                  nargs='*',

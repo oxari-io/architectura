@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import pandas as pd
+from pmdarima.metrics import smape
+from sklearn.metrics import median_absolute_error
 import xgboost as xgb
 from sklearn.ensemble import (ExtraTreesRegressor, GradientBoostingRegressor,
                               RandomForestRegressor, VotingRegressor)
@@ -354,7 +356,7 @@ class BucketRegressor(OxariRegressor):
     def __init__(self, **kwargs):
         # self.scope = check_scope(scope)
         self.voting_regressors_: Dict[int, VotingRegressor] = {}
-        self.bucket_specifics_ = {"scores":{}}
+        self.bucket_specifics_ = {"scores":{}, "weights":{}}
         # self.bucket_specifics_ = {}
 
     def fit(self, X, y, **kwargs):
@@ -371,9 +373,11 @@ class BucketRegressor(OxariRegressor):
         pbar = tqdm(desc="MMA-Regressor", total=total)
         
         for bucket, candidates_data in regressor_kwargs.items():
-            # TODO: Use cross validation instead. So to make most of the data and have more robust results.
+            bucket_name = f"bucket_{bucket}"
             selector = groups == bucket
             is_any = np.sum(selector) > 10
+            X_subset = X[selector] if is_any else X
+            y_subset = y[selector] if is_any else y
             # X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3) if is_any else train_test_split(X, y, test_size=0.3)
             for name, candidate_data in candidates_data.items():
                 best_params = candidate_data.get("best_params")
@@ -383,26 +387,30 @@ class BucketRegressor(OxariRegressor):
 
                 # calculate the score of each individual model to weight voting mechanism
                 # NOTE: Could also be done faster by not using cv
-                model_score = np.mean(cross_val_score(model, X[selector] if is_any else X, y[selector] if is_any else y, scoring=cv_metric)) 
-                trained_candidates[name] = {"model": model, "score": 100-model_score, **candidate_data}
+                trained_candidates = self._compute_model_score(X_subset, y_subset, trained_candidates, name, candidate_data, model)
                 pbar.update(1)
-            v_regressor = self._construct_voting_regressor(X, y, trained_candidates, selector, is_any)
+            v_regressor = self._construct_voting_regressor(X_subset, y_subset, trained_candidates)
             self.voting_regressors_[bucket] = v_regressor
-            y_hat = self.voting_regressors_[bucket].predict(X[selector] if is_any else X)
-            y_true = y[selector] if is_any else y
-            self.bucket_specifics_["scores"][bucket] = self.evaluate(y_true, y_hat)
-            # self.bucket_specifics_[bucket] = self.evaluate(y_true, y_hat)
-        
-        self.bucket_specifics_["scores"] = pd.DataFrame.from_dict(self.bucket_specifics_["scores"])
-        self.bucket_specifics_["scores"] = self.bucket_specifics_["scores"].transpose()
-        # print(type(self.bucket_specifics_["scores"]))
-        # print(self.bucket_specifics_["scores"])
+            y_hat = self.voting_regressors_[bucket].predict(X_subset)
+            y_true = y_subset
+            self.bucket_specifics_["scores"][bucket_name] = self.evaluate(y_true, y_hat)
+            self.bucket_specifics_["weights"][bucket_name] = {e[0]: weight for e, weight in zip(v_regressor.estimators, v_regressor.weights)}
+
         return self
 
-    def _construct_voting_regressor(self, X, y, trained_candidates, selector, is_any):
+    def _cv_metric(self, estimator, X, y):
+        y_hat = estimator.predict(X)
+        return smape(y, y_hat)
+
+    def _compute_model_score(self, X, y, trained_candidates, name, candidate_data, model):
+        model_score = np.mean(cross_val_score(model, X, y, scoring=self._cv_metric)) 
+        trained_candidates[name] = {"model": model, "score": 100-model_score, **candidate_data}
+        return trained_candidates
+
+    def _construct_voting_regressor(self, X, y, trained_candidates):
         weights = np.array([v["score"] for _, v in trained_candidates.items()])
         models = [(name, v["model"]) for name, v in trained_candidates.items()]
-        v_regressor = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
+        v_regressor = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X, y)
         return v_regressor
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
@@ -442,7 +450,18 @@ class BucketRegressor(OxariRegressor):
 
 
 class EvenWeightBucketRegressor(BucketRegressor):
-    def _construct_voting_regressor(self, X, y, trained_candidates, selector, is_any):
+    def _construct_voting_regressor(self, X, y, trained_candidates):
+        weights = np.array([1 for _, v in trained_candidates.items()])
         models = [(name, v["model"]) for name, v in trained_candidates.items()]
-        v_regressor = VotingRegressor(estimators=models, n_jobs=-1).fit(X[selector] if is_any else X, y[selector] if is_any else y)
+        v_regressor = VotingRegressor(estimators=models, weights=weights, n_jobs=-1).fit(X, y)
         return v_regressor
+
+class AlternativeCVMetricBucketRegressor(BucketRegressor):
+    def _compute_model_score(self, X, y, trained_candidates, name, candidate_data, model):
+        model_score = np.mean(cross_val_score(model, X, y, scoring=self._cv_metric)) 
+        trained_candidates[name] = {"model": model, "score": 1/model_score, **candidate_data}
+        return trained_candidates
+    
+    def _cv_metric(self, estimator, X, y):
+        y_hat = estimator.predict(X)
+        return median_absolute_error(y, y_hat)

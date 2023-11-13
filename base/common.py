@@ -818,6 +818,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
             X = pd.DataFrame(X, index=[0])
         elif isinstance(X, list) and all(isinstance(item, dict) for item in X):
             X = pd.DataFrame(X)
+        elif isinstance(X, np.ndarray) and X.shape[1] == len(self.feature_names_in_):
+            X = pd.DataFrame(X, columns=self.feature_names_in_)
+            
         elif not isinstance(X, pd.DataFrame):
             raise ValueError("The input variable X must be a pandas Series, DataFrame, dictionary, or list of dictionaries.")
         

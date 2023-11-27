@@ -7,7 +7,7 @@ import seaborn as sns
 import matplotlib.patheffects as path_effects
 
 #%%
-def add_median_labels(ax, fmt='.1f'):
+def add_median_labels(ax, fmt='.2f'):
     """Credits: https://stackoverflow.com/a/63295846/4865723
     """
     lines = ax.get_lines()
@@ -81,5 +81,70 @@ plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.title('Weights based on scope_estimator')
 plt.xlabel('scope_estimator')
 plt.ylabel('Weight Value')
+plt.show()
+
+# %%
+# Filter rows where scope_estimator is MiniModelArmyEstimator
+filtered_df = results[results['scope_estimator'] == 'MiniModelArmyEstimator']
+
+# Extract the relevant columns for plotting
+weights_columns = [col for col in results.columns if col.startswith('weights.')]
+
+# Melt the DataFrame to make it suitable for seaborn's boxplot
+melted_df = pd.melt(filtered_df, id_vars=['scope_estimator'], value_vars=weights_columns,
+                    var_name='weight_type', value_name='weight_value')
+
+# Extract the bucket type from the weight_type column
+melted_df['bucket_type'] = melted_df['weight_type'].apply(lambda x: x.split('.')[-1])
+melted_df['bucket_number'] = melted_df['weight_type'].apply(lambda x: x.split('.')[-2].split('_')[-1])
+
+# Set up the plotting area
+plt.figure(figsize=(12, 8))
+
+# Use seaborn's boxplot to visualize the weights based on the type of bucket
+fig = sns.boxplot(x='bucket_type', y='weight_value', hue='bucket_number', data=melted_df)
+add_median_labels(fig)
+
+# Customize the plot
+plt.title('Weights based on Bucket Type for MiniModelArmyEstimator')
+plt.xlabel('Bucket Type')
+plt.ylabel('Weight Value')
+plt.xticks(rotation=45, ha='right')
+plt.legend(title='Weight Type', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+# Show the plot
+plt.show()
+
+
+# %%
+# Filter rows where scope_estimator is AlternativeCVMiniModelArmyEstimator
+filtered_df = results[results['scope_estimator'] == 'AlternativeCVMiniModelArmyEstimator']
+
+# Extract the relevant columns for plotting
+weights_columns = [col for col in results.columns if col.startswith('weights.')]
+
+# Melt the DataFrame to make it suitable for seaborn's boxplot
+melted_df = pd.melt(filtered_df, id_vars=['scope_estimator'], value_vars=weights_columns,
+                    var_name='weight_type', value_name='weight_value')
+
+# Extract the bucket type from the weight_type column
+melted_df['bucket_type'] = melted_df['weight_type'].apply(lambda x: x.split('.')[-1])
+melted_df['bucket_number'] = melted_df['weight_type'].apply(lambda x: x.split('.')[-2].split('_')[-1])
+
+# Set up the plotting area
+plt.figure(figsize=(12, 8))
+
+# Use seaborn's boxplot to visualize the weights based on the type of bucket
+fig = sns.boxplot(x='bucket_type', y='weight_value', hue='bucket_number', data=melted_df)
+add_median_labels(fig)
+
+# Customize the plot
+plt.title('Weights based on Bucket Type for AlternativeCVMiniModelArmyEstimator')
+plt.xlabel('Bucket Type')
+plt.ylabel('Weight Value')
+plt.xticks(rotation=45, ha='right')
+plt.legend(title='Weight Type', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+# Show the plot
 plt.show()
 # %%

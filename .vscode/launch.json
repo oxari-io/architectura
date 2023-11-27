@@ -40,13 +40,6 @@
       "justMyCode": true
     },
     {
-      "name": "Run Parallel Pipeline",
-      "type": "python",
-      "request": "launch",
-      "module": "main_test_estimators_parallel",
-      "justMyCode": true
-    },
-    {
       "name": "Run Sequential Pipeline",
       "type": "python",
       "request": "launch",
@@ -64,7 +57,7 @@
       "name": "Run Specific Experiment",
       "type": "python",
       "request": "launch",
-      "module": "experiments.experiment_SMA_vs_MMA",
+      "module": "experiments.experiment_feature_impact",
       "justMyCode": true
     },
     {

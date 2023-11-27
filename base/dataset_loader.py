@@ -397,7 +397,7 @@ class OxariDataManager(OxariMixin):
             self.add_data(loader_name, loader.data, loaded.name)
             self.add_data(f"merge_stage_{idx}", merged_loader.data, merged_loader.name)
             # TODO: take len of loader directly
-            self.logger.info(f"Remaining data points {len(merged_loader.data)}")
+            self.logger.info(f"Remaining data points {merged_loader.data.shape}")
 
         _df_merged = self.add_data(OxariDataManager.MERGED, merged_loader.data, "Dataset with all parts merged.")
         _df_reduced = self.add_data(OxariDataManager.REDUCED, self.data_filter.fit_transform(_df_merged), "Dataset with reduced number of rows.")

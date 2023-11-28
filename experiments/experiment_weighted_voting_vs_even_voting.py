@@ -14,9 +14,12 @@ from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import (BaselineEstimator,
                               EvenWeightMiniModelArmyEstimator,
-                              MiniModelArmyEstimator, PredictMedianEstimator)
+                              MiniModelArmyEstimator, 
+                              PredictMedianEstimator,
+                              AlternativeCVMiniModelArmyEstimator,
+                              CombinedMiniModelArmyEstimator)
 from experiments.experiment_argument_parser import WeightedVotingExperimentCommandLineParser
-from scope_estimators.mini_model_army import AlternativeCVMiniModelArmyEstimator
+# from scope_estimators.mini_model_army import AlternativeCVMiniModelArmyEstimator, CombinedMiniModelArmyEstimator
 
 
 def convert_estimators(estimators_string):
@@ -26,7 +29,8 @@ def convert_estimators(estimators_string):
     
     switcher = {
         "EvenWeightMiniModelArmyEstimator": EvenWeightMiniModelArmyEstimator, 
-        "AlternativeCVMiniModelArmyEstimator": AlternativeCVMiniModelArmyEstimator, 
+        "AlternativeCVMiniModelArmyEstimator": AlternativeCVMiniModelArmyEstimator,
+        "CombinedMiniModelArmyEstimator": CombinedMiniModelArmyEstimator, 
         "MiniModelArmyEstimator": MiniModelArmyEstimator, 
         "BaselineEstimator": BaselineEstimator, 
         "PredictMedianEstimator": PredictMedianEstimator

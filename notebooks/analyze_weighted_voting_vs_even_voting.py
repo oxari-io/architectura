@@ -41,47 +41,47 @@ plt.xticks(rotation=30)
 plt.ylabel('raw.sMAPE')
 plt.legend(title = 'scope')
 
-#%%
-# Filter DataFrame based on scope_estimator
-mma_results = results[results['scope_estimator'] == 'MiniModelArmyEstimator']
+# #%%
+# # Filter DataFrame based on scope_estimator
+# mma_results = results[results['scope_estimator'] == 'MiniModelArmyEstimator']
 
-# Select relevant columns
-weights_columns = mma_results.filter(like='weights.bucket_')
+# # Select relevant columns
+# weights_columns = mma_results.filter(like='weights.bucket_')
 
-# Melt the DataFrame to reshape it for easier plotting
-melted_df = pd.melt(mma_results, id_vars=['scope_estimator'], value_vars=weights_columns.columns, var_name='Weight_Type', value_name='Weight_Value')
+# # Melt the DataFrame to reshape it for easier plotting
+# melted_df = pd.melt(mma_results, id_vars=['scope_estimator'], value_vars=weights_columns.columns, var_name='Weight_Type', value_name='Weight_Value')
 
-# Plot using seaborn
-plt.figure(figsize=(12, 8))
-sns.set(style="whitegrid")
-fig = sns.boxplot(x='scope_estimator', y='Weight_Value', hue='Weight_Type', data=melted_df)
-add_median_labels(fig)
-plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-plt.title('Weights based on scope_estimator')
-plt.xlabel('scope_estimator')
-plt.ylabel('Weight Value')
-plt.show()
+# # Plot using seaborn
+# plt.figure(figsize=(12, 8))
+# sns.set(style="whitegrid")
+# fig = sns.boxplot(x='scope_estimator', y='Weight_Value', hue='Weight_Type', data=melted_df)
+# add_median_labels(fig)
+# plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+# plt.title('Weights based on scope_estimator')
+# plt.xlabel('scope_estimator')
+# plt.ylabel('Weight Value')
+# plt.show()
 
-#%%
-# Filter DataFrame based on scope_estimator
-cv_mma_results = results[results['scope_estimator'] == 'AlternativeCVMiniModelArmyEstimator']
+# #%%
+# # Filter DataFrame based on scope_estimator
+# cv_mma_results = results[results['scope_estimator'] == 'AlternativeCVMiniModelArmyEstimator']
 
-# Select relevant columns
-weights_columns = cv_mma_results.filter(like='weights.bucket_')
+# # Select relevant columns
+# weights_columns = cv_mma_results.filter(like='weights.bucket_')
 
-# Melt the DataFrame to reshape it for easier plotting
-melted_df = pd.melt(cv_mma_results, id_vars=['scope_estimator'], value_vars=weights_columns.columns, var_name='Weight_Type', value_name='Weight_Value')
+# # Melt the DataFrame to reshape it for easier plotting
+# melted_df = pd.melt(cv_mma_results, id_vars=['scope_estimator'], value_vars=weights_columns.columns, var_name='Weight_Type', value_name='Weight_Value')
 
-# Plot using seaborn
-plt.figure(figsize=(12, 8))
-sns.set(style="whitegrid")
-fig = sns.boxplot(x='scope_estimator', y='Weight_Value', hue='Weight_Type', data=melted_df)
-add_median_labels(fig)
-plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
-plt.title('Weights based on scope_estimator')
-plt.xlabel('scope_estimator')
-plt.ylabel('Weight Value')
-plt.show()
+# # Plot using seaborn
+# plt.figure(figsize=(12, 8))
+# sns.set(style="whitegrid")
+# fig = sns.boxplot(x='scope_estimator', y='Weight_Value', hue='Weight_Type', data=melted_df)
+# add_median_labels(fig)
+# plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+# plt.title('Weights based on scope_estimator')
+# plt.xlabel('scope_estimator')
+# plt.ylabel('Weight Value')
+# plt.show()
 
 # %%
 # Filter rows where scope_estimator is MiniModelArmyEstimator
@@ -106,11 +106,11 @@ fig = sns.boxplot(x='bucket_type', y='weight_value', hue='bucket_number', data=m
 add_median_labels(fig)
 
 # Customize the plot
-plt.title('Weights based on Bucket Type for MiniModelArmyEstimator')
-plt.xlabel('Bucket Type')
+plt.title('Weights based on Estimator Type for MiniModelArmyEstimator')
+plt.xlabel('Estimator Type')
 plt.ylabel('Weight Value')
 plt.xticks(rotation=45, ha='right')
-plt.legend(title='Weight Type', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.legend(title='Bucket Number', bbox_to_anchor=(1.05, 1), loc='upper left')
 
 # Show the plot
 plt.show()
@@ -139,12 +139,11 @@ fig = sns.boxplot(x='bucket_type', y='weight_value', hue='bucket_number', data=m
 add_median_labels(fig)
 
 # Customize the plot
-plt.title('Weights based on Bucket Type for AlternativeCVMiniModelArmyEstimator')
-plt.xlabel('Bucket Type')
+plt.title('Weights based on Estimator Type for AlternativeCVMiniModelArmyEstimator')
+plt.xlabel('Estimator Type')
 plt.ylabel('Weight Value')
 plt.xticks(rotation=45, ha='right')
-plt.legend(title='Weight Type', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.legend(title='Bucket Number', bbox_to_anchor=(1.05, 1), loc='upper left')
 
 # Show the plot
 plt.show()
-# %%

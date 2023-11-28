@@ -468,3 +468,6 @@ class AlternativeCVMetricBucketRegressor(BucketRegressor):
     def _cv_metric(self, estimator, X, y):
         y_hat = estimator.predict(X)
         return median_absolute_error(y, y_hat)
+
+class CombinedBucketRegressor(EvenWeightBucketRegressor, AlternativeCVMetricBucketRegressor):
+    pass  

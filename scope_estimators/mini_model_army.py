@@ -5,8 +5,10 @@ from scope_estimators.mma.classifier import (BucketClassifier, UnderfittedBucket
                                              BucketClassifierEvauator,
                                              ClassifierOptimizer, MajorityBucketClassifier, RandomGuessBucketClassifier)
 from scope_estimators.mma.regressor import (BucketRegressor,
-                                            EvenWeightBucketRegressor,
-                                            RegressorOptimizer)
+                                            EvenWeightBucketRegressor, 
+                                            AlternativeCVMetricBucketRegressor,
+                                            RegressorOptimizer,
+                                            CombinedBucketRegressor)
 from typing_extensions import Self
 N_TRIALS = 1
 N_STARTUP_TRIALS = 1
@@ -81,6 +83,16 @@ class EvenWeightMiniModelArmyEstimator(MiniModelArmyEstimator):
     def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
         super().__init__(n_buckets, cls, rgs, **kwargs)
         self.bucket_rg: BucketRegressor = EvenWeightBucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
+
+class AlternativeCVMiniModelArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_rg: BucketRegressor = AlternativeCVMetricBucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
+
+class CombinedMiniModelArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_rg: BucketRegressor = CombinedBucketRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
 
 class SingleBucketVotingArmyEstimator(MiniModelArmyEstimator):
     def __init__(self, cls={}, rgs={}, **kwargs):

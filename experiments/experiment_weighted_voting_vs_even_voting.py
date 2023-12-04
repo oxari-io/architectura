@@ -14,8 +14,12 @@ from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import (BaselineEstimator,
                               EvenWeightMiniModelArmyEstimator,
-                              MiniModelArmyEstimator, PredictMedianEstimator)
+                              MiniModelArmyEstimator, 
+                              PredictMedianEstimator,
+                              AlternativeCVMiniModelArmyEstimator,
+                              CombinedMiniModelArmyEstimator)
 from experiments.experiment_argument_parser import WeightedVotingExperimentCommandLineParser
+# from scope_estimators.mini_model_army import AlternativeCVMiniModelArmyEstimator, CombinedMiniModelArmyEstimator
 
 
 def convert_estimators(estimators_string):
@@ -25,6 +29,8 @@ def convert_estimators(estimators_string):
     
     switcher = {
         "EvenWeightMiniModelArmyEstimator": EvenWeightMiniModelArmyEstimator, 
+        "AlternativeCVMiniModelArmyEstimator": AlternativeCVMiniModelArmyEstimator,
+        "CombinedMiniModelArmyEstimator": CombinedMiniModelArmyEstimator, 
         "MiniModelArmyEstimator": MiniModelArmyEstimator, 
         "BaselineEstimator": BaselineEstimator, 
         "PredictMedianEstimator": PredictMedianEstimator
@@ -61,20 +67,24 @@ if __name__ == "__main__":
 
         for Estimator in estimators:
             start = time.time()
+            bucket_specifics = {}
 
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(),
+                feature_reducer=PCAFeatureReducer(n_components=40),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=Estimator(),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
-            all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
+            if isinstance(ppl1.estimator, MiniModelArmyEstimator): 
+                bucket_specifics = ppl1.estimator.bucket_rg.bucket_specifics_
+            all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 1, **ppl1.evaluation_results, **bucket_specifics})
+
             if (scope == True):
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(),
+                    feature_reducer=PCAFeatureReducer(n_components=40),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=Estimator(),
                     ci_estimator=BaselineConfidenceEstimator(),
@@ -82,37 +92,24 @@ if __name__ == "__main__":
                 ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
                 ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(),
+                    feature_reducer=PCAFeatureReducer(n_components=40),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=Estimator(),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
 
-                all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 2, **ppl2.evaluation_results})
-                all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 3, **ppl3.evaluation_results})
+                if isinstance(ppl2.estimator, MiniModelArmyEstimator): 
+                    bucket_specifics = ppl2.estimator.bucket_rg.bucket_specifics_
+                all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 2, **ppl2.evaluation_results, **bucket_specifics})
+                
+                if isinstance(ppl3.estimator, MiniModelArmyEstimator): 
+                    bucket_specifics = ppl3.estimator.bucket_rg.bucket_specifics_
+                all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 3, **ppl3.evaluation_results, **bucket_specifics})
+
 
             ### EVALUATION RESULTS ###
-            concatenated = pd.json_normalize(all_results)[[
-                "repetition",
-                "time",
-                "scope",
-                "imputer",
-                "preprocessor",
-                "feature_selector",
-                "scope_estimator",
-                "test.evaluator",
-                "test.sMAPE",
-                "test.R2",
-                "test.MAE",
-                "test.RMSE",
-                "test.MAPE",
-                "train.sMAPE",
-                "train.R2",
-                "train.MAE",
-                "train.RMSE",
-                "train.MAPE",
-            ]]
+            concatenated = pd.json_normalize(all_results)
             fname = __loader__.name.split(".")[-1]
             
             if (results_file is True):

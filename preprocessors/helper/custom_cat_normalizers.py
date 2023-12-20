@@ -6,6 +6,9 @@ from base.oxari_types import ArrayLike
 from typing_extensions import Self
 from pathlib import Path
 from country_converter import CountryConverter
+import pandas as pd 
+import linktransformer as lt
+
 
 MODULE_PATH = Path(__file__).absolute().parent
 INDUSTRY_MAPPING_PATHS = [
@@ -44,6 +47,28 @@ class SectorNameCatColumnNormalizer(OxariCatColumnNormalizer):
         X_new[self.col_name] = X_new[self.col_name].astype(str).str.lower().str.strip().replace(self.mapping) 
         return X_new
     
+
+class LinkTransformerCatColumnNormalizer(OxariCatColumnNormalizer):
+
+    def __init__(self, col_name=["ft_catm_sector_name", "ft_catm_industry_name"], path_to_mapping=MODULE_PATH / "gics_mod.csv", **kwargs) -> None:
+        super().__init__(col_name, **kwargs)
+        self.path_mapping = path_to_mapping
+
+    def fit(self, X: ArrayLike, y: ArrayLike = None, **kwargs) -> Self:
+        self.mapping = pd.read_csv(self.path_mapping)
+        return self
+    
+    def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
+        X_new = X.copy()
+        X_original = X.copy()
+        self.mapping["merge_col"] = self.mapping[self.col_name].astype('str').agg(' @ '.join, axis=1)
+        X_original["merge_col"] = X_original[self.col_name].astype('str').agg(' @ '.join, axis=1)
+        # TODO: There's a smaller and better model here: https://huggingface.co/thenlper/gte-small
+        after_merge = lt.merge(X_original, self.mapping, merge_type='1:1', on='merge_col', model='sentence-transformers/all-MiniLM-L6-v2')
+        thresholds_reached = after_merge["score"] >= 0.5
+        X_new.loc[thresholds_reached.values, self.col_name] = after_merge.loc[thresholds_reached.values, [col+"_y" for col in self.col_name]].values
+        return X_new
+
 
 class IndustryNameCatColumnNormalizer(OxariCatColumnNormalizer):
 

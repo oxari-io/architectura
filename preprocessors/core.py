@@ -9,7 +9,7 @@ import sklearn.preprocessing as prep
 
 from base import OxariPreprocessor
 from base.helper import DummyTargetScaler, OxariFeatureTransformerWrapper
-from preprocessors.helper.custom_cat_normalizers import CountryCodeCatColumnNormalizer, OxariCategoricalNormalizer, SectorNameCatColumnNormalizer, IndustryNameCatColumnNormalizer
+from preprocessors.helper.custom_cat_normalizers import CountryCodeCatColumnNormalizer, LinkTransformerCatColumnNormalizer, OxariCategoricalNormalizer, SectorNameCatColumnNormalizer, IndustryNameCatColumnNormalizer
 
 
 class DummyPreprocessor(OxariPreprocessor):
@@ -57,8 +57,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         self.cat_transformer = cat_transformer or ce.TargetEncoder()
         self.cat_normalizer = cat_normalizer or OxariCategoricalNormalizer(
             col_transformers=[
-                SectorNameCatColumnNormalizer(),
-                IndustryNameCatColumnNormalizer(),
+                LinkTransformerCatColumnNormalizer(),
                 CountryCodeCatColumnNormalizer()
             ]
         )

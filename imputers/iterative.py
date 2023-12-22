@@ -25,7 +25,7 @@ from sklearn.preprocessing import MinMaxScaler
 class MVEImputer(OxariImputer):
 
     class strategies(Enum):
-        BAYESRIDGE = BayesianRidge()
+        # BAYESRIDGE = BayesianRidge()
         RIDGE = KernelRidge(kernel='rbf')
         KNN = KNeighborsRegressor()
 

@@ -441,7 +441,9 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         return {"imputer": self.name, **self._evaluation_results}
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
-
+    def clone(self) -> Self:
+        # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
+        return copy.deepcopy(self, {})
 
 
 class OxariPreprocessor(OxariTransformer, abc.ABC):

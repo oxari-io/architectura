@@ -58,7 +58,7 @@
       "type": "python",
       "request": "launch",
       "module": "experiments.experiment_weighted_voting_vs_even_voting",
-      "justMyCode": true
+      "justMyCode": false
     },
     {
       "name": "Test All",

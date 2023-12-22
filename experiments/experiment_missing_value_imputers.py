@@ -28,21 +28,21 @@ if __name__ == "__main__":
     # - Vertical interpolation interpolates the NA's the column independently of other columns. Usually grouped by company.
     # - Horizontal interpolation does not take any other row into account for imputation. Basically making it time-independent.
     difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    dataset = get_small_datamanager_configuration().run()
+    dataset = get_small_datamanager_configuration(0.5).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
-        # BaselineImputer(),
-        # DummyImputer(),
+        BaselineImputer(),
+        DummyImputer(),
         *[CategoricalStatisticsImputer(reference=ref) for ref in ["ft_catm_country_code", "ft_catm_industry_name", "ft_catm_sector_name"]],
-        # *[RImputer(buckets_number=num) for RImputer in [RevenueBucketImputer,RevenueQuantileBucketImputer, RevenueExponentialBucketImputer] for num in [3,5,7]],
-        # KMeansBucketImputer(),
-        # *[MVEImputer(sub_estimator=m.value, verbose=True) for m in MVEImputer.strategies],
-        # *[MVEImputer(sub_estimator=m, verbose=True) for m in [LGBMRegressor(learning_rate=0.01),]],
-        # OldOxariImputer(verbose=True),
-        # KMedianBucketImputer,
-        # LinearInterpolationImputer(), # Vertical
-        # SplineInterpolationImputer(), # Vertical
-        # AutoImputer('pmm')
+        *[RImputer(buckets_number=num) for RImputer in [RevenueBucketImputer,RevenueQuantileBucketImputer, RevenueExponentialBucketImputer] for num in [3,5,7]],
+        *[KMeansBucketImputer(bucket_number=num) for num in [3, 5,7]],
+        *[MVEImputer(sub_estimator=m.value, verbose=True) for m in MVEImputer.strategies],
+        *[MVEImputer(sub_estimator=m, verbose=True) for m in [LGBMRegressor(learning_rate=0.1),]],
+        OldOxariImputer(verbose=True),
+        # KMedianBucketImputer(),
+        # LinearInterpolationImputer(), # Vertical - Not working
+        # SplineInterpolationImputer(), # Vertical - Not working
+        # AutoImputer(AutoImputer.strategies.PMM)
     ]
     repeats = range(10)
     with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:
@@ -53,16 +53,38 @@ if __name__ == "__main__":
             X_new = X.copy()
             X_new[X.filter(regex='^ft_num', axis=1).columns] = minmax_scale(X.filter(regex='^ft_num', axis=1))
 
-            X_train, X_test = train_test_split(X_new, test_size=0.8)
+            X_train, X_test = train_test_split(X_new, test_size=0.5)
 
             for imputer in configurations:
                 if (i > 0) and isinstance(imputer, AutoImputer):
                     # Train this only once
                     continue
-                imputer: OxariImputer = imputer.fit(X_train)
                 for dff in difficulties:
+                    imputer: OxariImputer = imputer.fit(X_train)
                     imputer.evaluate(X_test, p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, **imputer.evaluation_results, **imputer.get_config()})
+                    all_results.append({"repetition": i, "difficulty": dff, "mode":"realistic","num_ft":X_test.shape[1],**imputer.evaluation_results, **imputer.get_config()})
+                    
+                    keeping_criterion = (X_test.isna().mean(axis=0)<0.3)
+                    imputer: OxariImputer = imputer.fit(X_train.loc[:, keeping_criterion])
+                    X_test_with_low_missingness_cols = X_test.loc[:,keeping_criterion]
+                    imputer.evaluate(X_test_with_low_missingness_cols, p=dff)
+                    all_results.append({"repetition": i, "difficulty": dff, "mode":"mid_missingness", "num_ft":keeping_criterion.sum(),**imputer.evaluation_results, **imputer.get_config()})
+
+                    keeping_criterion = (X_test.isna().mean(axis=0)<0.2)
+                    imputer: OxariImputer = imputer.fit(X_train.loc[:, keeping_criterion])
+                    X_test_with_low_missingness_cols = X_test.loc[:,keeping_criterion]
+                    imputer.evaluate(X_test_with_low_missingness_cols, p=dff)
+                    all_results.append({"repetition": i, "difficulty": dff, "mode":"low_missingness", "num_ft":keeping_criterion.sum(),**imputer.evaluation_results, **imputer.get_config()})
+
+
+                    # keeping_criterion = (X_test.isna().mean(axis=0)<0.1)
+                    # if keeping_criterion.sum() < 6:
+                    #     continue
+                    # imputer: OxariImputer = imputer.fit(X_train.loc[:, keeping_criterion])
+                    # X_test_with_low_missingness_cols_2 = X_test.loc[:,keeping_criterion]
+                    # imputer.evaluate(X_test_with_low_missingness_cols_2, p=dff)
+                    # all_results.append({"repetition": i, "difficulty": dff, "mode":"very_low_missingness","num_ft":keeping_criterion.sum(),**imputer.evaluation_results, **imputer.get_config()})
+                    
                     concatenated = pd.json_normalize(all_results)
                     fname = __loader__.name.split(".")[-1]
                     pbar.update(1)

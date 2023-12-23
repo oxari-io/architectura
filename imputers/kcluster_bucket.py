@@ -15,9 +15,9 @@ from .core import BucketImputerBase
 
 
 class KMeansBucketImputer(BucketImputerBase):
-    def __init__(self, buckets_number=3, **kwargs):
+    def __init__(self, bucket_number=3, **kwargs):
         super().__init__(**kwargs)
-        self.bucket_number = buckets_number
+        self.bucket_number = bucket_number
         self._estimator = KNNImputer(n_neighbors=self.bucket_number)
 
 
@@ -39,9 +39,9 @@ class KMeansBucketImputer(BucketImputerBase):
 
 # TODO: Does not seem to work
 class KMedianBucketImputer(BucketImputerBase):
-    def __init__(self, buckets_number=3, **kwargs):
-        super().__init__(buckets_number, **kwargs)
-        self._estimator = kmedoids.KMedoids(buckets_number, metric="euclidean")
+    def __init__(self, bucket_number=3, **kwargs):
+        super().__init__(bucket_number, **kwargs)
+        self._estimator = kmedoids.KMedoids(bucket_number, metric="euclidean")
         self._helper_imputer = SimpleImputer(strategy="median")
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:

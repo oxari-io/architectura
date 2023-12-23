@@ -414,20 +414,24 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         # TODO: also include supervised methods R² into eval
         p = kwargs.pop('p', 0.3)
 
-        X_true = X.dropna(how='any')
+        # X_true = X.dropna(how='any')
+        X_true = X.copy()
         X_true_features = X_true.filter(regex="^ft_num", axis=1)
         ft_cols = X_true_features.columns
 
         rows, cols = X_true_features.shape
-        mask = ~(np.random.rand(rows, cols) < p)
+        available_points_mask = ~np.isnan(X_true_features).values
+        removal_mask = (np.random.rand(rows, cols) < p)
+
+        mask = available_points_mask & removal_mask
 
         X_eval = X_true.copy()
 
-        X_eval[ft_cols] = np.where(mask, X_true[ft_cols], np.nan)
+        X_eval[ft_cols] = np.where(mask, np.nan, X_true[ft_cols])
         X_pred = self.transform(X_eval, **kwargs)
 
-        y_true = X_true[ft_cols].values[np.where(~mask)]
-        y_pred = X_pred[ft_cols].values[np.where(~mask)] + np.finfo(float).eps
+        y_true = X_true[ft_cols].values[np.where(mask)]
+        y_pred = X_pred[ft_cols].values[np.where(mask)] + np.finfo(float).eps
         self._evaluation_results = {}
         self._evaluation_results["overall"] = self._evaluator.evaluate(y_true, y_pred)
         return self
@@ -437,7 +441,9 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         return {"imputer": self.name, **self._evaluation_results}
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
 
-
+    def clone(self) -> Self:
+        # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
+        return copy.deepcopy(self, {})
 
 
 class OxariPreprocessor(OxariTransformer, abc.ABC):

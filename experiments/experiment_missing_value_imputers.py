@@ -34,15 +34,15 @@ if __name__ == "__main__":
     configurations: list[OxariImputer] = [
         # AutoImputer(),
         
-        BaselineImputer(),
-        DummyImputer(),
-        *[EquilibriumImputer(max_iter=d, sub_estimator=m, verbose=False) for d in [10, 100, 1000] for m in EquilibriumImputer.Strategy],
-        *[CategoricalStatisticsImputer(reference=ref) for ref in ["ft_catm_country_code", "ft_catm_industry_name", "ft_catm_sector_name"]],
-        *[RImputer(buckets_number=num) for RImputer in [RevenueBucketImputer,RevenueQuantileBucketImputer, RevenueExponentialBucketImputer] for num in [3,5,7]],
+        # BaselineImputer(),
+        # DummyImputer(),
+        # *[EquilibriumImputer(max_iter=d, sub_estimator=m, verbose=False) for d in [10, 100, 1000] for m in EquilibriumImputer.Strategy],
+        # *[CategoricalStatisticsImputer(reference=ref) for ref in ["ft_catm_country_code", "ft_catm_industry_name", "ft_catm_sector_name"]],
+        # *[RImputer(buckets_number=num) for RImputer in [RevenueBucketImputer,RevenueQuantileBucketImputer, RevenueExponentialBucketImputer] for num in [3,5,7]],
         *[KMeansBucketImputer(bucket_number=num) for num in [3, 5,7]],
-        *[MVEImputer(sub_estimator=m, verbose=True) for m in MVEImputer.Strategy],
-        *[MVEImputer(sub_estimator=m, verbose=True) for m in [LGBMRegressor(learning_rate=0.1),]],
-        OldOxariImputer(verbose=True),
+        # *[MVEImputer(sub_estimator=m, verbose=True) for m in MVEImputer.Strategy],
+        # *[MVEImputer(sub_estimator=m, verbose=True) for m in [LGBMRegressor(learning_rate=0.1),]],
+        # OldOxariImputer(verbose=True),
         # KMedianBucketImputer(),
         # LinearInterpolationImputer(), # Vertical - Not working
         # SplineInterpolationImputer(), # Vertical - Not working

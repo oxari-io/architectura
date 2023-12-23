@@ -4,7 +4,7 @@ import pathlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import statsmodels.api as sm
+import statsmodels.api as smkkkkkkkk
 import statsmodels.formula.api as smf
 
 # %%
@@ -35,7 +35,7 @@ sns.lineplot(df_results[df_results["name"].str.startswith("Revenue")], x="diffic
 plt.subplot(2,2,2)
 sns.lineplot(df_results[df_results["name"].str.startswith("MVE")|df_results["name"].str.startswith("OldOxari")], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
 plt.subplot(2,2,3)
-sns.lineplot(df_results[df_results["name"].str.startswith("Baseline")], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
+sns.lineplot(df_results[df_results["name"].str.startswith("Equi")], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
 plt.subplot(2,2,4)
 sns.lineplot(df_results[df_results["name"].str.startswith("Categorical")], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
 plt.show()

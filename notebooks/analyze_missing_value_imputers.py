@@ -4,13 +4,17 @@ import pathlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import statsmodels.api as smkkkkkkkk
+import statsmodels.api as sm
 import statsmodels.formula.api as smf
 
 # %%
 cwd = pathlib.Path(__file__).parent
-df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_value_imputers.csv', index_col=0)
-df_results
+df_results_1 = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_value_imputers_run1.csv', index_col=0)
+df_results_2 = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_value_imputers_run2.csv', index_col=0)
+df_results_1["run"] = 1
+df_results_2["run"] = 2
+
+df_results = pd.concat([df_results_1, df_results_2]).sort_values('imputer')
 # %%
 # df_results["imputer"] = pd.Categorical(df_results["imputer"])
 df_results["mae"] = df_results["overall.MAE"]
@@ -23,7 +27,7 @@ plt.figure(figsize=(15,5))
 sns.boxplot(df_results, x="smape", y="imputer")
 plt.show()
 # %%
-plt.figure(figsize=(10,10))
+plt.figure(figsize=(15,15))
 sns.lineplot(df_results, x="difficulty", y="smape", hue="imputer", errorbar=('ci', 0))
 # plt.ylim(0,1)
 plt.show()

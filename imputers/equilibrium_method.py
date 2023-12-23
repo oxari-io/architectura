@@ -103,13 +103,13 @@ class EquilibriumImputer(OxariImputer):
         return replace_ft_num(X, X_new)
 
     def _instantiate_strategy(self, strategy:Strategy):
-        if strategy.KNN:
+        if self.Strategy.KNN == strategy:
             return KNeighborsRegressor()
-        if strategy.BAYESRIDGE:
+        if self.Strategy.BAYESRIDGE == strategy:
             return BayesianRidge()
-        if strategy.RIDGE:
+        if self.Strategy.RIDGE == strategy:
             return KernelRidge(kernel='rbf')
-        if strategy.DT:
+        if self.Strategy.DT == strategy:
             return DecisionTreeRegressor()
 
 

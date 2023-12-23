@@ -46,7 +46,7 @@ plt.show()
 
 # %%
 plt.figure(figsize=(10,7))
-condition = (df_results["name"].str.startswith("RevenueQuantile"))|(df_results["imputer"]=="MVEImputer:KNeighborsRegressor") |(df_results["imputer"]=="MVEImputer:LGBMRegressor")|(df_results["imputer"]=="OldOxariImputer:RandomForestRegressor")
+condition = (df_results["name"].str.startswith("RevenueQuantile"))|(df_results["name"].str.startswith("Equilibrium"))|(df_results["imputer"]=="MVEImputer:KNeighborsRegressor") |(df_results["imputer"]=="MVEImputer:LGBMRegressor")|(df_results["imputer"]=="OldOxariImputer:RandomForestRegressor")
 sns.lineplot(df_results[condition], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
 plt.show()
 

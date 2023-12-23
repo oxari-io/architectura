@@ -36,11 +36,11 @@ if __name__ == "__main__":
         
         BaselineImputer(),
         DummyImputer(),
-        *[EquilibriumImputer(max_iter=d, sub_estimator=m.value, verbose=False) for d in [10, 20] for m in EquilibriumImputer.strategies],
+        *[EquilibriumImputer(max_iter=d, sub_estimator=m, verbose=False) for d in [10, 100, 1000] for m in EquilibriumImputer.Strategy],
         *[CategoricalStatisticsImputer(reference=ref) for ref in ["ft_catm_country_code", "ft_catm_industry_name", "ft_catm_sector_name"]],
         *[RImputer(buckets_number=num) for RImputer in [RevenueBucketImputer,RevenueQuantileBucketImputer, RevenueExponentialBucketImputer] for num in [3,5,7]],
         *[KMeansBucketImputer(bucket_number=num) for num in [3, 5,7]],
-        *[MVEImputer(sub_estimator=m.value, verbose=True) for m in MVEImputer.strategies],
+        *[MVEImputer(sub_estimator=m, verbose=True) for m in MVEImputer.Strategy],
         *[MVEImputer(sub_estimator=m, verbose=True) for m in [LGBMRegressor(learning_rate=0.1),]],
         OldOxariImputer(verbose=True),
         # KMedianBucketImputer(),
@@ -67,22 +67,22 @@ if __name__ == "__main__":
                 if (i > 0) and isinstance(imputer, AutoImputer):
                     # Train this only once
                     continue
-                imputer_all: OxariImputer = imputer.clone()
-                imputer_1: OxariImputer = imputer.clone()
+                # imputer_all: OxariImputer = imputer.clone()
+                # imputer_1: OxariImputer = imputer.clone()
                 imputer_2: OxariImputer = imputer.clone()
                 
-                imputer_all = imputer_all.fit(X_train)
-                imputer_1 = imputer_1.fit(X_train[keep_columns_1])
+                # imputer_all = imputer_all.fit(X_train)
+                # imputer_1 = imputer_1.fit(X_train[keep_columns_1])
                 imputer_2 = imputer_2.fit(X_train[keep_columns_2])
 
                 for dff in difficulties:
                     
-                    imputer_all.evaluate(X_test, p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, "mode":"realistic","num_ft":X_test.shape[1],**imputer_all.evaluation_results, **imputer_all.get_config()})
+                    # imputer_all.evaluate(X_test, p=dff)
+                    # all_results.append({"repetition": i, "difficulty": dff, "mode":"realistic","num_ft":X_test.shape[1],**imputer_all.evaluation_results, **imputer_all.get_config()})
                     
                     
-                    imputer_1.evaluate(X_test[keep_columns_1], p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, "mode":"mid_missingness", "num_ft":len(keep_columns_1),**imputer_1.evaluation_results, **imputer_1.get_config()})
+                    # imputer_1.evaluate(X_test[keep_columns_1], p=dff)
+                    # all_results.append({"repetition": i, "difficulty": dff, "mode":"mid_missingness", "num_ft":len(keep_columns_1),**imputer_1.evaluation_results, **imputer_1.get_config()})
 
 
                     imputer_2.evaluate(X_test[keep_columns_2], p=dff)

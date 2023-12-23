@@ -8,6 +8,7 @@
 import random
 from typing import Union
 from sklearn.base import BaseEstimator
+from sklearn.tree import DecisionTreeRegressor
 from typing_extensions import Self
 from sklearn.experimental import enable_iterative_imputer
 import numpy as np
@@ -26,24 +27,26 @@ from sklearn.neighbors import KNeighborsRegressor
 
 from base.oxari_types import ArrayLike
 from .core import BucketImputerBase
-from enum import Enum
+from enum import Enum, auto
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import MinMaxScaler
 
 
 class EquilibriumImputer(OxariImputer):
 
-    class strategies(Enum):
-        # BAYESRIDGE = BayesianRidge()
-        RIDGE = KernelRidge(kernel='rbf')
-        KNN = KNeighborsRegressor()
-        RF = RandomForestRegressor(max_depth=5)
+    class Strategy(Enum):
+        KNN = auto()
+        BAYESRIDGE = auto()
+        RIDGE = auto()
+        DT = auto()
 
-    def __init__(self, sub_estimator=strategies.RIDGE.value, verbose=False, max_iter=100, **kwargs):
+
+
+    def __init__(self, sub_estimator=Strategy.RIDGE, verbose=False, max_iter=100, **kwargs):
         super().__init__(**kwargs)
         self.i_counter:int = 0
-        self.diff_history = [999]
-        self.sub_estimator = sub_estimator
+        self.diff_history = []
+        self.sub_estimator = self._instantiate_strategy(sub_estimator) if isinstance(sub_estimator, self.Strategy) else sub_estimator
         self.max_iter = max_iter
         self.verbose = verbose
         self._estimator = IterativeImputer(estimator=self.sub_estimator, verbose=self.verbose)
@@ -55,6 +58,7 @@ class EquilibriumImputer(OxariImputer):
         
         self.logger.debug(f"Fitting {self.__class__.__name__} with {self.sub_estimator.__class__.__name__}")
         self._estimator = self._estimator.fit(X.filter(regex='^ft_num'))
+        self._scaler = MinMaxScaler().fit(X.filter(regex='^ft_num'))
         return self
 
     def transform(self, X, **kwargs) -> ArrayLike:
@@ -87,7 +91,8 @@ class EquilibriumImputer(OxariImputer):
                 list_of_new_cols.append(X_temp_filled[col].copy())
             X_j = pd.concat(list_of_new_cols, axis=1)
             # We can take the difference of the entire table as the non-missing fields do not change and therefore not contirbute to the sum
-            iter_diff = np.sum(np.sum(np.abs(X_i - X_j)))
+            iter_diff = np.sum(np.sum(np.abs(self._scaler.transform(X_i) - self._scaler.transform(X_j))))
+            # iter_diff = np.sum(np.sum(np.abs(X_i-X_j)))
             X_i = X_j.copy()
             self.diff_history.append(iter_diff)
 
@@ -97,11 +102,50 @@ class EquilibriumImputer(OxariImputer):
         X_new = X_i
         return replace_ft_num(X, X_new)
 
+    def _instantiate_strategy(self, strategy:Strategy):
+        if strategy.KNN:
+            return KNeighborsRegressor()
+        if strategy.BAYESRIDGE:
+            return BayesianRidge()
+        if strategy.RIDGE:
+            return KernelRidge(kernel='rbf')
+        if strategy.DT:
+            return DecisionTreeRegressor()
+
+
     def _is_converged(self, **kwargs):
         # Equilibrium: The difference between predictions at the current step vs the last step
-        if self.diff_history[-1] == 0:
+        # Have at least two runs
+        if len(self.diff_history) < 3:
+            return False
+
+        # No change stop
+        if self.diff_history[-1] <= 0:
+            self.logger.info('Stopping - No change')
             return True
+
+
+        # Small change stop
+        if self.diff_history[-1] <= 1e-10:
+            self.logger.info('Stopping - Small change')
+            return True
+        
+        # Small relative change stop
+        if (np.abs(self.diff_history[-1]-self.diff_history[-2])/self.diff_history[-2]) <= 1e-5:
+            self.logger.info('Stopping - Small relative change')
+            return True
+
+        # Have at least two runs
+        if len(self.diff_history) < 5:
+            return False
+
+        # Consecutive increases
+        if self.diff_history[-1] > self.diff_history[-2] > self.diff_history[-3] > self.diff_history[-4]:
+            self.logger.info('Stopping - Increasing')
+            return True
+
         if self.i_counter > self.max_iter:
+            self.logger.info('Stopping - Maximum iterations reached')
             return True
         self.i_counter +=1
         return False

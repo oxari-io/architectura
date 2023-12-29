@@ -16,6 +16,21 @@ from base.metrics import smape
 from base.oxari_types import ArrayLike
 
 
+def random_sample_indices_limited(X, sample_size):
+    """
+    Generate random sample indices for a dataset, limiting to dataset size.
+
+    Parameters:
+    X (array-like): The dataset from which to sample indices.
+    sample_size (int): The number of indices to sample.
+
+    Returns:
+    array: Randomly sampled indices, without exceeding dataset size.
+    """
+    num_samples = X.shape[0]
+    sample_size = min(sample_size, num_samples)  # Limit sample size to num_samples
+    return np.random.choice(num_samples, sample_size, replace=False)
+
 def get_jump_rate(y_pre, y_post):
     result = np.maximum(y_pre, y_post) / np.minimum(y_pre, y_post)
     return result
@@ -25,8 +40,9 @@ def custom_masker(mask, x):
     x_ = x.copy()
     x_[~mask] = None
 
-    # return x_.reshape(1, len(x))  # in this simple example we just zero out the features we are masking
-    return pd.DataFrame(x_) # in this simple example we just zero out the features we are masking
+    return x_.reshape(1, len(x))  # in this simple example we just zero out the features we are masking
+    # return x_.reshape((len(x),1)) # in this simple example we just zero out the features we are masking
+    # return x_ # in this simple example we just zero out the features we are masking
 
 
 class OxariExplainer(abc.ABC):
@@ -96,14 +112,25 @@ class ShapExplainer(OxariExplainer):
 
     def fit(self, X, y, **kwargs):
         # X_train_summary = shap.kmeans(X, 10)
-        self.ex = shap.Explainer(self.estimator.predict, custom_masker)
+        def wrapper_function(x):
+            x_mod = pd.DataFrame(x, columns=self.estimator.feature_names_in_)
+            return self.estimator.predict(x_mod)
+
+
+        self.ex = shap.Explainer(wrapper_function, custom_masker)
+        # self.ex = shap.PermutationExplainer(wrapper_function, custom_masker)
+        # self.ex = shap.KernelExplainer(wrapper_function, custom_masker)
         return self
 
     def explain(self, X, y, **kwargs):
         if not isinstance(X, pd.DataFrame):
             raise ValueError("Input 'X' must be a pandas DataFrame.")
-    
-        self.X: pd.DataFrame = X.sample(self.sample_size) if len(X) > self.sample_size else X
+
+        indices = random_sample_indices_limited(X, self.sample_size)
+
+        self.X: pd.DataFrame = X.iloc[indices]
+        self.y = y.iloc[indices]
+
         self.shap_values = self.ex(self.X)
         return self
 

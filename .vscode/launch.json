@@ -40,13 +40,6 @@
       "justMyCode": true
     },
     {
-      "name": "Run Parallel Pipeline",
-      "type": "python",
-      "request": "launch",
-      "module": "main_test_estimators_parallel",
-      "justMyCode": true
-    },
-    {
       "name": "Run Sequential Pipeline",
       "type": "python",
       "request": "launch",
@@ -58,14 +51,14 @@
       "type": "python",
       "request": "launch",
       "module": "experiments.${fileBasenameNoExtension}",
-      "justMyCode": true
+      "justMyCode": false
     },
     {
       "name": "Run Specific Experiment",
       "type": "python",
       "request": "launch",
-      "module": "experiments.experiment_SMA_vs_MMA",
-      "justMyCode": true
+      "module": "experiments.experiment_weighted_voting_vs_even_voting",
+      "justMyCode": false
     },
     {
       "name": "Test All",

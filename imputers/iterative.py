@@ -1,4 +1,5 @@
 from typing import Union
+from sklearn.tree import DecisionTreeRegressor
 from typing_extensions import Self
 from sklearn.experimental import enable_iterative_imputer
 import numpy as np
@@ -17,21 +18,22 @@ from sklearn.neighbors import KNeighborsRegressor
 
 from base.oxari_types import ArrayLike
 from .core import BucketImputerBase
-from enum import Enum
+from enum import Enum, auto
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import MinMaxScaler
 
 
 class MVEImputer(OxariImputer):
 
-    class strategies(Enum):
-        BAYESRIDGE = BayesianRidge()
-        RIDGE = KernelRidge(kernel='rbf')
-        KNN = KNeighborsRegressor()
+    class Strategy(Enum):
+        KNN = auto()
+        BAYESRIDGE = auto()
+        RIDGE = auto()
+        DT = auto()
 
-    def __init__(self, sub_estimator=strategies.RIDGE.value, verbose=False, max_iter=15, **kwargs):
+    def __init__(self, sub_estimator=Strategy.RIDGE.value, verbose=False, max_iter=15, **kwargs):
         super().__init__(**kwargs)
-        self.sub_estimator = sub_estimator
+        self.sub_estimator = self._instantiate_strategy(sub_estimator) if isinstance(sub_estimator, self.Strategy) else sub_estimator
         self.verbose = verbose
         self._estimator = IterativeImputer(estimator=self.sub_estimator, verbose=self.verbose, max_iter=max_iter)
 
@@ -49,8 +51,20 @@ class MVEImputer(OxariImputer):
     def evaluate(self, X, y=None, **kwargs):
         return super().evaluate(X, y, **kwargs)
 
+    def _instantiate_strategy(self, strategy:Strategy):
+        if self.Strategy.KNN == strategy:
+            return KNeighborsRegressor()
+        if self.Strategy.BAYESRIDGE == strategy:
+            return BayesianRidge()
+        if self.Strategy.RIDGE == strategy:
+            return KernelRidge(kernel='rbf')
+        if self.Strategy.DT == strategy:
+            return DecisionTreeRegressor()
+
     def get_config(self):
         return {"strategy": self.sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self.sub_estimator.__class__.__name__}", **super().get_config()}
+
+
 
 
 class OldOxariImputer(MVEImputer):

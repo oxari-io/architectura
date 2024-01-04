@@ -1,8 +1,13 @@
 from typing import Union
+from numpy import nan
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PowerTransformer
 from typing_extensions import Self
 import numpy as np
 import pandas as pd
-from sklearn.impute import SimpleImputer
+# noqa
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer, SimpleImputer
 
 from base.common import OxariImputer
 from base.helper import replace_ft_num
@@ -61,3 +66,21 @@ class BucketImputerBase(OxariImputer):
 
     def get_config(self, deep=True):
         return {"bucket_number": self.bucket_number, "imputer": f"{self.name}:{self.bucket_number}-buckets", **super().get_config(deep)}
+
+class RegressionImputerBase(OxariImputer):
+    def __init__(self, internal_scaler=PowerTransformer(), **kwargs):
+        super().__init__(**kwargs)
+        self._scaler = internal_scaler
+        self._estimator = IterativeImputer(estimator=LinearRegression(), verbose=self.verbose)
+
+    def _fit_scaler(self, X:pd.DataFrame, y=None):
+        """
+        Trains the internal scaler for this imputer. Returns scaled version of the training data.
+        """
+        X_train = X
+        self._scaler = self._scaler.fit(X_train)
+        X_train_scaled = self._scaler.transform(X_train)
+        return X_train_scaled
+    
+    def _scale_transform(self, X_num):
+        return self._estimator.transform(self._scaler.transform(X_num))    

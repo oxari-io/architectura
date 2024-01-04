@@ -32,7 +32,7 @@ if __name__ == "__main__":
     difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     dataset = get_small_datamanager_configuration(0.1).run()
     configurations: list[OxariImputer] = [
-        EquilibriumImputer()
+        EquilibriumImputer(max_iter=20)
     ]
     repeats = range(10)
     with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:

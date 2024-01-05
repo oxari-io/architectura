@@ -392,6 +392,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         super().__init__(missing_values=missing_values, add_indicator=add_indicator)
         self.verbose = verbose
         self.copy = copy
+        self._evaluation_results = {}
         evaluator = kwargs.pop('evaluator', OxariImputer.DefaultImputerEvaluator())
         self.set_evaluator(evaluator)
 
@@ -432,7 +433,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
 
         y_true = X_true[ft_cols].values[np.where(mask)]
         y_pred = X_pred[ft_cols].values[np.where(mask)] + np.finfo(float).eps
-        self._evaluation_results = {}
+        
         self._evaluation_results["overall"] = self._evaluator.evaluate(y_true, y_pred)
         return self
 

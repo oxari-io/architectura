@@ -56,11 +56,13 @@ class EquilibriumImputer(RegressionImputerBase):
         self._estimator = IterativeImputer(estimator=self._sub_estimator, verbose=self.verbose)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-        super().fit(X, y)
         # # Initializing
+        # For each col:
+        #     train model to predict missing values
         
         self.logger.debug(f"Fitting {self.__class__.__name__} with {self._sub_estimator.__class__.__name__}")
         X_num = X.filter(regex='^ft_num')
+        self._features_transformed = list(X_num.columns)
 
         X_train_scaled = pd.DataFrame(self._fit_scaler(X_num, y), columns=X_num.columns, index=X_num.index)
 
@@ -121,7 +123,8 @@ class EquilibriumImputer(RegressionImputerBase):
 
     def _compute_diffs(self, X_i, X_j):
         iter_diffs = np.abs(self._diff_scaler.transform(X_i) - self._diff_scaler.transform(X_j))
-        return iter_diffs
+        sumiter_diffs = np.sum(iter_diffs, axis=0)
+        return sumiter_diffs
 
     def _compute_mims(self, X_i, X_j):
         # Source: A Markov chain Monte Carlo algorithm for multiple imputation in large surveys, Daniel Schunk
@@ -153,7 +156,7 @@ class EquilibriumImputer(RegressionImputerBase):
 
 
 
-    def _is_converged(self, X_i, X_j, **kwargs):
+    def _is_converged(self, X_t, X_t_minus_1, **kwargs):
         """
         Calculate the convergence criterion for imputed data across iterations
         assuming that X_t and X_t_minus_1 are matrices where each column represents an independent y.
@@ -172,7 +175,7 @@ class EquilibriumImputer(RegressionImputerBase):
             return True
 
         # Stop if all column differences are small enough
-        is_diff_converged = self.history_diffs[-1] < 0.01
+        is_diff_converged = self.history_diffs[-1] < 0.001
         is_all_diff_converged = np.all(is_diff_converged)
         if is_all_diff_converged:
             self.logger.info('Stopping - All diffs small enough')
@@ -180,7 +183,7 @@ class EquilibriumImputer(RegressionImputerBase):
 
 
         # Stop if all mims are small enough
-        is_col_converged = self.history_mims[-1] < 0.01
+        is_col_converged = self.history_mims[-1] < 0.00001
         is_all_converged = np.all(is_col_converged)
         
         if is_all_converged:
@@ -188,6 +191,14 @@ class EquilibriumImputer(RegressionImputerBase):
             return True
         return False
 
+    # def _is_converged(self, **kwargs):
+    #     # Equilibrium: The difference between predictions at the current step vs the last step
+    #     premediate_difference = np.abs(self.diff_history[-2]-self.diff_history[-3])
+    #     immediate_difference = np.abs(self.diff_history[-1]-self.diff_history[-2])
+    #     if premediate_difference:
+    #         return True
+    #     self.i_counter +=1
+    #     return False
 
     def evaluate(self, X, y=None, **kwargs):
         return super().evaluate(X, y, **kwargs)
@@ -195,9 +206,6 @@ class EquilibriumImputer(RegressionImputerBase):
     def get_config(self):
         return {"strategy": self._sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self._sub_estimator.__class__.__name__}-{self.max_iter}", "final_iter":self.i_counter, **super().get_config()}
 
-    @property
-    def feature_names_in_(self):
-        return self._features
 
     # def _is_converged(self, X_t, X_t_minus_1, **kwargs):
     #     # Equilibrium: The difference between predictions at the current step vs the last step

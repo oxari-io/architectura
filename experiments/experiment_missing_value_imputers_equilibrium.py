@@ -1,5 +1,6 @@
 # pip install autoimpute
 import time
+from IPython.core.pylabtools import figsize
 from lightgbm import LGBMRegressor
 
 import pandas as pd
@@ -43,21 +44,29 @@ if __name__ == "__main__":
     # X_new[X.filter(regex='^ft_num', axis=1).columns] = minmax_scale(X.filter(regex='^ft_num', axis=1))
 
     X_train, X_test = train_test_split(X_new, test_size=0.5)
-    keeping_criterion_1 = (X_test.isna().mean(axis=0)<0.3)
-    keeping_criterion_2 = (X_test.isna().mean(axis=0)<0.2)
-    keep_columns_1 = X_train.loc[:, keeping_criterion_1].columns
+    keeping_criterion_2 = (X_test.isna().mean(axis=0)<0.5)
     keep_columns_2 = X_train.loc[:, keeping_criterion_2].columns
 
-    imputer_2: EquilibriumImputer = EquilibriumImputer(max_iter=20).clone()
+    imputer_2: EquilibriumImputer = EquilibriumImputer(max_iter=100).clone()
+    X_subset = X_train[keep_columns_2]
+    imputer_2 = imputer_2.fit(X_subset)
 
-    imputer_2 = imputer_2.fit(X_train[keep_columns_2])
+
+    imputer_2.evaluate(X_subset, p=0.1)
+    diffs = pd.DataFrame(np.vstack(imputer_2.history_diffs), columns=imputer_2._features_transformed)
+    mimss = pd.DataFrame(np.vstack(imputer_2.history_mims), columns=imputer_2._features_transformed)
+
+    fig, axes = plt.subplots(1, 2, figsize=(20, 10))
+    sns.lineplot(data=diffs.reset_index().melt('index'), x='index', y='value', hue='variable', ax=axes[0])
+    sns.lineplot(data=mimss.reset_index().melt('index'), x='index', y='value', hue='variable', ax=axes[1])
+    fig.tight_layout()
+    plt.show()
 
 
-    imputer_2.evaluate(X_test[keep_columns_2], p=0.1)
-    diffs = np.vstack(imputer_2.history_diffs)
-    mimss = np.vstack(imputer_2.history_mims)
 
-    
+
+
+
 
 
 

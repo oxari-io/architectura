@@ -393,14 +393,14 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         self.verbose = verbose
         self.copy = copy
         self._evaluation_results = {}
-        self._features = []
+        self._features_transformed = []
         evaluator = kwargs.pop('evaluator', OxariImputer.DefaultImputerEvaluator())
         self.set_evaluator(evaluator)
 
     @abc.abstractmethod
     def fit(self, X:ArrayLike, y=None, **kwargs) -> Self:
         if isinstance(X, pd.DataFrame):
-            self._features = list(X.columns)
+            self._features_transformed = list(X.columns)
         return self
 
     @abc.abstractmethod
@@ -442,9 +442,7 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
         return copy.deepcopy(self, {})
     
-    @abc.abstractproperty
-    def feature_names_in_(self):
-        return self._features
+
 
 class OxariPreprocessor(OxariTransformer, abc.ABC):
 

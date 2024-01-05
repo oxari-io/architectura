@@ -21,6 +21,10 @@ from imputers.equilibrium_method import EquilibriumImputer
 from imputers.interpolation import LinearInterpolationImputer, SplineInterpolationImputer
 from imputers.revenue_bucket import RevenueExponentialBucketImputer, RevenueParabolaBucketImputer
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
 if __name__ == "__main__":
 
     all_results = []
@@ -31,51 +35,30 @@ if __name__ == "__main__":
     # - Horizontal interpolation does not take any other row into account for imputation. Basically making it time-independent.
     difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     dataset = get_small_datamanager_configuration(0.1).run()
-    configurations: list[OxariImputer] = [
-        EquilibriumImputer(max_iter=20)
-    ]
-    repeats = range(10)
-    with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:
-        for i in repeats:
-            bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
-            SPLIT_1 = bag.scope_1
-            X, Y = SPLIT_1.train
-            X_new = X.copy()
-            X_new[X.filter(regex='^ft_num', axis=1).columns] = minmax_scale(X.filter(regex='^ft_num', axis=1))
 
-            X_train, X_test = train_test_split(X_new, test_size=0.5)
-            keeping_criterion_1 = (X_test.isna().mean(axis=0)<0.3)
-            keeping_criterion_2 = (X_test.isna().mean(axis=0)<0.2)
-            keep_columns_1 = X_train.loc[:, keeping_criterion_1].columns
-            keep_columns_2 = X_train.loc[:, keeping_criterion_2].columns
+    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+    SPLIT_1 = bag.scope_1
+    X, Y = SPLIT_1.train
+    X_new = X.copy()
+    # X_new[X.filter(regex='^ft_num', axis=1).columns] = minmax_scale(X.filter(regex='^ft_num', axis=1))
 
-            for imputer in configurations:
-                if (i > 0) and isinstance(imputer, AutoImputer):
-                    # Train this only once
-                    continue
-                imputer_all: OxariImputer = imputer.clone()
-                imputer_1: OxariImputer = imputer.clone()
-                imputer_2: OxariImputer = imputer.clone()
-                
-                imputer_all = imputer_all.fit(X_train)
-                imputer_1 = imputer_1.fit(X_train[keep_columns_1])
-                imputer_2 = imputer_2.fit(X_train[keep_columns_2])
+    X_train, X_test = train_test_split(X_new, test_size=0.5)
+    keeping_criterion_1 = (X_test.isna().mean(axis=0)<0.3)
+    keeping_criterion_2 = (X_test.isna().mean(axis=0)<0.2)
+    keep_columns_1 = X_train.loc[:, keeping_criterion_1].columns
+    keep_columns_2 = X_train.loc[:, keeping_criterion_2].columns
 
-                for dff in difficulties:
-                    
-                    imputer_all.evaluate(X_test, p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, "mode":"realistic","num_ft":X_test.shape[1],**imputer.evaluation_results, **imputer.get_config()})
-                    
-                    
-                    imputer_1.evaluate(X_test[keep_columns_1], p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, "mode":"mid_missingness", "num_ft":len(keep_columns_1),**imputer.evaluation_results, **imputer.get_config()})
+    imputer_2: EquilibriumImputer = EquilibriumImputer(max_iter=20).clone()
+
+    imputer_2 = imputer_2.fit(X_train[keep_columns_2])
 
 
-                    imputer_2.evaluate(X_test[keep_columns_2], p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, "mode":"low_missingness", "num_ft":len(keep_columns_2),**imputer.evaluation_results, **imputer.get_config()})
+    imputer_2.evaluate(X_test[keep_columns_2], p=0.1)
+    diffs = np.vstack(imputer_2.history_diffs)
+    mimss = np.vstack(imputer_2.history_mims)
 
-                    concatenated = pd.json_normalize(all_results)
-                    fname = __loader__.name.split(".")[-1]
-                    pbar.update(1)
-                    concatenated.to_csv(f'local/eval_results/{fname}.csv')
-    concatenated.to_csv(f'local/eval_results/{fname}.csv')
+    
+
+
+
+

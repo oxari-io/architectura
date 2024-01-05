@@ -393,18 +393,14 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
         self.verbose = verbose
         self.copy = copy
         self._evaluation_results = {}
+        self._features = []
         evaluator = kwargs.pop('evaluator', OxariImputer.DefaultImputerEvaluator())
         self.set_evaluator(evaluator)
 
     @abc.abstractmethod
     def fit(self, X:ArrayLike, y=None, **kwargs) -> Self:
-        # Takes X and y and trains regressor.
-        # Include If X.shape[0] == y.shape[0]: raise ValueError(f�X and y do not have the same size (f{X.shape[0]} != f{X.shape[0]})�).
-        # Set self.n_features_in_ = X.shape[1]
-        # Avoid setting X and y as attributes. Only increases the model size.
-        # When fit is called, any previous call to fit should be ignored.
-        # Attributes that have been estimated from the data must always have a name ending with trailing underscore. (e.g.: self.coef_)
-        # Reference: https://scikit-learn.org/stable/developers/develop.html#fitting
+        if isinstance(X, pd.DataFrame):
+            self._features = list(X.columns)
         return self
 
     @abc.abstractmethod
@@ -445,7 +441,10 @@ class OxariImputer(OxariMixin, _base._BaseImputer, abc.ABC):
     def clone(self) -> Self:
         # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
         return copy.deepcopy(self, {})
-
+    
+    @abc.abstractproperty
+    def feature_names_in_(self):
+        return self._features
 
 class OxariPreprocessor(OxariTransformer, abc.ABC):
 

@@ -47,16 +47,17 @@ class EquilibriumImputer(RegressionImputerBase):
     def __init__(self, sub_estimator=Strategy.RIDGE, verbose=False, max_iter=100, internal_scaler=PowerTransformer(), **kwargs):
         super().__init__(internal_scaler=internal_scaler, **kwargs)
         self.i_counter:int = 0
-        self.diff_history = []
+        self.history_diffs = []
+        self.history_mims = []
+        self.history_counter = [0]
         self.max_iter = max_iter
         self.verbose = verbose
         self._sub_estimator = self._instantiate_strategy(sub_estimator) if isinstance(sub_estimator, self.Strategy) else sub_estimator
         self._estimator = IterativeImputer(estimator=self._sub_estimator, verbose=self.verbose)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
+        super().fit(X, y)
         # # Initializing
-        # For each col:
-        #     train model to predict missing values
         
         self.logger.debug(f"Fitting {self.__class__.__name__} with {self._sub_estimator.__class__.__name__}")
         X_num = X.filter(regex='^ft_num')
@@ -98,10 +99,11 @@ class EquilibriumImputer(RegressionImputerBase):
                 
                 list_of_new_cols.append(X_temp_filled[col].copy())
             X_j = pd.concat(list_of_new_cols, axis=1)
-            # We can take the difference of the entire table as the non-missing fields do not change and therefore not contirbute to the sum
-            iter_diff = np.sum(np.sum(np.abs(self._scaler.transform(X_i) - self._scaler.transform(X_j))))
-            # iter_diff = np.sum(np.sum(np.abs(X_i-X_j)))
-            self.diff_history.append(iter_diff)
+
+            self.history_diffs.append(self._compute_diffs(X_i, X_j))
+            self.history_mims.append(self._compute_mims(X_i, X_j))
+            self.history_counter.append(self._compute_counter(X_i, X_j))
+            
             if self._is_converged(X_j, X_i):
                 break
 
@@ -112,6 +114,29 @@ class EquilibriumImputer(RegressionImputerBase):
 
         X_new = pd.DataFrame(self._scaler.inverse_transform(X_i), index=X_i.index, columns=X_i.columns) 
         return replace_ft_num(X, X_new)
+
+    def _compute_counter(self, X_i, X_j):
+        _,_ = X_i, X_j # Inputs not important here
+        return self.history_counter[-1] + 1
+
+    def _compute_diffs(self, X_i, X_j):
+        iter_diffs = np.abs(self._diff_scaler.transform(X_i) - self._diff_scaler.transform(X_j))
+        return iter_diffs
+
+    def _compute_mims(self, X_i, X_j):
+        # Source: A Markov chain Monte Carlo algorithm for multiple imputation in large surveys, Daniel Schunk
+        # Source: IMPUTATION OF THE 2002 WAVE OF THE SPANISH SURVEY OF HOUSEHOLD FINANCES (EFF), Cristina Barceló
+        # Calculate the medians and interquartile ranges for X_t and X_t_minus_1
+        M_y_t = np.median(X_j, axis=0)
+        M_y_t_minus_1 = np.median(X_i, axis=0)
+        IQ_R_y_t = np.subtract(*np.percentile(X_j, [75, 25], axis=0))
+        IQ_R_y_t_minus_1 = np.subtract(*np.percentile(X_i, [75, 25], axis=0))
+
+        # Calculate the convergence criterion
+        median_diff = np.vstack([M_y_t , IQ_R_y_t]) - np.vstack([M_y_t_minus_1 , IQ_R_y_t_minus_1])
+        diff_diag = np.diag(median_diff.T @ median_diff) # Only interested in the diagonals
+        norm_diff = np.sqrt(diff_diag)  # Compute norms column-wise        
+        return norm_diff
 
 
 
@@ -126,45 +151,9 @@ class EquilibriumImputer(RegressionImputerBase):
             return DecisionTreeRegressor()
 
 
-    def _is_converged(self, X_t, X_t_minus_1, **kwargs):
-        # Equilibrium: The difference between predictions at the current step vs the last step
-        # Have at least two runs
-
-        # if len(self.diff_history) < 3:
-        #     return False
-
-        # # No change stop
-        # if self.diff_history[-1] <= 0:
-        #     self.logger.info('Stopping - No change')
-        #     return True
 
 
-        # # Small change stop
-        # if self.diff_history[-1] <= 1e-10:
-        #     self.logger.info('Stopping - Small change')
-        #     return True
-        
-        # # Small relative change stop
-        # if (np.abs(self.diff_history[-1]-self.diff_history[-2])/self.diff_history[-2]) <= 1e-5:
-        #     self.logger.info('Stopping - Small relative change')
-        #     return True
-
-        # # Have at least two runs
-        # if len(self.diff_history) < 5:
-        #     return False
-
-        # # Consecutive increases
-        # if self.diff_history[-1] > self.diff_history[-2] > self.diff_history[-3] > self.diff_history[-4]:
-        #     self.logger.info('Stopping - Increasing')
-        #     return True
-
-        if self.i_counter > self.max_iter:
-            self.logger.info('Stopping - Maximum iterations reached')
-            return True
-        self.i_counter +=1
-        return False
-
-    def _is_converged(self, X_t, X_t_minus_1, **kwargs):
+    def _is_converged(self, X_i, X_j, **kwargs):
         """
         Calculate the convergence criterion for imputed data across iterations
         assuming that X_t and X_t_minus_1 are matrices where each column represents an independent y.
@@ -176,29 +165,74 @@ class EquilibriumImputer(RegressionImputerBase):
         Returns:
         np.ndarray: The convergence criterion values for each variable (column).
         """
-        # Calculate the medians and interquartile ranges for X_t and X_t_minus_1
-        M_y_t = np.median(X_t, axis=0)
-        M_y_t_minus_1 = np.median(X_t_minus_1, axis=0)
-        IQ_R_y_t = np.subtract(*np.percentile(X_t, [75, 25], axis=0))
-        IQ_R_y_t_minus_1 = np.subtract(*np.percentile(X_t_minus_1, [75, 25], axis=0))
 
-        # Calculate the convergence criterion
-        median_diff = (M_y_t / IQ_R_y_t) - (M_y_t_minus_1 / IQ_R_y_t_minus_1)
-        norm_diff = np.linalg.norm(median_diff, axis=0)  # Compute norms column-wise
+        # Stop if the counter reaches threshold
+        if self.history_counter[-1] > self.max_iter:
+            self.logger.info('Stopping - Maximum iterations reached')
+            return True
 
-        return norm_diff
+        # Stop if all column differences are small enough
+        is_diff_converged = self.history_diffs[-1] < 0.01
+        is_all_diff_converged = np.all(is_diff_converged)
+        if is_all_diff_converged:
+            self.logger.info('Stopping - All diffs small enough')
+            return True
 
-    # def _is_converged(self, **kwargs):
-    #     # Equilibrium: The difference between predictions at the current step vs the last step
-    #     premediate_difference = np.abs(self.diff_history[-2]-self.diff_history[-3])
-    #     immediate_difference = np.abs(self.diff_history[-1]-self.diff_history[-2])
-    #     if premediate_difference:
-    #         return True
-    #     self.i_counter +=1
-    #     return False
+
+        # Stop if all mims are small enough
+        is_col_converged = self.history_mims[-1] < 0.01
+        is_all_converged = np.all(is_col_converged)
+        
+        if is_all_converged:
+            self.logger.info('Stopping - All mims small enough')
+            return True
+        return False
+
 
     def evaluate(self, X, y=None, **kwargs):
         return super().evaluate(X, y, **kwargs)
 
     def get_config(self):
         return {"strategy": self._sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self._sub_estimator.__class__.__name__}-{self.max_iter}", "final_iter":self.i_counter, **super().get_config()}
+
+    @property
+    def feature_names_in_(self):
+        return self._features
+
+    # def _is_converged(self, X_t, X_t_minus_1, **kwargs):
+    #     # Equilibrium: The difference between predictions at the current step vs the last step
+    #     # Have at least two runs
+
+    #     # if len(self.diff_history) < 3:
+    #     #     return False
+
+    #     # # No change stop
+    #     # if self.diff_history[-1] <= 0:
+    #     #     self.logger.info('Stopping - No change')
+    #     #     return True
+
+
+    #     # # Small change stop
+    #     # if self.diff_history[-1] <= 1e-10:
+    #     #     self.logger.info('Stopping - Small change')
+    #     #     return True
+        
+    #     # # Small relative change stop
+    #     # if (np.abs(self.diff_history[-1]-self.diff_history[-2])/self.diff_history[-2]) <= 1e-5:
+    #     #     self.logger.info('Stopping - Small relative change')
+    #     #     return True
+
+    #     # # Have at least two runs
+    #     # if len(self.diff_history) < 5:
+    #     #     return False
+
+    #     # # Consecutive increases
+    #     # if self.diff_history[-1] > self.diff_history[-2] > self.diff_history[-3] > self.diff_history[-4]:
+    #     #     self.logger.info('Stopping - Increasing')
+    #     #     return True
+
+    #     if self.i_counter > self.max_iter:
+    #         self.logger.info('Stopping - Maximum iterations reached')
+    #         return True
+    #     self.i_counter +=1
+    #     return False

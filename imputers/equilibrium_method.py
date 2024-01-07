@@ -10,6 +10,7 @@ from typing import Union
 from sklearn.base import BaseEstimator
 from sklearn.tree import DecisionTreeRegressor
 from sqlalchemy import column
+from tqdm import tqdm
 from typing_extensions import Self
 # noqa
 from sklearn.experimental import enable_iterative_imputer
@@ -32,7 +33,9 @@ from .core import BucketImputerBase, RegressionImputerBase
 from enum import Enum, auto
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import MinMaxScaler, PowerTransformer
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 
 class EquilibriumImputer(RegressionImputerBase):
 
@@ -44,13 +47,16 @@ class EquilibriumImputer(RegressionImputerBase):
 
 
 
-    def __init__(self, sub_estimator=Strategy.RIDGE, verbose=False, max_iter=100, internal_scaler=PowerTransformer(), **kwargs):
+    def __init__(self, sub_estimator=Strategy.RIDGE, verbose=False, max_iter=100, diff_tresh=0.1, mims_tresh=0.01, max_diff_increase_thresh=0.5, internal_scaler=PowerTransformer(), **kwargs):
         super().__init__(internal_scaler=internal_scaler, **kwargs)
         self.i_counter:int = 0
         self.history_diffs = []
         self.history_mims = []
         self.history_counter = [0]
         self.max_iter = max_iter
+        self.diff_tresh = diff_tresh
+        self.mims_tresh = mims_tresh
+        self.max_diff_increase_thresh = max_diff_increase_thresh
         self.verbose = verbose
         self._sub_estimator = self._instantiate_strategy(sub_estimator) if isinstance(sub_estimator, self.Strategy) else sub_estimator
         self._estimator = IterativeImputer(estimator=self._sub_estimator, verbose=self.verbose)
@@ -90,28 +96,37 @@ class EquilibriumImputer(RegressionImputerBase):
         iter_diff = -1
         columns = list(X_num.columns)
         
-
+        self.history_diffs = []
+        self.history_mims = []
+        self.history_counter = [0]        
+        self.is_col_converged = np.ones(len(columns)) < 0
+        pbar = tqdm(total=self.max_iter)
         while True:
             iter_diff = 0
             list_of_new_cols = []
-            for col in columns:
+            for idx, col in enumerate(columns):
+                if self.is_col_converged[idx] == True:
+                    # Skip if converged
+                    list_of_new_cols.append(X_i[col].copy())
+                    continue
                 X_temp = X_i.copy()
                 X_temp[col] = np.where(X_num_missing_mask[col], np.nan, X_temp[col])
                 X_temp_filled = pd.DataFrame(self._estimator.transform(X_temp), index=X_num.index, columns=X_num.columns)
-                
+                    
                 list_of_new_cols.append(X_temp_filled[col].copy())
             X_j = pd.concat(list_of_new_cols, axis=1)
 
             self.history_diffs.append(self._compute_diffs(X_i, X_j))
             self.history_mims.append(self._compute_mims(X_i, X_j))
             self.history_counter.append(self._compute_counter(X_i, X_j))
-            
+            pbar.update(1)
             if self._is_converged(X_j, X_i):
+                
                 break
 
             X_i = X_j.copy()
 
-                
+        pbar.close()
             
 
         X_new = pd.DataFrame(self._scaler.inverse_transform(X_i), index=X_i.index, columns=X_i.columns) 
@@ -169,36 +184,39 @@ class EquilibriumImputer(RegressionImputerBase):
         np.ndarray: The convergence criterion values for each variable (column).
         """
 
+        if len(self.history_counter) < 5:
+            return False
+        
+
         # Stop if the counter reaches threshold
         if self.history_counter[-1] > self.max_iter:
             self.logger.info('Stopping - Maximum iterations reached')
             return True
 
         # Stop if all column differences are small enough
-        is_diff_converged = self.history_diffs[-1] < 0.001
+        is_diff_converged = self.history_diffs[-1] < self.diff_tresh
         is_all_diff_converged = np.all(is_diff_converged)
         if is_all_diff_converged:
             self.logger.info('Stopping - All diffs small enough')
             return True
 
+        # If many of differences are increasing stop
+        is_diff_increase = self.history_diffs[-1] > self.history_diffs[-2]
+        is_all_diff_increased = np.mean(is_diff_increase) > self.max_diff_increase_thresh
+        if is_all_diff_increased:
+            self.logger.info('Stopping - many diffs increased')
+            return True
+
 
         # Stop if all mims are small enough
-        is_col_converged = self.history_mims[-1] < 0.00001
-        is_all_converged = np.all(is_col_converged)
+        self.is_col_converged = self.history_mims[-1] < self.mims_tresh
+        is_all_converged = np.all(self.is_col_converged)
         
         if is_all_converged:
             self.logger.info('Stopping - All mims small enough')
             return True
         return False
 
-    # def _is_converged(self, **kwargs):
-    #     # Equilibrium: The difference between predictions at the current step vs the last step
-    #     premediate_difference = np.abs(self.diff_history[-2]-self.diff_history[-3])
-    #     immediate_difference = np.abs(self.diff_history[-1]-self.diff_history[-2])
-    #     if premediate_difference:
-    #         return True
-    #     self.i_counter +=1
-    #     return False
 
     def evaluate(self, X, y=None, **kwargs):
         return super().evaluate(X, y, **kwargs)
@@ -206,41 +224,20 @@ class EquilibriumImputer(RegressionImputerBase):
     def get_config(self):
         return {"strategy": self._sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self._sub_estimator.__class__.__name__}-{self.max_iter}", "final_iter":self.i_counter, **super().get_config()}
 
+    def visualize(self):
+        if not(len(self.history_diffs) and len(self.history_mims)):
+            raise Exception("You need to run transform or evaluate at least once")
 
-    # def _is_converged(self, X_t, X_t_minus_1, **kwargs):
-    #     # Equilibrium: The difference between predictions at the current step vs the last step
-    #     # Have at least two runs
+        diffs = pd.DataFrame(np.vstack(self.history_diffs), columns=self._features_transformed)
+        mimss = pd.DataFrame(np.vstack(self.history_mims), columns=self._features_transformed)
 
-    #     # if len(self.diff_history) < 3:
-    #     #     return False
+        fig, axes = plt.subplots(1, 2, figsize=(20, 10))
+        sns.lineplot(data=diffs.reset_index().melt('index', var_name='Feature'), x='index', y='value', hue='Feature', ax=axes[0])
+        axes[0].set_xlabel('Iteration')
+        axes[0].set_ylabel('Feature differences')
+        sns.lineplot(data=mimss.reset_index().melt('index', var_name='Feature'), x='index', y='value', hue='Feature', ax=axes[1])
+        axes[1].set_xlabel('Iteration')
+        axes[1].set_xlabel('Distributional shift')
+        fig.tight_layout()
+        return fig, axes
 
-    #     # # No change stop
-    #     # if self.diff_history[-1] <= 0:
-    #     #     self.logger.info('Stopping - No change')
-    #     #     return True
-
-
-    #     # # Small change stop
-    #     # if self.diff_history[-1] <= 1e-10:
-    #     #     self.logger.info('Stopping - Small change')
-    #     #     return True
-        
-    #     # # Small relative change stop
-    #     # if (np.abs(self.diff_history[-1]-self.diff_history[-2])/self.diff_history[-2]) <= 1e-5:
-    #     #     self.logger.info('Stopping - Small relative change')
-    #     #     return True
-
-    #     # # Have at least two runs
-    #     # if len(self.diff_history) < 5:
-    #     #     return False
-
-    #     # # Consecutive increases
-    #     # if self.diff_history[-1] > self.diff_history[-2] > self.diff_history[-3] > self.diff_history[-4]:
-    #     #     self.logger.info('Stopping - Increasing')
-    #     #     return True
-
-    #     if self.i_counter > self.max_iter:
-    #         self.logger.info('Stopping - Maximum iterations reached')
-    #         return True
-    #     self.i_counter +=1
-    #     return False

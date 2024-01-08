@@ -11,7 +11,7 @@ from pmdarima.metrics import smape
 from sklearn.metrics import median_absolute_error
 import xgboost as xgb
 from sklearn.ensemble import (ExtraTreesRegressor, GradientBoostingRegressor,
-                              RandomForestRegressor, VotingRegressor)
+                              RandomForestRegressor, StackingRegressor, VotingRegressor)
 from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import normalize
@@ -471,3 +471,99 @@ class AlternativeCVMetricBucketRegressor(BucketRegressor):
 
 class CombinedBucketRegressor(EvenWeightBucketRegressor, AlternativeCVMetricBucketRegressor):
     pass  
+
+class BucketStackingRegressor(OxariRegressor):
+    # TODO: add docstring
+    def __init__(self, **kwargs):
+        # self.scope = check_scope(scope)
+        self.stacking_regressors_: Dict[int, StackingRegressor] = {}
+        self.bucket_specifics_ = {"scores":{}}
+        # self.bucket_specifics_ = {}
+
+    def fit(self, X, y, **kwargs):
+        """
+        The main training loop that calls all the other functions
+        Subsets data, splits in training, test and validation, builds and trains stacking regressor, computes error metrics
+
+        """
+        groups = kwargs.get('groups')
+        # TODO: Doesn't work with CVPipeline as candidates are not set. Needs a fix.
+        regressor_kwargs = dict(self.params.get("candidates"))
+        trained_candidates = {}
+        total = len(regressor_kwargs) * len(list(regressor_kwargs.items())[0][1])
+        pbar = tqdm(desc="MMA-Regressor", total=total)
+        
+        for bucket, candidates_data in regressor_kwargs.items():
+            bucket_name = f"bucket_{bucket}"
+            selector = groups == bucket
+            is_any = np.sum(selector) > 10
+            X_subset = X[selector] if is_any else X
+            y_subset = y[selector] if is_any else y
+            # X_train, X_val, y_train, y_val = train_test_split(X[selector], y[selector], test_size=0.3) if is_any else train_test_split(X, y, test_size=0.3)
+            for name, candidate_data in candidates_data.items():
+                best_params = candidate_data.get("best_params")
+                ModelConstructor = candidate_data.get("Model")
+                
+                model = ModelConstructor(**best_params)
+
+                # calculate the score of each individual model to weight stacking mechanism
+                # NOTE: Could also be done faster by not using cv
+                trained_candidates = self._compute_model_score(X_subset, y_subset, trained_candidates, name, candidate_data, model)
+                pbar.update(1)
+            s_regressor = self._construct_stacking_regressor(X_subset, y_subset, trained_candidates)
+            self.stacking_regressors_[bucket] = s_regressor
+            y_hat = self.stacking_regressors_[bucket].predict(X_subset)
+            y_true = y_subset
+            self.bucket_specifics_["scores"][bucket_name] = self.evaluate(y_true, y_hat)
+
+        return self
+
+    def _cv_metric(self, estimator, X, y):
+        y_hat = estimator.predict(X)
+        return smape(y, y_hat)
+
+    def _compute_model_score(self, X, y, trained_candidates, name, candidate_data, model):
+        model_score = np.mean(cross_val_score(model, X, y, scoring=self._cv_metric)) 
+        trained_candidates[name] = {"model": model, "score": 1/(model_score + np.finfo(np.float64).eps), **candidate_data}
+        return trained_candidates
+
+    def _construct_stacking_regressor(self, X, y, trained_candidates):
+        models = [(name, v["model"]) for name, v in trained_candidates.items()]
+        final_estimator = GradientBoostingRegressor(n_estimators=25, subsample=0.5, min_samples_leaf=25, max_features=1, random_state=42)
+        s_regressor = StackingRegressor(estimators=models, final_estimator=final_estimator, n_jobs=-1).fit(X, y)
+        return s_regressor
+
+    def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
+        best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
+        return best_params, info
+
+    def evaluate(self, y_true, y_pred, **kwargs):
+        return self._evaluator.evaluate(y_true, y_pred)
+
+    def predict(self, X: pd.DataFrame, **kwargs):
+        """
+        Stacking regressor computes prediction
+
+        Parameters:
+        data (pandas.DataFrame): pre-processed dataset
+
+        Return:
+        predictions (numpy array): the predicted values
+        """
+        groups = kwargs.get('groups')
+        y_pred = np.zeros(X.shape[0])
+
+        for bucket, stacking_regressor in self.stacking_regressors_.items():
+            selector = (bucket == groups).flatten()
+            if not np.any(selector):
+                continue
+            y_pred[selector] = stacking_regressor.predict(X[selector])
+
+        return y_pred
+
+    def set_params(self, **params):
+        self.params = params
+        return self
+
+    def get_config(self, deep=True):
+        return self.params

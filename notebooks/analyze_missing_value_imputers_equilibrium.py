@@ -23,19 +23,23 @@ import numpy as np
 cwd = pathlib.Path(__file__).parent
 df_results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_missing_value_imputers_equilibrium.csv', index_col=0)
 df_results['specifier'] = df_results['name'] + '-' + df_results['mims_tresh'].astype(str) + '-' + df_results['skip_cols'].astype(str)
+df_results['convergence_thresh'] = df_results['mims_tresh']
 df_results
 # %%
-plt.figure(figsize=(10, 6))
-sns.lineplot(data=df_results, x='difficulty', y='overall.sMAPE', hue='specifier', ci=None)
+fig = plt.figure(figsize=(10, 6))
+ax = sns.lineplot(data=df_results, x='difficulty', y='overall.sMAPE', hue='specifier', ci=None)
+ax.axvline(x=0.3584905660377358, c='red', ls=':')
+ax.text(x=0.3584905660377358+0.01, y=0.7, s="Median missiness rate of train data")
+fig.tight_layout()
 plt.show()
 # %%
 plt.figure(figsize=(10, 6))
-ax = sns.lineplot(data=df_results, x='difficulty', y='statistics.transform_time', hue='mims_tresh')
+ax = sns.lineplot(data=df_results, x='difficulty', y='statistics.transform_time', hue='convergence_thresh')
 ax.set_title("Time to execute a transformation in seconds")
 plt.show()
 # %%
 plt.figure(figsize=(10, 6))
-sns.lineplot(data=df_results, x='difficulty', y='completed_iter', hue='mims_tresh')
+sns.lineplot(data=df_results, x='difficulty', y='completed_iter', hue='convergence_thresh')
 ax.set_title("Number of completed iterations before early stop")
 plt.show()
 

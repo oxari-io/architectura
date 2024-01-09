@@ -22,12 +22,15 @@ import numpy as np
 # %%
 cwd = pathlib.Path(__file__).parent
 df_results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_missing_value_imputers_lightgbm.csv', index_col=0)
-df_results['specifier'] = df_results['imputer'] + '-' + df_results['lr'].astype(str)
+df_results['specifier'] = df_results['imputer'] + '-' + df_results['lr'].astype(str) + '-' + df_results['n_estimators'].astype(str)
 df_results
 # %%
-plt.figure(figsize=(10, 6))
+fig = plt.figure(figsize=(10, 6))
 ax = sns.lineplot(data=df_results, x='difficulty', y='overall.sMAPE', hue='specifier')
 ax.set_title('sMAPE over missingness difficulty for different learning rates')
+ax.axvline(x=0.3584905660377358, c='red', ls=':')
+ax.text(x=0.3584905660377358+0.01, y=0.7, s="Median missiness rate of train data")
+fig.tight_layout()
 plt.show()
 # %%
 plt.figure(figsize=(10, 6))

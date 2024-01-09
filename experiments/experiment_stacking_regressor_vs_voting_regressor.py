@@ -12,6 +12,7 @@ from feature_reducers import PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
+from preprocessors.helper.custom_cat_normalizers import CountryCodeCatColumnNormalizer, IndustryNameCatColumnNormalizer, OxariCategoricalNormalizer, SectorNameCatColumnNormalizer
 from scope_estimators import (BaselineEstimator,
                               EvenWeightMiniModelArmyEstimator,
                               MiniModelArmyEstimator, 
@@ -64,9 +65,17 @@ if __name__ == "__main__":
         for Estimator in estimators:
             start = time.time()
             bucket_specifics = {}
+            cat_normalizer = OxariCategoricalNormalizer(
+                col_transformers=[
+                    # LinkTransformerCatColumnNormalizer(),
+                    SectorNameCatColumnNormalizer(), 
+                    IndustryNameCatColumnNormalizer(),
+                    CountryCodeCatColumnNormalizer()
+                ]
+            )
 
             ppl1 = DefaultPipeline(
-                preprocessor=IIDPreprocessor(),
+                preprocessor=IIDPreprocessor(cat_normalizer=cat_normalizer),
                 feature_reducer=PCAFeatureReducer(n_components=40),
                 imputer=RevenueQuantileBucketImputer(),
                 scope_estimator=Estimator(),
@@ -79,7 +88,7 @@ if __name__ == "__main__":
 
             if (scope == True):
                 ppl2 = DefaultPipeline(
-                    preprocessor=IIDPreprocessor(),
+                    preprocessor=IIDPreprocessor(cat_normalizer=cat_normalizer),
                     feature_reducer=PCAFeatureReducer(n_components=40),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=Estimator(),
@@ -87,7 +96,7 @@ if __name__ == "__main__":
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
                 ppl3 = DefaultPipeline(
-                    preprocessor=IIDPreprocessor(),
+                    preprocessor=IIDPreprocessor(cat_normalizer=cat_normalizer),
                     feature_reducer=PCAFeatureReducer(n_components=40),
                     imputer=RevenueQuantileBucketImputer(),
                     scope_estimator=Estimator(),

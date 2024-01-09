@@ -47,9 +47,8 @@ class MVEImputer(RegressionImputerBase):
 
     def transform(self, X, **kwargs) -> ArrayLike:
         X_num = X.filter(regex='^ft_num')
-        
-        # X_new = self._estimator.transform(X_num)
-        X_new = pd.DataFrame(self._scaler.inverse_transform(self._scale_transform(X_num)), index=X_num.index, columns=X_num.columns)
+        X_scaled_imputed = pd.DataFrame(self._scale_transform(X_num), index=X_num.index, columns=X_num.columns)
+        X_new = pd.DataFrame(self._scaler.inverse_transform(X_scaled_imputed), index=X_num.index, columns=X_num.columns)
         return replace_ft_num(X, X_new)
 
     def evaluate(self, X, y=None, **kwargs):

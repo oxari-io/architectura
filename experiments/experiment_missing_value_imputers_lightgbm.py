@@ -10,6 +10,8 @@ import tqdm
 
 from imputers.core import DummyImputer
 from imputers.equilibrium_method import EquilibriumImputer, FastEquilibriumImputer
+from imputers.iterative import MVEImputer
+from lightgbm import LGBMRegressor
 
 
 if __name__ == "__main__":
@@ -24,8 +26,7 @@ if __name__ == "__main__":
     dataset = get_small_datamanager_configuration(0.35).run()
     configurations: list[OxariImputer] = [
         BaselineImputer(),
-        *[EquilibriumImputer(verbose=False, mims_tresh=m, skip_converged_cols=b, diff_tresh=0, max_diff_increase_thresh=0.6) for m in [0.01, 0.001, 0.00001] for b in [True, False]],
-        *[FastEquilibriumImputer(verbose=False, mims_tresh=m, skip_converged_cols=b, diff_tresh=0, max_diff_increase_thresh=0.6) for m in [0.01, 0.001, 0.00001] for b in [True, False]]
+        *[MVEImputer(sub_estimator=LGBMRegressor(learning_rate=lr, n_estimators=ne)) for lr in [0.1,0.01,0.001] for ne in [50, 100, 150, 200]],
     ]
     repeats = range(10)
     with tqdm.tqdm(total=len(repeats) * len(configurations) * len(difficulties)) as pbar:
@@ -33,21 +34,21 @@ if __name__ == "__main__":
             bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
             SPLIT_1 = bag.scope_1
             X, Y = SPLIT_1.train
-            X_new = X.copy()
-            X_new[X.filter(regex='^ft_num', axis=1).columns] = minmax_scale(X.filter(regex='^ft_num', axis=1))
+            X_new:pd.DataFrame = X.copy()
 
             X_train, X_test = train_test_split(X_new, test_size=0.5)
             keeping_criterion_2 = (X_test.isna().mean(axis=0)<0.3)
             keep_columns_2 = X_train.loc[:, keeping_criterion_2].columns
 
             for imputer in configurations:
-                imputer_2: OxariImputer = imputer.clone()
-                imputer_2 = imputer_2.fit(X_train[keep_columns_2])
+                imputer.fit(X_train[keep_columns_2])
 
                 for dff in difficulties:
 
-                    imputer_2.evaluate(X_test[keep_columns_2], p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, "mode":"low_missingness", "num_ft":len(keep_columns_2),**imputer_2.evaluation_results, **imputer_2.get_config()})
+                    imputer.evaluate(X_test[keep_columns_2], p=dff)
+                    curr_learning_rate = None if not isinstance(imputer, MVEImputer) else imputer.sub_estimator.learning_rate
+                    curr_n_estimators = None if not isinstance(imputer, MVEImputer) else imputer.sub_estimator.n_estimators
+                    all_results.append({"repetition": i, "difficulty": dff, "lr":curr_learning_rate, "n_estimators":curr_n_estimators, "num_ft":len(keep_columns_2),**imputer.evaluation_results, **imputer.get_config()})
 
                     concatenated = pd.json_normalize(all_results)
                     fname = __loader__.name.split(".")[-1]

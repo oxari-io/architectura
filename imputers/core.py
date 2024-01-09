@@ -80,7 +80,7 @@ class RegressionImputerBase(OxariImputer):
         X_train = X
         self._scaler = self._scaler.fit(X_train)
         X_train_scaled = self._scaler.transform(X_train)
-        return X_train_scaled
+        return pd.DataFrame(X_train_scaled, index=X_train.index, columns=X_train.columns)
     
-    def _scale_transform(self, X_num):
-        return self._estimator.transform(self._scaler.transform(X_num))    
+    def _scale_transform(self, X_num:pd.DataFrame):
+        return self._estimator.transform(pd.DataFrame(self._scaler.transform(X_num), index=X_num.index, columns=X_num.columns))    

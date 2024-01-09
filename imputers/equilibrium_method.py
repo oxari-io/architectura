@@ -6,6 +6,7 @@
 # 
 
 import random
+import time
 from typing import Union
 from sklearn.base import BaseEstimator
 from sklearn.tree import DecisionTreeRegressor
@@ -57,15 +58,18 @@ class EquilibriumImputer(RegressionImputerBase):
         self.diff_tresh = diff_tresh
         self.mims_tresh = mims_tresh
         self.max_diff_increase_thresh = max_diff_increase_thresh
+        self.skip_converged_cols = kwargs.get('skip_converged_cols', False)
         self.verbose = verbose
         self._sub_estimator = self._instantiate_strategy(sub_estimator) if isinstance(sub_estimator, self.Strategy) else sub_estimator
         self._estimator = IterativeImputer(estimator=self._sub_estimator, verbose=self.verbose)
+        self.statistics = {}
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         # # Initializing
         # For each col:
         #     train model to predict missing values
-        
+        start_time = time.time()
+
         self.logger.debug(f"Fitting {self.__class__.__name__} with {self._sub_estimator.__class__.__name__}")
         X_num = X.filter(regex='^ft_num')
         self._features_transformed = list(X_num.columns)
@@ -75,6 +79,8 @@ class EquilibriumImputer(RegressionImputerBase):
         self._estimator = self._estimator.fit(X_train_scaled)
         # For unified difference computation
         self._diff_scaler = MinMaxScaler().fit(X_train_scaled)
+
+        self.statistics["fit_time"] = time.time() - start_time
         return self
 
 
@@ -87,9 +93,11 @@ class EquilibriumImputer(RegressionImputerBase):
         #     For each col:
         #         col_i = predict model(X'_i-1/col_i) and fill only missing values
         #     X'_i = [col_i for each col]
+        start_time = time.time()
 
         X_num = X.filter(regex='^ft_num')
         X_num_missing_mask = X_num.isna()
+        self.col_na_counts = X_num_missing_mask.sum()
         X_0 = pd.DataFrame(self._scale_transform(X_num), index=X_num.index, columns=X_num.columns)
         X_i = X_0.copy()
         X_j = None
@@ -105,7 +113,8 @@ class EquilibriumImputer(RegressionImputerBase):
             iter_diff = 0
             list_of_new_cols = []
             for idx, col in enumerate(columns):
-                if self.is_col_converged[idx] == True:
+
+                if (self.skip_converged_cols or kwargs.get("skip_converged_cols", False)) and (self.is_col_converged[idx] == True):
                     # Skip if converged
                     list_of_new_cols.append(X_i[col].copy())
                     continue
@@ -129,7 +138,8 @@ class EquilibriumImputer(RegressionImputerBase):
         pbar.close()
             
 
-        X_new = pd.DataFrame(self._scaler.inverse_transform(X_i), index=X_i.index, columns=X_i.columns) 
+        X_new = pd.DataFrame(self._scaler.inverse_transform(X_i), index=X_i.index, columns=X_i.columns).fillna(0)
+        self.statistics["transform_time"] = time.time() - start_time
         return replace_ft_num(X, X_new)
 
     def _compute_counter(self, X_i, X_j):
@@ -138,7 +148,7 @@ class EquilibriumImputer(RegressionImputerBase):
 
     def _compute_diffs(self, X_i, X_j):
         iter_diffs = np.abs(self._diff_scaler.transform(X_i) - self._diff_scaler.transform(X_j))
-        sumiter_diffs = np.sum(iter_diffs, axis=0)
+        sumiter_diffs = np.sum(iter_diffs, axis=0)/self.col_na_counts.values
         return sumiter_diffs
 
     def _compute_mims(self, X_i, X_j):
@@ -222,7 +232,14 @@ class EquilibriumImputer(RegressionImputerBase):
         return super().evaluate(X, y, **kwargs)
 
     def get_config(self):
-        return {"strategy": self._sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self._sub_estimator.__class__.__name__}-{self.max_iter}", "final_iter":self.i_counter, **super().get_config()}
+        return {"strategy": self._sub_estimator.__class__.__name__, 
+                "max_iter":self.max_iter,
+                "completed_iter":self.history_counter[-1],
+                "diff_tresh":self.diff_tresh,
+                "mims_tresh":self.mims_tresh,
+                "max_diff_increase_thresh":self.max_diff_increase_thresh,
+                "statistics":dict(self.statistics),
+                "imputer": f"{self.name}:{self._sub_estimator.__class__.__name__}", "skip_cols":self.skip_converged_cols, "final_iter":self.i_counter, **super().get_config()}
 
     def visualize(self):
         if not(len(self.history_diffs) and len(self.history_mims)):
@@ -237,7 +254,66 @@ class EquilibriumImputer(RegressionImputerBase):
         axes[0].set_ylabel('Feature differences')
         sns.lineplot(data=mimss.reset_index().melt('index', var_name='Feature'), x='index', y='value', hue='Feature', ax=axes[1])
         axes[1].set_xlabel('Iteration')
-        axes[1].set_xlabel('Distributional shift')
+        axes[1].set_ylabel('Distributional shift')
         fig.tight_layout()
         return fig, axes
 
+class FastEquilibriumImputer(EquilibriumImputer):
+
+    def __init__(self, sub_estimator=EquilibriumImputer.Strategy.RIDGE, verbose=False, max_iter=100, diff_tresh=0.1, mims_tresh=0.01, max_diff_increase_thresh=0.5, internal_scaler=PowerTransformer(), **kwargs):
+        super().__init__(sub_estimator, verbose, max_iter, diff_tresh, mims_tresh, max_diff_increase_thresh, internal_scaler, **kwargs)
+
+    def transform(self, X:pd.DataFrame, **kwargs) -> ArrayLike:
+        start_time = time.time()
+
+
+        X_num = X.filter(regex='^ft_num')
+        X_num_missing_mask = X_num.isna()
+        self.col_na_counts = X_num_missing_mask.sum()
+
+        X_0 = pd.DataFrame(self._scale_transform(X_num), index=X_num.index, columns=X_num.columns)
+        X_i = X_0.copy()
+        X_j = None
+        iter_diff = -1
+        columns = list(X_num.columns)
+        
+        self.history_diffs = []
+        self.history_mims = []
+        self.history_counter = [0]        
+        self.is_col_converged = np.ones(len(columns)) < 0
+        pbar = tqdm(total=self.max_iter)
+        is_not_converged = True
+        while is_not_converged:
+            average_diffs = []
+            average_mimss = []
+            indices = np.random.permutation(list(range(len(columns))))
+            X_old = X_i.copy()
+            for idx in indices:
+                col = columns[idx]
+                if (self.skip_converged_cols or kwargs.get("skip_converged_cols", False)) and (self.is_col_converged[idx] == True):
+                    # Skip if converged
+                    average_diffs.append(0)
+                    average_mimss.append(0)
+                    X_j = X_i.copy()
+                    continue
+                X_temp = X_i.copy()
+                X_temp[col] = np.where(X_num_missing_mask[col], np.nan, X_temp[col])
+                X_j = pd.DataFrame(self._estimator.transform(X_temp), index=X_num.index, columns=X_num.columns)
+                    
+                # average_diffs.append(np.sum(self._compute_diffs(X_i, X_j)))
+                # average_mimss.append(np.sum(self._compute_mims(X_i, X_j)))
+ 
+                X_i = X_j.copy()
+            
+            self.history_diffs.append(self._compute_diffs(X_old, X_j))
+            self.history_mims.append(self._compute_mims(X_old, X_j))
+            self.history_counter.append(self._compute_counter(X_old, X_j))
+            pbar.update(1)
+            is_not_converged = not self._is_converged(X_j, X_old)
+
+        pbar.close()
+            
+
+        X_new = pd.DataFrame(self._scaler.inverse_transform(X_i), index=X_i.index, columns=X_i.columns).fillna(0)
+        self.statistics["transform_time"] = time.time() - start_time
+        return replace_ft_num(X, X_new)

@@ -1055,6 +1055,12 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
             results.append({"scope": scope, **pipeline.evaluation_results})
 
         return results
+    
+    def evaluate(self, y_true, y_pred, **kwargs) -> Self:
+        # X = kwargs.get("X")
+        # sub_eval_results = self.collect_eval_results()  
+        # self.statistics
+        return self
 
     # def _convert_input(self, X:dict|pd.Series|pd.DataFrame|list[dict]):
     #     """

@@ -5,7 +5,7 @@ from base.run_utils import get_small_datamanager_configuration
 import pathlib
 import pickle
 from datastores.saver import LocalDestination, OxariSavingManager, PickleSaver
-from postprocessors.core import DecisionExplainer, JumpRateExplainer, ResidualExplainer, ShapExplainer
+from postprocessors.core import DecisionExplainer, JumpRateExplainer, PDVarianceExplainer, ResidualExplainer, ShapExplainer
 
 DATA_DIR = pathlib.Path('model-data/data/input')
 
@@ -29,10 +29,15 @@ if __name__ == "__main__":
     explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=1000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     fig, ax = explainer0.visualize()
 
+    explainer1 = PDVarianceExplainer(model.get_pipeline(1)).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    fig1, ax1, fig2, ax2 = explainer1.visualize()
+
     package = (explainer0.shap_values, explainer0.X, explainer0.y)
+    package_pdv = (explainer1.pdv_importance, explainer1.pdv_interaction)
 
     all_meta_models = [
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer").set_object(package).set_datatarget(LocalDestination(path="model-data/output"))
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer").set_object(package).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_pdv").set_object(package_pdv).set_datatarget(LocalDestination(path="model-data/output")),
     ]
 
     SavingManager = OxariSavingManager(*all_meta_models, )

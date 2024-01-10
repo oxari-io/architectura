@@ -157,7 +157,7 @@ class PDVarianceExplainer(OxariExplainer):
                                             feature_names=self.estimator.feature_names_in_,
                                             # TODO: The categorical_names definition is the following: Dictionary where keys are feature columns and values are the categories for the feature. Necessary to identify the categorical features in the dataset.
                                             # Do we need to provide the full industry list here for example?
-                                            # categorical_names=
+                                            # categorical_names={}
                                             target_names=["tg_numc_scope_1", "tg_numc_scope_2", "tg_numc_scope_3"])
         return self
 

@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import shap
+from alibi.explainers import PartialDependenceVariance, plot_pd_variance
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
@@ -141,6 +142,49 @@ class ShapExplainer(OxariExplainer):
         ax = plt.gca()
         return fig, ax
 
+class PDVarianceExplainer(OxariExplainer):
+
+    def __init__(self, estimator: OxariPipeline, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.estimator = estimator
+
+    def print_accuracy(self, X, y):
+        y_hat = self.estimator.predict(X)
+        print("Root mean squared test error = {0}".format(smape(y, y_hat)))
+
+    def fit(self, X, y, **kwargs):
+        self.ex = PartialDependenceVariance(predictor=self.estimator.predict, 
+                                            feature_names=self.estimator.feature_names_in_,
+                                            # TODO: The categorical_names definition is the following: Dictionary where keys are feature columns and values are the categories for the feature. Necessary to identify the categorical features in the dataset.
+                                            # Do we need to provide the full industry list here for example?
+                                            # categorical_names=
+                                            target_names=["tg_numc_scope_1", "tg_numc_scope_2", "tg_numc_scope_3"])
+        return self
+
+    def explain(self, X, y, **kwargs):
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError("Input 'X' must be a pandas DataFrame.")
+
+        indices = random_sample_indices_limited(X, self.sample_size)
+
+        self.X: pd.DataFrame = X.iloc[indices]
+        self.y = y.iloc[indices]
+
+        self.pdv_importance = self.ex.explain(X=self.X, method='importance')
+        self.pdv_interaction = self.ex.explain(X=self.X, method='interaction')
+
+        return self
+
+    def visualize(self):
+        plot_pd_variance(exp=self.pdv_importance)
+        fig1 = plt.gcf()
+        ax1 = plt.gca()
+
+        plot_pd_variance(exp=self.pdv_interaction)
+        fig2 = plt.gcf()
+        ax2 = plt.gca()
+
+        return fig1, ax1, fig2, ax2
 
 class SurrogateExplainerMixin(abc.ABC):
     BINARIES_PREFIX = "categorical"

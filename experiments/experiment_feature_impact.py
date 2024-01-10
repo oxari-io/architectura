@@ -18,7 +18,7 @@ STAGE = "p_"
 if __name__ == "__main__":
 
     cwd = pathlib.Path(__file__).parent
-    model = pickle.load((cwd.parent / 'model-data/output/T20231122_p_model_experiment_feature_impact.pkl').open('rb'))
+    model = pickle.load((cwd.parent / 'model-data/output/T20231113_p_model_experiment_feature_impact.pkl').open('rb'))
 
     dataset = get_small_datamanager_configuration(0.7).run()
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)

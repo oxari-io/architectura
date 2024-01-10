@@ -7,6 +7,7 @@ from imputers import BaselineImputer
 from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
 import tqdm
+from imputers.categorical import CategoricalStatisticsImputer
 
 from imputers.core import DummyImputer
 from imputers.equilibrium_method import EquilibriumImputer, FastEquilibriumImputer

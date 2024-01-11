@@ -27,11 +27,15 @@ self.statistics = {
 
 
 class RevenueBucketImputer(NumericalStatisticsImputer):
-    def __init__(self, buckets_number: int = 3, **kwargs):
-        super().__init__("ft_numc_revenue", buckets_number, **kwargs)
+    def __init__(self, num_buckets: int = 3, **kwargs):
+        super().__init__("ft_numc_revenue", num_buckets, **kwargs)
 
     def _get_threshold(self, buckets_number, min_, max_, data):
         return np.linspace(min_, max_, buckets_number + 1)
+    
+    @property
+    def name(self):
+        return f"{self.__class__.__name__}:{self.bucket_number}-buckets"
 
 class RevenueExponentialBucketImputer(RevenueBucketImputer):
 

@@ -22,9 +22,9 @@ if __name__ == "__main__":
     dataset = get_small_datamanager_configuration(0.5).run()
     configurations: list[OxariImputer] = [
         BaselineImputer(),
-        *[KMeansBucketImputer(bucket_number=num) for num in [3, 5, 7, 9, 11, 13, 15]],
-        *[KMedianBucketImputer(bucket_number=num) for num in [3, 5, 7, 9, 11, 13, 15]],
-        *[KNNBucketImputer(bucket_number=num) for num in [3, 5, 7, 9, 11, 13, 15]],
+        *[KMeansBucketImputer(num_buckets=num) for num in [3, 5, 7, 9, 11, 13, 15]],
+        *[KMedianBucketImputer(num_buckets=num) for num in [3, 5, 7, 9, 11, 13, 15]],
+        *[KNNBucketImputer(num_buckets=num) for num in [3, 5, 7, 9, 11, 13, 15]],
     ]
     repeats = range(10)
     with tqdm.tqdm(total=len(repeats) * len(configurations) * len(difficulties)) as pbar:

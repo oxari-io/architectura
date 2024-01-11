@@ -76,7 +76,7 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        imputer=RevenueQuantileBucketImputer(num_buckets=10),
         scope_estimator=LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=PCAFeatureReducer(ignored_features=IGNORED_FEATURES),
-        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        imputer=RevenueQuantileBucketImputer(num_buckets=10),
         scope_estimator=LGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=PCAFeatureReducer(ignored_features=IGNORED_FEATURES),
-        imputer=RevenueQuantileBucketImputer(buckets_number=10),
+        imputer=RevenueQuantileBucketImputer(num_buckets=10),
         scope_estimator=LGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),

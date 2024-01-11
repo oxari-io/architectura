@@ -24,7 +24,7 @@ def train_pipeline(scope: int, data: SplitBag, config, **kwargs):
     ppl = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureReducer(10),
-        imputer=RevenueQuantileBucketImputer(buckets_number=5),
+        imputer=RevenueQuantileBucketImputer(num_buckets=5),
         scope_estimator=config(),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),

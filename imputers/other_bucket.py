@@ -26,13 +26,21 @@ self.statistics = {
 """
 
 
-
-
 class TotalAssetsQuantileBucketImputer(NumericalStatisticsQuantileBucketImputer):
-    def __init__(self, buckets_number: int = 3, **kwargs):
-        super().__init__("ft_numc_total_assets", buckets_number, **kwargs)
+
+    def __init__(self, num_buckets: int = 3, **kwargs):
+        super().__init__("ft_numc_total_assets", num_buckets, **kwargs)
+
+    @property
+    def name(self):
+        return f"{self.__class__.__name__}:{self.bucket_number}-buckets"
+
 
 class TotalLiabilitiesQuantileBucketImputer(NumericalStatisticsQuantileBucketImputer):
-    def __init__(self, buckets_number: int = 3, **kwargs):
-        super().__init__("ft_numc_total_liabilities", buckets_number, **kwargs)
 
+    def __init__(self, num_buckets: int = 3, **kwargs):
+        super().__init__("ft_numc_total_liabilities", num_buckets, **kwargs)
+
+    @property
+    def name(self):
+        return f"{self.__class__.__name__}:{self.bucket_number}-buckets"

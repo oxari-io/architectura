@@ -221,7 +221,7 @@ if __name__ == "__main__":
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
                 feature_reducer=SelectionFeatureReducer(features=feature_list),
-                imputer=RevenueQuantileBucketImputer(buckets_number=5),
+                imputer=RevenueQuantileBucketImputer(num_buckets=5),
                 scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),
@@ -234,7 +234,7 @@ if __name__ == "__main__":
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=SelectionFeatureReducer(features=feature_list),
-                    imputer=RevenueQuantileBucketImputer(buckets_number=5),
+                    imputer=RevenueQuantileBucketImputer(num_buckets=5),
                     scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
@@ -246,7 +246,7 @@ if __name__ == "__main__":
                 ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
                     feature_reducer=SelectionFeatureReducer(features=feature_list),
-                    imputer=RevenueQuantileBucketImputer(buckets_number=5),
+                    imputer=RevenueQuantileBucketImputer(num_buckets=5),
                     scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),

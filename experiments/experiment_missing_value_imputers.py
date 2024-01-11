@@ -37,24 +37,24 @@ if __name__ == "__main__":
         # AutoImputer(),
         BaselineImputer(),
         DummyImputer(),
-        *[
-            FastEquilibriumImputer(
-                verbose=False, max_iter=50, diff_tresh=0, mims_tresh=0.0001, max_diff_increase_thresh=0.75, skip_converged_cols=True, strategy=m)
-            for m in EquilibriumImputer.Strategy
-        ],
+        # *[
+        #     FastEquilibriumImputer(
+        #         verbose=False, max_iter=50, diff_tresh=0, mims_tresh=0.0001, max_diff_increase_thresh=0.75, skip_converged_cols=True, strategy=m)
+        #     for m in EquilibriumImputer.Strategy
+        # ],
         *[CategoricalStatisticsImputer(reference=ref) for ref in ["ft_catm_country_code", "ft_catm_industry_name", "ft_catm_sector_name"]],
         *[
-            RevenueQuantileBucketImputer(bucket_number=11),
-            TotalAssetsQuantileBucketImputer(bucket_number=11),
-            TotalLiabilitiesQuantileBucketImputer(bucket_number=11)
+            RevenueQuantileBucketImputer(num_buckets=11),
+            TotalAssetsQuantileBucketImputer(num_buckets=11),
+            TotalLiabilitiesQuantileBucketImputer(num_buckets=11)
         ],
         *[
-            KNNBucketImputer(bucket_number=9),
-            KMedianBucketImputer(bucket_number=13),
-            KMeansBucketImputer(bucket_number=7),
+            KNNBucketImputer(num_buckets=9),
+            KMedianBucketImputer(num_buckets=13),
+            KMeansBucketImputer(num_buckets=7),
         ],
         *[MVEImputer(sub_estimator=m, verbose=True) for m in MVEImputer.Strategy],
-        *[MVEImputer(sub_estimator=m, verbose=True) for m in [
+        *[MVEImputer(sub_estimator=m, verbose=True) for m in [ 
             LGBMRegressor(learning_rate=0.1, n_estimators=50),
         ]],
         OldOxariImputer(verbose=True),

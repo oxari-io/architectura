@@ -27,10 +27,10 @@ self.statistics = {
 
 class NumericalStatisticsImputer(BucketImputerBase):
 
-    def __init__(self, reference: str, buckets_number: int = 3, **kwargs):
+    def __init__(self, reference: str, num_buckets: int = 3, **kwargs):
         super().__init__(**kwargs)
         self.reference = reference
-        self.bucket_number = buckets_number
+        self.bucket_number = num_buckets
         self.list_of_skipped_columns = ['key_year', 'key_isin']
         # self.columns_to_fit = set(NumMapping.get_features()) - set([self.MAIN_VARIABLE])
         self.fallback_fallback_value = 0

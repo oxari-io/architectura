@@ -36,7 +36,7 @@ def test_pipeline_t(const_data_manager: OxariDataManager):
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=5),
+        imputer=RevenueQuantileBucketImputer(num_buckets=5),
         scope_estimator=SupportVectorEstimator(n_trials=1, n_startup_trials=1),
         ci_estmator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -50,7 +50,7 @@ def test_pipeline_q(const_data_manager: OxariDataManager):
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=5),
+        imputer=RevenueQuantileBucketImputer(num_buckets=5),
         scope_estimator=MiniModelArmyEstimator(n_buckets=5, n_trials=2, n_startup_trials=2),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),

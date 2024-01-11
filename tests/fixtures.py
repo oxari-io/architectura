@@ -45,7 +45,7 @@ def const_pipeline(const_data_manager: OxariDataManager):
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=5),
+        imputer=RevenueQuantileBucketImputer(num_buckets=5),
         scope_estimator=SupportVectorEstimator(n_trials=1, n_startup_trials=1),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),

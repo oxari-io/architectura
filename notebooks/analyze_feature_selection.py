@@ -44,7 +44,7 @@ SPLIT_3 = bag.scope_3
 dp1 = DefaultPipeline(
     preprocessor=IIDPreprocessor(),
     feature_reducer=IsomapDimensionalityFeatureReducer(10),
-    imputer=RevenueQuantileBucketImputer(buckets_number=5),
+    imputer=RevenueQuantileBucketImputer(num_buckets=5),
     scope_estimator=SupportVectorEstimator(),
     ci_estimator=BaselineConfidenceEstimator(),
     scope_transformer=LogTargetScaler(),

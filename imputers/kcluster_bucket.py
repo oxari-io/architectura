@@ -15,9 +15,9 @@ from .core import BucketImputerBase, RegressionImputerBase
 
 
 class KNNBucketImputer(RegressionImputerBase, BucketImputerBase):
-    def __init__(self, bucket_number=3, **kwargs):
+    def __init__(self, num_buckets=3, **kwargs):
         super().__init__(**kwargs)
-        self.bucket_number = bucket_number
+        self.bucket_number = num_buckets
         self._estimator = KNNImputer(n_neighbors=self.bucket_number)
 
 
@@ -41,10 +41,10 @@ class KNNBucketImputer(RegressionImputerBase, BucketImputerBase):
 
 
 class KMeansBucketImputer(RegressionImputerBase, BucketImputerBase):
-    def __init__(self, bucket_number=3, **kwargs):
-        super().__init__(bucket_number=bucket_number, **kwargs)
-        self.bucket_number = bucket_number        
-        self._estimator = cluster.KMeans(bucket_number, n_init='auto')
+    def __init__(self, num_buckets=3, **kwargs):
+        super().__init__(bucket_number=num_buckets, **kwargs)
+        self.bucket_number = num_buckets        
+        self._estimator = cluster.KMeans(num_buckets, n_init='auto')
         self._helper_imputer = SimpleImputer(strategy="median", keep_empty_features=True)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
@@ -75,10 +75,10 @@ class KMeansBucketImputer(RegressionImputerBase, BucketImputerBase):
 
 
 class KMedianBucketImputer(RegressionImputerBase, BucketImputerBase):
-    def __init__(self, bucket_number=3, **kwargs):
-        super().__init__(bucket_number=bucket_number, **kwargs)
-        self.bucket_number = bucket_number        
-        self._estimator = kmedoids.KMedoids(bucket_number, metric="euclidean")
+    def __init__(self, num_buckets=3, **kwargs):
+        super().__init__(bucket_number=num_buckets, **kwargs)
+        self.bucket_number = num_buckets        
+        self._estimator = kmedoids.KMedoids(num_buckets, metric="euclidean")
         self._helper_imputer = SimpleImputer(strategy="median", keep_empty_features=True)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:

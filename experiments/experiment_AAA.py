@@ -12,7 +12,7 @@ from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAna
 from feature_reducers.core import LDAFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
-from imputers.kcluster_bucket import KMeansBucketImputer
+from imputers.kcluster_bucket import KNNBucketImputer
 from imputers.revenue_bucket import RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueParabolaBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             RevenueBucketImputer(7),
             RevenueExponentialBucketImputer(7),
             RevenueParabolaBucketImputer(7),
-            KMeansBucketImputer(7),
+            KNNBucketImputer(7),
 
         ]
         all_feature_reducers = [

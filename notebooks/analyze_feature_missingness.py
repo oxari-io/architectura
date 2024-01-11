@@ -49,7 +49,7 @@ visualize_matrix(DATA.filter(regex="^ft_cat", axis=1), 'Missingness: Categorical
 visualize_matrix(DATA.filter(regex="^tg_", axis=1), 'Missingness: Targets')
 
 # %%
-df = DATA.filter(regex="^ft_num", axis=1)
+df:pd.DataFrame = DATA.filter(regex="^ft_num", axis=1)
 msno.bar(df)
 plt.show()
 # %%
@@ -60,4 +60,6 @@ plt.show()
 # %%
 msno.dendrogram(df)
 plt.show()
+# %%
+(~df.isna()).sum().sort_values(ascending=False)[:10]
 # %%

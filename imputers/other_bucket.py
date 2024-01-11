@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from base.common import OxariImputer
-from imputers.numerical import NumericalStatisticsImputer
+from imputers.numerical import NumericalStatisticsImputer, NumericalStatisticsQuantileBucketImputer
 
 from .core import BucketImputerBase
 
@@ -26,15 +26,13 @@ self.statistics = {
 """
 
 
-class TotalAssetsBucketImputer(NumericalStatisticsImputer):
+
+
+class TotalAssetsQuantileBucketImputer(NumericalStatisticsQuantileBucketImputer):
     def __init__(self, buckets_number: int = 3, **kwargs):
         super().__init__("ft_numc_total_assets", buckets_number, **kwargs)
 
-
-class TotalAssetsQuantileBucketImputer(TotalAssetsBucketImputer):
-
-    def _get_threshold(self, buckets_number, min_, max_, data):
-        x = np.linspace(0, 1, buckets_number + 1)
-        threshold = np.quantile(data, x)
-        return threshold
+class TotalLiabilitiesQuantileBucketImputer(NumericalStatisticsQuantileBucketImputer):
+    def __init__(self, buckets_number: int = 3, **kwargs):
+        super().__init__("ft_numc_total_liabilities", buckets_number, **kwargs)
 

@@ -15,6 +15,12 @@ def replace_ft_num(X:pd.DataFrame, X_new:ArrayLike):
     X_tmp[X.filter(regex='^ft_num', axis=1).columns] = X_new
     return X_tmp
 
+def convert_to_df(X_new:ArrayLike, X_old:pd.DataFrame):
+    if not isinstance(X_old,pd.DataFrame):
+        raise Exception("Reference is not a Dataframe")
+
+    return pd.DataFrame(X_new, index=X_old.index, columns=X_old.columns)
+
 def mock_data():
     data = data_point()
     df = pd.Series(data).to_frame().T.sort_index(axis=1)

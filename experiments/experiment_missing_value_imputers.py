@@ -8,7 +8,7 @@ from base.dataset_loader import CompanyDataFilter, SimpleDataFilter
 from base.helper import LogTargetScaler
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
-from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
+from imputers import RevenueQuantileBucketImputer, KNNBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource
 from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
@@ -19,6 +19,7 @@ from imputers.categorical import CategoricalStatisticsImputer
 from imputers.core import DummyImputer
 from imputers.equilibrium_method import EquilibriumImputer, FastEquilibriumImputer
 from imputers.interpolation import LinearInterpolationImputer, SplineInterpolationImputer
+from imputers.other_bucket import TotalAssetsQuantileBucketImputer, TotalLiabilitiesQuantileBucketImputer
 from imputers.revenue_bucket import RevenueExponentialBucketImputer, RevenueParabolaBucketImputer
 
 if __name__ == "__main__":
@@ -33,7 +34,6 @@ if __name__ == "__main__":
     dataset = get_small_datamanager_configuration(0.5).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
-
         BaselineImputer(),
         DummyImputer(),
         *[
@@ -42,10 +42,16 @@ if __name__ == "__main__":
             for m in EquilibriumImputer.Strategy
         ],
         *[CategoricalStatisticsImputer(reference=ref) for ref in ["ft_catm_country_code", "ft_catm_industry_name", "ft_catm_sector_name"]],
-        *[RImputer(buckets_number=num) for RImputer in [RevenueBucketImputer, RevenueQuantileBucketImputer, RevenueExponentialBucketImputer] for num in [3,5,7]],
-        *[KMeansBucketImputer(bucket_number=num) for num in [3, 5, 7]],
+        *[
+            RevenueQuantileBucketImputer(bucket_number=11),
+            TotalAssetsQuantileBucketImputer(bucket_number=11),
+            TotalLiabilitiesQuantileBucketImputer(bucket_number=11)
+        ],
+        *[KNNBucketImputer(bucket_number=num) for num in [3, 5, 7]],
         *[MVEImputer(sub_estimator=m, verbose=True) for m in MVEImputer.Strategy],
-        *[MVEImputer(sub_estimator=m, verbose=True) for m in [LGBMRegressor(learning_rate=0.1, n_estimators=50),]],
+        *[MVEImputer(sub_estimator=m, verbose=True) for m in [
+            LGBMRegressor(learning_rate=0.1, n_estimators=50),
+        ]],
         OldOxariImputer(verbose=True),
         # KMedianBucketImputer(), # Not working
         # LinearInterpolationImputer(), # Vertical - Not working
@@ -82,10 +88,24 @@ if __name__ == "__main__":
                 for dff in difficulties:
 
                     imputer_all.evaluate(X_test, p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, "mode":"realistic","num_ft":X_test.shape[1],**imputer_all.evaluation_results, **imputer_all.get_config()})
+                    all_results.append({
+                        "repetition": i,
+                        "difficulty": dff,
+                        "mode": "realistic",
+                        "num_ft": X_test.shape[1],
+                        **imputer_all.evaluation_results,
+                        **imputer_all.get_config()
+                    })
 
                     imputer_1.evaluate(X_test[keep_columns_1], p=dff)
-                    all_results.append({"repetition": i, "difficulty": dff, "mode":"mid_missingness", "num_ft":len(keep_columns_1),**imputer_1.evaluation_results, **imputer_1.get_config()})
+                    all_results.append({
+                        "repetition": i,
+                        "difficulty": dff,
+                        "mode": "mid_missingness",
+                        "num_ft": len(keep_columns_1),
+                        **imputer_1.evaluation_results,
+                        **imputer_1.get_config()
+                    })
 
                     imputer_2.evaluate(X_test[keep_columns_2], p=dff)
                     all_results.append({

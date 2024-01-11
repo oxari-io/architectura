@@ -7,14 +7,14 @@ from sklearn import cluster
 from sklearn.impute import SimpleImputer, KNNImputer
 
 from base.common import DefaultClusterEvaluator, OxariImputer
-from base.helper import replace_ft_num
+from base.helper import convert_to_df, replace_ft_num
 from base.mappings import NumMapping
 from base.oxari_types import ArrayLike
 
-from .core import BucketImputerBase
+from .core import BucketImputerBase, RegressionImputerBase
 
 
-class KMeansBucketImputer(BucketImputerBase):
+class KNNBucketImputer(RegressionImputerBase, BucketImputerBase):
     def __init__(self, bucket_number=3, **kwargs):
         super().__init__(**kwargs)
         self.bucket_number = bucket_number
@@ -25,41 +25,83 @@ class KMeansBucketImputer(BucketImputerBase):
         """
         Creates a lookup table to impute missing values based on the buckets created on revenue
         """
-        self._estimator = self._estimator.fit(X.filter(regex="^ft_num"))
+        X_num = X.filter(regex="^ft_num")
+        X_scaled = self._fit_scaler(X_num, y)
+        self._estimator = self._estimator.fit(X_scaled)
         return self
 
     def transform(self, X, **kwargs) -> ArrayLike:
         X_num = X.filter(regex="^ft_num")
-        X_new = self._estimator.transform(X_num)
-        X_new = pd.DataFrame(X_new, X.index, X_num.columns)
-        return replace_ft_num(X, X_new)
+        X_scaled = convert_to_df(self._scale_transform(X_num), X_num) 
+        X_new_reversed = convert_to_df(self._scaler.inverse_transform(X_scaled), X_num).fillna(0)
+        return replace_ft_num(X, X_new_reversed)
 
     def evaluate(self, X, y=None, **kwargs):
         return super().evaluate(X, y, **kwargs)
 
-# TODO: Does not seem to work
-class KMedianBucketImputer(BucketImputerBase):
+
+class KMeansBucketImputer(RegressionImputerBase, BucketImputerBase):
     def __init__(self, bucket_number=3, **kwargs):
-        super().__init__(bucket_number, **kwargs)
-        self._estimator = kmedoids.KMedoids(bucket_number, metric="euclidean")
-        self._helper_imputer = SimpleImputer(strategy="median")
+        super().__init__(bucket_number=bucket_number, **kwargs)
+        self.bucket_number = bucket_number        
+        self._estimator = cluster.KMeans(bucket_number, n_init='auto')
+        self._helper_imputer = SimpleImputer(strategy="median", keep_empty_features=True)
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
-
-        X_new = self._helper_imputer.fit_transform(X.filter(regex="^ft_num"))
-        self._estimator = self._estimator.fit(X_new)
-
+        X_num = X.filter(regex="^ft_num")
+        X_new = self._helper_imputer.fit_transform(X_num)
+        X_new_scaled = self._fit_scaler(convert_to_df(X_new, X_num), y)
+        self._estimator = self._estimator.fit(X_new_scaled.values)
+        
+        self.medoids = convert_to_df(X_new_scaled, X_num)
         self.centroids = self._estimator.cluster_centers_
         return self
 
     def transform(self, X:pd.DataFrame, **kwargs) -> ArrayLike:
         X_num = X.filter(regex="^ft_num")
-        X_copy = self._helper_imputer.transform(X_num)
-        # TODO: Write a version with a weighted average based on distance space form transform function
-        X_assignments = self._estimator.predict(X=X_copy)
-        impute_values = self.centroids[X_assignments]
+        X_msno_mask = X_num.isna()
+        X_copy = convert_to_df(self._helper_imputer.transform(X_num), X_num)
+        X_scaled = self._scaler.transform(X_copy) 
 
-        X_new = pd.DataFrame(np.where(np.isnan(X_num), impute_values, X_num), X.index, X_num.columns)
+        X_assignments = self._estimator.predict(X=X_scaled)
+        X_impute_values = self.centroids[X_assignments]
+        
+        X_imputed = convert_to_df(np.where(X_msno_mask, X_impute_values, X_scaled), X_num)
+        X_new = convert_to_df(self._scaler.inverse_transform(X_imputed), X_num).fillna(0)
+        return replace_ft_num(X, X_new)
+
+    def evaluate(self, X, y=None, **kwargs):
+        return super().evaluate(X, y, **kwargs)
+
+
+class KMedianBucketImputer(RegressionImputerBase, BucketImputerBase):
+    def __init__(self, bucket_number=3, **kwargs):
+        super().__init__(bucket_number=bucket_number, **kwargs)
+        self.bucket_number = bucket_number        
+        self._estimator = kmedoids.KMedoids(bucket_number, metric="euclidean")
+        self._helper_imputer = SimpleImputer(strategy="median", keep_empty_features=True)
+
+    def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
+        X_num = X.filter(regex="^ft_num")
+        X_new = self._helper_imputer.fit_transform(X_num)
+        X_new_scaled = self._fit_scaler(convert_to_df(X_new, X_num), y)
+        self._estimator = self._estimator.fit(X_new_scaled.values)
+        
+        self.medoids = convert_to_df(X_new_scaled, X_num)
+        self.centroids = self._estimator.cluster_centers_
+        return self
+
+    def transform(self, X:pd.DataFrame, **kwargs) -> ArrayLike:
+        X_num = X.filter(regex="^ft_num")
+        X_msno_mask = X_num.isna()
+        X_copy = convert_to_df(self._helper_imputer.transform(X_num), X_num)
+        X_scaled = self._scaler.transform(X_copy) 
+
+        X_assignments = self._estimator.predict(X=X_scaled)
+        X_impute_values = self.medoids.values[X_assignments]
+        
+        X_imputed = convert_to_df(np.where(X_msno_mask, X_impute_values, X_scaled), X_num)
+        X_new = convert_to_df(self._scaler.inverse_transform(X_imputed), X_num).fillna(0)
         return replace_ft_num(X, X_new)
 
     def evaluate(self, X, y=None, **kwargs):

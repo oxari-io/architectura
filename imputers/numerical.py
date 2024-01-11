@@ -27,7 +27,7 @@ self.statistics = {
 
 class NumericalStatisticsImputer(BucketImputerBase):
 
-    def __init__(self, reference:str, buckets_number: int = 3, **kwargs):
+    def __init__(self, reference: str, buckets_number: int = 3, **kwargs):
         super().__init__(**kwargs)
         self.reference = reference
         self.bucket_number = buckets_number
@@ -40,7 +40,6 @@ class NumericalStatisticsImputer(BucketImputerBase):
     def _aggregations(self):
         return ["min", "max", "median", "mean"]
 
-
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> "OxariImputer":
         """
         Creates a lookup table to impute missing values based on the buckets created on revenue
@@ -51,12 +50,15 @@ class NumericalStatisticsImputer(BucketImputerBase):
         min_ = data[self.reference].min()  # 20
         max_ = data[self.reference].max()  # 1000
         self.thresholds = self._get_threshold(self.bucket_number, min_, max_, data[self.reference].dropna())
-        data_numerical = data_numerical.assign(**{self.reference:data_numerical[self.reference].fillna(data_numerical[self.reference].median()).values})
+        data_numerical = data_numerical.assign(
+            **{self.reference: data_numerical[self.reference].fillna(data_numerical[self.reference].median()).values})
         data_numerical["bucket"] = None
         data_numerical["bucket"] = pd.cut(data[self.reference], self.thresholds)
         cat_stats: pd.DataFrame = data_numerical.groupby("bucket").aggregate(self._aggregations())
         self.stats_specific = cat_stats.to_dict(orient='index')
-        self.stats_overall = {(col, key): val for col in data_numerical.drop('bucket', axis=1).columns for key, val in data_numerical[col].aggregate(self._aggregations()).items()}
+        self.stats_overall = {(col, key): val
+                              for col in data_numerical.drop('bucket', axis=1).columns
+                              for key, val in data_numerical[col].aggregate(self._aggregations()).items()}
 
         return self
 
@@ -69,21 +71,31 @@ class NumericalStatisticsImputer(BucketImputerBase):
         tmp = X_new.set_index('bucket')
         for intervall_group, bgroup in tmp.filter(regex="^ft_num", axis=1).groupby("bucket"):
             # For interval group apply statistics column-wise
-            filled_bgroup = bgroup.apply(lambda col: col.fillna(self.stats_specific.get(intervall_group, {}).get((col.name, 'median'))),axis=0)
-            tmp.loc[tmp.index==intervall_group, filled_bgroup.columns]=filled_bgroup[filled_bgroup.columns].values
+            filled_bgroup = bgroup.apply(lambda col: col.fillna(self.stats_specific.get(intervall_group, {}).get((col.name, 'median'))), axis=0)
+            tmp.loc[tmp.index == intervall_group, filled_bgroup.columns] = filled_bgroup[filled_bgroup.columns].values
         # Apply overall statistics to fill na in every column
-        tmp_filled = tmp.apply(lambda col: col.fillna(self.stats_overall.get((col.name, 'median'))) if col.name.startswith('ft_num') else col,axis=0)
+        tmp_filled = tmp.apply(lambda col: col.fillna(self.stats_overall.get((col.name, 'median'))) if col.name.startswith('ft_num') else col, axis=0)
         X_new[tmp_filled.columns] = tmp_filled[tmp_filled.columns].reset_index(drop=True).values
         return X_new.drop('bucket', axis=1).infer_objects()
 
     def _get_threshold(self, buckets_number, min_, max_, data):
         return np.linspace(min_, max_, buckets_number + 1)
-
+    
     def __repr__(self):
         return f"@[{self.__class__.__name__}]{self.info}"
-    
+
+    def get_config(self, deep=True):
+        return {"reference": self.reference, **super().get_config(deep)}
+
     @property
     def name(self):
         return self.__class__.__name__ + f":{self.reference}"
 
 
+
+class NumericalStatisticsQuantileBucketImputer(NumericalStatisticsImputer):
+
+    def _get_threshold(self, buckets_number, min_, max_, data):
+        x = np.linspace(0, 1, buckets_number + 1)
+        threshold = np.quantile(data, x)
+        return threshold

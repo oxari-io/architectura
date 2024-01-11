@@ -19,6 +19,7 @@ from imputers.categorical import CategoricalStatisticsImputer
 from imputers.core import DummyImputer
 from imputers.equilibrium_method import EquilibriumImputer, FastEquilibriumImputer
 from imputers.interpolation import LinearInterpolationImputer, SplineInterpolationImputer
+from imputers.kcluster_bucket import KMeansBucketImputer
 from imputers.other_bucket import TotalAssetsQuantileBucketImputer, TotalLiabilitiesQuantileBucketImputer
 from imputers.revenue_bucket import RevenueExponentialBucketImputer, RevenueParabolaBucketImputer
 
@@ -47,7 +48,11 @@ if __name__ == "__main__":
             TotalAssetsQuantileBucketImputer(bucket_number=11),
             TotalLiabilitiesQuantileBucketImputer(bucket_number=11)
         ],
-        *[KNNBucketImputer(bucket_number=num) for num in [3, 5, 7]],
+        *[
+            KNNBucketImputer(bucket_number=9),
+            KMedianBucketImputer(bucket_number=13),
+            KMeansBucketImputer(bucket_number=7),
+        ],
         *[MVEImputer(sub_estimator=m, verbose=True) for m in MVEImputer.Strategy],
         *[MVEImputer(sub_estimator=m, verbose=True) for m in [
             LGBMRegressor(learning_rate=0.1, n_estimators=50),
@@ -68,8 +73,8 @@ if __name__ == "__main__":
             X_new[X.filter(regex='^ft_num', axis=1).columns] = minmax_scale(X.filter(regex='^ft_num', axis=1))
 
             X_train, X_test = train_test_split(X_new, test_size=0.5)
-            keeping_criterion_1 = (X_test.isna().mean(axis=0) < 0.3)
-            keeping_criterion_2 = (X_test.isna().mean(axis=0) < 0.2)
+            keeping_criterion_1 = (X_test.isna().mean(axis=0) < 0.5)
+            keeping_criterion_2 = (X_test.isna().mean(axis=0) < 0.3)
             keep_columns_1 = X_train.loc[:, keeping_criterion_1].columns
             keep_columns_2 = X_train.loc[:, keeping_criterion_2].columns
 

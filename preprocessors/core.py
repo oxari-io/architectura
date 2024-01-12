@@ -84,7 +84,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         self.cat_transformer = self.cat_transformer.fit(data_new.loc[:, self.categorical_columns], y=np.array(y))
 
         # fill missing values
-        self.imputer = self.imputer.fit(data.loc[:, self.financial_columns])
+        self.imputer = self.imputer.fit(data)
         self.logger.info(f'Preprocessed {len(self.original_features)} features to {len(self.financial_columns) + len(self.cat_transformer.cols)}')
         self.logger.info(f'{len(self.financial_columns)} numerical, {len(self.categorical_columns)} categorical columns')
         return self
@@ -94,9 +94,9 @@ class BaselinePreprocessor(OxariPreprocessor):
         X_result = X.copy()
         X_new = X.filter(regex='ft_', axis=1).copy()
         # impute all the missing columns
-        financial_data = X_new[self.financial_columns].astype(float)
-        imputed_values = self.imputer.transform(financial_data)
-        X_new.loc[:, self.financial_columns] = imputed_values
+        # financial_data = X_new[self.financial_columns].astype(float)
+        X_imputed = self.imputer.transform(X_new)
+        X_new = X_imputed.copy()
         # transform numerical
         financial_data = X_new[self.financial_columns].copy()
         transformed_values = self.fin_transformer.transform(financial_data)

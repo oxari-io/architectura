@@ -61,8 +61,8 @@ class MVEImputer(RegressionImputerBase):
         if self.Strategy.DT == strategy:
             return DecisionTreeRegressor()
 
-    def get_config(self):
-        return {"strategy": self.sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self.sub_estimator.__class__.__name__}", **super().get_config()}
+    def get_config(self, deep=True):
+        return {"strategy": self.sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self.sub_estimator.__class__.__name__}", **super().get_config(deep)}
 
 
 

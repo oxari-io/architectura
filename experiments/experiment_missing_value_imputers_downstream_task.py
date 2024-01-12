@@ -26,8 +26,8 @@ if __name__ == "__main__":
     dataset = get_small_datamanager_configuration(1).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
-        BaselineImputer(),
         MVEImputer(sub_estimator=MVEImputer.Strategy.DT, verbose=True),
+        BaselineImputer(),
         CategoricalStatisticsImputer(reference="ft_catm_country_code"),
         TotalAssetsQuantileBucketImputer(num_buckets=11),
         KNNBucketImputer(num_buckets=9),
@@ -57,7 +57,7 @@ if __name__ == "__main__":
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
             time_elapsed_1 = time.time() - start
             all_results.append({"rep": rep, "time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results})
-
+            pbar.update(1)
             concatenated = pd.json_normalize(all_results)
             fname = __loader__.name.split(".")[-1]
             concatenated.to_csv(f'local/eval_results/{fname}.csv', header=True)

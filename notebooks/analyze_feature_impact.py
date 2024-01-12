@@ -11,11 +11,12 @@ import shap
 import io
 # %%
 cwd = pathlib.Path(__file__).parent
-shap_values, X, y = pickle.load(io.open(cwd.parent / 'model-data/output/T20231123_p_model_experiment_feature_impact_explainer.pkl', 'rb'))
+shap_values, X, y = pickle.load(io.open(cwd.parent / 'model-data/output/T20231211_p_model_experiment_feature_impact_explainer.pkl', 'rb'))
+
 shap_values
 # Some plots explained https://towardsdatascience.com/introduction-to-shap-with-python-d27edc23c454
 # %%
-shap.summary_plot(shap_values, X, show=True, max_display=30)
+# shap.summary_plot(shap_values, X, show=True, max_display=30)
 
 
 # %%
@@ -39,5 +40,6 @@ shap.plots.bar(shap_values, max_display=30)
 # %%
 shap.plots.heatmap(shap_values)
 # %%
-
+pvd_importance, pvd_interaction = pickle.load(io.open(cwd.parent / 'model-data/output/T20231211_p_model_experiment_feature_impact_explainer_pvd.pkl', 'rb'))
+pvd_importance
 # %%

@@ -10,7 +10,7 @@ from sklearn.ensemble import RandomForestRegressor
 from base.common import DefaultClusterEvaluator, OxariImputer
 from base.helper import convert_to_df, replace_ft_num
 from base.mappings import NumMapping
-from sklearn.linear_model import BayesianRidge, Ridge, GammaRegressor
+from sklearn.linear_model import BayesianRidge, LinearRegression, Ridge, GammaRegressor
 from sklearn.kernel_approximation import Nystroem
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.ensemble import RandomForestRegressor
@@ -26,7 +26,6 @@ from sklearn.preprocessing import MinMaxScaler, PowerTransformer
 class MVEImputer(RegressionImputerBase):
 
     class Strategy(Enum):
-        BAYESRIDGE = auto()
         KNN = auto()
         RIDGE = auto()
         DT = auto()
@@ -57,8 +56,6 @@ class MVEImputer(RegressionImputerBase):
     def _instantiate_strategy(self, strategy:Strategy):
         if self.Strategy.KNN == strategy:
             return KNeighborsRegressor(9)
-        if self.Strategy.BAYESRIDGE == strategy:
-            return BayesianRidge()
         if self.Strategy.RIDGE == strategy:
             return KernelRidge(kernel='rbf')
         if self.Strategy.DT == strategy:

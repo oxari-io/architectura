@@ -9,7 +9,7 @@ import statsmodels.formula.api as smf
 
 # %%
 cwd = pathlib.Path(__file__).parent
-df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_value_imputers.csv', index_col=0)
+df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_value_imputers_bkp.csv', index_col=0)
 
 # df_results_1 = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_value_imputers_run1.csv', index_col=0)
 # df_results_2 = pd.read_csv(cwd.parent/'local/eval_results/experiment_missing_value_imputers_run2.csv', index_col=0)

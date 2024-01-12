@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # - Vertical interpolation interpolates the NA's the column independently of other columns. Usually grouped by company.
     # - Horizontal interpolation does not take any other row into account for imputation. Basically making it time-independent.
     difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    dataset = get_small_datamanager_configuration(0.1).run()
+    dataset = get_small_datamanager_configuration(0.5).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
         BaselineImputer(),

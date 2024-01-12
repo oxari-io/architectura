@@ -37,19 +37,20 @@ plt.show()
 # %%
 plt.figure(figsize=(15,15))
 plt.subplot(2,2,1)
-sns.lineplot(df_results[df_results["name"].str.startswith("Revenue")], x="difficulty", y="smape", hue="name", errorbar=('se', 1))
+sns.lineplot(df_results[df_results["name"].str.contains("Quantile")], x="difficulty", y="smape", hue="name", errorbar=('se', 1))
 plt.subplot(2,2,2)
 sns.lineplot(df_results[df_results["name"].str.startswith("MVE")|df_results["name"].str.startswith("OldOxari")], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
 plt.subplot(2,2,3)
-sns.lineplot(df_results[df_results["name"].str.startswith("Equi")], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
+sns.lineplot(df_results[df_results["name"].str.startswith("K")], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
 plt.subplot(2,2,4)
 sns.lineplot(df_results[df_results["name"].str.startswith("Categorical")], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
 plt.show()
 
 # %%
 plt.figure(figsize=(10,7))
-condition = (df_results["name"].str.startswith("RevenueQuantile"))|(df_results["name"].str.startswith("Equilibrium"))|(df_results["imputer"]=="MVEImputer:KNeighborsRegressor") |(df_results["imputer"]=="MVEImputer:LGBMRegressor")|(df_results["imputer"]=="OldOxariImputer:RandomForestRegressor")
-sns.lineplot(df_results[condition], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
+condition = (df_results["name"].str.startswith("TotalAssetsQuantile"))|(df_results["name"].str.startswith("Equilibrium"))|(df_results["name"].str.startswith("KNN"))|(df_results["imputer"]=="MVEImputer:LGBMRegressor")|(df_results["imputer"]=="OldOxariImputer:RandomForestRegressor")|(df_results["imputer"].str.contains("country_code"))
+ax = sns.lineplot(df_results[condition], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
+ax.set_title("Best of Breed comparison")
 plt.show()
 
 # %%

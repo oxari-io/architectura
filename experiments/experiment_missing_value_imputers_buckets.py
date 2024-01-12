@@ -14,7 +14,7 @@ from imputers.equilibrium_method import EquilibriumImputer, FastEquilibriumImput
 from imputers.iterative import MVEImputer
 from lightgbm import LGBMRegressor
 from imputers.numerical import NumericalStatisticsImputer, NumericalStatisticsQuantileBucketImputer
-from imputers.other_bucket import TotalAssetsBucketImputer, TotalAssetsQuantileBucketImputer
+from imputers.other_bucket import TotalAssetsQuantileBucketImputer
 
 from imputers.revenue_bucket import RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueQuantileBucketImputer
 

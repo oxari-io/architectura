@@ -26,8 +26,8 @@ from sklearn.preprocessing import MinMaxScaler, PowerTransformer
 class MVEImputer(RegressionImputerBase):
 
     class Strategy(Enum):
-        KNN = auto()
         BAYESRIDGE = auto()
+        KNN = auto()
         RIDGE = auto()
         DT = auto()
 
@@ -48,7 +48,7 @@ class MVEImputer(RegressionImputerBase):
     def transform(self, X, **kwargs) -> ArrayLike:
         X_num = X.filter(regex='^ft_num')
         X_scaled_imputed = convert_to_df(self._scale_transform(X_num), X_num) 
-        X_new = convert_to_df(self._scaler.inverse_transform(X_scaled_imputed), X_num).fillna(0)
+        X_new = convert_to_df(self._scaler.inverse_transform(X_scaled_imputed), X_num).fillna(0).replace([np.inf], np.finfo(np.float64).max)
         return replace_ft_num(X, X_new)
 
     def evaluate(self, X, y=None, **kwargs):
@@ -56,7 +56,7 @@ class MVEImputer(RegressionImputerBase):
 
     def _instantiate_strategy(self, strategy:Strategy):
         if self.Strategy.KNN == strategy:
-            return KNeighborsRegressor()
+            return KNeighborsRegressor(9)
         if self.Strategy.BAYESRIDGE == strategy:
             return BayesianRidge()
         if self.Strategy.RIDGE == strategy:

@@ -26,7 +26,6 @@ sns.set_palette('viridis')
 # %%
 cwd = pathlib.Path(__file__).parent
 df_results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_missing_value_imputers_kcluster.csv', index_col=0)
-df_results
 
 
 # %%

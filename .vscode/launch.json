@@ -57,7 +57,7 @@
       "name": "Run Specific Experiment",
       "type": "python",
       "request": "launch",
-      "module": "experiments.experiment_missing_value_imputers_kcluster",
+      "module": "experiments.experiment_missing_value_imputers",
       "justMyCode": false
     },
     {

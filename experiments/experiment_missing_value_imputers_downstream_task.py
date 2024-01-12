@@ -23,7 +23,7 @@ from experiments.experiment_argument_parser import BucketingExperimentCommandLin
 
 if __name__ == "__main__":
     all_results = []
-    dataset = get_default_datamanager_configuration().run()
+    dataset = get_small_datamanager_configuration(1).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
         BaselineImputer(),
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         for imputer in configurations:
             start = time.time()
             ppl1 = DefaultPipeline(
-                preprocessor=IIDPreprocessor(cat_transformer=OxariCategoricalNormalizer(
+                preprocessor=IIDPreprocessor(cat_normalizer=OxariCategoricalNormalizer(
                     col_transformers=[SectorNameCatColumnNormalizer(),
                                       IndustryNameCatColumnNormalizer(),
                                       CountryCodeCatColumnNormalizer()])),

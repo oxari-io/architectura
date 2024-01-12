@@ -139,7 +139,7 @@ class RegressorOptimizer(OxariOptimizer):
             #  definin search space of RandomForest
             param_space = {
                 # this parameter means using the GPU when training our model to speedup the training process
-                # 'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                # 'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
                 'n_estimators': trial.suggest_int("n_estimators", 100, 500, 100),
                 'max_features': trial.suggest_float('max_features', 0.2, 0.8, step=0.2),
                 'min_samples_leaf': trial.suggest_int("min_samples_leaf", 2, 20, 2),
@@ -193,11 +193,11 @@ class RegressorOptimizer(OxariOptimizer):
                 'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
 
                 # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
 
                 # 'random_state': trial.suggest_categorical('random_state', [2020]),
                 # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning.
-                'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, 1),
+                'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, step=1),
             }
 
             model = xgb.XGBRegressor(**param_space)
@@ -205,7 +205,7 @@ class RegressorOptimizer(OxariOptimizer):
         if regr_name == "LGB":
 
             param_space = {
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
                 'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
                 'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
                 'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
@@ -221,7 +221,7 @@ class RegressorOptimizer(OxariOptimizer):
         #         "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
         #         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
         #         'splitter': trial.suggest_categorical('max_depth', ["best", "random"]),
-        #         'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+        #         'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
         #     }
 
         #     model = AdaBoostRegressor(**param_space)
@@ -260,7 +260,7 @@ class ExperimentOptimizer(RegressorOptimizer):
             #  definin search space of RandomForest
             param_space = {
                 # this parameter means using the GPU when training our model to speedup the training process
-                # 'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                # 'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
                 'n_estimators': trial.suggest_int("n_estimators", 100, 500, 100),
                 'max_features': trial.suggest_float('max_features', 0.2, 0.8, step=0.2),
                 'min_samples_leaf': trial.suggest_int("min_samples_leaf", 2, 20, 2),
@@ -314,11 +314,11 @@ class ExperimentOptimizer(RegressorOptimizer):
                 'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
 
                 # Maximum depth of a tree. Increasing this value will make the model more complex and more likely to overfit.
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
 
                 # 'random_state': trial.suggest_categorical('random_state', [2020]),
                 # If the tree partition step results in a leaf node with the sum of instance weight less than min_child_weight, then the building process will give up further partitioning.
-                'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, 1),
+                'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, step=1),
             }
 
             model = xgb.XGBRegressor(**param_space)
@@ -326,7 +326,7 @@ class ExperimentOptimizer(RegressorOptimizer):
         if regr_name == "LGB":
 
             param_space = {
-                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'max_depth': trial.suggest_int('max_depth', 3, 21,step= 3),
                 'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
                 'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
                 'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
@@ -342,7 +342,7 @@ class ExperimentOptimizer(RegressorOptimizer):
         #         "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
         #         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
         #         'splitter': trial.suggest_categorical('max_depth', ["best", "random"]),
-        #         'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+        #         'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
         #     }
 
         #     model = AdaBoostRegressor(**param_space)

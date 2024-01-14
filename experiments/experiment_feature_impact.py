@@ -14,8 +14,9 @@ from datastores.saver import LocalDestination, OxariSavingManager, PickleSaver
 from feature_reducers.core import DummyFeatureReducer
 from imputers.revenue_bucket import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
-from postprocessors.core import DecisionExplainer, JumpRateExplainer, PDVarianceExplainer, ResidualExplainer, ShapExplainer
+from postprocessors.core import ALEExplainer, DecisionExplainer, JumpRateExplainer, PDExplainer, PDVarianceExplainer, PermutationImportanceExplainer, ResidualExplainer, ShapExplainer
 from preprocessors.core import IIDPreprocessor
+from scope_estimators.k_neighbors import KNNEstimator
 from scope_estimators.linear_models import LinearRegressionEstimator
 from scope_estimators.mini_model_army import MiniModelArmyEstimator
 
@@ -79,7 +80,7 @@ def train_simple_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=KNNEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -87,7 +88,7 @@ def train_simple_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=KNNEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
@@ -95,7 +96,7 @@ def train_simple_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(10),
-        scope_estimator=LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=KNNEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
@@ -114,33 +115,39 @@ if __name__ == "__main__":
 
     dataset = get_small_datamanager_configuration(1).run()
 
-    model = train_simple_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
+    model = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
 
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
     SPLIT_1 = bag.scope_1
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
 
-    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    # explainer0 = None
+    explainer2 = ALEExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    package_ale = (explainer2.ale_importance, explainer2.X, explainer2.y)
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_ale").set_object(package_ale).set_datatarget(LocalDestination(path="model-data/output")).save()
+
+    explainer3 = PDExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    package_pd = (explainer3.pd_importance, explainer3.X, explainer3.y)
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_pd").set_object(package_pd).set_datatarget(LocalDestination(path="model-data/output")).save()
     
-    # fig, ax = explainer0.visualize()
-    # plt.show()
+    explainer4 = PermutationImportanceExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    package_permut = (explainer4.permut_importance, explainer4.X, explainer4.y)
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_ale").set_object(package_permut).set_datatarget(LocalDestination(path="model-data/output")).save()
 
-    explainer1 = PDVarianceExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1").fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    # fig1, (ax1, ax2) = explainer1.visualize()
-    # plt.show()
+    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    shap_package = (explainer0.shap_values, explainer0.X, explainer0.y)
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer").set_object(shap_package).set_datatarget(LocalDestination(path="model-data/output")).save()
 
-    package = (explainer0.shap_values, explainer0.X, explainer0.y)
-    package_pdv = (explainer1.pdv_importance, explainer1.pdv_interaction)
+    explainer1 = PDVarianceExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    package_pdv = (explainer1.pdv_importance, explainer1.X, explainer1.y)
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_pdv").set_object(package_pdv).set_datatarget(LocalDestination(path="model-data/output")).save()
 
-    all_meta_models = [
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer").set_object(package).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_pdv").set_object(package_pdv).set_datatarget(LocalDestination(path="model-data/output")),
-    ]
 
-    SavingManager = OxariSavingManager(*all_meta_models, )
-    SavingManager.run() 
+    # all_meta_models = [
+    # ]
+
+    # SavingManager = OxariSavingManager(*all_meta_models, )
+    # SavingManager.run() 
 
     # fig.savefig(f'local/eval_results/importance_explainer{0}.png')
     # explainer1 = ResidualExplainer(model.get_pipeline(1), sample_size=10).fit(*SPLIT_1.train).explain(*SPLIT_1.test)

@@ -58,7 +58,7 @@
       "type": "python",
       "request": "launch",
       "module": "experiments.experiment_feature_impact",
-      "justMyCode": true
+      "justMyCode": false
     },
     {
       "name": "Test All",

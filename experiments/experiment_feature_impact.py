@@ -112,7 +112,7 @@ if __name__ == "__main__":
     # cwd = pathlib.Path(__file__).parent
     # model = pickle.load((cwd.parent / 'model-data/output/T20231113_p_model_experiment_feature_impact.pkl').open('rb'))
 
-    dataset = get_small_datamanager_configuration(0.1).run()
+    dataset = get_small_datamanager_configuration(1).run()
 
     model = train_simple_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
 
@@ -121,11 +121,13 @@ if __name__ == "__main__":
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
 
-    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=1000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    # explainer0 = None
+    
     # fig, ax = explainer0.visualize()
     # plt.show()
 
-    explainer1 = PDVarianceExplainer(model.get_pipeline(1)).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    explainer1 = PDVarianceExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1").fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     # fig1, (ax1, ax2) = explainer1.visualize()
     # plt.show()
 

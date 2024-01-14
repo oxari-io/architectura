@@ -143,28 +143,33 @@ class ShapExplainer(OxariExplainer):
 class PDVarianceExplainer(OxariExplainer):
     # NOTE: for now only the numerical version is implemented. To add categoricals we need to figure out the dictionary of categories.
 
-    def __init__(self, estimator: OxariPipeline, sample_size=100, **kwargs) -> None:
+    def __init__(self, estimator: OxariPipeline, target_name:str, sample_size=100, **kwargs) -> None:
         super().__init__(**kwargs)
         self.estimator = estimator
         self.sample_size = sample_size
+        self.target_name = target_name
 
     def print_accuracy(self, X, y):
         y_hat = self.estimator.predict(X)
         print("Root mean squared test error = {0}".format(smape(y, y_hat)))
 
     def fit(self, X, y, **kwargs):
-        col_list = [f for f in self.estimator.feature_names_in_ if f.startswith("ft_num")]
+        self.col_list = [f for f in self.estimator.feature_names_in_]
+        # col_list = [f for f in self.estimator.feature_names_in_ if f.startswith("ft_num")]
+        self.cat_col_idx = {i:X[f].tolist() for i, f in enumerate(self.estimator.feature_names_in_) if f.startswith("ft_cat")}
+        self.cat_cols = [f for f in self.estimator.feature_names_in_ if f.startswith("ft_cat")]
 
         def wrapper_function(x):
-            x_mod = pd.DataFrame(x, columns=col_list)
+            x_mod = pd.DataFrame(x, columns=self.col_list)
             return self.estimator.predict(x_mod)
         
         self.ex = PartialDependenceVariance(predictor=wrapper_function, 
-                                            feature_names=col_list,
+                                            feature_names=self.col_list,
                                             # TODO: The categorical_names definition is the following: Dictionary where keys are feature columns and values are the categories for the feature. Necessary to identify the categorical features in the dataset.
                                             # Do we need to provide the full industry list here for example?
-                                            # categorical_names={}
-                                            target_names=["tg_numc_scope_1", "tg_numc_scope_2", "tg_numc_scope_3"])
+                                            categorical_names=self.cat_col_idx,
+                                            target_names=[self.target_name],
+                                            verbose=True)
         return self
 
     def explain(self, X, y, **kwargs):
@@ -174,10 +179,11 @@ class PDVarianceExplainer(OxariExplainer):
         indices = random_sample_indices_limited(X, self.sample_size)
 
         self.X: pd.DataFrame = X.iloc[indices]
+        self.X[self.cat_cols] = self.X[self.cat_cols].fillna('N/A').values
         self.y = y.iloc[indices]
 
-        self.pdv_importance = self.ex.explain(X=self.X.filter(regex="^ft_num").values, method='importance')
-        self.pdv_interaction = self.ex.explain(X=self.X.filter(regex="^ft_num").values, method='interaction')
+        self.pdv_importance = self.ex.explain(X=self.X.values, method='importance')
+        self.pdv_interaction = self.ex.explain(X=self.X.values, method='interaction')
 
         return self
 

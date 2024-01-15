@@ -2,7 +2,7 @@ from typing_extensions import Self
 import numpy as np
 import optuna
 import pandas as pd
-from sklearn.svm import SVR
+from sklearn.svm import SVR, LinearSVR
 
 from base import OxariScopeEstimator
 from base.common import OxariOptimizer
@@ -105,7 +105,7 @@ class FastSVROptimizer(SVROptimizer):
     def score_trial(self, trial: optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         epsilon = trial.suggest_float("epsilon", 0.01, 0.2)
         C = trial.suggest_float("C", 0.01, 2.0)
-        model = make_pipeline(Nystroem(), SVR(epsilon=epsilon, C=C)).fit(X_train, y_train)
+        model = make_pipeline(Nystroem(), LinearSVR(epsilon=epsilon, C=C)).fit(X_train, y_train)
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred)
@@ -113,7 +113,7 @@ class FastSVROptimizer(SVROptimizer):
 class FastSupportVectorEstimator(SupportVectorEstimator):
     def __init__(self, optimizer:OxariOptimizer|None =None, **kwargs):
         super().__init__(optimizer, **kwargs)
-        self._estimator = make_pipeline(Nystroem(), SVR())
+        self._estimator = make_pipeline(Nystroem(), LinearSVR())
         self._optimizer = optimizer or FastSVROptimizer()  
 
     def fit(self, X, y, **kwargs) -> Self:

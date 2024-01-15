@@ -132,11 +132,11 @@ if __name__ == "__main__":
     
     explainer4 = PermutationImportanceExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     package_permut = (explainer4.permut_importance, explainer4.X, explainer4.y)
-    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_ale").set_object(package_permut).set_datatarget(LocalDestination(path="model-data/output")).save()
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_permut").set_object(package_permut).set_datatarget(LocalDestination(path="model-data/output")).save()
 
     explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     shap_package = (explainer0.shap_values, explainer0.X, explainer0.y)
-    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer").set_object(shap_package).set_datatarget(LocalDestination(path="model-data/output")).save()
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_shap").set_object(shap_package).set_datatarget(LocalDestination(path="model-data/output")).save()
 
     explainer1 = PDVarianceExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     package_pdv = (explainer1.pdv_importance, explainer1.X, explainer1.y)

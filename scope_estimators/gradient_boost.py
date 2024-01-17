@@ -2,6 +2,7 @@ from lightgbm import LGBMRegressor
 import numpy as np
 import optuna
 import pandas as pd
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.svm import SVR
 from typing_extensions import Self
 from base import OxariScopeEstimator
@@ -53,7 +54,7 @@ class XGBOptimizer(OxariOptimizer):
 
         # create optuna study
         # num_startup_trials is the number of random iterations at the beginiing
-        study = optuna.create_study(
+        study:optuna.Study = optuna.create_study(
             study_name=f"xgboost_process_hp_tuning",
             direction="minimize",
             sampler=self.sampler,
@@ -79,9 +80,6 @@ class XGBOptimizer(OxariOptimizer):
 
         param_space = {
                 'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
-                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
-                'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
-                'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
                 'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
                 'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
             }
@@ -93,11 +91,42 @@ class XGBOptimizer(OxariOptimizer):
         return self.metric(y_val, y_pred)
 
 
+class LGBOptimizer(XGBOptimizer):
+    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
+        
+        param_space = {
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
+            }
+        
+            
+        model = LGBMRegressor(**param_space).fit(X_train, y_train)
+        y_pred = model.predict(X_val)
+
+        return self.metric(y_val, y_pred)    
+
+class SklearnGBOptimizer(XGBOptimizer):
+    def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
+        
+        param_space = {
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
+            }
+        
+            
+        model = GradientBoostingRegressor(**param_space).fit(X_train, y_train)
+        y_pred = model.predict(X_val)
+
+        return self.metric(y_val, y_pred)    
+
+
 
 class XGBEstimator(OxariScopeEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
-        self._estimator = XGBRegressor()
+        self._estimator:XGBRegressor = XGBRegressor()
         self.set_optimizer(optimizer or XGBOptimizer())
 
     def fit(self, X, y, **kwargs) -> Self:
@@ -124,7 +153,13 @@ class LGBEstimator(XGBEstimator):
     def __init__(self, optimizer=None, **kwargs):
         super().__init__(**kwargs)
         self._estimator = LGBMRegressor()
-        self.set_optimizer(optimizer or XGBOptimizer())
+        self.set_optimizer(optimizer or LGBOptimizer())
+
+class SklearnGBEstimator(XGBEstimator):
+    def __init__(self, optimizer=None, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = GradientBoostingRegressor()
+        self.set_optimizer(optimizer or SklearnGBOptimizer())
 
         
        

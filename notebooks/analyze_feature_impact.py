@@ -16,7 +16,7 @@ cwd = pathlib.Path(__file__).parent
 shap_values, X, y = pickle.load(
     io.open(
         cwd.parent /
-        'model-data/output/T20240113_p_model_experiment_feature_impact_explainer.pkl',
+        'model-data/output/T20240115_p_model_experiment_feature_impact_explainer.pkl',
         'rb'))
 
 shap_values
@@ -54,10 +54,10 @@ shap.plots.waterfall(shap_values[1])
 # %%
 shap.plots.waterfall(shap_values[2])
 # %%
-shap.plots.bar(shap_values, max_display=30)
+shap.plots.bar(shap_values, max_display=50)
 
 # %%
-shap.plots.heatmap(shap_values)
+# shap.plots.heatmap(shap_values)
 
 # %%
 pd_importance, X, y = pickle.load(
@@ -146,6 +146,19 @@ for i, ft in enumerate(feature_names):
 
 plt.show()
 
+# %%
+# %%
+pdv_importance, X, y = pickle.load(
+    io.open(
+        cwd.parent /
+        'model-data/output/T20240116_p_model_experiment_feature_impact_explainer_pdv.pkl',
+        'rb'))
+pdv_importance
+# %%
+fig, ax = plt.subplots(1, 1, figsize=(10, 20))
+plot_pd_variance(pdv_importance, ax=ax)
 
 # TODO: Compare different XGB model
 # TODO: Compare different FastSVR with SVR model
+
+# %%

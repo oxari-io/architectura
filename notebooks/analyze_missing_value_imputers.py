@@ -52,9 +52,20 @@ condition = (df_results["name"].str.startswith("TotalAssetsQuantile"))|(df_resul
 ax = sns.lineplot(df_results[condition], x="difficulty", y="smape", hue="imputer", errorbar=('se', 1))
 ax.set_title("Best of Breed comparison")
 plt.show()
+# %%
+plt.figure(figsize=(10,7))
+condition = (df_results["name"].str.startswith("TotalAssetsQuantile"))|(df_results["name"].str.startswith("Equilibrium"))|(df_results["name"].str.startswith("KNN"))|(df_results["imputer"]=="MVEImputer:LGBMRegressor")|(df_results["imputer"]=="OldOxariImputer:RandomForestRegressor")|(df_results["imputer"].str.contains("country_code"))
+ax = sns.lineplot(df_results[condition], x="difficulty", y="smape",style="mode", hue="imputer", errorbar=('se', 1))
+ax.set_title("Best of Breed comparison")
+plt.show()
+# %%
+plt.figure(figsize=(10,7))
+ax = sns.lineplot(df_results, x="difficulty", y="smape",hue="mode", errorbar=('se', 1))
+ax.set_title("Best of Breed comparison")
+plt.show()
 
 # %%
 formula = "mae ~ imputer + difficulty + mode"
-mod1 = smf.mixedlm(formula=formula, data=df_results, groups=df_results["repetition"]).fit()
+mod1 = smf.mixedlm(formula=formula, data=df_results,  groups=df_results["repetition"]).fit()
 mod1.summary()
 # %%

@@ -10,11 +10,12 @@ from base.helper import LogTargetScaler
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
 from feature_reducers.core import SelectionFeatureReducer
-from imputers import BaselineImputer
+from imputers import BaselineImputer, DummyImputer
 from imputers.categorical import CategoricalStatisticsImputer
 from imputers.iterative import MVEImputer, OldOxariImputer
 from imputers.kcluster_bucket import KNNBucketImputer
 from imputers.other_bucket import TotalAssetsQuantileBucketImputer
+from imputers.revenue_bucket import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from preprocessors.helper.custom_cat_normalizers import CountryCodeCatColumnNormalizer, IndustryNameCatColumnNormalizer, OxariCategoricalNormalizer, SectorNameCatColumnNormalizer
@@ -23,15 +24,17 @@ from experiments.experiment_argument_parser import BucketingExperimentCommandLin
 
 if __name__ == "__main__":
     all_results = []
-    dataset = get_small_datamanager_configuration(1).run()
+    dataset = get_small_datamanager_configuration(0.5).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
+        OldOxariImputer(verbose=False),
+        DummyImputer(),
         MVEImputer(sub_estimator=MVEImputer.Strategy.DT, verbose=True),
         BaselineImputer(),
         CategoricalStatisticsImputer(reference="ft_catm_country_code"),
+        RevenueQuantileBucketImputer(num_buckets=11),
         TotalAssetsQuantileBucketImputer(num_buckets=11),
         KNNBucketImputer(num_buckets=9),
-        OldOxariImputer(verbose=True),
         # AutoImputer(AutoImputer.strategies.PMM)
     ]
 

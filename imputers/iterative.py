@@ -70,7 +70,7 @@ class MVEImputer(RegressionImputerBase):
 class OldOxariImputer(MVEImputer):
 
     def __init__(self, **kwargs):
-        super().__init__(sub_estimator=RandomForestRegressor(), **kwargs)
+        super().__init__(sub_estimator=RandomForestRegressor(n_estimators=50), **kwargs)
 
 
 class GammaImputer(MVEImputer):

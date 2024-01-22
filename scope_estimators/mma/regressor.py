@@ -8,7 +8,12 @@ import numpy as np
 import optuna
 import pandas as pd
 from pmdarima.metrics import smape
+from sklearn.kernel_approximation import Nystroem
+from sklearn.linear_model import Ridge, RidgeCV, SGDRegressor
 from sklearn.metrics import median_absolute_error
+from sklearn.pipeline import make_pipeline
+from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor
 import xgboost as xgb
 from sklearn.ensemble import (ExtraTreesRegressor, GradientBoostingRegressor,
                               RandomForestRegressor, StackingRegressor, VotingRegressor)
@@ -19,6 +24,7 @@ from tqdm import tqdm
 
 from base.common import OxariOptimizer, OxariRegressor
 from base.metrics import cv_metric, optuna_metric
+from scope_estimators.stochastic_gradient import SGDEstimator
 
 # from sklearn.metrics import root_mean_squared_error as rmse
 # from sklearn.metrics import mean_absolute_percentage_error as mape
@@ -216,6 +222,54 @@ class RegressorOptimizer(OxariOptimizer):
             model = lgb.LGBMRegressor(**param_space)
             model.fit(X_train, y_train)
 
+        if regr_name == "DT":
+
+            param_space = {
+                # this parameter means using the GPU when training our model to speedup the training process
+                'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
+                # 'n_estimators': trial.suggest_int("n_estimators", 100, 500, 100),
+                'max_features': trial.suggest_float('max_features', 0.1, 0.9, step=0.1),
+                'min_samples_leaf': trial.suggest_int("min_samples_leaf", 1, 20, step=2),
+                # 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'friedman_mse', 'poisson']),
+                # The number of features to consider when looking for the best split
+                # 'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, 2),
+                # "n_jobs": trial.suggest_categorical('n_jobs', [-1])
+            }
+
+            model = DecisionTreeRegressor(**param_space)
+            model.fit(X_train, y_train)
+
+        if regr_name == "KR":
+
+            param_space = {
+                'alpha': trial.suggest_float('alpha', 0.1, 1, step=0.1),
+            }
+
+            model = make_pipeline(Nystroem(), Ridge(**param_space))
+            model.fit(X_train, y_train)
+
+        if regr_name == "KSGD":
+
+            param_space = {
+                'penalty': 'elasticnet',
+                'l1_ratio': trial.suggest_float('l1_ratio', 0.1, 1, step=0.1),
+                'learning_rate': 'optimal',
+                'alpha': trial.suggest_float('alpha', 1e-5, 1e-1, log=True),
+            }
+
+            model = make_pipeline(Nystroem(), SGDRegressor(**param_space))
+            model.fit(X_train, y_train)
+
+        if regr_name == "KSVR":
+
+            param_space = {
+                'kernel': trial.suggest_categorical('kernel', ['rbf', 'linear', 'poly', 'sigmoid']),
+                'gamma': trial.suggest_float('gamma', 2e-15, 2e3, log=True),
+            }
+
+            model = make_pipeline(Nystroem(), SVR(**param_space))
+            model.fit(X_train, y_train)
+
         # if regr_name == "ADB":
         #     param_space = {
         #         "n_estimators": trial.suggest_int("n_estimators", 100, 900, step=200),
@@ -328,7 +382,7 @@ class ExperimentOptimizer(RegressorOptimizer):
             param_space = {
                 'max_depth': trial.suggest_int('max_depth', 3, 21, 3),
                 'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
-                'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
+                'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 3, log=True),
                 'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
                 'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
                 'n_estimators': trial.suggest_int("n_estimators", 100, 300, 100),
@@ -351,6 +405,21 @@ class ExperimentOptimizer(RegressorOptimizer):
         y_pred = model.predict(X_val)
 
         return optuna_metric(y_true=y_val, y_pred=y_pred, metric=self.metric)
+    
+class StackingRegressorOptimizer(RegressorOptimizer):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.models = [
+            ('DT', DecisionTreeRegressor),
+            ('KNN', KNeighborsRegressor),
+            ('KR', (Nystroem, Ridge)),
+            ('KSGD', (Nystroem, SGDRegressor)),
+        ]
+        # self.models_level_2 = [
+        #     ('EXF', ExtraTreesRegressor),
+        #     ('KSVR', (Nystroem, SVR)),
+        #     ('RFR', RandomForestRegressor),
+        # ]
 
 class BucketRegressor(OxariRegressor):
     # TODO: add docstring
@@ -504,7 +573,10 @@ class BucketStackingRegressor(OxariRegressor):
                 best_params = candidate_data.get("best_params")
                 ModelConstructor = candidate_data.get("Model")
                 
-                model = ModelConstructor(**best_params)
+                if isinstance(ModelConstructor, tuple):
+                    model = make_pipeline(ModelConstructor[0](), ModelConstructor[1](**best_params))
+                else:
+                    model = ModelConstructor(**best_params)
 
                 # calculate the score of each individual model to weight stacking mechanism
                 # NOTE: Could also be done faster by not using cv
@@ -567,3 +639,16 @@ class BucketStackingRegressor(OxariRegressor):
 
     def get_config(self, deep=True):
         return self.params
+
+class BucketDoubleLevelStackingRegressor(BucketStackingRegressor):
+    def _construct_stacking_regressor(self, X, y, trained_candidates):
+        final_layer_base_models = [
+            ('EXF', ExtraTreesRegressor()),
+            ('KSVR', make_pipeline(Nystroem(), SVR())),
+            ('RFR', RandomForestRegressor()),
+        ]
+        final_layer_lgbm = StackingRegressor(estimators=final_layer_base_models, final_estimator=lgb.LGBMRegressor(n_estimators=25, subsample=0.5, min_samples_leaf=25, max_features=1, random_state=42), n_jobs=-1)
+        
+        base_models = [(name, v["model"]) for name, v in trained_candidates.items()]
+        s_regressor = StackingRegressor(estimators=base_models, final_estimator=final_layer_lgbm, n_jobs=-1).fit(X, y)
+        return s_regressor

@@ -141,7 +141,7 @@ class StackingVsVotingExperimentCommandLineParser(ExperimentCommandLineParser):
 
     def set_experiment_specific_arguments(self):
         self.parser.add_argument('-c',
-                                 default=[BaselineEstimator, MiniModelArmyEstimator, EvenWeightMiniModelArmyEstimator, BucketStackingArmyEstimator],
+                                 default=[BucketStackingArmyEstimator, BucketDoubleLevelStackingArmyEstimator, BaselineEstimator, MiniModelArmyEstimator, EvenWeightMiniModelArmyEstimator],
                                  dest='configurations',
                                  help='Names of estimators to compare',
                                  nargs='*',

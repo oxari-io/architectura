@@ -18,6 +18,7 @@ from scope_estimators import (BaselineEstimator,
                               MiniModelArmyEstimator, 
                               BucketStackingArmyEstimator)
 from experiments.experiment_argument_parser import StackingVsVotingExperimentCommandLineParser
+from scope_estimators.mini_model_army import BucketDoubleLevelStackingArmyEstimator
 # from scope_estimators.mini_model_army import AlternativeCVMiniModelArmyEstimator, CombinedMiniModelArmyEstimator
 
 
@@ -28,6 +29,7 @@ def convert_estimators(estimators_string):
     
     switcher = {
         "BucketStackingArmyEstimator": BucketStackingArmyEstimator,
+        "BucketDoubleLayerStackingArmyEstimator": BucketDoubleLevelStackingArmyEstimator,
         "EvenWeightMiniModelArmyEstimator": EvenWeightMiniModelArmyEstimator, 
         "MiniModelArmyEstimator": MiniModelArmyEstimator, 
         "BaselineEstimator": BaselineEstimator,
@@ -55,7 +57,7 @@ if __name__ == "__main__":
 
     all_results = []
     for i in range(num_reps):
-        dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
+        dataset = get_small_datamanager_configuration(0.5).run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         if (scope == True):

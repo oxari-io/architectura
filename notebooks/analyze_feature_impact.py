@@ -100,7 +100,7 @@ cwd = pathlib.Path(__file__).parent
 permut_values, X, y = pickle.load(
     io.open(
         cwd.parent /
-        'model-data/output/T20240115_p_model_experiment_feature_impact_explainer_ale.pkl',
+        'model-data/output/T20240115_p_model_experiment_feature_impact_explainer_permut.pkl',
         'rb'))
 
 # Some plots explained https://towardsdatascience.com/introduction-to-shap-with-python-d27edc23c454

@@ -4,11 +4,11 @@ from base.oxari_types import ArrayLike
 from scope_estimators.mma.classifier import (BucketClassifier, UnderfittedBucketClassifier,
                                              BucketClassifierEvauator,
                                              ClassifierOptimizer, MajorityBucketClassifier, RandomGuessBucketClassifier)
-from scope_estimators.mma.regressor import (BucketRegressor,
+from scope_estimators.mma.regressor import (BucketDoubleLevelStackingRegressor, BucketRegressor, BucketStackingRegressor,
                                             EvenWeightBucketRegressor, 
                                             AlternativeCVMetricBucketRegressor,
                                             RegressorOptimizer,
-                                            CombinedBucketRegressor)
+                                            CombinedBucketRegressor, StackingRegressorOptimizer)
 from typing_extensions import Self
 N_TRIALS = 1
 N_STARTUP_TRIALS = 1
@@ -117,3 +117,13 @@ class MajorityClsMiniModelArmyEstimator(MiniModelArmyEstimator):
     def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
         super().__init__(n_buckets, cls, rgs, **kwargs)
         self.bucket_cl: BucketClassifier = MajorityBucketClassifier().set_optimizer(ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+
+class BucketStackingArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_rg: BucketRegressor = BucketStackingRegressor().set_optimizer(RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
+
+class BucketDoubleLevelStackingArmyEstimator(MiniModelArmyEstimator):
+    def __init__(self, n_buckets=5, cls={}, rgs={}, **kwargs):
+        super().__init__(n_buckets, cls, rgs, **kwargs)
+        self.bucket_rg: BucketRegressor = BucketDoubleLevelStackingRegressor().set_optimizer(StackingRegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())

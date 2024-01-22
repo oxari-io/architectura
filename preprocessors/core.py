@@ -57,6 +57,7 @@ class BaselinePreprocessor(OxariPreprocessor):
         self.cat_transformer = cat_transformer or ce.TargetEncoder()
         self.cat_normalizer = cat_normalizer or OxariCategoricalNormalizer(
             col_transformers=[
+                # NOTE: the linktransformer currently does not work with macOS
                 LinkTransformerCatColumnNormalizer(),
                 CountryCodeCatColumnNormalizer()
             ]

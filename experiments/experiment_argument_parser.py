@@ -136,6 +136,17 @@ class WeightedVotingExperimentCommandLineParser(ExperimentCommandLineParser):
                                  nargs='*',
                                  type=str)
         return super().set_experiment_specific_arguments()
+    
+class StackingVsVotingExperimentCommandLineParser(ExperimentCommandLineParser):
+
+    def set_experiment_specific_arguments(self):
+        self.parser.add_argument('-c',
+                                 default=[BucketStackingArmyEstimator, BucketDoubleLevelStackingArmyEstimator, BaselineEstimator, MiniModelArmyEstimator, EvenWeightMiniModelArmyEstimator],
+                                 dest='configurations',
+                                 help='Names of estimators to compare',
+                                 nargs='*',
+                                 type=str)
+        return super().set_experiment_specific_arguments()
 
 
 class ClassifierPerformanceExperimentCommandLineParser(ExperimentCommandLineParser):

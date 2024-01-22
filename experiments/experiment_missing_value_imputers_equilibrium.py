@@ -1,30 +1,16 @@
 # pip install autoimpute
-import time
-from IPython.core.pylabtools import figsize
-from lightgbm import LGBMRegressor
 
 import pandas as pd
-from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
-from base.dataset_loader import CompanyDataFilter, SimpleDataFilter
-from base.helper import LogTargetScaler
-from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
-from feature_reducers import PCAFeatureReducer
-from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
-from datasources import S3Datasource
+from base import OxariDataManager, OxariImputer
+from base.run_utils import get_small_datamanager_configuration
+from imputers import BaselineImputer
 from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
 import tqdm
-import itertools as it
 
-from imputers.categorical import CategoricalStatisticsImputer
 from imputers.core import DummyImputer
-from imputers.equilibrium_method import EquilibriumImputer
-from imputers.interpolation import LinearInterpolationImputer, SplineInterpolationImputer
-from imputers.revenue_bucket import RevenueExponentialBucketImputer, RevenueParabolaBucketImputer
+from imputers.equilibrium_method import EquilibriumImputer, FastEquilibriumImputer
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
 
 if __name__ == "__main__":
 
@@ -35,35 +21,39 @@ if __name__ == "__main__":
     # - Vertical interpolation interpolates the NA's the column independently of other columns. Usually grouped by company.
     # - Horizontal interpolation does not take any other row into account for imputation. Basically making it time-independent.
     difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    dataset = get_small_datamanager_configuration(0.1).run()
+    dataset = get_small_datamanager_configuration(0.35).run()
+    configurations: list[OxariImputer] = [
+        BaselineImputer(),
+        *[EquilibriumImputer(verbose=False, mims_tresh=m, skip_converged_cols=b, diff_tresh=0, max_diff_increase_thresh=0.6) for m in [0.01, 0.001, 0.00001] for b in [True, False]],
+        *[FastEquilibriumImputer(verbose=False, mims_tresh=m, skip_converged_cols=b, diff_tresh=0, max_diff_increase_thresh=0.6) for m in [0.01, 0.001, 0.00001] for b in [True, False]]
+    ]
+    repeats = range(10)
+    with tqdm.tqdm(total=len(repeats) * len(configurations) * len(difficulties)) as pbar:
+        for i in repeats:
+            bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+            SPLIT_1 = bag.scope_1
+            X, Y = SPLIT_1.train
+            X_new = X.copy()
+            X_new[X.filter(regex='^ft_num', axis=1).columns] = minmax_scale(X.filter(regex='^ft_num', axis=1))
 
-    bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
-    SPLIT_1 = bag.scope_1
-    X, Y = SPLIT_1.train
-    X_new = X.copy()
-    # X_new[X.filter(regex='^ft_num', axis=1).columns] = minmax_scale(X.filter(regex='^ft_num', axis=1))
+            X_train, X_test = train_test_split(X_new, test_size=0.5)
+            keeping_criterion_2 = (X_test.isna().mean(axis=0)<0.3)
+            keep_columns_2 = X_train.loc[:, keeping_criterion_2].columns
 
-    X_train, X_test = train_test_split(X_new, test_size=0.5)
-    keeping_criterion_2 = (X_test.isna().mean(axis=0)<0.5)
-    keep_columns_2 = X_train.loc[:, keeping_criterion_2].columns
+            for imputer in configurations:
+                imputer_2: OxariImputer = imputer.clone()
+                imputer_2 = imputer_2.fit(X_train[keep_columns_2])
 
-    imputer_2: EquilibriumImputer = EquilibriumImputer(max_iter=100).clone()
-    X_subset = X_train[keep_columns_2]
-    imputer_2 = imputer_2.fit(X_subset)
+                for dff in difficulties:
 
+                    imputer_2.evaluate(X_test[keep_columns_2], p=dff)
+                    all_results.append({"repetition": i, "difficulty": dff, "mode":"low_missingness", "num_ft":len(keep_columns_2),**imputer_2.evaluation_results, **imputer_2.get_config()})
 
-    imputer_2.evaluate(X_subset, p=0.1)
-    diffs = pd.DataFrame(np.vstack(imputer_2.history_diffs), columns=imputer_2._features_transformed)
-    mimss = pd.DataFrame(np.vstack(imputer_2.history_mims), columns=imputer_2._features_transformed)
-
-    fig, axes = plt.subplots(1, 2, figsize=(20, 10))
-    sns.lineplot(data=diffs.reset_index().melt('index'), x='index', y='value', hue='variable', ax=axes[0])
-    sns.lineplot(data=mimss.reset_index().melt('index'), x='index', y='value', hue='variable', ax=axes[1])
-    fig.tight_layout()
-    plt.show()
-
-
-
+                    concatenated = pd.json_normalize(all_results)
+                    fname = __loader__.name.split(".")[-1]
+                    pbar.update(1)
+                    concatenated.to_csv(f'local/eval_results/{fname}.csv')
+    concatenated.to_csv(f'local/eval_results/{fname}.csv')
 
 
 

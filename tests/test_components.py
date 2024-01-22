@@ -7,7 +7,7 @@ from feature_reducers.core import AgglomerateFeatureReducer, DummyFeatureReducer
 from imputers.categorical import CategoricalStatisticsImputer
 from imputers.core import DummyImputer
 from imputers.iterative import MVEImputer
-from imputers.kcluster_bucket import KMeansBucketImputer, KMedianBucketImputer
+from imputers.kcluster_bucket import KNNBucketImputer, KMedianBucketImputer
 from imputers.revenue_bucket import RevenueBucketImputer, RevenueQuantileBucketImputer
 from preprocessors.core import BaselinePreprocessor, DummyPreprocessor, IIDPreprocessor, ImprovedBaselinePreprocessor, NormalizedIIDPreprocessor
 from base.dataset_loader import OxariDataManager
@@ -38,7 +38,7 @@ def test_feature_reducers(feature_reducer: OxariFeatureReducer, const_data_manag
     RevenueBucketImputer(),
     RevenueQuantileBucketImputer(),
     CategoricalStatisticsImputer(),
-    KMeansBucketImputer(),
+    KNNBucketImputer(),
     KMedianBucketImputer(),
     MVEImputer(),
 ])

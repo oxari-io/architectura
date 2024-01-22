@@ -74,7 +74,7 @@ if __name__ == "__main__":
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(),
         feature_reducer=AgglomerateFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(buckets_number=3),
+        imputer=RevenueQuantileBucketImputer(num_buckets=3),
         scope_estimator=SupportVectorEstimator(n_trials=1, n_startup_trials=1),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),

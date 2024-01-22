@@ -8,9 +8,9 @@ from sklearn import cluster
 from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 from sklearn.ensemble import RandomForestRegressor
 from base.common import DefaultClusterEvaluator, OxariImputer
-from base.helper import replace_ft_num
+from base.helper import convert_to_df, replace_ft_num
 from base.mappings import NumMapping
-from sklearn.linear_model import BayesianRidge, Ridge, GammaRegressor
+from sklearn.linear_model import BayesianRidge, LinearRegression, Ridge, GammaRegressor
 from sklearn.kernel_approximation import Nystroem
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.ensemble import RandomForestRegressor
@@ -27,7 +27,6 @@ class MVEImputer(RegressionImputerBase):
 
     class Strategy(Enum):
         KNN = auto()
-        BAYESRIDGE = auto()
         RIDGE = auto()
         DT = auto()
 
@@ -40,16 +39,15 @@ class MVEImputer(RegressionImputerBase):
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:
         self.logger.debug(f"Fitting {self.__class__.__name__} with {self.sub_estimator.__class__.__name__}")
         X_num = X.filter(regex='^ft_num')
-        X_train_scaled = pd.DataFrame(self._fit_scaler(X_num, y), columns=X_num.columns, index=X_num.index)
+        X_train_scaled = convert_to_df(self._fit_scaler(X_num, y), X_num)
 
         self._estimator = self._estimator.fit(X_train_scaled)
         return self
 
     def transform(self, X, **kwargs) -> ArrayLike:
         X_num = X.filter(regex='^ft_num')
-        
-        # X_new = self._estimator.transform(X_num)
-        X_new = pd.DataFrame(self._scaler.inverse_transform(self._scale_transform(X_num)), index=X_num.index, columns=X_num.columns)
+        X_scaled_imputed = convert_to_df(self._scale_transform(X_num), X_num) 
+        X_new = convert_to_df(self._scaler.inverse_transform(X_scaled_imputed), X_num).fillna(0).replace([np.inf], np.finfo(np.float64).max)
         return replace_ft_num(X, X_new)
 
     def evaluate(self, X, y=None, **kwargs):
@@ -57,16 +55,14 @@ class MVEImputer(RegressionImputerBase):
 
     def _instantiate_strategy(self, strategy:Strategy):
         if self.Strategy.KNN == strategy:
-            return KNeighborsRegressor()
-        if self.Strategy.BAYESRIDGE == strategy:
-            return BayesianRidge()
+            return KNeighborsRegressor(9)
         if self.Strategy.RIDGE == strategy:
             return KernelRidge(kernel='rbf')
         if self.Strategy.DT == strategy:
             return DecisionTreeRegressor()
 
-    def get_config(self):
-        return {"strategy": self.sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self.sub_estimator.__class__.__name__}", **super().get_config()}
+    def get_config(self, deep=True):
+        return {"strategy": self.sub_estimator.__class__.__name__, "imputer": f"{self.name}:{self.sub_estimator.__class__.__name__}", **super().get_config(deep)}
 
 
 
@@ -74,7 +70,7 @@ class MVEImputer(RegressionImputerBase):
 class OldOxariImputer(MVEImputer):
 
     def __init__(self, **kwargs):
-        super().__init__(sub_estimator=RandomForestRegressor(), **kwargs)
+        super().__init__(sub_estimator=RandomForestRegressor(n_estimators=50), **kwargs)
 
 
 class GammaImputer(MVEImputer):

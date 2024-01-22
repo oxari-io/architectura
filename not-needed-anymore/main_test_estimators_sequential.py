@@ -73,7 +73,7 @@ if __name__ == "__main__":
             name = f"{Model.__name__}-{idx}",
             preprocessor=Preprocessor(),
             feature_reducer=FtReducer(),
-            imputer=Imputer(buckets_number=random.randint(3,7)),
+            imputer=Imputer(num_buckets=random.randint(3,7)),
             scope_estimator=Model(),
         ) for Model, Preprocessor, Imputer, FtReducer, idx in all_combinations
     ]

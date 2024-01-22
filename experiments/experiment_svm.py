@@ -9,7 +9,7 @@ from scope_estimators import SupportVectorEstimator, FastSupportVectorEstimator
 from base.helper import LogTargetScaler
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer, DummyFeatureReducer
-from imputers import RevenueQuantileBucketImputer, KMeansBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
+from imputers import RevenueQuantileBucketImputer, KNNBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource
 from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
@@ -37,7 +37,7 @@ if __name__ == "__main__":
                 dp1 = DefaultPipeline(
                         preprocessor=IIDPreprocessor(),
                         feature_reducer=DummyFeatureReducer(),
-                        imputer=RevenueQuantileBucketImputer(buckets_number=5),
+                        imputer=RevenueQuantileBucketImputer(num_buckets=5),
                         scope_estimator=imputer,
                         ci_estimator=BaselineConfidenceEstimator(),
                         scope_transformer=LogTargetScaler(),

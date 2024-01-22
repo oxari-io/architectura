@@ -8,7 +8,7 @@ from base import DummyTargetScaler, OxariDataManager, OxariPipeline
 from base.helper import LogTargetScaler
 from datasources.core import DefaultDataManager
 from feature_reducers.core import DummyFeatureReducer, PCAFeatureReducer
-from imputers import KMeansBucketImputer, RevenueQuantileBucketImputer
+from imputers import KNNBucketImputer, RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import (BaselinePreprocessor, IIDPreprocessor,
                            ImprovedBaselinePreprocessor)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     ]
     all_imputers = [
         RevenueQuantileBucketImputer,
-        KMeansBucketImputer,
+        KNNBucketImputer,
     ]
     all_feature_reducers = [
         PCAFeatureReducer,

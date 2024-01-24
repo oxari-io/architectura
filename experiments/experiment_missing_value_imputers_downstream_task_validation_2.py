@@ -24,17 +24,15 @@ from experiments.experiment_argument_parser import BucketingExperimentCommandLin
 
 if __name__ == "__main__":
     all_results = []
-    dataset = get_small_datamanager_configuration(0.5).run()
+    dataset:OxariDataManager = get_small_datamanager_configuration(1).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
-        HybridCategoricalStatisticsImputer(),        
-        OldOxariImputer(verbose=False),
-        DummyImputer(),
-        MVEImputer(sub_estimator=MVEImputer.Strategy.DT, verbose=True),
-        MVEImputer(sub_estimator=MVEImputer.Strategy.RIDGE, verbose=True),
-        BaselineImputer(),
+        HybridCategoricalStatisticsImputer(),
         CategoricalStatisticsImputer(reference="ft_catm_country_code"),
         CategoricalStatisticsImputer(reference="ft_catm_industry_name"),
+        DummyImputer(),
+        MVEImputer(sub_estimator=MVEImputer.Strategy.DT, verbose=True),
+        BaselineImputer(),
         RevenueQuantileBucketImputer(num_buckets=11),
         TotalAssetsQuantileBucketImputer(num_buckets=11),
         KNNBucketImputer(num_buckets=9),
@@ -57,7 +55,7 @@ if __name__ == "__main__":
                                       CountryCodeCatColumnNormalizer()])),
                 feature_reducer=DummyFeatureReducer(),
                 imputer=imputer,
-                scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=10),
+                scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)

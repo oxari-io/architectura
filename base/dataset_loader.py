@@ -308,7 +308,7 @@ class SplitScopeDataset():
         columns = self.data.columns.difference(self.non_features)
         X = self.data.dropna(how="all", subset=scope_col).copy()
         X = X[X[scope_col] > 0]
-        return SplitBag(X[columns], X[scope_col], self.split_size_test, self.split_size_test)
+        return SplitBag(X[columns], X[scope_col], self.split_size_val, self.split_size_test)
 
 
 class DataFilter(OxariTransformer):

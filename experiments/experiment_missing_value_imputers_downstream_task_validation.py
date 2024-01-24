@@ -24,11 +24,11 @@ from experiments.experiment_argument_parser import BucketingExperimentCommandLin
 
 if __name__ == "__main__":
     all_results = []
-    dataset = get_small_datamanager_configuration(0.5).run()
+    dataset:OxariDataManager = get_small_datamanager_configuration(1).run()
     configurations: list[OxariImputer] = [
         # AutoImputer(),
-        HybridCategoricalStatisticsImputer(),        
         OldOxariImputer(verbose=False),
+        HybridCategoricalStatisticsImputer(),        
         DummyImputer(),
         MVEImputer(sub_estimator=MVEImputer.Strategy.DT, verbose=True),
         MVEImputer(sub_estimator=MVEImputer.Strategy.RIDGE, verbose=True),
@@ -44,8 +44,8 @@ if __name__ == "__main__":
     num_repeats = 10
     pbar = tqdm(total=len(configurations) * num_repeats)
 
-    for rep in range(10):
-        bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+    for rep in range(15):
+        bag = dataset.get_split_data(OxariDataManager.ORIGINAL, split_size_test=0.6)
         SPLIT_1 = bag.scope_1
 
         for imputer in configurations:

@@ -8,8 +8,10 @@ from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceE
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from experiments.experiment_argument_parser import FeatureScalingExperimentCommandLineParser
 from feature_reducers import PCAFeatureReducer
+from feature_reducers.core import DummyFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
+from imputers.core import BaselineImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator, SupportVectorEstimator
@@ -37,14 +39,19 @@ if __name__ == "__main__":
         DummyFeatureScaler(),
     ]
     tg_configurations = [
+        ArcSinhTargetScaler(),
         DummyTargetScaler(),
         LogTargetScaler(),
-        ArcSinhTargetScaler(),
+    ]
+    
+    ft_reducers = [
+        PCAFeatureReducer(40),
+        DummyFeatureReducer(),
     ]
 
-    pbar = tqdm.tqdm(total=len(ft_configurations) * len(tg_configurations) * num_reps)
+    pbar = tqdm.tqdm(total=len(ft_configurations) * len(tg_configurations) * len(ft_reducers) * num_reps)
+    dataset: OxariDataManager = get_small_datamanager_configuration(1).run()  # run() calls _transform()
     for i in range(num_reps):
-        dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         SPLIT_2 = bag.scope_2
@@ -55,45 +62,45 @@ if __name__ == "__main__":
 
         for ft_scaler in ft_configurations:
             for tg_scaler in tg_configurations:
+                for ft_reducer in ft_reducers:
+                    start = time.time()
 
-                start = time.time()
-
-                ppl1 = DefaultPipeline(
-                    preprocessor=IIDPreprocessor(fin_transformer=ft_scaler),
-                    feature_reducer=PCAFeatureReducer(10),
-                    imputer=RevenueQuantileBucketImputer(),
-                    scope_estimator=MiniModelArmyEstimator(),
-                    ci_estimator=None,
-                    scope_transformer=tg_scaler,
-                ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
-
-                all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
-
-                if (scope == True):
-                    SPLIT_2 = bag.scope_2
-                    ppl2 = DefaultPipeline(
+                    ppl1 = DefaultPipeline(
                         preprocessor=IIDPreprocessor(fin_transformer=ft_scaler),
-                        feature_reducer=PCAFeatureReducer(10),
-                        imputer=RevenueQuantileBucketImputer(),
-                        scope_estimator=MiniModelArmyEstimator(),
+                        feature_reducer=ft_reducer,
+                        imputer=BaselineImputer(),
+                        scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
                         ci_estimator=None,
                         scope_transformer=tg_scaler,
-                    ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
-                    all_results.append({"repetition": i, "time": time.time() - start, "scope": 2, **ppl2.evaluation_results})
+                    ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
 
-                    SPLIT_3 = bag.scope_3
-                    ppl3 = DefaultPipeline(
-                        preprocessor=IIDPreprocessor(fin_transformer=ft_scaler),
-                        feature_reducer=PCAFeatureReducer(10),
-                        imputer=RevenueQuantileBucketImputer(),
-                        scope_estimator=MiniModelArmyEstimator(),
-                        ci_estimator=None,
-                        scope_transformer=tg_scaler,
-                    ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
-                    all_results.append({"repetition": i, "time": time.time() - start, "scope": 3, **ppl3.evaluation_results})
+                    all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
 
-                ### EVALUATION RESULTS ###
-                concatenated = pd.json_normalize(all_results)
-                fname = __loader__.name.split(".")[-1]
-                concatenated.to_csv(f'local/eval_results/{fname}.csv')
-                pbar.update(1)
+                    if (scope == True):
+                        SPLIT_2 = bag.scope_2
+                        ppl2 = DefaultPipeline(
+                            preprocessor=IIDPreprocessor(fin_transformer=ft_scaler),
+                            feature_reducer=ft_reducer,
+                            imputer=BaselineImputer(),
+                            scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
+                            ci_estimator=None,
+                            scope_transformer=tg_scaler,
+                        ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
+                        all_results.append({"repetition": i, "time": time.time() - start, "scope": 2, **ppl2.evaluation_results})
+
+                        SPLIT_3 = bag.scope_3
+                        ppl3 = DefaultPipeline(
+                            preprocessor=IIDPreprocessor(fin_transformer=ft_scaler),
+                            feature_reducer=ft_reducer,
+                            imputer=BaselineImputer(),
+                            scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
+                            ci_estimator=None,
+                            scope_transformer=tg_scaler,
+                        ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
+                        all_results.append({"repetition": i, "time": time.time() - start, "scope": 3, **ppl3.evaluation_results})
+
+                    ### EVALUATION RESULTS ###
+                    concatenated = pd.json_normalize(all_results)
+                    fname = __loader__.name.split(".")[-1]
+                    concatenated.to_csv(f'local/eval_results/{fname}.csv')
+                    pbar.update(1)

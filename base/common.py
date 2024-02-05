@@ -124,6 +124,14 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         # y_pred[np.isinf(y_pred)] = 10e12
         offsets = np.array(np.maximum(y_pred, y_true) / np.minimum(y_pred, y_true))
         percentile_deviation = np.quantile(offsets, [.5, .75, .90, .95])
+
+        accuracies = np.minimum(100.0, 100.0 * np.abs(1 - np.abs((y_true - y_pred) / y_true)))
+        accuracy_ranges = [(10, "<10%"), (20, "10-20%"), (50, "20-50%"), (None, ">50%")]
+        confidence_rating = {
+            label: np.sum((accuracies < threshold) if threshold else (accuracies >= 50))
+            for threshold, label in accuracy_ranges
+        }
+
         # NOTE MAPE: Important interpretation https://medium.com/@davide.sarra/how-to-interpret-smape-just-like-mape-bf799ba03bdc
         # NOTE R2: Why it's useless https://data.library.virginia.edu/is-r-squared-useless/
         # NOTE RMSE: Tends to grow with sample size, which is undesirable https://medium.com/human-in-a-machine-world/mae-and-rmse-which-metric-is-better-e60ac3bde13d
@@ -134,12 +142,8 @@ class DefaultRegressorEvaluator(OxariEvaluator):
                     "RMSE": mean_squared_error(y_true, y_pred, squared=False),
                     # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
                     "MAPE": mape(y_true, y_pred),
-                    "offset_percentile": {
-                        "50%": percentile_deviation[0],
-                        "75%": percentile_deviation[1],
-                        "90%": percentile_deviation[2],
-                        "95%": percentile_deviation[3]
-                    },
+                    "offset_percentile": {f"{p}%": percentile_deviation[i] for i, p in enumerate([50, 75, 90, 95])},
+                    "confidence_rating": confidence_rating
         }
         print(f"Here's the sMAPE value of the regressor evaluator: {smape(y_true, y_pred) / 100}")
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')
@@ -782,6 +786,13 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
     def evaluate(self, X_train, y_train, X_test, y_test) -> OxariPipeline:
         st = time.time()
+        self._evaluation_results = self._evaluate(X_train, y_train, X_test, y_test)
+        et = time.time()
+        elapsed_time = et - st
+        self.logger.info(f'Evaluate function is completed with execution time: {elapsed_time} seconds')
+        return self
+    
+    def _evaluate(self, X_train, y_train, X_test, y_test) -> dict:
         X_test = self._preprocess(X_test)
         X_train = self._preprocess(X_train)
         y_pred_test = self.estimator.predict(X_test)
@@ -789,15 +800,14 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         y_pred_test_reversed = self._reverse_scope(y_pred_test)
         y_test_transformed = self._transform_scope(y_test)
         y_train_transformed = self._transform_scope(y_train)
-        self._evaluation_results = {}
-        self._evaluation_results["raw"] = self._evaluator.evaluate(y_test, y_pred_test_reversed, X_test=X_test)
-        self._evaluation_results["test"] = self.estimator.evaluate(y_test_transformed, y_pred_test, X_test=X_test)
-        self._evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
+
+        _evaluation_results = {}
+        _evaluation_results["raw"] = self._evaluator.evaluate(y_test, y_pred_test_reversed, X_test=X_test)
+        _evaluation_results["test"] = self.estimator.evaluate(y_test_transformed, y_pred_test, X_test=X_test)
+        _evaluation_results["train"] = self.estimator.evaluate(y_train_transformed, y_pred_train, X_test=X_train)
         self.logger.info(f'sMAPE value of model evaluation: {smape(y_test_transformed, y_pred_test) / 100}')
-        et = time.time()
-        elapsed_time = et - st
-        self.logger.info(f'Evaluate function is completed with execution time: {elapsed_time} seconds')
-        return self
+
+        return _evaluation_results
 
     def clone(self) -> Self:
         # TODO: Might introduce problems with bidirectional associations between objects. Needs better conceptual plan.
@@ -1056,10 +1066,24 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
 
         return results
     
-    def evaluate(self, y_true, y_pred, **kwargs) -> Self:
-        # X = kwargs.get("X")
-        # sub_eval_results = self.collect_eval_results()  
-        # self.statistics
+    def evaluate(self, X_train, y_train, X_test, y_test, M) -> Self:
+        sub_eval_results = []
+
+        for scope, pipeline in self.pipelines.items():
+            pipeline.evaluate(X_train, y_train[f"tg_numc_{scope}"], X_test, y_test[f"tg_numc_{scope}"])
+            sub_eval_results.append(pipeline._evaluation_results)
+
+        scope_results = [result["raw"] for result in sub_eval_results]
+
+        self.statistics = {
+            "performance": {metric: {f"scope_{i+1}": result[metric] for i, result in enumerate(scope_results)} for metric in ["sMAPE", "MAE"]},
+            "confidence_rating": {f"scope_{i+1}": result["confidence_rating"] for i, result in enumerate(scope_results)},
+            "meta": {
+                "num_rows_tested": M.shape[0],
+                "num_companies_tested": M['key_isin'].nunique()
+            }
+        }
+
         return self
 
     # def _convert_input(self, X:dict|pd.Series|pd.DataFrame|list[dict]):

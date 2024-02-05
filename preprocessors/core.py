@@ -60,6 +60,8 @@ class BaselinePreprocessor(OxariPreprocessor):
                 # NOTE: the linktransformer currently does not work with macOS
                 LinkTransformerCatColumnNormalizer(),
                 CountryCodeCatColumnNormalizer()
+                # SectorNameCatColumnNormalizer(), 
+                # IndustryNameCatColumnNormalizer(),
             ]
         )
         # self.scope_transformer = scope_transformer or LogarithmScaler()

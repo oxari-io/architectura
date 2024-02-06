@@ -9,7 +9,7 @@ from sklearn.preprocessing import PowerTransformer
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.constants import FEATURE_SET_VIF_UNDER_10
-from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader
+from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader, SplitBag
 from base.helper import DummyTargetScaler, LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
 from base.run_utils import get_default_datamanager_configuration
@@ -89,6 +89,16 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
     model.add_pipeline(scope=1, pipeline=dp1)
     model.add_pipeline(scope=2, pipeline=dp2)
     model.add_pipeline(scope=3, pipeline=dp3)
+
+    data = DATA.dropna(how="all").copy()
+    data = data[data.filter(regex='tg_').notna().all(axis=1)]
+    X = data.filter(regex='ft_', axis=1)
+    Y = data.filter(regex='tg_', axis=1)
+    M = data.filter(regex='key_', axis=1)
+    
+    bag = SplitBag(X, Y)
+    model.evaluate(bag.train.X, bag.train.y, bag.test.X, bag.test.y, M)
+    
     return model
 
 def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
@@ -128,6 +138,16 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     model.add_pipeline(scope=1, pipeline=dp1)
     model.add_pipeline(scope=2, pipeline=dp2)
     model.add_pipeline(scope=3, pipeline=dp3)
+
+    data = DATA.dropna(how="all").copy()
+    data = data[data.filter(regex='tg_').notna().all(axis=1)]
+    X = data.filter(regex='ft_', axis=1)
+    Y = data.filter(regex='tg_', axis=1)
+    M = data.filter(regex='key_', axis=1)
+    
+    bag = SplitBag(X, Y)
+    model.evaluate(bag.train.X, bag.train.y, bag.test.X, bag.test.y, M)
+    
     return model
 
 

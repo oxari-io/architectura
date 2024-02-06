@@ -52,7 +52,7 @@ if __name__ == "__main__":
     pbar = tqdm.tqdm(total=len(ft_configurations) * len(tg_configurations) * len(ft_reducers) * num_reps)
     dataset: OxariDataManager = get_small_datamanager_configuration(1).run()  # run() calls _transform()
     for i in range(num_reps):
-        bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
+        bag = dataset.get_split_data(OxariDataManager.ORIGINAL, split_size_test=0.4)
         SPLIT_1 = bag.scope_1
         SPLIT_2 = bag.scope_2
         SPLIT_3 = bag.scope_3
@@ -74,7 +74,7 @@ if __name__ == "__main__":
                         scope_transformer=tg_scaler,
                     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
 
-                    all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
+                    all_results.append({"repetition": i, "time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
 
                     if (scope == True):
                         SPLIT_2 = bag.scope_2

@@ -33,6 +33,7 @@ class DummyFeatureReducer(OxariFeatureReducer):
         return X
 
 
+
 class DropFeatureReducer(OxariFeatureReducer):
     """ This Feature Selector selects features according to a list of predefined features. 
     This is useful if a supervised feature elimination algorithm was used. 
@@ -106,6 +107,9 @@ class PCAFeatureReducer(OxariFeatureReducer):
     def get_config(self, deep=True):
         return {'estimator': self._dimensionality_reducer.get_params(deep), **super().get_config(deep)}
 
+class DismissNonExplainingFeatureReducer(PCAFeatureReducer):
+    # TODO: Will compute pca and the features that explain the variance the most without actual reduction
+    pass
 
 class AgglomerateFeatureReducer(PCAFeatureReducer):
 

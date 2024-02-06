@@ -123,6 +123,13 @@ class BaselinePreprocessor(OxariPreprocessor):
             **super().get_config(deep)
         }
 
+class FastIndustryNormalisationBaselinePreprocessor(BaselinePreprocessor):
+    def __init__(self, fin_transformer=None, cat_transformer=None, **kwargs):
+        cat_normalizer = OxariCategoricalNormalizer(
+                    col_transformers=[SectorNameCatColumnNormalizer(),
+                                      IndustryNameCatColumnNormalizer(),
+                                      CountryCodeCatColumnNormalizer()])
+        super().__init__(fin_transformer, cat_transformer, cat_normalizer, **kwargs)
 
 class ImprovedBaselinePreprocessor(BaselinePreprocessor):
 

@@ -7619,4 +7619,4 @@ visuals = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "c8902498150263c7def074a03391a500ba4853043a226555f27ac1aa21a9c4be"
+content-hash = "de60673316579a66436e7bbd6f7565ea165ce82439f86a663de8ab9d098d79ff"

@@ -1,6 +1,5 @@
 # %%
 import pathlib
-from tkinter import Y
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -10,7 +9,7 @@ import statsmodels.formula.api as smf
 
 # %%
 cwd = pathlib.Path(__file__).parent
-df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_feature_scaling.csv', index_col=0)
+df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_feature_scaling_validation.csv', index_col=0)
 df_results
 # %%
 df_results["configuration"] = pd.Categorical(df_results["fin_transformer"]+"-"+df_results["scope_transformer"])
@@ -31,6 +30,21 @@ plt.show()
 plt.figure(figsize=(10,10))
 sns.pointplot(df_results, x="scope", y="smape", hue="configuration")
 plt.show()
+# %%
+plt.figure(figsize=(10,10))
+ax = sns.boxplot(df_results, x="configuration", y="smape")
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, ha="center")
+plt.show()
+# %%
+plt.figure(figsize=(10,10))
+ax = sns.boxplot(df_results, x="fin_transformer", y="smape")
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, ha="center")
+plt.show()
+# %%
+plt.figure(figsize=(10,10))
+ax = sns.boxplot(df_results, x="scope_transformer", y="smape")
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, ha="center")
+plt.show()
 
 # %%
 formula = "smape ~ configuration"
@@ -48,3 +62,4 @@ ax.set_xlabel('Fitted values')
 # %%
 # fig = sm.graphics.plot_regress_exog(mod1)
 # fig.tight_layout(pad=1.0)
+# %%

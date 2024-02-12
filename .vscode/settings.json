@@ -3,5 +3,9 @@
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        ".venv\\Lib\\site-packages\\typing_extensions.py"
+    ],
+    "python.languageServer": "Pylance"
 }

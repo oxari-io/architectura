@@ -51,6 +51,8 @@ pytest = "^7.2.2"
 country-converter = "^1.0.0"
 linktransformer = "^0.1.12"
 
+jupyter = "^1.0.0"
+alibi = "^0.9.4"
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.15.9"

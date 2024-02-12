@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import shap
+from alibi.explainers import ALE, PartialDependence, PartialDependenceVariance, PermutationImportance, plot_ale, plot_pd, plot_pd_variance, plot_permutation_importance
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
@@ -28,8 +29,10 @@ def random_sample_indices_limited(X, sample_size):
     array: Randomly sampled indices, without exceeding dataset size.
     """
     num_samples = X.shape[0]
-    sample_size = min(sample_size, num_samples)  # Limit sample size to num_samples
+    sample_size = min(sample_size,
+                      num_samples)  # Limit sample size to num_samples
     return np.random.choice(num_samples, sample_size, replace=False)
+
 
 def get_jump_rate(y_pre, y_post):
     result = np.maximum(y_pre, y_post) / np.minimum(y_pre, y_post)
@@ -40,7 +43,9 @@ def custom_masker(mask, x):
     x_ = x.copy()
     x_[~mask] = None
 
-    return x_.reshape(1, len(x))  # in this simple example we just zero out the features we are masking
+    return x_.reshape(
+        1, len(x)
+    )  # in this simple example we just zero out the features we are masking
     # return x_.reshape((len(x),1)) # in this simple example we just zero out the features we are masking
     # return x_ # in this simple example we just zero out the features we are masking
 
@@ -72,9 +77,11 @@ class OxariExplainer(abc.ABC):
     def visualize(self):
         pass
 
+
 def run_shap(estimator):
     explainer = shap.Explainer(estimator.predict, custom_masker)
     pass
+
 
 # class UselessFeaturesExplainer(OxariExplainer):
 #     def __init__(self, pipeline: OxariPipeline, sample_size=100, **kwargs) -> None:
@@ -82,7 +89,7 @@ def run_shap(estimator):
 #         self.pipeline = pipeline
 #         self.sample_size = sample_size
 #         self.rfe = RFECV(self.pipeline.estimator, importance_getter=run_shap)
-        
+
 #     def fit(self, X, y, **kwargs) -> Self:
 #         X_ = self.pipeline._preprocess(X)
 #         y_ = self.pipeline._transform_scope(y)
@@ -92,14 +99,17 @@ def run_shap(estimator):
 #     def explain(self, X, y, **kwargs) -> Self:
 #         self.feature_importances_ = self.rfe.ranking_
 #         return Self
-    
+
 #     def visualize(self):
 #         return super().visualize()
 
 
 class ShapExplainer(OxariExplainer):
 
-    def __init__(self, estimator: OxariPipeline, sample_size=100, **kwargs) -> None:
+    def __init__(self,
+                 estimator: OxariPipeline,
+                 sample_size=100,
+                 **kwargs) -> None:
         super().__init__(**kwargs)
         self.estimator = estimator
         self.sample_size = sample_size
@@ -115,7 +125,6 @@ class ShapExplainer(OxariExplainer):
         def wrapper_function(x):
             x_mod = pd.DataFrame(x, columns=self.estimator.feature_names_in_)
             return self.estimator.predict(x_mod)
-
 
         self.ex = shap.Explainer(wrapper_function, custom_masker)
         # self.ex = shap.PermutationExplainer(wrapper_function, custom_masker)
@@ -135,55 +144,308 @@ class ShapExplainer(OxariExplainer):
         return self
 
     def visualize(self):
+        fig, ax = plt.subplot(1, 1)
         shap.summary_plot(self.shap_values, self.X, show=False)
-        # TODO: Should also return fig and ax like the other explainers.
-        fig = plt.gcf()
-        ax = plt.gca()
         return fig, ax
+
+
+class PDExplainer(OxariExplainer):
+    # NOTE: for now only the numerical version is implemented. To add categoricals we need to figure out the dictionary of categories.
+
+    def __init__(self,
+                 estimator: OxariPipeline,
+                 target_name: str,
+                 sample_size=100,
+                 **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.estimator = estimator
+        self.sample_size = sample_size
+        self.target_name = target_name
+
+    def print_accuracy(self, X, y):
+        y_hat = self.estimator.predict(X)
+        print("Root mean squared test error = {0}".format(smape(y, y_hat)))
+
+    def fit(self, X, y, **kwargs):
+        self.col_list = [f for f in self.estimator.feature_names_in_]
+        # col_list = [f for f in self.estimator.feature_names_in_ if f.startswith("ft_num")]
+        self.cat_col_idx = {
+            i: X[f].tolist()
+            for i, f in enumerate(self.estimator.feature_names_in_)
+            if f.startswith("ft_cat")
+        }
+        self.cat_cols = [
+            f for f in self.estimator.feature_names_in_
+            if f.startswith("ft_cat")
+        ]
+
+        def wrapper_function(x):
+            x_mod = pd.DataFrame(x, columns=self.col_list)
+            return self.estimator.predict(x_mod)
+
+        self.ex = PartialDependence(
+            predictor=wrapper_function,
+            feature_names=self.col_list,
+            categorical_names=self.cat_col_idx,
+            target_names=[self.target_name],
+            verbose=True)
+        return self
+
+    def explain(self, X, y, **kwargs):
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError("Input 'X' must be a pandas DataFrame.")
+
+        indices = random_sample_indices_limited(X, self.sample_size)
+
+        self.X: pd.DataFrame = X.iloc[indices]
+        self.X[self.cat_cols] = self.X[self.cat_cols].fillna('N/A').values
+        self.y = y.iloc[indices]
+
+        self.pd_importance = self.ex.explain(X=self.X.values)
+
+        return self
+
+    def visualize(self):
+        fig1, ax1 = plt.subplot(1, 1)
+        plot_pd(exp=self.pd_importance, ax=ax1)
+
+        return fig1, ax1
+
+
+class PDVarianceExplainer(OxariExplainer):
+
+    def __init__(self,
+                 estimator: OxariPipeline,
+                 target_name: str,
+                 sample_size=100,
+                 **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.estimator = estimator
+        self.sample_size = sample_size
+        self.target_name = target_name
+
+    def print_accuracy(self, X, y):
+        y_hat = self.estimator.predict(X)
+        print("Root mean squared test error = {0}".format(smape(y, y_hat)))
+
+    def fit(self, X, y, **kwargs):
+        self.col_list = [f for f in self.estimator.feature_names_in_]
+        # col_list = [f for f in self.estimator.feature_names_in_ if f.startswith("ft_num")]
+        self.cat_col_idx = {
+            i: X[f].tolist()
+            for i, f in enumerate(self.estimator.feature_names_in_)
+            if f.startswith("ft_cat")
+        }
+        self.cat_cols = [
+            f for f in self.estimator.feature_names_in_
+            if f.startswith("ft_cat")
+        ]
+
+        def wrapper_function(x):
+            x_mod = pd.DataFrame(x, columns=self.col_list)
+            return self.estimator.predict(x_mod)
+
+        self.ex = PartialDependenceVariance(
+            predictor=wrapper_function,
+            feature_names=self.col_list,
+            categorical_names=self.cat_col_idx,
+            target_names=[self.target_name],
+            verbose=True)
+        return self
+
+    def explain(self, X, y, **kwargs):
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError("Input 'X' must be a pandas DataFrame.")
+
+        indices = random_sample_indices_limited(X, self.sample_size)
+
+        self.X: pd.DataFrame = X.iloc[indices]
+        self.X[self.cat_cols] = self.X[self.cat_cols].fillna('N/A').values
+        self.y = y.iloc[indices]
+
+        self.pdv_importance = self.ex.explain(X=self.X.values,
+                                              method='importance')
+
+        return self
+
+    def visualize(self):
+        fig1, ax1 = plt.subplot(1, 1)
+        plot_pd_variance(exp=self.pdv_importance, ax=ax1)
+
+        return fig1, ax1
+
+
+class PermutationImportanceExplainer(OxariExplainer):
+
+    def __init__(self,
+                 estimator: OxariPipeline,
+                 target_name: str,
+                 sample_size=100,
+                 **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.estimator = estimator
+        self.sample_size = sample_size
+        self.target_name = target_name
+
+    def print_accuracy(self, X, y):
+        y_hat = self.estimator.predict(X)
+        print("Root mean squared test error = {0}".format(smape(y, y_hat)))
+
+    def fit(self, X:pd.DataFrame, y, **kwargs):
+        self.col_list = [f for f in self.estimator.feature_names_in_]
+        # col_list = [f for f in self.estimator.feature_names_in_ if f.startswith("ft_num")]
+        self.cat_col_idx = [X.columns.get_loc(col) for col in X.columns if not col.startswith('ft_cat')]
+
+
+        def wrapper_function(x):
+            x_mod = pd.DataFrame(x, columns=self.col_list)
+            return self.estimator.predict(x_mod)
+
+        self.ex = PermutationImportance(
+            predictor=wrapper_function,
+            feature_names=self.col_list,
+            loss_fns=['mean_absolute_error'],
+            verbose=True)
+        return self
+
+    def explain(self, X:pd.DataFrame, y:pd.DataFrame, **kwargs):
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError("Input 'X' must be a pandas DataFrame.")
+
+        indices = random_sample_indices_limited(X, self.sample_size)
+
+        self.X: pd.DataFrame = X.iloc[indices]
+        self.y = y.iloc[indices]
+
+        
+        self.permut_importance = self.ex.explain(X=self.X.values, y=self.y.values)
+
+        return self
+
+    def visualize(self):
+        fig1, ax1 = plt.subplot(1, 1)
+        plot_permutation_importance(exp=self.permut_importance, ax=ax1)
+
+        return fig1, ax1
+
+class ALEExplainer(OxariExplainer):
+
+    def __init__(self,
+                 estimator: OxariPipeline,
+                 target_name: str,
+                 sample_size=100,
+                 **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.estimator = estimator
+        self.sample_size = sample_size
+        self.target_name = target_name
+
+    def print_accuracy(self, X, y):
+        y_hat = self.estimator.predict(X)
+        print("Root mean squared test error = {0}".format(smape(y, y_hat)))
+
+    def fit(self, X:pd.DataFrame, y, **kwargs):
+        self.col_list = [f for f in self.estimator.feature_names_in_]
+        self.cat_cols = [f for f in self.estimator.feature_names_in_ if f.startswith("ft_cat")]
+        self.num_col_idx = [X.columns.get_loc(col) for col in X.columns if not col.startswith('ft_cat')]
+
+
+        def wrapper_function(x):
+            x_mod = pd.DataFrame(x, columns=self.col_list)
+            return self.estimator.predict(x_mod)
+
+        self.ex = ALE(
+            predictor=wrapper_function,
+            feature_names=self.col_list,
+            target_names=[self.target_name])
+        return self
+
+    def explain(self, X, y, **kwargs):
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError("Input 'X' must be a pandas DataFrame.")
+
+        indices = random_sample_indices_limited(X, self.sample_size)
+
+        self.X: pd.DataFrame = X.iloc[indices]
+        self.X[self.cat_cols] = self.X[self.cat_cols].astype(str)
+        self.X = self.estimator.preprocessor.imputer.transform(X)
+        self.y = y.iloc[indices]
+
+        
+        self.ale_importance = self.ex.explain(X=self.X.values, features=self.num_col_idx)
+
+        return self
+
+    def visualize(self):
+        fig1, ax1 = plt.subplot(1, 1)
+        plot_ale(exp=self.ale_importance, ax=ax1)
+
+        return fig1, ax1
 
 
 class SurrogateExplainerMixin(abc.ABC):
     BINARIES_PREFIX = "categorical"
 
-    def __init__(self, estimator:OxariPipeline, surrogate:XGBModel, **kwargs) -> None:
+    def __init__(self, estimator: OxariPipeline, surrogate: XGBModel,
+                 **kwargs) -> None:
         super().__init__()
         self.estimator = estimator
         self.surrogate_model: XGBModel = surrogate
         self.pipeline: Pipeline = None
         self.name = self.__class__.__name__
 
+
 #  TODO: Needs function to evalute how faithfull the surrogate is
 #  TODO: Needs function to optimize for most faithfull surrogacy
-class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
+class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin,
+                              abc.ABC):
 
-    def __init__(self, estimator: OxariPipeline, surrogate, topk_features=20, **kwargs) -> None:
-        super().__init__(estimator=estimator, surrogate=surrogate ,**kwargs)
+    def __init__(self,
+                 estimator: OxariPipeline,
+                 surrogate,
+                 topk_features=20,
+                 **kwargs) -> None:
+        super().__init__(estimator=estimator, surrogate=surrogate, **kwargs)
         self.feature_importances_: ArrayLike = None
         self.topk_features = topk_features
         # self._init_preprocessor()
         # self._init_surrogate_model()
 
     def _init_feature_names(self):
-        self.feature_names_out_ = list(self.pipeline[:-1].get_feature_names_out())
+        self.feature_names_out_ = list(
+            self.pipeline[:-1].get_feature_names_out())
         self.pipeline[-1].get_booster().feature_names = self.feature_names_out_
 
-    def _init_preprocessor(self, df:pd.DataFrame):
+    def _init_preprocessor(self, df: pd.DataFrame):
         cat_cols = df.columns[df.columns.str.startswith('ft_cat')]
-        self.cat_transform = ColumnTransformer([(self.BINARIES_PREFIX, OneHotEncoder(drop='first', handle_unknown='infrequent_if_exist'), cat_cols)],
-                                               remainder='passthrough')
+        self.cat_transform = ColumnTransformer(
+            [(self.BINARIES_PREFIX,
+              OneHotEncoder(drop='first',
+                            handle_unknown='infrequent_if_exist'), cat_cols)],
+            remainder='passthrough')
 
     def _init_surrogate_model(self):
-        self.pipeline = Pipeline([('cat-encode', self.cat_transform), ('regress', self.surrogate_model)])
+        self.pipeline = Pipeline([('cat-encode', self.cat_transform),
+                                  ('regress', self.surrogate_model)])
 
     def plot_importances(self, fig=None, ax=None):
         fig, ax = self._create_canvas(fig, ax)
         tmp = pd.DataFrame()
         tmp['feature'] = self.feature_names_out_
         tmp['importance'] = self.feature_importances_
-        tmp_sorted_subset = tmp.sort_values('importance', ascending=False).iloc[:self.topk_features]
-        ax = sns.barplot(data=tmp_sorted_subset, y='feature', x='importance', ax=ax)
+        tmp_sorted_subset = tmp.sort_values(
+            'importance', ascending=False).iloc[:self.topk_features]
+        ax = sns.barplot(data=tmp_sorted_subset,
+                         y='feature',
+                         x='importance',
+                         ax=ax)
         for (index, row), p in zip(tmp_sorted_subset.iterrows(), ax.patches):
-            ax.text(x=p.get_x(), y=p.get_y() + p.get_height() / 2, s=row["feature"], color='black', ha="left", va='center')
+            ax.text(x=p.get_x(),
+                    y=p.get_y() + p.get_height() / 2,
+                    s=row["feature"],
+                    color='black',
+                    ha="left",
+                    va='center')
         ax.get_yaxis().set_ticks([])
         ax.set_title(self.name)
         return fig, ax
@@ -205,13 +467,15 @@ class TreeBasedExplainerMixin(OxariExplainer, SurrogateExplainerMixin, abc.ABC):
 
 
 class ResidualExplainer(TreeBasedExplainerMixin):
-    
+
     def __init__(self, estimator: OxariPipeline, **kwargs) -> None:
-        super().__init__(estimator=estimator, surrogate=XGBRegressor(), **kwargs)
+        super().__init__(estimator=estimator,
+                         surrogate=XGBRegressor(),
+                         **kwargs)
 
     def fit(self, X, y, **kwargs):
         self._init_preprocessor(X)
-        self._init_surrogate_model()        
+        self._init_surrogate_model()
         y_hat = self.estimator.predict(X)
         self.pipeline.fit(X, y - y_hat, **kwargs)
         self._init_feature_names()
@@ -229,13 +493,18 @@ class ResidualExplainer(TreeBasedExplainerMixin):
 
 class JumpRateExplainer(TreeBasedExplainerMixin):
 
-    def __init__(self, estimator: OxariPipeline, threshhold=1.2, **kwargs) -> None:
-        super().__init__(estimator=estimator, surrogate=XGBClassifier(), **kwargs)
+    def __init__(self,
+                 estimator: OxariPipeline,
+                 threshhold=1.2,
+                 **kwargs) -> None:
+        super().__init__(estimator=estimator,
+                         surrogate=XGBClassifier(),
+                         **kwargs)
         self.threshold = threshhold
 
     def fit(self, X, y, **kwargs):
         self._init_preprocessor(X)
-        self._init_surrogate_model()         
+        self._init_surrogate_model()
         y_hat = self.estimator.predict(X)
         y_jump_rate = get_jump_rate(y, y_hat)
         y_target = y_jump_rate < self.threshold
@@ -255,13 +524,18 @@ class JumpRateExplainer(TreeBasedExplainerMixin):
 
 class DecisionExplainer(TreeBasedExplainerMixin):
 
-    def __init__(self, estimator: OxariScopeEstimator, threshhold=1.2, **kwargs) -> None:
-        super().__init__(estimator=estimator, surrogate=XGBRegressor(), **kwargs)
+    def __init__(self,
+                 estimator: OxariScopeEstimator,
+                 threshhold=1.2,
+                 **kwargs) -> None:
+        super().__init__(estimator=estimator,
+                         surrogate=XGBRegressor(),
+                         **kwargs)
         self.threshold = threshhold
 
     def fit(self, X, y, **kwargs):
         self._init_preprocessor(X)
-        self._init_surrogate_model()         
+        self._init_surrogate_model()
         y_hat = self.estimator.predict(X)
         self.pipeline.fit(X, y_hat, **kwargs)
         self._init_feature_names()
@@ -273,5 +547,3 @@ class DecisionExplainer(TreeBasedExplainerMixin):
         self.unfaithfulness = smape(y_true, y_hat)
         self.feature_importances_ = self.surrogate_model.feature_importances_
         return self
-    
-    

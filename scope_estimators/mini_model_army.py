@@ -15,13 +15,13 @@ N_STARTUP_TRIALS = 1
 
 
 class MiniModelArmyEstimator(OxariScopeEstimator):
-    def __init__(self, n_buckets=5, cls_optimizer=None, rgs_optimizer=None, **kwargs):
+    def __init__(self, n_buckets=5, cls_optimizer=None, rgs_optimizer=None, bucket_classifier=None, bucket_regressor=None, **kwargs):
         super().__init__(**kwargs)
         self.n_buckets = n_buckets
         self.discretizer = BucketScopeDiscretizer(self.n_buckets)
 
-        self.bucket_cl: BucketClassifier = BucketClassifier().set_optimizer(cls_optimizer or ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
-        self.bucket_rg: BucketRegressor = BucketRegressor().set_optimizer(rgs_optimizer or RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
+        self.bucket_cl: BucketClassifier = bucket_classifier or BucketClassifier().set_optimizer(cls_optimizer or ClassifierOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(BucketClassifierEvauator())
+        self.bucket_rg: BucketRegressor = bucket_regressor or BucketRegressor().set_optimizer(rgs_optimizer or RegressorOptimizer(n_trials=self.n_trials, n_startup_trials=self.n_startup_trials)).set_evaluator(DefaultRegressorEvaluator())
       
     def fit(self, X, y, **kwargs) -> Self:
         # NOTE: Question is whether the linkage between bucket_cl prediction and regression makes sense. I start to believe it does not. 

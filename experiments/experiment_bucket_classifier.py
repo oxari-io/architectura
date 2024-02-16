@@ -5,7 +5,7 @@ import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
 from pipeline import DefaultPipeline
 from preprocessors import IIDPreprocessor
-from preprocessors.core import BaselinePreprocessor
+from preprocessors.core import BaselinePreprocessor, FastIndustryNormalisationBaselinePreprocessor
 from preprocessors.helper.custom_cat_normalizers import (
     CountryCodeCatColumnNormalizer,
     LinkTransformerCatColumnNormalizer,
@@ -31,6 +31,7 @@ import tqdm
 import itertools as it
 
 from scope_estimators.mini_model_army import MiniModelArmyEstimator
+from scope_estimators.mma.classifier import LGBMBucketClassifier, RandomForesBucketClassifier
 
 if __name__ == "__main__":
     # TODO: Finish this experiment by adding LinearSVR
@@ -38,45 +39,7 @@ if __name__ == "__main__":
     # loads the data just like CSVDataLoader, but a selection of the data
     dataset = get_default_datamanager_configuration().run()
 
-    configurations = {
-        "lt_default": OxariCategoricalNormalizer(
-            col_transformers=[
-                LinkTransformerCatColumnNormalizer(),
-                CountryCodeCatColumnNormalizer(),
-            ]
-        ),
-        "lt_default_lg": OxariCategoricalNormalizer(
-            col_transformers=[
-                LinkTransformerCatColumnNormalizer(
-                    lt_model=LinkTransformerCatColumnNormalizer.DEFAULT_LG
-                ),
-                CountryCodeCatColumnNormalizer(),
-            ]
-        ),
-        "gte_small": OxariCategoricalNormalizer(
-            col_transformers=[
-                LinkTransformerCatColumnNormalizer(
-                    lt_model=LinkTransformerCatColumnNormalizer.GTE_SMALL
-                ),
-                CountryCodeCatColumnNormalizer(),
-            ]
-        ),
-        "e5_base": OxariCategoricalNormalizer(
-            col_transformers=[
-                LinkTransformerCatColumnNormalizer(
-                    lt_model=LinkTransformerCatColumnNormalizer.E5_BASE
-                ),
-                CountryCodeCatColumnNormalizer(),
-            ]
-        ),
-        "manual": OxariCategoricalNormalizer(
-            col_transformers=[
-                CountryCodeCatColumnNormalizer(),
-                SectorNameCatColumnNormalizer(),
-                IndustryNameCatColumnNormalizer(),
-            ]
-        ),
-    }
+    configurations = [LGBMBucketClassifier(), RandomForesBucketClassifier()]
 
     repeats = range(10)
     with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:
@@ -85,10 +48,10 @@ if __name__ == "__main__":
             SPLIT_1 = bag.scope_1
             X, Y = SPLIT_1.train
             X_train, X_test = train_test_split(X, test_size=0.7)
-            for name, normalizer in configurations.items():
+            for bucket_classifier in configurations:
                 dp1 = (
                     DefaultPipeline(
-                        preprocessor=BaselinePreprocessor(cat_normalizer=normalizer),
+                        preprocessor=FastIndustryNormalisationBaselinePreprocessor(),
                         feature_reducer=DummyFeatureReducer(),
                         imputer=RevenueQuantileBucketImputer(num_buckets=9),
                         scope_estimator=MiniModelArmyEstimator(
@@ -104,7 +67,7 @@ if __name__ == "__main__":
                 )
 
                 all_results.append(
-                    {"configuration": name, "repetition": i, **dp1.evaluation_results}
+                    {"configuration": bucket_classifier.__class__.__name__, "repetition": i, **dp1.evaluation_results}
                 )
                 concatenated = pd.json_normalize(all_results)
                 fname = __loader__.name.split(".")[-1]

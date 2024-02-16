@@ -10,8 +10,14 @@ from base import (DefaultClassificationEvaluator, OxariClassifier, OxariOptimize
 from base.metrics import classification_metric
 from sklearn.metrics import (classification_report, confusion_matrix, balanced_accuracy_score)
 import pandas as pd
-
-
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
+from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 
 class BucketClassifierEvauator(DefaultClassificationEvaluator):
 
@@ -114,16 +120,9 @@ class ClassifierOptimizer(OxariOptimizer):
         y_train = y_train.ravel()
 
         # TODO: the param space should be defined as an attribute of the class {review this idea}
-        param_space = {
-            'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
-            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
-            'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
-            'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
-            'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
-            'n_estimators': trial.suggest_int("n_estimators", 100, 500, step=100),
-        }
+        param_space = self.retrieve_param_space(trial)
 
-        cl = lgb.LGBMClassifier(**param_space)
+        cl = self.retrieve_model(param_space)
         cl.fit(X_train, y_train)
 
         y_pred = cl.predict(X_val)
@@ -131,6 +130,20 @@ class ClassifierOptimizer(OxariOptimizer):
         # choose weighted average
         val = classification_metric(y_true=y_val, y_pred=y_pred)
         return val
+    
+    def retrieve_param_space(trial:optuna.Trial):
+        return {
+            'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
+            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 0.9, step=0.1),
+            'min_child_weight': trial.suggest_float('min_child_weight', 1e-3, 5, log=True),
+            'subsample': trial.suggest_float('subsample', 0.5, 0.9, step=0.1),
+            'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+            'n_estimators': trial.suggest_int("n_estimators", 100, 500, step=100),
+        }
+        
+    def retrieve_model(param_space):
+        return lgb.LGBMClassifier(**param_space)
+
 
 class BucketClassifier(OxariClassifier):
 
@@ -168,6 +181,51 @@ class BucketClassifier(OxariClassifier):
 
     def get_config(self, deep=True):
         return {**self.params}
+
+
+class LGBMBucketClassifier(BucketClassifier):
+    
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+            'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
+            'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+            'n_estimators': trial.suggest_int("n_estimators", 100, 500, step=100),
+        }
+        
+        def retrieve_model(param_space):
+            return lgb.LGBMClassifier(**param_space)
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = lgb.LGBMClassifier(**kwargs)
+        self._optimizer = LGBMBucketClassifier.Optimizer(**kwargs)    
+
+
+
+class RandomForesBucketClassifier(BucketClassifier):
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+            'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
+            'n_estimators': trial.suggest_int("n_estimators", 100, 500, step=100),
+        }
+        
+        def retrieve_model(param_space):
+            return RandomForestClassifier(**param_space)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = RandomForestClassifier(**kwargs)    
+        self._optimizer = RandomForesBucketClassifier.Optimizer(**kwargs)    
+
+
+
+class LinearSVCBucketClassifier(BucketClassifier):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = LinearSVC(**kwargs)    
+
 
 
 class UnderfittedBucketClassifier(BucketClassifier):

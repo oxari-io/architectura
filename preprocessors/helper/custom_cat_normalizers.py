@@ -49,10 +49,16 @@ class SectorNameCatColumnNormalizer(OxariCatColumnNormalizer):
     
 
 class LinkTransformerCatColumnNormalizer(OxariCatColumnNormalizer):
+    DEFAULT = 'sentence-transformers/all-MiniLM-L6-v2'
+    DEFAULT_LG = 'sentence-transformers/all-MiniLM-L12-v2'
+    GTE_SMALL = "thenlper/gte-small"
+    E5_BASE = "intfloat/e5-base-v2"
 
-    def __init__(self, col_name=["ft_catm_sector_name", "ft_catm_industry_name"], path_to_mapping=MODULE_PATH / "gics_mod.csv", **kwargs) -> None:
+
+    def __init__(self, col_name=["ft_catm_sector_name", "ft_catm_industry_name"], path_to_mapping=MODULE_PATH / "gics_mod.csv", lt_model=DEFAULT, **kwargs) -> None:
         super().__init__(col_name, **kwargs)
         self.path_mapping = path_to_mapping
+        self.lt_model = lt_model
 
     def fit(self, X: ArrayLike, y: ArrayLike = None, **kwargs) -> Self:
         self.mapping = pd.read_csv(self.path_mapping)
@@ -64,7 +70,7 @@ class LinkTransformerCatColumnNormalizer(OxariCatColumnNormalizer):
         self.mapping["merge_col"] = self.mapping[self.col_name].astype('str').agg(' @ '.join, axis=1)
         X_original["merge_col"] = X_original[self.col_name].astype('str').agg(' @ '.join, axis=1)
         # TODO: There's a smaller and better model here: https://huggingface.co/thenlper/gte-small
-        after_merge = lt.merge(X_original, self.mapping, merge_type='1:1', on='merge_col', model='sentence-transformers/all-MiniLM-L6-v2')
+        after_merge = lt.merge(X_original, self.mapping, merge_type='1:1', on='merge_col', model=self.lt_model)
         thresholds_reached = after_merge["score"] >= 0.5
         X_new.loc[thresholds_reached.values, self.col_name] = after_merge.loc[thresholds_reached.values, [col+"_y" for col in self.col_name]].values
         return X_new

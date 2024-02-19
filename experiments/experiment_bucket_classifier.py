@@ -51,12 +51,10 @@ if __name__ == "__main__":
             for bucket_classifier in configurations:
                 dp1 = (
                     DefaultPipeline(
-                        preprocessor=FastIndustryNormalisationBaselinePreprocessor(),
+                        preprocessor=LinkTransformerCatColumnNormalizer(),
                         feature_reducer=DummyFeatureReducer(),
-                        imputer=RevenueQuantileBucketImputer(num_buckets=9),
-                        scope_estimator=MiniModelArmyEstimator(
-                            n_trials=20, n_startup_trials=10
-                        ),
+                        imputer=RevenueQuantileBucketImputer(num_buckets=10),
+                        scope_estimator=MiniModelArmyEstimator(10, n_trials=40, n_startup_trials=20),
                         ci_estimator=BaselineConfidenceEstimator(),
                         scope_transformer=LogTargetScaler(),
                     )

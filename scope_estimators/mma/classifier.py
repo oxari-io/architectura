@@ -200,16 +200,15 @@ class LGBMBucketClassifier(BucketClassifier):
         super().__init__(**kwargs)
         self._estimator = lgb.LGBMClassifier(**kwargs)
         self._optimizer = LGBMBucketClassifier.Optimizer(**kwargs)    
-
-
+        
 
 class RandomForesBucketClassifier(BucketClassifier):
     class Optimizer(ClassifierOptimizer):
         def retrieve_param_space(trial: optuna.Trial):
             return {
-            'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
-            'n_estimators': trial.suggest_int("n_estimators", 100, 500, step=100),
-        }
+                'max_depth': trial.suggest_int('max_depth', 3, 21, step=3),
+                'n_estimators': trial.suggest_int("n_estimators", 100, 500, step=100),
+            }
         
         def retrieve_model(param_space):
             return RandomForestClassifier(**param_space)
@@ -220,12 +219,134 @@ class RandomForesBucketClassifier(BucketClassifier):
         self._optimizer = RandomForesBucketClassifier.Optimizer(**kwargs)    
 
 
-
 class LinearSVCBucketClassifier(BucketClassifier):
+
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+                'C': trial.suggest_loguniform('C', 0.001, 1000),
+                'tol': trial.suggest_loguniform('tol', 1e-6, 1e-2),
+                'loss': trial.suggest_categorical('loss', ['hinge', 'squared_hinge'])
+            }
+        
+        def retrieve_model(param_space):
+            return LinearSVC(**param_space)
+        
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._estimator = LinearSVC(**kwargs)    
+        self._optimizer = LinearSVCBucketClassifier.Optimizer(**kwargs)
 
+
+class MLPBucketClassifier(BucketClassifier):
+
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+                'hidden_layer_sizes': trial.suggest_tuple('hidden_layer_sizes', (50, 100, 200)),
+                'alpha': trial.suggest_loguniform('alpha', 1e-5, 1e-1),
+                'learning_rate_init': trial.suggest_loguniform('learning_rate_init', 1e-5, 1e-1),
+            }
+        
+        def retrieve_model(param_space):
+            return MLPClassifier(**param_space)
+        
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = MLPClassifier(**kwargs)    
+        self._optimizer = MLPBucketClassifier.Optimizer(**kwargs)
+
+
+class KNNBucketClassifier(BucketClassifier):
+    
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+                'n_neighbors': trial.suggest_int('n_neighbors', 1, 50),
+                'weights': trial.suggest_categorical('weights', ['uniform', 'distance']),
+                'p': trial.suggest_int('p', 1, 2),
+            }
+
+        def retrieve_model(param_space):
+            return KNeighborsClassifier(**param_space)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = KNeighborsClassifier(**kwargs)
+        self._optimizer = KNNBucketClassifier.Optimizer(**kwargs)
+
+
+class GradientBoostingBucketClassifier(BucketClassifier):
+    
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+                'n_estimators': trial.suggest_int('n_estimators', 50, 200),
+                'learning_rate': trial.suggest_loguniform('learning_rate', 1e-3, 1),
+                'max_depth': trial.suggest_int('max_depth', 3, 10),
+            }
+
+        def retrieve_model(param_space):
+            return GradientBoostingClassifier(**param_space)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = GradientBoostingClassifier(**kwargs)
+        self._optimizer = GradientBoostingBucketClassifier.Optimizer(**kwargs)
+
+
+class GaussianNBBucketClassifier(BucketClassifier):
+    
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+                'var_smoothing': trial.suggest_loguniform('var_smoothing', 1e-9, 1e-1),
+            }
+
+        def retrieve_model(param_space):
+            return GaussianNB(**param_space)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = GaussianNB(**kwargs)
+        self._optimizer = GaussianNBBucketClassifier.Optimizer(**kwargs)
+
+
+class QDABucketClassifier(BucketClassifier):
+    
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+                'reg_param': trial.suggest_uniform('reg_param', 0, 1),
+                'tol': trial.suggest_loguniform('tol', 1e-5, 1e-1),
+            }
+
+        def retrieve_model(param_space):
+            return QuadraticDiscriminantAnalysis(**param_space)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = QuadraticDiscriminantAnalysis(**kwargs)
+        self._optimizer = QDABucketClassifier.Optimizer(**kwargs)
+
+
+class SGDBucketClassifier(BucketClassifier):
+    
+    class Optimizer(ClassifierOptimizer):
+        def retrieve_param_space(trial: optuna.Trial):
+            return {
+                'alpha': trial.suggest_loguniform('alpha', 1e-5, 1e-1),
+                'learning_rate': trial.suggest_categorical('learning_rate', ['constant', 'optimal', 'invscaling']),
+                'eta0': trial.suggest_loguniform('eta0', 1e-5, 1e-1),
+            }
+
+        def retrieve_model(param_space):
+            return SGDClassifier(**param_space)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._estimator = SGDClassifier(**kwargs)
+        self._optimizer = SGDBucketClassifier.Optimizer(**kwargs)
 
 
 class UnderfittedBucketClassifier(BucketClassifier):

@@ -28,10 +28,10 @@ if __name__ == "__main__":
 
     print("num reps:", num_reps)
 
-    buckets = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
+    buckets = [3, 5, 7, 9, 11, 13, 15, 17, 19]
     all_results = []
+    dataset = get_small_datamanager_configuration(1).run()  # run() calls _transform()
     for i in range(num_reps):
-        dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
 

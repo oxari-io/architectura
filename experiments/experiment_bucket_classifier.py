@@ -3,6 +3,7 @@ import time
 
 import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
+from imputers.core import BaselineImputer
 from pipeline import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from preprocessors.core import BaselinePreprocessor, FastIndustryNormalisationBaselinePreprocessor
@@ -14,7 +15,7 @@ from preprocessors.helper.custom_cat_normalizers import (
     SectorNameCatColumnNormalizer,
 )
 from scope_estimators import SupportVectorEstimator, FastSupportVectorEstimator
-from base.helper import LogTargetScaler
+from base.helper import ArcSinhTargetScaler, DummyTargetScaler, LogTargetScaler
 from base.run_utils import (
     get_default_datamanager_configuration,
     get_remote_datamanager_configuration,
@@ -40,6 +41,7 @@ if __name__ == "__main__":
     dataset = get_default_datamanager_configuration().run()
 
     configurations = [LGBMBucketClassifier(), RandomForesBucketClassifier(), LinearSVCBucketClassifier(), MLPBucketClassifier(), KNNBucketClassifier(), GradientBoostingBucketClassifier(), GaussianNBBucketClassifier(), QDABucketClassifier(), SGDBucketClassifier()]
+    scalers = [DummyTargetScaler(), LogTargetScaler(), ArcSinhTargetScaler()]
 
     repeats = range(10)
     with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:
@@ -49,26 +51,28 @@ if __name__ == "__main__":
             X, Y = SPLIT_1.train
             X_train, X_test = train_test_split(X, test_size=0.7)
             for bucket_classifier in configurations:
-                dp1 = (
-                    DefaultPipeline(
-                        preprocessor=LinkTransformerCatColumnNormalizer(),
-                        feature_reducer=DummyFeatureReducer(),
-                        imputer=RevenueQuantileBucketImputer(num_buckets=10),
-                        scope_estimator=MiniModelArmyEstimator(10, n_trials=40, n_startup_trials=20),
-                        ci_estimator=BaselineConfidenceEstimator(),
-                        scope_transformer=LogTargetScaler(),
+                for scaler in scalers:
+                    start_time = time.time()
+                    dp1 = (
+                        DefaultPipeline(
+                            preprocessor=BaselinePreprocessor(),
+                            feature_reducer=DummyFeatureReducer(),
+                            imputer=BaselineImputer(),
+                            scope_estimator=MiniModelArmyEstimator(10, n_trials=40, n_startup_trials=20, bucket_classifier=bucket_classifier),
+                            ci_estimator=BaselineConfidenceEstimator(),
+                            scope_transformer=scaler,
+                        )
+                        .optimise(*SPLIT_1.train)
+                        .fit(*SPLIT_1.train)
+                        .evaluate(*SPLIT_1.rem, *SPLIT_1.val)
+                        .fit_confidence(*SPLIT_1.train)
                     )
-                    .optimise(*SPLIT_1.train)
-                    .fit(*SPLIT_1.train)
-                    .evaluate(*SPLIT_1.rem, *SPLIT_1.val)
-                    .fit_confidence(*SPLIT_1.train)
-                )
 
-                all_results.append(
-                    {"configuration": bucket_classifier.__class__.__name__, "repetition": i, **dp1.evaluation_results}
-                )
-                concatenated = pd.json_normalize(all_results)
-                fname = __loader__.name.split(".")[-1]
-                pbar.update(1)
-                concatenated.to_csv(f"local/eval_results/{fname}.csv")
+                    all_results.append(
+                        {"configuration": bucket_classifier.__class__.__name__, "repetition": i, "time":time.time()-start_time,**dp1.evaluation_results}
+                    )
+                    concatenated = pd.json_normalize(all_results)
+                    fname = __loader__.name.split(".")[-1]
+                    pbar.update(1)
+                    concatenated.to_csv(f"local/eval_results/{fname}.csv")
     concatenated.to_csv(f"local/eval_results/{fname}.csv")

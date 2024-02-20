@@ -41,6 +41,16 @@ plt.xticks(rotation=30)
 plt.ylabel('raw.sMAPE')
 plt.legend(title = 'scope')
 
+# %%
+plt.figure(figsize=(15,5))
+fig = sns.boxplot(results[~(results['scope_estimator'].str.startswith('Baseline')|results['scope_estimator'].str.startswith('PredictMedian'))], x="scope_estimator", y="time", hue="scope")
+add_median_labels(fig)
+plt.title('raw.sMAPE vs scope_estimator')
+plt.xlabel('Scope Estimator')
+plt.xticks(rotation=30)
+plt.ylabel('raw.sMAPE')
+plt.legend(title = 'scope')
+
 # #%%
 # # Filter DataFrame based on scope_estimator
 # mma_results = results[results['scope_estimator'] == 'MiniModelArmyEstimator']
@@ -147,3 +157,17 @@ plt.legend(title='Bucket Number', bbox_to_anchor=(1.05, 1), loc='upper left')
 
 # Show the plot
 plt.show()
+# %%
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from statsmodels.formula.api import ols
+
+results["smape"] = results["raw.sMAPE"] 
+formula = "time ~ scope_estimator + smape"
+# mod1 = smf.mixedlm(formula=formula, data=results[results['scope_estimator'] == "MiniModelArmyEstimator"], groups="scope").fit()
+# mod1 = smf.glm(formula=formula, data=results[results['scope_estimator'] == "MiniModelArmyEstimator"]).fit()
+mod1 = ols(formula="time ~ scope_estimator", data=results[results['scope_estimator'] == "MiniModelArmyEstimator"]).fit()
+mod1.summary()
+# %%
+sm.stats.anova_lm(mod1, typ=1)
+# %%

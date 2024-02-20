@@ -3,6 +3,7 @@ import time
 
 import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
+from imputers.core import BaselineImputer
 from pipeline import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from preprocessors.core import BaselinePreprocessor
@@ -14,7 +15,7 @@ from preprocessors.helper.custom_cat_normalizers import (
     SectorNameCatColumnNormalizer,
 )
 from scope_estimators import SupportVectorEstimator, FastSupportVectorEstimator
-from base.helper import LogTargetScaler
+from base.helper import DummyTargetScaler, LogTargetScaler
 from base.run_utils import (
     get_default_datamanager_configuration,
     get_remote_datamanager_configuration,
@@ -84,18 +85,16 @@ if __name__ == "__main__":
             bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
             SPLIT_1 = bag.scope_1
             X, Y = SPLIT_1.train
-            X_train, X_test = train_test_split(X, test_size=0.7)
             for name, normalizer in configurations.items():
+                start_time = time.time()
                 dp1 = (
                     DefaultPipeline(
                         preprocessor=BaselinePreprocessor(cat_normalizer=normalizer),
                         feature_reducer=DummyFeatureReducer(),
-                        imputer=RevenueQuantileBucketImputer(num_buckets=9),
-                        scope_estimator=MiniModelArmyEstimator(
-                            n_trials=20, n_startup_trials=10
-                        ),
+                        imputer=BaselineImputer(),
+                        scope_estimator=MiniModelArmyEstimator(10,n_trials=40, n_startup_trials=20),
                         ci_estimator=BaselineConfidenceEstimator(),
-                        scope_transformer=LogTargetScaler(),
+                        scope_transformer=DummyTargetScaler(),
                     )
                     .optimise(*SPLIT_1.train)
                     .fit(*SPLIT_1.train)
@@ -104,7 +103,7 @@ if __name__ == "__main__":
                 )
 
                 all_results.append(
-                    {"configuration": name, "repetition": i, **dp1.evaluation_results}
+                    {"configuration": name, "repetition": i, "time":time.time()-start_time,**dp1.evaluation_results}
                 )
                 concatenated = pd.json_normalize(all_results)
                 fname = __loader__.name.split(".")[-1]

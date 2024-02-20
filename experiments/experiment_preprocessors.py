@@ -50,9 +50,9 @@ if __name__ == "__main__":
                 preprocessor=preprocessor,
                 feature_reducer=DummyFeatureReducer(),
                 imputer=BaselineImputer(),
-                scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
-                ci_estimator=None,
-                scope_transformer=LogTargetScaler(),
+                scope_estimator=MiniModelArmyEstimator(10, n_trials=40, n_startup_trials=20),
+                ci_estimator=BaselineConfidenceEstimator(),
+                scope_transformer=DummyTargetScaler(),
             ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)
 
             all_results.append({"repetition": i, "time": time.time() - start, "scope": 1, **ppl1.evaluation_results})

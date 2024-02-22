@@ -1,3 +1,5 @@
+nohup.out
+
 /**/experiment_optuna_metric.csv
 local/eval_results/experiment_optuna_metric.csv
 dataset_combined.csv

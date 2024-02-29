@@ -9,11 +9,18 @@ import statsmodels.formula.api as smf
 
 # %%
 cwd = pathlib.Path(__file__).parent
-df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_bucket_optimum.csv', index_col=0)
+df_results_first = pd.read_csv(cwd.parent/'local/eval_results/experiment_bucket_optimum.csv', index_col=0)[1:]
+df_results_second = pd.read_csv(cwd.parent/'local/eval_results/experiment_bucket_optimum_continue.csv', index_col=0)[1:]
+df_results = pd.concat([df_results_first, df_results_second])
+# df_results = df_results_first
 df_results["mae"] = df_results["raw.MAE"]
 df_results["smape"] = df_results["raw.sMAPE"]
 
 # %%
-# sns.lineplot(data=df_results, x="test.n_buckets", y="smape")
-sns.lineplot(data=df_results, x="test.n_buckets", y="time")
+ax = sns.lineplot(data=df_results, x="test.n_buckets", y="time")
+ax.set_ylabel("time (blue)")
+ax2 = ax.twinx()
+sns.lineplot(data=df_results, x="test.n_buckets", y="smape", ax=ax2,  color="r")
+ax2.set_ylabel("sMAPE (red)")
+plt.show()
 # %%

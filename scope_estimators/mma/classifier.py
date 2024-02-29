@@ -152,6 +152,7 @@ class BucketClassifier(OxariClassifier):
         self.n_buckets = n_buckets
         self._estimator = lgb.LGBMClassifier(**kwargs)
         self.bucket_metrics_ = {"scores":{}}
+        self._evaluator = BucketClassifierEvauator()
 
     def optimize(self, X_train, y_train, X_val, y_val, **kwargs):
         best_params, info = self._optimizer.optimize(X_train, y_train, X_val, y_val, **kwargs)
@@ -243,7 +244,7 @@ class MLPBucketClassifier(BucketClassifier):
     class Optimizer(ClassifierOptimizer):
         def retrieve_param_space(self, trial: optuna.Trial):
             return {
-                'hidden_layer_sizes': trial.suggest_tuple('hidden_layer_sizes', (50, 100, 200)),
+                'hidden_layer_sizes': (10, 5, 10),
                 'alpha': trial.suggest_loguniform('alpha', 1e-5, 1e-1),
                 'learning_rate_init': trial.suggest_loguniform('learning_rate_init', 1e-5, 1e-1),
             }

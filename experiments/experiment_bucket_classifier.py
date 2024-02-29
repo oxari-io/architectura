@@ -32,7 +32,7 @@ import tqdm
 import itertools as it
 
 from scope_estimators.mini_model_army import MiniModelArmyEstimator
-from scope_estimators.mma.classifier import LGBMBucketClassifier, RandomForesBucketClassifier, LinearSVCBucketClassifier, MLPBucketClassifier, KNNBucketClassifier, GradientBoostingBucketClassifier, GaussianNBBucketClassifier, QDABucketClassifier, SGDBucketClassifier
+from scope_estimators.mma.classifier import BucketClassifier, BucketClassifierEvauator, LGBMBucketClassifier, RandomForesBucketClassifier, LinearSVCBucketClassifier, MLPBucketClassifier, KNNBucketClassifier, GradientBoostingBucketClassifier, GaussianNBBucketClassifier, QDABucketClassifier, SGDBucketClassifier
 
 if __name__ == "__main__":
     # TODO: Finish this experiment by adding LinearSVR
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # loads the data just like CSVDataLoader, but a selection of the data
     dataset = get_default_datamanager_configuration().run()
 
-    configurations = [LGBMBucketClassifier(), RandomForesBucketClassifier(), LinearSVCBucketClassifier(), MLPBucketClassifier(), KNNBucketClassifier(), GradientBoostingBucketClassifier(), GaussianNBBucketClassifier(), QDABucketClassifier(), SGDBucketClassifier()]
+    configurations:list[BucketClassifier] = [LGBMBucketClassifier(), RandomForesBucketClassifier(), LinearSVCBucketClassifier(), MLPBucketClassifier(), KNNBucketClassifier(), GradientBoostingBucketClassifier(), GaussianNBBucketClassifier(), QDABucketClassifier(), SGDBucketClassifier()]
     scalers = [DummyTargetScaler(), LogTargetScaler(), ArcSinhTargetScaler()]
 
     repeats = range(10)

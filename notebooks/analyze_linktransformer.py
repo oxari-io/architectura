@@ -15,7 +15,13 @@ df_results["smape"] = df_results["raw.sMAPE"]
 
 # %%
 # sns.lineplot(data=df_results, x="test.n_buckets", y="smape")
+plt.figure(figsize=(10,5))
 sns.boxplot(data=df_results, x="configuration", y="time")
+plt.show()
 # %%
+plt.figure(figsize=(10,5))
 sns.boxplot(data=df_results, x="configuration", y="smape")
+plt.show()
+# %%
+df_results.groupby(["configuration"])[["smape", "time"]].describe().style.highlight_min(color = 'blue',  axis = 0).highlight_max(color = 'darkred',  axis = 0)
 # %%

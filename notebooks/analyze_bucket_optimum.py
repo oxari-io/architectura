@@ -19,8 +19,19 @@ df_results["smape"] = df_results["raw.sMAPE"]
 # %%
 ax = sns.lineplot(data=df_results, x="test.n_buckets", y="time")
 ax.set_ylabel("time (blue)")
-ax2 = ax.twinx()
+plt.show()
+# %%
+fig, (ax1,ax2) = plt.subplots(2,1, figsize=(10,10))
+sns.lineplot(data=df_results, x="test.n_buckets", y="smape", ax=ax1,  color="r")
 sns.lineplot(data=df_results, x="test.n_buckets", y="smape", ax=ax2,  color="r")
+ax2.set_ylim(0,1)
+fig.tight_layout()
+plt.show()
+# %%
+ax2 = plt.gca()
+sns.lineplot(data=df_results, x="test.n_buckets", y="test.sMAPE", ax=ax2,  color="r")
+sns.lineplot(data=df_results, x="test.n_buckets", y="train.sMAPE", ax=ax2,  color="g")
 ax2.set_ylabel("sMAPE (red)")
+ax2.set_ylim(0,1)
 plt.show()
 # %%

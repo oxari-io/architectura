@@ -8,6 +8,7 @@ from base import BaselineConfidenceEstimator, OxariDataManager
 from base.helper import LogTargetScaler
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
+from feature_reducers.core import DummyFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
@@ -71,8 +72,8 @@ if __name__ == "__main__":
 
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(n_components=40),
-                imputer=RevenueQuantileBucketImputer(),
+                feature_reducer=DummyFeatureReducer(),
+                imputer=RevenueQuantileBucketImputer(10),
                 scope_estimator=Estimator(),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),

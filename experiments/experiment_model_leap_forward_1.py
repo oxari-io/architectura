@@ -3,7 +3,8 @@ import time
 
 import pandas as pd
 from base import BaselineConfidenceEstimator, OxariDataManager, OxariImputer
-from imputers.core import BaselineImputer
+from imputers.categorical import HybridCategoricalStatisticsImputer
+from imputers.core import BaselineImputer, DummyImputer
 from pipeline import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from preprocessors.core import BaselinePreprocessor
@@ -26,13 +27,16 @@ from imputers import (
     RevenueQuantileBucketImputer
 )
 from datasources import S3Datasource
-from sklearn.preprocessing import minmax_scale
+from sklearn.preprocessing import PowerTransformer, minmax_scale
 from sklearn.model_selection import train_test_split
 import tqdm
 import itertools as it
 
-from scope_estimators.mini_model_army import MiniModelArmyEstimator
+from scope_estimators.mini_model_army import EvenWeightMiniModelArmyEstimator, MiniModelArmyEstimator
 
+
+N_TRIALS = 20
+N_STARTUP_TRIALS = 40
 if __name__ == "__main__":
     # TODO: Finish this experiment by adding LinearSVR
     all_results = []
@@ -40,43 +44,39 @@ if __name__ == "__main__":
     dataset:OxariDataManager = get_default_datamanager_configuration().run()
 
     configurations = {
-        "lt_default": OxariCategoricalNormalizer(
-            col_transformers=[
-                LinkTransformerCatColumnNormalizer(),
-                CountryCodeCatColumnNormalizer(),
-            ]
-        ),
-        "lt_default_lg": OxariCategoricalNormalizer(
-            col_transformers=[
-                LinkTransformerCatColumnNormalizer(
-                    lt_model=LinkTransformerCatColumnNormalizer.DEFAULT_LG
-                ),
-                CountryCodeCatColumnNormalizer(),
-            ]
-        ),
-        "gte_small": OxariCategoricalNormalizer(
-            col_transformers=[
-                LinkTransformerCatColumnNormalizer(
-                    lt_model=LinkTransformerCatColumnNormalizer.GTE_SMALL
-                ),
-                CountryCodeCatColumnNormalizer(),
-            ]
-        ),
-        "e5_base": OxariCategoricalNormalizer(
-            col_transformers=[
-                LinkTransformerCatColumnNormalizer(
-                    lt_model=LinkTransformerCatColumnNormalizer.E5_BASE
-                ),
-                CountryCodeCatColumnNormalizer(),
-            ]
-        ),
-        "manual": OxariCategoricalNormalizer(
-            col_transformers=[
-                CountryCodeCatColumnNormalizer(),
-                SectorNameCatColumnNormalizer(),
-                IndustryNameCatColumnNormalizer(),
-            ]
-        ),
+        "current": DefaultPipeline(
+        preprocessor=BaselinePreprocessor(),
+        feature_reducer=DummyFeatureReducer(),
+        imputer=RevenueQuantileBucketImputer(10),
+        scope_estimator=MiniModelArmyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        ci_estimator=BaselineConfidenceEstimator(),
+        scope_transformer=LogTargetScaler(),
+    ),
+        "bucket_number_10": DefaultPipeline(
+        preprocessor=BaselinePreprocessor(),
+        feature_reducer=DummyFeatureReducer(),
+        imputer=RevenueQuantileBucketImputer(10),
+        scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        ci_estimator=BaselineConfidenceEstimator(),
+        scope_transformer=LogTargetScaler(),
+    ),
+
+    }
+
+    n_buckets = {
+        "n_buckets_05":5,
+        "n_buckets_10":10,
+
+    }
+    model_type = {
+        "even_weighting":EvenWeightMiniModelArmyEstimator,
+        "default_weighting":MiniModelArmyEstimator,
+
+    }
+    imputers ={
+        "imputer_revenue_bucket_10":RevenueQuantileBucketImputer(10), 
+        "imputer_dummy":DummyImputer(),
+        "imputer_hybrid":HybridCategoricalStatisticsImputer(),
     }
 
     repeats = range(10)

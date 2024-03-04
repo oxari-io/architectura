@@ -10,7 +10,7 @@ import statsmodels.formula.api as smf
 # %%
 cwd = pathlib.Path(__file__).parent
 df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_feature_scaling_validation.csv', index_col=0)
-df_results
+df_results = df_results[df_results["feature_selector"] == "DummyFeatureReducer"]
 # %%
 df_results["configuration"] = pd.Categorical(df_results["fin_transformer"]+"-"+df_results["scope_transformer"])
 df_results["groups"] = pd.Categorical(df_results["scope_transformer"]+df_results["scope"].astype(str))
@@ -31,23 +31,37 @@ plt.figure(figsize=(10,10))
 sns.pointplot(df_results, x="scope", y="smape", hue="configuration")
 plt.show()
 # %%
-plt.figure(figsize=(10,10))
+plt.figure(figsize=(10,5))
 ax = sns.boxplot(df_results, x="configuration", y="smape")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, ha="center")
 plt.show()
 # %%
-plt.figure(figsize=(10,10))
-ax = sns.boxplot(df_results, x="fin_transformer", y="smape")
-ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, ha="center")
-plt.show()
-# %%
-plt.figure(figsize=(10,10))
-ax = sns.boxplot(df_results, x="scope_transformer", y="smape")
-ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, ha="center")
-plt.show()
+df_results.groupby(["fin_transformer", "scope_transformer"])["smape"].describe().drop(columns="count").style.highlight_min(color = 'blue',  
+                       axis = 0).highlight_max(color = 'darkred',  
+                       axis = 0)
 
 # %%
-formula = "smape ~ configuration"
+plt.figure(figsize=(10,5))
+ax = sns.boxplot(df_results, x="fin_transformer", y="smape")
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 0, ha="center")
+plt.show()
+# %%
+plt.figure(figsize=(10,5))
+ax = sns.boxplot(df_results, x="scope_transformer", y="smape")
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 0, ha="center")
+plt.show()
+# %%
+pivoted_scopes = df_results.pivot(columns="scope", values="smape", index=["repetition", "feature_selector", "fin_transformer", "scope_transformer"])
+pivoted_scopes.corr()
+# %%
+pivoted_feature_selectors = df_results.pivot(columns="feature_selector", values="smape", index=["repetition", "scope", "fin_transformer", "scope_transformer"])
+pivoted_feature_selectors.head(50)
+# %%
+fig = plt.figure(figsize=(20, 5))
+sns.lineplot(df_results, x=range(len(df_results)), y="smape", hue="scope")
+plt.show()
+# %%
+formula = "smape ~ feature_selector"
 mod1 = smf.mixedlm(formula=formula, data=df_results, groups=df_results["session"]).fit()
 # mod1 = smf.glm(formula=formula, data=df_results).fit()
 mod1.summary()

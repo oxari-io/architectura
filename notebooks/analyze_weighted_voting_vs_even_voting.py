@@ -48,7 +48,7 @@ add_median_labels(fig)
 plt.title('raw.sMAPE vs scope_estimator')
 plt.xlabel('Scope Estimator')
 plt.xticks(rotation=30)
-plt.ylabel('raw.sMAPE')
+plt.ylabel('Time')
 plt.legend(title = 'scope')
 
 # #%%

@@ -41,6 +41,12 @@ plt.figure(figsize=(15,5))
 sns.boxplot(df_results, x="smape", y="imputer")
 plt.gca().set_title("Imputer evaluation without dimensionality reduction")
 plt.show()
+# %%
+plt.figure(figsize=(15,5))
+# sns.boxplot(df_results, x="mae", y="imputer")
+sns.boxplot(df_results, x="time", y="imputer")
+plt.gca().set_title("Imputer evaluation without dimensionality reduction")
+plt.show()
 
 
 # # %%

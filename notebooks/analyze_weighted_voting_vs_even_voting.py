@@ -40,6 +40,15 @@ plt.xlabel('Scope Estimator')
 plt.xticks(rotation=30)
 plt.ylabel('raw.sMAPE')
 plt.legend(title = 'scope')
+# %%
+# %%
+ax = sns.boxplot(data=results[(results.scope_estimator!="BaselineEstimator") & (results.scope_estimator!="PredictMedianEstimator") ], x="scope_estimator", y="raw.sMAPE")
+add_median_labels(fig)
+plt.title('raw.sMAPE vs scope_estimator')
+plt.xlabel('Scope Estimator')
+plt.xticks(rotation=30)
+plt.ylabel('raw.sMAPE')
+plt.legend(title = 'scope')
 
 # %%
 plt.figure(figsize=(15,5))

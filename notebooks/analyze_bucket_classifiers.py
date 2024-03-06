@@ -22,6 +22,7 @@ df_results["smape"] = df_results["raw.sMAPE"]
 ax = sns.boxplot(data=df_results, x="configuration", y="time")
 ax.set_xticklabels(ax.get_xticklabels(), rotation=60)
 plt.show()
+
 # %%
 fig, (ax1, ax2) = plt.subplots(1,2, sharey=True, sharex=True, figsize=(10,5))
 sns.boxplot(data=df_results, x="configuration", y="test.classifier.balanced_f1", ax=ax1)

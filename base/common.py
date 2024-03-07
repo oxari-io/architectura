@@ -125,12 +125,16 @@ class DefaultRegressorEvaluator(OxariEvaluator):
         offsets = np.array(np.maximum(y_pred, y_true) / np.minimum(y_pred, y_true))
         percentile_deviation = np.quantile(offsets, [.5, .75, .90, .95])
 
-        accuracies = np.minimum(100.0, 100.0 * np.abs(1 - np.abs((y_true - y_pred) / y_true)))
-        accuracy_ranges = [(10, "<10%"), (20, "10-20%"), (50, "20-50%"), (None, ">50%")]
-        confidence_rating = {
-            label: np.sum((accuracies < threshold) if threshold else (accuracies >= 50))
-            for threshold, label in accuracy_ranges
-        }
+        # accuracies = np.minimum(100.0, 100.0 * np.abs(1 - np.abs((y_true - y_pred) / y_true)))
+        accuracies = (offsets*100)-100
+        accuracy_range_assignments = pd.cut(accuracies, [0, 10, 20, 50, 100, 200, np.inf], right=True)
+        accuracy_range_assignments_cnts = accuracy_range_assignments.value_counts()
+        confidence_rating = {f"<{k.right}%" if i==0 else f">{k.left}%" if i==len(accuracy_range_assignments_cnts)-1 else f"{int(k.left)}-{int(k.right)}%" :v for i, (k, v) in enumerate(accuracy_range_assignments_cnts.to_dict().items())}
+        confidence_rating_detailed =  {i:{"left":k.left, "right":k.right, "cnt":v} for i, (k, v) in enumerate(accuracy_range_assignments_cnts.to_dict().items())}
+        # confidence_rating = {
+        #     label: np.sum((accuracies < threshold) if threshold else (accuracies >= 50))
+        #     for threshold, label in accuracy_ranges
+        # }
 
         # NOTE MAPE: Important interpretation https://medium.com/@davide.sarra/how-to-interpret-smape-just-like-mape-bf799ba03bdc
         # NOTE R2: Why it's useless https://data.library.virginia.edu/is-r-squared-useless/
@@ -143,7 +147,8 @@ class DefaultRegressorEvaluator(OxariEvaluator):
                     # "RMSLE": mean_squared_log_error(y_true, y_pred, squared=False),
                     "MAPE": mape(y_true, y_pred),
                     "offset_percentile": {f"{p}%": percentile_deviation[i] for i, p in enumerate([50, 75, 90, 95])},
-                    "confidence_rating": confidence_rating
+                    "confidence_rating": confidence_rating,
+                    "confidence_rating_detailed": confidence_rating_detailed
         }
         print(f"Here's the sMAPE value of the regressor evaluator: {smape(y_true, y_pred) / 100}")
         # self.logger.info(f'sMAPE value of model evaluation: {smape(y_true, y_pred) / 100}')

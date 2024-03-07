@@ -51,13 +51,13 @@
       "type": "python",
       "request": "launch",
       "module": "experiments.${fileBasenameNoExtension}",
-      "justMyCode": false
+      "justMyCode": true
     },
     {
       "name": "Run Specific Experiment",
       "type": "python",
       "request": "launch",
-      "module": "experiments.experiment_missing_value_imputers_downstream_task_validation_2",
+      "module": "experiments.experiment_missing_value_imputers_downstream_task_validation",
       "justMyCode": false
     },
     {

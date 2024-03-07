@@ -70,7 +70,7 @@ visuals = ["pygraphviz"]
 testpaths = ["./tests"]
 
 [tool.yapf]
-column_limit = 150
+column_limit = 180
 
 [build-system]
 requires = ["poetry-core"]

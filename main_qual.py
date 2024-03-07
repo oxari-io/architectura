@@ -63,7 +63,7 @@ if __name__ == "__main__":
     #     CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto_old.csv")),
     #     RegionLoader(),
     # ).set_filter(CompanyDataFilter(frac=0.1)).run()
-    dataset = get_small_datamanager_configuration().run()
+    dataset = get_small_datamanager_configuration(1).run()
 
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     # X = dataset.get_features(OxariDataManager.ORIGINAL)
@@ -74,10 +74,10 @@ if __name__ == "__main__":
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
+        preprocessor=BaselinePreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(num_buckets=10),
-        scope_estimator=LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=MiniModelArmyEstimator(10, n_trials=40, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=PCAFeatureReducer(ignored_features=IGNORED_FEATURES),
         imputer=RevenueQuantileBucketImputer(num_buckets=10),
-        scope_estimator=LGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)

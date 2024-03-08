@@ -37,15 +37,15 @@ from datasources.loaders import NetZeroIndexLoader
 
 # %%
 # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-# dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),
-#                              S3Datasource(path='model-input-data/financials_auto.csv'),
-#                              S3Datasource(path='model-input-data/categoricals_auto.csv'),
+# dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes.csv'),
+#                              S3Datasource(path='model-input-data/financials.csv'),
+#                              S3Datasource(path='model-input-data/categoricals.csv'),
 #                              other_loaders=[NetZeroIndexLoader()]).run()
 # dataset = PreviousScopeFeaturesDataManager().run()
 dataset = PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=CachingS3Datasource(path="../model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=CachingS3Datasource(path="../model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=CachingS3Datasource(path="../model-data/input/categoricals_auto.csv")),
+        FinancialLoader(datasource=CachingS3Datasource(path="../model-data/input/financials.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="../model-data/input/scopes.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="../model-data/input/categoricals.csv")),
         RegionLoader(),).run()
 
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)

@@ -33,9 +33,9 @@ meta_model = pickle.load((cwd.parent / 'local/objects/meta_model/snapshot-03-02-
 meta_model
 # %%
 dataset = PreviousScopeFeaturesDataManager(
-    LocalDatasource(path=cwd.parent/'local/data/scopes_auto.csv'),
-    LocalDatasource(path=cwd.parent/'local/data/financials_auto.csv'),
-    LocalDatasource(path=cwd.parent/'local/data/categoricals_auto.csv'),
+    LocalDatasource(path=cwd.parent/'local/data/scopes),
+    LocalDatasource(path=cwd.parent/'local/data/financials),
+    LocalDatasource(path=cwd.parent/'local/data/categoricals),
 ).run()
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 

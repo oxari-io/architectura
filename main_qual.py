@@ -58,9 +58,9 @@ if __name__ == "__main__":
 
     # dataset = get_small_datamanager_configuration().run()
     # dataset = PreviousScopeFeaturesDataManager(
-    #     FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
-    #     ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
-    #     CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto_old.csv")),
+    #     FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials.csv")),
+    #     ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes.csv")),
+    #     CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_old.csv")),
     #     RegionLoader(),
     # ).set_filter(CompanyDataFilter(frac=0.1)).run()
     dataset = get_small_datamanager_configuration(1).run()

@@ -22,7 +22,7 @@ sns.set_palette('viridis')
 
 # %%
 cwd = pathlib.Path(__file__).parent
-DATA = pd.read_csv(cwd.parent/'model-data/input/scopes_auto.csv', index_col=0)
+DATA = pd.read_csv(cwd.parent/'model-data/input/scopes.csv', index_col=0)
 DATA
 # %%
 df_scopes = DATA

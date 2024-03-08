@@ -39,9 +39,9 @@ from sklearn.compose import TransformedTargetRegressor
 
 # %%
 # dataset = DefaultDataManager(scope_loader=S3ScopeLoader(), financial_loader=S3FinancialLoader(), categorical_loader=S3CategoricalLoader()).run()
-dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes_auto.csv'),
-                             S3Datasource(path='model-input-data/financials_auto.csv'),
-                             S3Datasource(path='model-input-data/categoricals_auto.csv'),
+dataset = DefaultDataManager(S3Datasource(path='model-input-data/scopes.csv'),
+                             S3Datasource(path='model-input-data/financials.csv'),
+                             S3Datasource(path='model-input-data/categoricals.csv'),
                              other_loaders=[NetZeroIndexLoader()]).run()
 # dataset = PreviousScopeFeaturesDataManager().run()
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)

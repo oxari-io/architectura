@@ -78,9 +78,9 @@ plt.show()
 all_results = []
 difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 dataset = PreviousScopeFeaturesDataManager(
-    FinancialLoader(datasource=LocalDatasource(path="../model-data/input/financials_auto.csv")),
-    ScopeLoader(datasource=LocalDatasource(path="../model-data/input/scopes_auto.csv")),
-    CategoricalLoader(datasource=LocalDatasource(path="../model-data/input/categoricals_auto.csv")),
+    FinancialLoader(datasource=LocalDatasource(path="../model-data/input/financials.csv")),
+    ScopeLoader(datasource=LocalDatasource(path="../model-data/input/scopes.csv")),
+    CategoricalLoader(datasource=LocalDatasource(path="../model-data/input/categoricals.csv")),
     RegionLoader(),
 ).set_filter(CompanyDataFilter(0.5)).run()
 

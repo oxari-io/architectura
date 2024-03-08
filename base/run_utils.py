@@ -12,27 +12,27 @@ from datasources import PreviousScopeFeaturesDataManager
 
 def get_default_datamanager_configuration():
     return PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
         RegionLoader(),
     )
 
 
 def get_remote_datamanager_configuration():
     return PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=S3Datasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=S3Datasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=S3Datasource(path="model-data/input/categoricals_auto.csv")),
+        FinancialLoader(datasource=S3Datasource(path="model-data/input/financials.csv")),
+        ScopeLoader(datasource=S3Datasource(path="model-data/input/scopes.csv")),
+        CategoricalLoader(datasource=S3Datasource(path="model-data/input/categoricals.csv")),
         RegionLoader(),
     )
 
 
 def get_small_datamanager_configuration(frac=0.1):
     return PreviousScopeFeaturesDataManager(
-        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
         RegionLoader(),
     ).set_filter(CompanyDataFilter(frac=frac))
 

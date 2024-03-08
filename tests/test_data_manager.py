@@ -20,8 +20,8 @@ from tests.fixtures import const_dataset_filtered, const_dataset_full, const_dat
 
 
 @pytest.mark.parametrize("datasource", [
-    LocalDatasource(path=DATA_DIR / "scopes_auto.csv"),
-    S3Datasource(path="model-data/input/scopes_auto.csv"),
+    LocalDatasource(path=DATA_DIR / "scopes.csv"),
+    S3Datasource(path="model-data/input/scopes.csv"),
     OnlineExcelDatasource(path="https://sciencebasedtargets.org/download/excel"),
     OnlineCSVDatasource(path="https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv")
 ])
@@ -30,7 +30,7 @@ def test_datasources(datasource: Datasource):
     assert len(loaded.data) > 0
 
 
-@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")])
+@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_formated_testing.csv")])
 def test_datasources_not_cached_download(datasource: Datasource):
     local_path = Path(datasource.path)
     if local_path.exists():
@@ -44,7 +44,7 @@ def test_datasources_not_cached_download(datasource: Datasource):
     os.remove(local_path)
 
 
-@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")])
+@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_formated_testing.csv")])
 def test_datasources_cached_download(datasource: Datasource):
     local_path = Path(datasource.path)
     if not local_path.exists():
@@ -57,9 +57,9 @@ def test_datasources_cached_download(datasource: Datasource):
     os.remove(local_path)
 
 @pytest.mark.parametrize("loader", [
-    ScopeLoader(datasource=LocalDatasource(path=DATA_DIR / "scopes_auto.csv")),
-    FinancialLoader(datasource=LocalDatasource(path=DATA_DIR / "financials_auto.csv")),
-    CategoricalLoader(datasource=LocalDatasource(path=DATA_DIR / "categoricals_auto.csv")),
+    ScopeLoader(datasource=LocalDatasource(path=DATA_DIR / "scopes.csv")),
+    FinancialLoader(datasource=LocalDatasource(path=DATA_DIR / "financials.csv")),
+    CategoricalLoader(datasource=LocalDatasource(path=DATA_DIR / "categoricals.csv")),
 ])
 def test_standard_loaders(loader: PartialLoader):
     loaded = loader.load()

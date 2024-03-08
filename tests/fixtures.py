@@ -88,9 +88,9 @@ def const_meta_model(const_data_manager: OxariDataManager, const_pipeline: Oxari
 @pytest.fixture
 def const_base_loaders():
     return [
-        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials_auto.csv")),
-        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes_auto.csv")),
-        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals_auto.csv")),
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
     ]
 
 

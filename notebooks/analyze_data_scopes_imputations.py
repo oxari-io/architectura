@@ -34,9 +34,9 @@ def keep_important_cols(df):
 cwd = pathlib.Path(__file__).parent
 
 # dataset = PreviousScopeFeaturesDataManager(
-#         FinancialLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/financials_auto.csv")),
-#         ScopeLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/scopes_auto.csv")),
-#         CategoricalLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/categoricals_auto.csv")),
+#         FinancialLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/financials.csv")),
+#         ScopeLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/scopes.csv")),
+#         CategoricalLoader(datasource=LocalDatasource(path=cwd.parent/"model-data/input/categoricals.csv")),
 #         RegionLoader(),
 #     ).set_filter(CompanyDataFilter(1, True)).run()
 # # %%

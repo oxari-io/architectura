@@ -77,9 +77,9 @@ if __name__ == "__main__":
 
     for i in range(num_repeats):
         dataset = TemporalFeaturesDataManager(
-            FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")),
-            ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")),
-            CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")),
+            FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials.csv")),
+            ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes.csv")),
+            CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals.csv")),
             RegionLoader(),
         ).set_filter(CompanyDataFilter(0.25, drop_single_rows=True)).run()  # run() calls _transform()
         evaluator = DefaultRegressorEvaluator()

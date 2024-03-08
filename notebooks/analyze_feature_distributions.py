@@ -25,9 +25,9 @@ PARENT_PATH = Path('..').absolute().resolve().as_posix()
 PARENT_PATH
 # %%
 dataset = PreviousScopeFeaturesDataManager(
-    FinancialLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/financials_auto.csv")),
-    ScopeLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/scopes_auto.csv")),
-    CategoricalLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/categoricals_auto.csv")),
+    FinancialLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/financials.csv")),
+    ScopeLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/scopes.csv")),
+    CategoricalLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/categoricals.csv")),
     RegionLoader(),
 ).set_filter(CompanyDataFilter(frac=1)).run()
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)

@@ -63,9 +63,9 @@ if __name__ == "__main__":
     }
 
     # Data prepared for saving
-    ld_fin = FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials_auto.csv")).load()
-    ld_scp = ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes_auto.csv")).load()
-    ld_cat = CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals_auto.csv")).load()
+    ld_fin = FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials.csv")).load()
+    ld_scp = ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes.csv")).load()
+    ld_cat = CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals.csv")).load()
     ld_reg = RegionLoader().load()
     cmb_ld = EmptyLoader()
 

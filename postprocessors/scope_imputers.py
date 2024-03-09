@@ -41,7 +41,7 @@ class ScopeImputerPostprocessor(OxariPostprocessor):
         data = data[meta_keys + ["meta_is_pred_s1", "meta_is_pred_s2", "meta_is_pred_s3"]]
         # how many unique companies?
         # print("Number of unique companies in the data: ", len(data["isin"].unique()))
-        self.logger.debug(f"Number of unique companies in the data: {len(data['key_isin'].unique())}")
+        self.logger.debug(f"Number of unique companies in the data: {len(data['key_ticker'].unique())}")
         self.data = data
         return self
 
@@ -85,14 +85,14 @@ class JumpRateEvaluator(OxariLoggerMixin):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        companies = X.groupby('key_isin', group_keys=True)
+        companies = X.groupby('key_ticker', group_keys=True)
         self.logger.info("Compute Jump Ratios (yearly)")
         jump_rates: pd.DataFrame = companies.progress_apply(self._compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
         # self.logger.info("Compute Jump Ratios (aggregated)")
         # estimation_stats: pd.DataFrame = companies.progress_apply(self._compute_estimate_to_fact_ratio).reset_index()
         # self.logger.info("Merge yearly jum rates with aggregated stats")
-        # self.jump_rates = jump_rates.merge(estimation_stats, left_on="key_isin", right_on="key_isin").drop('index', axis=1)
+        # self.jump_rates = jump_rates.merge(estimation_stats, left_on="key_ticker", right_on="key_ticker").drop('index', axis=1)
         # # self.jump_rates = self.jump_rates.drop('level_1', axis=1)
-        # self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('key_isin').agg(['median', 'mean', 'std', 'max', 'min'])
+        # self.jump_rates_agg = self.jump_rates.drop('year_with_data', axis=1).groupby('key_ticker').agg(['median', 'mean', 'std', 'max', 'min'])
         # self.jump_rates_agg.columns = self.jump_rates_agg.columns.map('|'.join).str.strip('|')
         return jump_rates

@@ -23,7 +23,8 @@ shap_values
 
 
 # %%
-shap.summary_plot(shap_values, X, show=True, max_display=30)
+ax = plt.gca()
+shap.summary_plot(shap_values, X, show=True, max_display=30, ax=ax)
 # %%
 ranked = pd.DataFrame(shap_values.abs.values.sum(0),
                       columns=["shap-value"],
@@ -54,7 +55,7 @@ shap.plots.waterfall(shap_values[1])
 # %%
 shap.plots.waterfall(shap_values[2])
 # %%
-shap.plots.bar(shap_values, max_display=50)
+shap.plots.bar(shap_v  alues, max_display=50)
 
 # %%
 # shap.plots.heatmap(shap_values)

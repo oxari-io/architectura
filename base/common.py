@@ -1085,7 +1085,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
             "confidence_rating": {f"scope_{i+1}": result["confidence_rating"] for i, result in enumerate(scope_results)},
             "meta": {
                 "num_rows_tested": M.shape[0],
-                "num_companies_tested": M['key_isin'].nunique()
+                "num_companies_tested": M['key_ticker'].nunique()
             }
         }
 

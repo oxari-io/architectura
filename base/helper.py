@@ -54,7 +54,7 @@ def data_point(drop_rate:float=0.0):
         "ft_numc_prior_tg_numc_scope_2": 50033,
         "ft_numc_prior_tg_numc_scope_3": 11111,
         "key_year": 2019.0,
-        "key_isin": "FR0000051070",
+        "key_ticker": "FR0000051070",
         "tg_numc_scope_1": None,
         "tg_numc_scope_2": None,
         "tg_numc_scope_3": None,

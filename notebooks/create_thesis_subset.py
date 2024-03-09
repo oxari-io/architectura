@@ -8,15 +8,15 @@ import numpy as np
 dataset = pd.read_csv('dataset_combined_2.csv')
 dataset 
 # %%
-isin_counts = dataset.dropna(subset=['tg_numc_scope_1','tg_numc_scope_2','tg_numc_scope_3'],how='all').key_isin.value_counts()
+isin_counts = dataset.dropna(subset=['tg_numc_scope_1','tg_numc_scope_2','tg_numc_scope_3'],how='all').key_ticker.value_counts()
 isin_counts
 # %%
 print(f"Amount of companies: {len(isin_counts)}")
 # %%
-minimum_years = dataset.dropna(subset=['tg_numc_scope_1','tg_numc_scope_2','tg_numc_scope_3'],how='all').groupby("key_isin")["key_year"].min()
+minimum_years = dataset.dropna(subset=['tg_numc_scope_1','tg_numc_scope_2','tg_numc_scope_3'],how='all').groupby("key_ticker")["key_year"].min()
 minimum_years
 # %%
-maximum_years = dataset.dropna(subset=['tg_numc_scope_1','tg_numc_scope_2','tg_numc_scope_3'],how='all').groupby("key_isin")["key_year"].max()
+maximum_years = dataset.dropna(subset=['tg_numc_scope_1','tg_numc_scope_2','tg_numc_scope_3'],how='all').groupby("key_ticker")["key_year"].max()
 maximum_years
 # %%
 def count_missing_years(df):
@@ -24,13 +24,13 @@ def count_missing_years(df):
     Count the missing years for each company in the provided dataframe.
     
     Args:
-    - df (pd.DataFrame): DataFrame with columns 'key_isin' and 'key_year'.
+    - df (pd.DataFrame): DataFrame with columns 'key_ticker' and 'key_year'.
     
     Returns:
     - pd.Series: Number of missing years for each company.
     """
     # Determine the minimum and maximum years for each company
-    year_range = df.groupby('key_isin')['key_year'].agg([min, max])
+    year_range = df.groupby('key_ticker')['key_year'].agg([min, max])
 
     # Find missing years for each company
     def find_missing_years(group):
@@ -39,12 +39,12 @@ def count_missing_years(df):
         actual_years = set(group['key_year'].values)
         return len(full_range - actual_years)
 
-    return df.groupby('key_isin').apply(find_missing_years)
+    return df.groupby('key_ticker').apply(find_missing_years)
 
 missing_years = count_missing_years(dataset.dropna(subset=['tg_numc_scope_1','tg_numc_scope_2','tg_numc_scope_3'],how='all'))
 missing_years
 # %%
-df = missing_years.to_frame().merge(minimum_years.to_frame(), on="key_isin").merge(maximum_years.to_frame(), on="key_isin").rename(columns={0: 'missing_years', "key_year_x":"min", "key_year_y":"max"})
+df = missing_years.to_frame().merge(minimum_years.to_frame(), on="key_ticker").merge(maximum_years.to_frame(), on="key_ticker").rename(columns={0: 'missing_years', "key_year_x":"min", "key_year_y":"max"})
 df["range"] = df["min"].astype(str) + "-" + df["max"].astype(str)
 df
 # %%
@@ -80,5 +80,5 @@ all_set = ["US0584981064"]
 all_combined = two_set + three_set + mid_set + all_set
 all_combined
 # %%
-dataset[dataset.key_isin.isin(all_combined)].iloc[:,2:].to_csv('hemanth_subset.csv')
+dataset[dataset.key_ticker.isin(all_combined)].iloc[:,2:].to_csv('hemanth_subset.csv')
 # %%

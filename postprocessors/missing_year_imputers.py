@@ -14,7 +14,7 @@ import itertools as it
 
 
 class SimpleMissingYearImputer(OxariImputer):
-    COL_GROUP = 'key_isin'
+    COL_GROUP = 'key_ticker'
     COL_TIME = 'key_year'
 
     def __init__(self, method: str = 'linear', minimum_threshold=1, **kwargs):
@@ -42,7 +42,7 @@ class SimpleMissingYearImputer(OxariImputer):
         data_completed = data_transformed.filter(regex=filter_str, axis=1).groupby(self.COL_GROUP, group_keys=False).progress_apply(lambda x: x.bfill().ffill())
         X_result[data_completed.columns] = data_completed[data_completed.columns].values
         self.logger.info('Mark rows that where added during this process')
-        X_result_marked = self.__mark_additional_rows(X_result, data, ['key_isin', 'key_year'], 'meta_is_imputed_year')
+        X_result_marked = self.__mark_additional_rows(X_result, data, ['key_ticker', 'key_year'], 'meta_is_imputed_year')
         self.logger.info('Done iwth scope imputation')
         return X_result_marked
 
@@ -58,12 +58,12 @@ class SimpleMissingYearImputer(OxariImputer):
     def _extend(self, df_company: pd.DataFrame):
 
         df = df_company.set_index(self.COL_TIME).sort_index()
-        key_isin = df_company[self.COL_GROUP].values[0]
+        key_ticker = df_company[self.COL_GROUP].values[0]
         min_year = int(df.index.min())
         max_year = int(df.index.max())
         new_index = pd.RangeIndex(start=min_year, stop=max_year + 1, name=self.COL_TIME)
         new_data = df.reindex(new_index).reset_index()
-        new_data["key_isin"] = key_isin
+        new_data["key_ticker"] = key_ticker
         return new_data
 
     def _interpolate(self, df_company: pd.DataFrame):

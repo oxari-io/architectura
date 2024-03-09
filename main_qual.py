@@ -209,7 +209,7 @@ if __name__ == "__main__":
             S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("q_scope_imputations").set_object(df).set_datatarget(
             MongoDestination(path="model-data/output", index={
-                "key_isin": ASCENDING,
+                "key_ticker": ASCENDING,
                 "key_year": ASCENDING
             })),
     ]
@@ -220,7 +220,7 @@ if __name__ == "__main__":
             LocalDestination(path="model-data/output")),
         CSVSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".csv").set_name("q_lar_imputations").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(DATE_FORMAT)).set_name("q_lar_imputations").set_object(df).set_datatarget(
-            MongoDestination(path="model-data/output", index={"key_isin": ASCENDING})),
+            MongoDestination(path="model-data/output", index={"key_ticker": ASCENDING})),
     ]
 
     SavingManager = OxariSavingManager(

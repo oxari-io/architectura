@@ -30,7 +30,7 @@ def test_datasources(datasource: Datasource):
     assert len(loaded.data) > 0
 
 
-@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_formated_testing.csv")])
+@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv")])
 def test_datasources_not_cached_download(datasource: Datasource):
     local_path = Path(datasource.path)
     if local_path.exists():
@@ -44,7 +44,7 @@ def test_datasources_not_cached_download(datasource: Datasource):
     os.remove(local_path)
 
 
-@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_formated_testing.csv")])
+@pytest.mark.parametrize("datasource", [CachingS3Datasource(path="model-data/input/file_for_automated_testing.csv.csv")])
 def test_datasources_cached_download(datasource: Datasource):
     local_path = Path(datasource.path)
     if not local_path.exists():

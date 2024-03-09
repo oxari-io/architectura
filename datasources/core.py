@@ -43,7 +43,7 @@ class PreviousScopeFeaturesDataManager(DefaultDataManager):
 
     def _transform(self, df: pd.DataFrame):
         self.logger.info("Taking all previous year scopes")
-        df: pd.DataFrame = df.groupby('key_isin', group_keys=False).progress_apply(self._take_previous_scopes)
+        df: pd.DataFrame = df.groupby('key_ticker', group_keys=False).progress_apply(self._take_previous_scopes)
         return super()._transform(df)
 
 

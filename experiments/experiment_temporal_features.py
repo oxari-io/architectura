@@ -49,7 +49,7 @@ def evaluate_jump_rates(ppl1, data):
     scope_keys = list(data.columns[data.columns.str.startswith('tg_numc_')])
     data = data[meta_keys + scope_keys + ["meta_is_pred_s1"]]
 
-    companies = data.groupby('key_isin', group_keys=True)
+    companies = data.groupby('key_ticker', group_keys=True)
     jump_rates: pd.DataFrame = companies.progress_apply(compute_jump_rates).reset_index().drop('level_1', axis=1).reset_index()
     jr_series = jump_rates["tg_numc_scope_1"].replace([np.inf, -np.inf], np.nan)
     jr_results = {

@@ -4,8 +4,8 @@ import pytest
 from base.common import OxariPreprocessor, OxariFeatureReducer, OxariImputer
 from base.helper import LogTargetScaler
 from feature_reducers.core import AgglomerateFeatureReducer, DummyFeatureReducer, PCAFeatureReducer
-from imputers.categorical import CategoricalStatisticsImputer
-from imputers.core import DummyImputer
+from imputers.categorical import CategoricalStatisticsImputer, HybridCategoricalStatisticsImputer
+from imputers.core import BaselineImputer, DummyImputer
 from imputers.iterative import MVEImputer
 from imputers.kcluster_bucket import KNNBucketImputer, KMedianBucketImputer
 from imputers.revenue_bucket import RevenueBucketImputer, RevenueQuantileBucketImputer
@@ -39,8 +39,9 @@ def test_feature_reducers(feature_reducer: OxariFeatureReducer, const_data_manag
     RevenueQuantileBucketImputer(),
     CategoricalStatisticsImputer(),
     KNNBucketImputer(),
-    KMedianBucketImputer(),
-    MVEImputer(),
+    DummyImputer(),
+    BaselineImputer(),
+    HybridCategoricalStatisticsImputer(),
 ])
 def test_imputers(imputer: OxariImputer, const_dataset_filtered: pd.DataFrame):
     data_prep: pd.DataFrame = imputer.fit_transform(const_dataset_filtered)

@@ -33,9 +33,9 @@ meta_model = pickle.load((cwd.parent / 'local/objects/meta_model/snapshot-03-02-
 meta_model
 # %%
 dataset = PreviousScopeFeaturesDataManager(
-    LocalDatasource(path=cwd.parent/'local/data/scopes),
-    LocalDatasource(path=cwd.parent/'local/data/financials),
-    LocalDatasource(path=cwd.parent/'local/data/categoricals),
+    LocalDatasource(path=cwd.parent/'local/data/scopes'),
+    LocalDatasource(path=cwd.parent/'local/data/financials'),
+    LocalDatasource(path=cwd.parent/'local/data/categoricals'),
 ).run()
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
@@ -48,7 +48,7 @@ print("Impute scopes with Model")
 scope_imputer = ScopeImputerPostprocessor(estimator=meta_model).run(X=X).evaluate()
 scope_imputer
 # %%
-data_merged_with_input = scope_imputer.data.merge(X, on=["key_year", "key_isin"])
+data_merged_with_input = scope_imputer.data.merge(X, on=["key_year", "key_ticker"])
 data_merged_with_input
 
 # %% [markdown]

@@ -43,7 +43,6 @@ if __name__ == "__main__":
     jump_rate_evaluator, jump_rates = compute_jump_rates(imputed_data)
 
     keys = {
-        "key_isin": "text",
         "key_ticker": "text",
         "meta_company_name": "text",
         "meta_country_name": "text",
@@ -55,7 +54,6 @@ if __name__ == "__main__":
 
     options = {
         "weights": {
-            "key_isin": 10,
             "key_ticker": 10,
             "meta_company_name": 5,
         },
@@ -71,7 +69,7 @@ if __name__ == "__main__":
 
     cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
 
-    df = ld_cat._data.merge((ld_cat + ld_reg).data, on="key_isin", how="left", suffixes=('', '_DROP')).filter(regex='^(?!.*_DROP)')
+    df = ld_cat._data.merge((ld_cat + ld_reg).data, on="key_ticker", how="left", suffixes=('', '_DROP')).filter(regex='^(?!.*_DROP)')
     # df[df.select_dtypes('object').columns] = df[df.select_dtypes('object').columns].fillna("NA")
     # df[df.select_dtypes('category').columns] = df[df.select_dtypes('category').columns].astype(str).replace("nan", "NA")
 
@@ -79,7 +77,7 @@ if __name__ == "__main__":
 
     df_statistics:pd.DataFrame = (cmb_ld).data.drop(
         [
-            'key_isin',
+            'key_ticker',
             'key_country_code',
             'ft_catm_near_target_status',
             'ft_catm_near_target_year',
@@ -106,7 +104,7 @@ if __name__ == "__main__":
             MongoDestination(index=keys, path="model-data/output", options=options)),
         MongoSaver().set_time(time.strftime(dateformat)).set_name("p_financials").set_object(df_fin).set_datatarget(
             MongoDestination(path="model-data/output", index={
-                "key_isin": ASCENDING,
+                "key_ticker": ASCENDING,
                 "key_year": ASCENDING
             })),
         MongoSaver().set_time(time.strftime(dateformat)).set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(
@@ -123,7 +121,7 @@ if __name__ == "__main__":
             S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(dateformat)).set_name("p_scope_imputations").set_object(imputed_data).set_datatarget(
             MongoDestination(path="model-data/output", index={
-                "key_isin": ASCENDING,
+                "key_ticker": ASCENDING,
                 "key_year": ASCENDING
             })),
         CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_lar_imputations").set_object(lar_imputed_data).set_datatarget(
@@ -131,7 +129,7 @@ if __name__ == "__main__":
         CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_lar_imputations").set_object(lar_imputed_data).set_datatarget(
             S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(dateformat)).set_name("p_lar_imputations").set_object(lar_imputed_data).set_datatarget(
-            MongoDestination(path="model-data/output", index={"key_isin": ASCENDING})),
+            MongoDestination(path="model-data/output", index={"key_ticker": ASCENDING})),
         PickleSaver().set_time(time.strftime(dateformat)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(LocalDestination(path="model-data/output")),
         PickleSaver().set_time(time.strftime(dateformat)).set_extension(".pkl").set_name("p_lar").set_object(lar_model).set_datatarget(S3Destination(path="model-data/output")),
     ]

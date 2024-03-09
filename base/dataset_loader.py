@@ -206,11 +206,11 @@ class ScopeLoader(SpecialLoader):
 
     @property
     def lkeys(self):
-        return ["key_isin", "key_year"]
+        return ["key_ticker", "key_year"]
 
     @property
     def rkeys(self):
-        return ["key_isin", "key_year"]
+        return ["key_ticker", "key_year"]
 
 class OldFinancialLoader(PartialLoader):
     PATTERN = "ft_num"
@@ -229,7 +229,7 @@ class FinancialLoader(PartialLoader):
     def _load(self, **kwargs) -> Self:
         super()._load(**kwargs)
         #
-        self._data = self._data.dropna(subset=["key_year", "key_isin"], how='any')
+        self._data = self._data.dropna(subset=["key_year", "key_ticker"], how='any')
         self._data["key_year"] = self._data["key_year"].astype(int)
         self._data = drop_sparse_rows(self._data) 
         return self
@@ -340,13 +340,13 @@ class CompanyDataFilter(DataFilter):
 
     def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
         if self.drop_single_rows:
-            group_counts = X.groupby('key_isin').size()
-            X = X.groupby('key_isin').filter(lambda x: group_counts[x.name] > 1)
-        isins = X["key_isin"].unique()
+            group_counts = X.groupby('key_ticker').size()
+            X = X.groupby('key_ticker').filter(lambda x: group_counts[x.name] > 1)
+        isins = X["key_ticker"].unique()
         self.num_companies_pre = len(isins)
         isin_subset = pd.Series(isins).sample(frac=self.frac).values
-        X_new = X[X["key_isin"].isin(isin_subset)]
-        self.num_companies_post = len(X_new["key_isin"].unique())
+        X_new = X[X["key_ticker"].isin(isin_subset)]
+        self.num_companies_post = len(X_new["key_ticker"].unique())
         self.logger.debug(f'Filtered dataset from {self.num_companies_pre} to {self.num_companies_post} companies')
         self.logger.info(f'Filtered dataset from {len(X)} to {len(X_new)} data points')
         return X_new
@@ -412,7 +412,7 @@ class OxariDataManager(OxariMixin):
     #TODO: JUST OVERWRITE THIS ONE
     def _transform(self, df:pd.DataFrame, **kwargs):
         # key_cols = list(df.columns[df.columns.str.startswith('key')])
-        return df.drop_duplicates(['key_isin', 'key_year']).sort_values(['key_isin', 'key_year'], ascending=True)
+        return df.drop_duplicates(['key_ticker', 'key_year']).sort_values(['key_ticker', 'key_year'], ascending=True)
 
     def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> pd.DataFrame:
         self.logger.info(f"Added {name} to {self.__class__.__name__}")

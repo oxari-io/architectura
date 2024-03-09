@@ -31,7 +31,7 @@ class NumericalStatisticsImputer(BucketImputerBase):
         super().__init__(**kwargs)
         self.reference = reference
         self.bucket_number = num_buckets
-        self.list_of_skipped_columns = ['key_year', 'key_isin']
+        self.list_of_skipped_columns = ['key_year', 'key_ticker', 'key_isin']
         # self.columns_to_fit = set(NumMapping.get_features()) - set([self.MAIN_VARIABLE])
         self.fallback_fallback_value = 0
         # TODO: Evaluate based on the entropy of buckets

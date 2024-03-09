@@ -10,7 +10,7 @@ from abc import abstractmethod
 
 from imputers.categorical import CategoricalStatisticsImputer
 
-COL_GROUPER = 'key_isin'
+COL_GROUPER = 'key_ticker'
 COL_TIME = 'key_year'
 class InterpolationImputer(OxariImputer):
     def __init__(self, method:str='linear', window_size:int=3, **kwargs):

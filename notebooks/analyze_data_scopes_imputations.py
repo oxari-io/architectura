@@ -24,10 +24,10 @@ from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManage
 from datasources.online import S3Datasource
 # sns.set_palette('viridis')
 pd.set_option('display.float_format', lambda x: '%.5f' % x)
-def get_company(df, key_isin):
-    return df[df.key_isin==key_isin]
+def get_company(df, key_ticker):
+    return df[df.key_ticker==key_ticker]
 def keep_important_cols(df):
-    return df.loc[:,["key_isin", "key_year", "ft_numc_revenue", "ft_numc_equity", "ft_numc_cash", "tg_numc_scope_1"]]
+    return df.loc[:,["key_ticker", "key_year", "ft_numc_revenue", "ft_numc_equity", "ft_numc_cash", "tg_numc_scope_1"]]
 
 
 # %%
@@ -46,7 +46,7 @@ cwd = pathlib.Path(__file__).parent
 # SPLIT_2 = bag.scope_2
 # SPLIT_3 = bag.scope_3
 
-# company = list(set(DATA.key_isin))
+# company = list(set(DATA.key_ticker))
 
 # X,y = SPLIT_1.train
 # X
@@ -89,12 +89,12 @@ def sample_groups(df, group_by_col, num_groups, filter_col=None):
     return sampled_df
 
 col_to_normalize='tg_numc_scope_1'
-df_scopes = sample_groups(data_scope_inputed, 'key_isin', 20, filter_col='meta_is_pred_s1')
-df_scopes['normalized_scope_1'] = df_scopes.groupby('key_isin')[col_to_normalize].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+df_scopes = sample_groups(data_scope_inputed, 'key_ticker', 20, filter_col='meta_is_pred_s1')
+df_scopes['normalized_scope_1'] = df_scopes.groupby('key_ticker')[col_to_normalize].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
 df_scopes
 
 # %%
-for idx, df_grp in df_scopes.groupby('key_isin'):
+for idx, df_grp in df_scopes.groupby('key_ticker'):
     fig, ax= plt.subplots(1,1, figsize=(13,8))
     ax = sns.lineplot(data=df_grp, y=col_to_normalize, x='key_year', color='grey')
     sns.scatterplot(data=df_grp, y=col_to_normalize, x='key_year', hue='meta_is_pred_s1', style='meta_is_imputed_year', s=100)
@@ -102,16 +102,16 @@ for idx, df_grp in df_scopes.groupby('key_isin'):
     plt.show()
 # %%
 fig, ax= plt.subplots(1,1, figsize=(20,10))
-sns.lineplot(data=df_scopes,y='normalized_scope_1', x='key_year', hue='key_isin', legend=False)
-sns.scatterplot(data=df_scopes,y='normalized_scope_1', x='key_year', hue='key_isin', style='meta_is_pred_s1', s=100)
+sns.lineplot(data=df_scopes,y='normalized_scope_1', x='key_year', hue='key_ticker', legend=False)
+sns.scatterplot(data=df_scopes,y='normalized_scope_1', x='key_year', hue='key_ticker', style='meta_is_pred_s1', s=100)
 plt.show()
 
 # %%
 from IPython.display import display
-# company = df_scopes.key_isin.unique()
+# company = df_scopes.key_ticker.unique()
 def display_company(data_scope_inputed, col_to_normalize):
     fig, ax= plt.subplots(1,1, figsize=(13,8))
-    sns.lineplot(data=data_scope_inputed,y=col_to_normalize, x='key_year', hue='key_isin', legend=False)
+    sns.lineplot(data=data_scope_inputed,y=col_to_normalize, x='key_year', hue='key_ticker', legend=False)
     sns.scatterplot(data=data_scope_inputed,y=col_to_normalize, x='key_year', hue='meta_is_pred_s1', style='meta_is_imputed_year', s=100)
     display(data_scope_inputed.iloc[:, [2,0,3, 4, 6,7]])
     plt.show()

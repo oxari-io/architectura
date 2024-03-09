@@ -12,8 +12,11 @@ from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAna
 from feature_reducers.core import LDAFeatureReducer, ModifiedLocallyLinearEmbeddingFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
 from imputers import RevenueQuantileBucketImputer
+from imputers.categorical import CategoricalStatisticsImputer, HybridCategoricalStatisticsImputer
+from imputers.core import DummyImputer
 from imputers.kcluster_bucket import KNNBucketImputer
-from imputers.revenue_bucket import RevenueBucketImputer, RevenueExponentialBucketImputer, RevenueParabolaBucketImputer
+from imputers.revenue_bucket import RevenueBucketImputer
+from main_prod import N_STARTUP_TRIALS
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
 from preprocessors.core import BaselinePreprocessor, ImprovedBaselinePreprocessor
@@ -22,12 +25,12 @@ from experiments.experiment_argument_parser import ScopeEstimatorComparisonExper
 import textdistance
 import numpy as np
 from itertools import product
-from scope_estimators.core import PredictMedianEstimator
+from scope_estimators.core import BaselineEstimator, DummyEstimator, PredictMeanEstimator, PredictMedianEstimator
 from scope_estimators.linear_models import LinearRegressionEstimator
 from scope_estimators.mini_model_army import MiniModelArmyEstimator
 from scope_estimators.svm import FastSupportVectorEstimator
 from sklearn.preprocessing import PowerTransformer
-
+from scope_estimators.gradient_boost import XGBEstimator
 def train_pipeline(scope: int, data: SplitBag, config, **kwargs):
     _id = "_".join([obj.__class__.__name__ for obj in config])
     start = time.time()
@@ -47,6 +50,8 @@ def train_pipeline(scope: int, data: SplitBag, config, **kwargs):
         time_elapsed = time.time() - start
         return {"time": time_elapsed, "scope": scope, **kwargs, "error":str(e), "experiment_name":_id}
 
+N_STARTUP_TRIALS = 40
+N_TRIALS = 40
 
 if __name__ == "__main__":
     parser = ScopeEstimatorComparisonExperimentCommandLineParser()
@@ -62,40 +67,42 @@ if __name__ == "__main__":
     print("results file: ", results_file)
 
     all_results = []  # dictionary where key=feature selection method, value = evaluation results
-    dataset = get_default_datamanager_configuration().run()
+    dataset = get_small_datamanager_configuration(0.5).run()
     for i in range(num_reps):
         model_list = [
-            # DummyEstimator(n_trials=5, n_startup_trials=5),
-            # BaselineEstimator(n_trials=5, n_startup_trials=5),
-            # PredictMeanEstimator(n_trials=5, n_startup_trials=5),
-            PredictMedianEstimator(n_trials=5, n_startup_trials=5),
-            # FastSupportVectorEstimator(n_trials=5, n_startup_trials=5),
-            LinearRegressionEstimator(n_trials=5, n_startup_trials=5),
-            MiniModelArmyEstimator(n_trials=5, n_startup_trials=5),
+            BaselineEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+            PredictMeanEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+            PredictMedianEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+            FastSupportVectorEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+            LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+            XGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+            MiniModelArmyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+            DummyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ]
         all_imputers = [
-            RevenueQuantileBucketImputer(7),
-            RevenueBucketImputer(7),
-            RevenueExponentialBucketImputer(7),
-            RevenueParabolaBucketImputer(7),
-            KNNBucketImputer(7),
+            RevenueQuantileBucketImputer(10),
+            # RevenueBucketImputer(7),
+            # KNNBucketImputer(10),
+            DummyImputer(),
+            HybridCategoricalStatisticsImputer(),
+            CategoricalStatisticsImputer(reference="ft_catm_country_code")
 
         ]
         all_feature_reducers = [
             PCAFeatureReducer(10),
             DummyFeatureReducer(),
-            AgglomerateFeatureReducer(),
-            ModifiedLocallyLinearEmbeddingFeatureReducer(10, 10),
-            FactorAnalysisFeatureReducer(10),
+            # AgglomerateFeatureReducer(),
+            # ModifiedLocallyLinearEmbeddingFeatureReducer(10, 10),
+            # FactorAnalysisFeatureReducer(10),
             # LDAFeatureReducer(10), # Doesn't work with negative inputs
             # IsomapDimensionalityFeatureReducer(10), # Requires too much time to execute
-            GaussRandProjectionFeatureReducer(10),
-            SparseRandProjectionFeatureReducer(10),
+            # GaussRandProjectionFeatureReducer(10),
+            # SparseRandProjectionFeatureReducer(10),
         ]
         all_preprocessors = [
-            IIDPreprocessor(),
-            BaselinePreprocessor(),
-            ImprovedBaselinePreprocessor(),
+            IIDPreprocessor(fin_transformer=PowerTransformer()),
+            BaselinePreprocessor(fin_transformer=PowerTransformer()),
+            # ImprovedBaselinePreprocessor(),
         ]
         all_target_scalers = [
             LogTargetScaler(),

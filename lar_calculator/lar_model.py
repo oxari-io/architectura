@@ -17,7 +17,7 @@ def _helper(name, isins, years, emissions):
     intercept = lr.intercept_
 
     value = pd.Series({
-        "key_isin": group_name,
+        "key_ticker": group_name,
         "scope_type": name,
         "lar": _compute_lar(base_year, target_year, slope, intercept),
         "slope": slope,
@@ -59,8 +59,8 @@ class OxariUnboundLAR(OxariLinearAnnualReduction):
 
     def transform(self, X, **kwargs) -> ArrayLike:
         new_X:pd.DataFrame = X.copy()
-        params = self.params_1.merge(self.params_2, how="left", on="key_isin", suffixes=("_scope_1_2", "_scope_3"))
-        new_X = new_X.merge(params, how="left", on="key_isin").drop_duplicates(subset="key_isin", keep='last')
+        params = self.params_1.merge(self.params_2, how="left", on="key_ticker", suffixes=("_scope_1_2", "_scope_3"))
+        new_X = new_X.merge(params, how="left", on="key_ticker").drop_duplicates(subset="key_ticker", keep='last')
         
         return new_X
 
@@ -72,20 +72,20 @@ class OxariUnboundLAR(OxariLinearAnnualReduction):
         scopes = X
 
         # making sure that for each isin we have at least 2 datapoints
-        scopes = scopes[scopes.groupby('key_isin')['key_isin'].transform('count') > 1]
+        scopes = scopes[scopes.groupby('key_ticker')['key_ticker'].transform('count') > 1]
 
         scope_columns = ["tg_numc_scope_1", "tg_numc_scope_2"]
         scopes = scopes.assign(tg_numc_scope_1_2=scopes[scope_columns].sum(axis=1))
 
-        isins = pd.unique(scopes["key_isin"])
+        isins = pd.unique(scopes["key_ticker"])
 
         # print("unique isins", len(isins))
         self.logger.debug(f"unique isins: {len(isins)}")
 
-        grouped = scopes.groupby("key_isin", sort=False)
+        grouped = scopes.groupby("key_ticker", sort=False)
         self.logger.info('Compute scope 1 and 2 lars')
-        self.params_1 = grouped.progress_apply(lambda df_group: _helper("tg_numc_scope_1_2", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_1_2"])).reset_index(drop=True)
+        self.params_1 = grouped.progress_apply(lambda df_group: _helper("tg_numc_scope_1_2", df_group["key_ticker"], df_group["key_year"], df_group["tg_numc_scope_1_2"])).reset_index(drop=True)
         self.logger.info('Compute scope 3 lars')
-        self.params_2 = grouped.progress_apply(lambda df_group: _helper("tg_numc_scope_3", df_group["key_isin"], df_group["key_year"], df_group["tg_numc_scope_3"])).reset_index(drop=True)
+        self.params_2 = grouped.progress_apply(lambda df_group: _helper("tg_numc_scope_3", df_group["key_ticker"], df_group["key_year"], df_group["tg_numc_scope_3"])).reset_index(drop=True)
 
         return self

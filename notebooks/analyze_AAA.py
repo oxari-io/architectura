@@ -9,8 +9,9 @@ import statsmodels.formula.api as smf
 
 # %%
 cwd = pathlib.Path(__file__).parent
-df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_AAA.csv', index_col=0)
+df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_AAA.csv', index_col=0).dropna(subset=["raw.sMAPE"])
 df_results["scope_estimator"] = pd.Categorical(df_results["scope_estimator"])
+df_results = df_results[~df_results["feature_selector"].str.startswith("PCA")]
 df_results
 # %%
 list(df_results.columns.values)

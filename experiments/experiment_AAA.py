@@ -67,16 +67,16 @@ if __name__ == "__main__":
     print("results file: ", results_file)
 
     all_results = []  # dictionary where key=feature selection method, value = evaluation results
-    dataset = get_small_datamanager_configuration(0.5).run()
+    dataset = get_small_datamanager_configuration(1).run()
     for i in range(num_reps):
         model_list = [
+            MiniModelArmyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
             BaselineEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
             PredictMeanEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
             PredictMedianEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
             FastSupportVectorEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
-            LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+            # LinearRegressionEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS), # Takes too long to train because of polynomial features
             XGBEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
-            MiniModelArmyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
             DummyEstimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ]
         all_imputers = [
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
         ]
         all_feature_reducers = [
-            PCAFeatureReducer(10),
+            # PCAFeatureReducer(10),
             DummyFeatureReducer(),
             # AgglomerateFeatureReducer(),
             # ModifiedLocallyLinearEmbeddingFeatureReducer(10, 10),

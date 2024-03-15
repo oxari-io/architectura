@@ -234,6 +234,15 @@ class FinancialLoader(PartialLoader):
         self._data = drop_sparse_rows(self._data) 
         return self
 
+class StatisticalLoader(PartialLoader):
+    PATTERN = "ft_num"
+
+    def _load(self, **kwargs) -> Self:
+        super()._load(**kwargs)
+        #
+        self._data = self._data.dropna(subset=["key_ticker"], how='any')
+        return self
+
 
 class CategoricalLoader(PartialLoader):
     KEYS = ["isin"]

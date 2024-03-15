@@ -1075,8 +1075,8 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         sub_eval_results = []
 
         for scope, pipeline in self.pipelines.items():
-            pipeline.evaluate(X_train, y_train[f"tg_numc_{scope}"], X_test, y_test[f"tg_numc_{scope}"])
-            sub_eval_results.append(pipeline._evaluation_results)
+            res = pipeline._evaluate(X_train, y_train[f"tg_numc_{scope}"], X_test, y_test[f"tg_numc_{scope}"])
+            sub_eval_results.append(res)
 
         scope_results = [result["raw"] for result in sub_eval_results]
 

@@ -30,7 +30,7 @@ from sklearn.model_selection import train_test_split
 import tqdm
 import itertools as it
 
-from scope_estimators.mini_model_army import EvenWeightMiniModelArmyEstimator, MiniModelArmyEstimator
+from scope_estimators.mini_model_army import AlternativeCVMiniModelArmyEstimator, EvenWeightMiniModelArmyEstimator, MiniModelArmyEstimator
 from scope_estimators.mma.classifier import LGBMBucketClassifier, RandomForesBucketClassifier
 
 N_TRIALS = 20
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         "n_buckets_10": 10,
     }
     model_type = {
-        "even_weighting": EvenWeightMiniModelArmyEstimator,
+        "even_weighting": AlternativeCVMiniModelArmyEstimator,
         "default_weighting": MiniModelArmyEstimator,
     }
     imputers = {

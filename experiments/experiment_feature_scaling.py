@@ -45,12 +45,12 @@ if __name__ == "__main__":
     ]
     
     ft_reducers = [
-        PCAFeatureReducer(40),
+        # PCAFeatureReducer(40),
         DummyFeatureReducer(),
     ]
 
     pbar = tqdm.tqdm(total=len(ft_configurations) * len(tg_configurations) * len(ft_reducers) * num_reps)
-    dataset: OxariDataManager = get_small_datamanager_configuration(1).run()  # run() calls _transform()
+    dataset: OxariDataManager = get_small_datamanager_configuration(0.5).run()  # run() calls _transform()
     for i in range(num_reps):
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL, split_size_test=0.4)
         SPLIT_1 = bag.scope_1
@@ -69,7 +69,7 @@ if __name__ == "__main__":
                         preprocessor=IIDPreprocessor(fin_transformer=ft_scaler),
                         feature_reducer=ft_reducer,
                         imputer=BaselineImputer(),
-                        scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
+                        scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=20),
                         ci_estimator=None,
                         scope_transformer=tg_scaler,
                     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val)

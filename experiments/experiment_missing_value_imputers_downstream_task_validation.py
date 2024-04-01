@@ -45,7 +45,7 @@ if __name__ == "__main__":
     pbar = tqdm(total=len(configurations) * num_repeats)
 
     for rep in range(15):
-        bag = dataset.get_split_data(OxariDataManager.ORIGINAL, split_size_test=0.6)
+        bag = dataset.get_split_data(OxariDataManager.ORIGINAL, split_size_test=0.7)
         SPLIT_1 = bag.scope_1
 
         for imputer in configurations:

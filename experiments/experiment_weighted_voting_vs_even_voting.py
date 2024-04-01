@@ -58,7 +58,7 @@ if __name__ == "__main__":
     print("estimators: ", estimators)
 
     all_results = []
-    dataset = get_small_datamanager_configuration(1).run()  # run() calls _transform()
+    dataset = get_small_datamanager_configuration(0.5).run()  # run() calls _transform()
     for i in range(num_reps):
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1

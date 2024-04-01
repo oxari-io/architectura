@@ -7,7 +7,7 @@ from imputers.categorical import HybridCategoricalStatisticsImputer
 from imputers.core import BaselineImputer, DummyImputer
 from pipeline import DefaultPipeline
 from preprocessors import IIDPreprocessor
-from preprocessors.core import BaselinePreprocessor
+from preprocessors.core import BaselinePreprocessor, NormalizedIIDPreprocessor
 from preprocessors.helper.custom_cat_normalizers import (
     CountryCodeCatColumnNormalizer,
     LinkTransformerCatColumnNormalizer,
@@ -16,7 +16,7 @@ from preprocessors.helper.custom_cat_normalizers import (
     SectorNameCatColumnNormalizer,
 )
 from scope_estimators import SupportVectorEstimator, FastSupportVectorEstimator
-from base.helper import ArcSinhTargetScaler, DummyTargetScaler, LogTargetScaler
+from base.helper import ArcSinhScaler, ArcSinhTargetScaler, DummyTargetScaler, LogTargetScaler
 from base.run_utils import (
     get_default_datamanager_configuration,
     get_remote_datamanager_configuration,
@@ -39,12 +39,8 @@ if __name__ == "__main__":
     # TODO: Finish this experiment by adding LinearSVR
     all_results = []
     # loads the data just like CSVDataLoader, but a selection of the data
-    dataset: OxariDataManager = get_small_datamanager_configuration().run()
+    
 
-    n_buckets = {
-        "n_buckets_05": 5,
-        "n_buckets_10": 10,
-    }
     model_type = {
         "even_weighting": AlternativeCVMiniModelArmyEstimator,
         "default_weighting": MiniModelArmyEstimator,
@@ -58,17 +54,18 @@ if __name__ == "__main__":
     preprocessor = {
         "preprocessor_baseline": BaselinePreprocessor,
         "preprocessor_iid": IIDPreprocessor,
+        "preprocessor_normed_iid": NormalizedIIDPreprocessor,
     }
 
     scaling_ft = {
-        "ft_scaling_power": PowerTransformer,
+        "ft_scaling_power": ArcSinhScaler,
         "ft_scaling_robust": RobustScaler,
     }
 
-    scaling_tg = {
-        "tg_scaling_log": LogTargetScaler,
-        "tg_scaling_arcsinh": ArcSinhTargetScaler,
-    }
+    # scaling_tg = {
+    #     "tg_scaling_log": LogTargetScaler,
+    #     "tg_scaling_arcsinh": ArcSinhTargetScaler,
+    # }
 
     bucket_classifier = {
         "clf_lgbm": LGBMBucketClassifier,
@@ -80,36 +77,34 @@ if __name__ == "__main__":
         scaling_ft.items(),
         imputers.items(),
         model_type.items(),
-        n_buckets.items(),
-        scaling_tg.items(),
+        # scaling_tg.items(),
         bucket_classifier.items(),
     ))
 
-    repeats = range(10)
+    repeats = range(15)
     with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:
         for i in repeats:
+            dataset: OxariDataManager = get_small_datamanager_configuration(0.3).run()
             bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
             SPLIT_1 = bag.scope_1
             X, Y = SPLIT_1.train
             for params in configurations:
-                Preprocessor, FeatureScaler, imputer, Model, n_b, TargetScaler, BucketClassifier = params
+                Preprocessor, FeatureScaler, imputer, Model, BucketClassifier = params
                 start_time = time.time()
                 dp1 = (DefaultPipeline(
                     preprocessor=Preprocessor[1](fin_transformer=FeatureScaler[1]()),
                     feature_reducer=DummyFeatureReducer(),
                     imputer=imputer[1],
-                    scope_estimator=Model(n_b[1], n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS, bucket_classifier=BucketClassifier()),
+                    scope_estimator=Model(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS, bucket_classifier=BucketClassifier()),
                     ci_estimator=BaselineConfidenceEstimator(),
-                    scope_transformer=TargetScaler[1](),
-                ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train))
+                    scope_transformer=LogTargetScaler(),
+                ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.test).fit_confidence(*SPLIT_1.train))
 
                 all_results.append({
                     "c_preprocessor": Preprocessor[0],
                     "c_fintransformer": FeatureScaler[0],
                     "c_imputer": imputer[0],
                     "c_model": Model[0],
-                    "c_n_buckets": n_b[0],
-                    "c_scope_transformer": TargetScaler[0],
                     "repetition": i,
                     "time": time.time() - start_time,
                     **dp1.evaluation_results,

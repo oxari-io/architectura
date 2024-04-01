@@ -525,3 +525,7 @@ class OxariDataManager(OxariMixin):
     def set_filter(self, filter: DataFilter) -> Self:
         self.data_filter = filter
         return self
+
+    # def add_filter(self, filter: DataFilter) -> Self:
+    #     self.data_filter = filter
+    #     return self

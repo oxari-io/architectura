@@ -34,7 +34,7 @@ if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
     dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20231213_p_model_scope_imputation.pkl', 'rb'))
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240318_p_model_scope_imputation.pkl', 'rb'))
 
     data_to_impute = DATA.copy()
     data_to_impute = impute_missing_years(data_to_impute)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         axis=1,
         errors='ignore',
     )
-    df_scope_stats = df_statistics.groupby(df_statistics.filter(regex="^ft_cat", axis=1).columns.tolist() + ['key_year']).median().reset_index() #.fillna("NA")
+    df_scope_stats = df_statistics.groupby(['key_year', 'ft_catm_industry_name', 'ft_catm_sector_name', 'ft_catm_country_code', 'ft_catm_region', 'ft_catm_sub_region']).median().reset_index() #.fillna("NA")
 
     dateformat = 'T%Y%m%d'
     all_data_features = [

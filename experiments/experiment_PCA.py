@@ -27,10 +27,10 @@ if __name__ == "__main__":
     results_file = args.file
     
     all_results = []
-    dataset = get_default_datamanager_configuration().run() 
-    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
     for rep in range(num_reps):
+        dataset = get_default_datamanager_configuration(0.25).run() 
+        DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         if (scope == True):

@@ -50,7 +50,7 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation = 0, ha="center")
 plt.show()
 # %%
 plt.figure(figsize=(10,5))
-ax = sns.boxplot(df_results, x="scope_transformer", y="smape")
+ax = sns.scatterplot(df_results, x="scope_transformer", y="smape")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 0, ha="center")
 plt.show()
 # %%

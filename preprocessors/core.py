@@ -98,15 +98,21 @@ class BaselinePreprocessor(OxariPreprocessor):
         X_new = X.filter(regex='ft_', axis=1).copy()
         # impute all the missing columns
         # financial_data = X_new[self.financial_columns].astype(float)
+        self.logger.info(f"Imputing data using {self.imputer.__class__}")
         X_imputed = self.imputer.transform(X_new)
         X_new = X_imputed.copy()
         # transform numerical
+        self.logger.info(f"Transform numerical data using {self.fin_transformer.__class__}")
         financial_data = X_new[self.financial_columns].copy()
         transformed_values = self.fin_transformer.transform(financial_data)
         X_new.loc[:, self.financial_columns] = transformed_values
-        # encode categorical
+        # normalize categorical
+        self.logger.info(f"Normalizing categorical data using {self.cat_normalizer.__class__}")
         categorical_data = X_new[self.categorical_columns].copy()
         normalized_cat_data = self.cat_normalizer.transform(categorical_data)
+        
+        # encode categorical
+        self.logger.info(f"Encoding categorical data using {self.cat_transformer.__class__}")
         transformed_cat_data = self.cat_transformer.transform(normalized_cat_data)
         X_new.loc[:, self.categorical_columns] = transformed_cat_data
 
@@ -156,9 +162,13 @@ class ImprovedBaselinePreprocessor(BaselinePreprocessor):
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_new = X.copy()
+        self.logger.info(f"Imputing data using {self.imputer.__class__}")
         X_new[self.financial_columns] = self.imputer.transform(X_new[self.financial_columns].astype(float))
+        self.logger.info(f"Normalizing categorical data using {self.cat_normalizer.__class__}")
         X_new[self.categorical_columns] = self.cat_normalizer.transform(X_new[self.categorical_columns])
+        self.logger.info(f"Encoding categorical data using {self.cat_transformer.__class__}")
         X_new[self.categorical_columns] = self.cat_transformer.transform(X_new[self.categorical_columns])
+        self.logger.info(f"Transform numerical data using {self.fin_transformer.__class__}")
         X_new = pd.DataFrame(self.fin_transformer.transform(X_new), index=X_new.index, columns=X_new.columns)
         return X_new
 
@@ -181,6 +191,7 @@ class IIDPreprocessor(BaselinePreprocessor):
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
         X_new = super().transform(X, **kwargs)
+        self.logger.info('Scaling every feature towards IID')
         X_new = self.overall_scaler.transform(X_new)
         return X_new
 
@@ -202,6 +213,7 @@ class NormalizedIIDPreprocessor(IIDPreprocessor):
         return self
 
     def transform(self, X: pd.DataFrame, y=None, **kwargs) -> ArrayLike:
+        self.logger.info('Normalizing every feature between 0 and 1')
         X_new = super().transform(X, **kwargs)
         X_new = pd.DataFrame(self.overall_scaler_2.transform(X_new, **kwargs), index=X_new.index, columns=X_new.columns)
         return X_new

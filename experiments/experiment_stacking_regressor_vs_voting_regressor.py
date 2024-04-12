@@ -12,7 +12,7 @@ from feature_reducers import PCAFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
-from preprocessors.helper.custom_cat_normalizers import CountryCodeCatColumnNormalizer, IndustryNameCatColumnNormalizer, OxariCategoricalNormalizer, SectorNameCatColumnNormalizer
+from preprocessors.helper.custom_cat_normalizers import CountryCodeCatColumnNormalizer, IndustryNameCatColumnNormalizer, LinkTransformerCatColumnNormalizer, OxariCategoricalNormalizer, SectorNameCatColumnNormalizer
 from scope_estimators import (BaselineEstimator,
                               EvenWeightMiniModelArmyEstimator,
                               MiniModelArmyEstimator, 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     all_results = []
     for i in range(num_reps):
-        dataset = get_small_datamanager_configuration(0.5).run()  # run() calls _transform()
+        dataset = get_small_datamanager_configuration(0.25).run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         if (scope == True):
@@ -69,9 +69,9 @@ if __name__ == "__main__":
             bucket_specifics = {}
             cat_normalizer = OxariCategoricalNormalizer(
                 col_transformers=[
-                    # LinkTransformerCatColumnNormalizer(),
-                    SectorNameCatColumnNormalizer(), 
-                    IndustryNameCatColumnNormalizer(),
+                    LinkTransformerCatColumnNormalizer(),
+                    # SectorNameCatColumnNormalizer(),
+                    # IndustryNameCatColumnNormalizer(),
                     CountryCodeCatColumnNormalizer()
                 ]
             )

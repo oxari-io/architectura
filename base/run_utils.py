@@ -1,4 +1,4 @@
-from base.dataset_loader import OxariDataManager
+from base.dataset_loader import OxariDataManager, StatisticalLoader
 from lar_calculator.lar_model import OxariUnboundLAR
 from postprocessors.missing_year_imputers import CubicSplineMissingYearImputer, DerivativeMissingYearImputer, SimpleMissingYearImputer
 from postprocessors.scope_imputers import JumpRateEvaluator, ScopeImputerPostprocessor
@@ -15,6 +15,7 @@ def get_default_datamanager_configuration():
         FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
         ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
         CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
+        StatisticalLoader(datasource=CachingS3Datasource(path="model-data/input/statisticals.csv")),
         RegionLoader(),
     )
 
@@ -24,6 +25,7 @@ def get_remote_datamanager_configuration():
         FinancialLoader(datasource=S3Datasource(path="model-data/input/financials.csv")),
         ScopeLoader(datasource=S3Datasource(path="model-data/input/scopes.csv")),
         CategoricalLoader(datasource=S3Datasource(path="model-data/input/categoricals.csv")),
+        StatisticalLoader(datasource=S3Datasource(path="model-data/input/statisticals.csv")),
         RegionLoader(),
     )
 
@@ -33,6 +35,7 @@ def get_small_datamanager_configuration(frac=0.1):
         FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
         ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
         CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
+        StatisticalLoader(datasource=CachingS3Datasource(path="model-data/input/statisticals.csv")),
         RegionLoader(),
     ).set_filter(CompanyDataFilter(frac=frac))
 

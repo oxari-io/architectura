@@ -37,7 +37,6 @@ if __name__ == "__main__":
     # TODO: Finish this experiment by adding LinearSVR
     all_results = []
     # loads the data just like CSVDataLoader, but a selection of the data
-    dataset:OxariDataManager = get_default_datamanager_configuration().run()
 
     configurations = {
         "lt_default": OxariCategoricalNormalizer(
@@ -82,6 +81,7 @@ if __name__ == "__main__":
     repeats = range(10)
     with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:
         for i in repeats:
+            dataset:OxariDataManager = get_small_datamanager_configuration(0.25).run()
             bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
             SPLIT_1 = bag.scope_1
             X, Y = SPLIT_1.train

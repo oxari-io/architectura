@@ -703,7 +703,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # self.resources_postprocessor = database_deployer
 
     def _preprocess(self, X, **kwargs) -> ArrayLike:
+        self.info(f"Preprocess data using {self.preprocessor.__class__}")
         X_new = self.preprocessor.transform(X, **kwargs)
+        self.info(f"Select feature subset using {self.feature_selector.__class__}")
         X_new = self.feature_selector.transform(X_new, **kwargs)
         return X_new
 
@@ -728,10 +730,15 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # return_raw = kwargs.pop('return_raw', False) #
 
         # This is some feature cleanups to handle unexpected cases (feature format, missing features, unseen features) during inference
+        self.logger.info(f"Converting input from {type(X)} to pandas.DataFrame...")
         X_mod = self._convert_input(X)
+        self.logger.info(f"Extending missing features in input...")
         X_mod = self._extend_missing_features(X_mod, self.feature_names_in_)
+        self.logger.info(f"Removing unseen features from input...")
         X_mod = self._remove_unseen_features(X_mod, self.feature_names_in_)
+        self.logger.info(f"Order input according to 'model.feature_names_in_' ...")
         X_mod  = self._order_features(X_mod, self.feature_names_in_)
+        self.logger.info(f"Executing prediction...")
         if return_std:
             preds = self.ci_estimator.predict(X_mod, **kwargs)
             return preds  # Alread reversed
@@ -1030,9 +1037,10 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         # X_aligned = self._convert_input(X)
         # X_new = X_aligned.filter(regex='^ft', axis=1)
         if scope == "all":
-            # X_extended = self._extend_missing_features(X_new, self.feature_names_in_)
+            self.logger.info('Predict all scopes')
             return self._predict_all(X, **kwargs)
         # X_extended = self._extend_missing_features(X_new, self.get_pipeline(scope).feature_names_in_)
+        self.logger.info(f'Predict scope {scope}')
         return self.get_pipeline(scope).predict(X, **kwargs)
 
     def get_features(self, scope:int=None) -> ArrayLike:
@@ -1059,8 +1067,10 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
             return result
 
         for scope_str, pipeline in self.pipelines.items():
+            self.logger(f'Predicting {scope_str}...')
             y_pred = pipeline.predict(X, **kwargs)
             result[scope_str] = y_pred
+            self.logger(f'Done with {scope_str}...')
         return result
 
     def collect_eval_results(self) -> List[dict]:
@@ -1075,8 +1085,8 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         sub_eval_results = []
 
         for scope, pipeline in self.pipelines.items():
-            pipeline.evaluate(X_train, y_train[f"tg_numc_{scope}"], X_test, y_test[f"tg_numc_{scope}"])
-            sub_eval_results.append(pipeline._evaluation_results)
+            res = pipeline._evaluate(X_train, y_train[f"tg_numc_{scope}"], X_test, y_test[f"tg_numc_{scope}"])
+            sub_eval_results.append(res)
 
         scope_results = [result["raw"] for result in sub_eval_results]
 

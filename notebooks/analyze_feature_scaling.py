@@ -9,7 +9,10 @@ import statsmodels.formula.api as smf
 
 # %%
 cwd = pathlib.Path(__file__).parent
-df_results = pd.read_csv(cwd.parent/'local/eval_results/experiment_feature_scaling_validation.csv', index_col=0)
+df_results = pd.concat([
+    # pd.read_csv(cwd.parent/'local/eval_results/experiment_feature_scaling_1.csv', index_col=0),
+    pd.read_csv(cwd.parent/'local/eval_results/experiment_feature_scaling.csv', index_col=0),
+])
 df_results = df_results[df_results["feature_selector"] == "DummyFeatureReducer"]
 # %%
 df_results["configuration"] = pd.Categorical(df_results["fin_transformer"]+"-"+df_results["scope_transformer"])
@@ -47,7 +50,7 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation = 0, ha="center")
 plt.show()
 # %%
 plt.figure(figsize=(10,5))
-ax = sns.boxplot(df_results, x="scope_transformer", y="smape")
+ax = sns.scatterplot(df_results, x="scope_transformer", y="smape")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 0, ha="center")
 plt.show()
 # %%
@@ -61,18 +64,18 @@ fig = plt.figure(figsize=(20, 5))
 sns.lineplot(df_results, x=range(len(df_results)), y="smape", hue="scope")
 plt.show()
 # %%
-formula = "smape ~ feature_selector"
-mod1 = smf.mixedlm(formula=formula, data=df_results, groups=df_results["session"]).fit()
-# mod1 = smf.glm(formula=formula, data=df_results).fit()
-mod1.summary()
-# %%
-ax = plt.gca()
-ax.scatter(mod1.mu, mod1.resid_pearson)
-ax.hlines(0, 0, 1)
-ax.set_xlim(0, 1)
-ax.set_title('Residual Dependence Plot')
-ax.set_ylabel('Pearson Residuals')
-ax.set_xlabel('Fitted values')
+# formula = "smape ~ feature_selector"
+# mod1 = smf.mixedlm(formula=formula, data=df_results, groups=df_results["session"]).fit()
+# # mod1 = smf.glm(formula=formula, data=df_results).fit()
+# mod1.summary()
+# # %%
+# ax = plt.gca()
+# ax.scatter(mod1.mu, mod1.resid_pearson)
+# ax.hlines(0, 0, 1)
+# ax.set_xlim(0, 1)
+# ax.set_title('Residual Dependence Plot')
+# ax.set_ylabel('Pearson Residuals')
+# ax.set_xlabel('Fitted values')
 # %%
 # fig = sm.graphics.plot_regress_exog(mod1)
 # fig.tight_layout(pad=1.0)

@@ -62,6 +62,8 @@ class MiniModelArmyEstimator(OxariScopeEstimator):
         best_params_rgs, info_rgs = self.bucket_rg.optimize(X_train, y_train, X_val, y_val, grp_train=y_train_binned, grp_val=y_val_binned, **kwargs)
 
         # return {**best_params_cls,**best_params_rgs}, {"classifier":info_cls, "regressor":info_rgs}
+        self.bucket_cl.set_optimizer(None)
+        self.bucket_rg.set_optimizer(None)
         return {"cls": best_params_cls, "rgs": best_params_rgs}, {"classifier": info_cls, "regressor": info_rgs}
 
     def evaluate(self, y_true, y_pred, **kwargs):

@@ -8,12 +8,14 @@ from base.helper import LogTargetScaler
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer, DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer, BaselineImputer
+from imputers.core import DummyImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor, BaselinePreprocessor
 from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator, SupportVectorEstimator,
                               PredictMedianEstimator,
                               SingleBucketVotingArmyEstimator)
 from experiments.experiment_argument_parser import BucketingExperimentCommandLineParser, ExperimentCommandLineParser, FeatureReductionExperimentCommandLineParser
+from sklearn.preprocessing import PowerTransformer
 
 if __name__ == "__main__":
     parser = ExperimentCommandLineParser(
@@ -27,22 +29,22 @@ if __name__ == "__main__":
     results_file = args.file
     
     all_results = []
-    dataset = get_default_datamanager_configuration().run() 
-    DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
     for rep in range(num_reps):
+        dataset = get_small_datamanager_configuration(0.5).run() 
+        DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         if (scope == True):
             SPLIT_2 = bag.scope_2
             SPLIT_3 = bag.scope_3
-        i = np.random.randint(1, len(DATA.columns) // 2)
+        i = np.random.randint(1, 130)
         start = time.time()
         ppl1 = DefaultPipeline(
-            preprocessor=IIDPreprocessor(),
+            preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
             feature_reducer=PCAFeatureReducer(n_components=i),
-            imputer=BaselineImputer(),
-            scope_estimator=MiniModelArmyEstimator(n_trials=40, n_startup_trials=20),
+            imputer=DummyImputer(),
+            scope_estimator=MiniModelArmyEstimator(10, n_trials=20, n_startup_trials=40),
             ci_estimator=BaselineConfidenceEstimator(),
             scope_transformer=LogTargetScaler(),
         ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
@@ -76,10 +78,10 @@ if __name__ == "__main__":
             time_elapsed_3 = time.time() - start
             all_results.append({"time": time_elapsed_3, "scope": 3, **ppl3.evaluation_results, "n_components": i, "repetition": rep, "variance": explained_var})
             
-            print(all_results)
-            concatenated = pd.json_normalize(all_results)
-            fname = __loader__.name.split(".")[-1]
-            concatenated.to_csv(f'local/eval_results/{fname}.csv')
+        print(all_results)
+        concatenated = pd.json_normalize(all_results)
+        fname = __loader__.name.split(".")[-1]
+        concatenated.to_csv(f'local/eval_results/{fname}.csv')
 
             # if (results_file is True):
             #     concatenated.to_csv(f'local/eval_results/{fname}.csv')

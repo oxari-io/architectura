@@ -23,8 +23,10 @@ from sklearn.preprocessing import normalize
 from tqdm import tqdm
 
 from base.common import OxariOptimizer, OxariRegressor
+from base.constants import USABLE_CPUS
 from base.metrics import cv_metric, optuna_metric
 from scope_estimators.stochastic_gradient import SGDEstimator
+
 
 # from sklearn.metrics import root_mean_squared_error as rmse
 # from sklearn.metrics import mean_absolute_percentage_error as mape
@@ -152,10 +154,9 @@ class RegressorOptimizer(OxariOptimizer):
                 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'friedman_mse', 'poisson']),
                 # The number of features to consider when looking for the best split
                 # 'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, step=2),
-                "n_jobs": trial.suggest_categorical('n_jobs', [-1])
             }
 
-            model = RandomForestRegressor(**param_space)
+            model = RandomForestRegressor(**param_space, n_jobs=USABLE_CPUS)
             model.fit(X_train, y_train)
 
         if regr_name == "KNN":
@@ -163,10 +164,9 @@ class RegressorOptimizer(OxariOptimizer):
             param_space = {
                 'n_neighbors': trial.suggest_int("n_neighbors", 3, 11, step=2),
                 'p': trial.suggest_categorical('p', [1,2]),
-                "n_jobs": trial.suggest_categorical('n_jobs', [-1])
             }
 
-            model = KNeighborsRegressor(**param_space)
+            model = KNeighborsRegressor(**param_space, n_jobs=USABLE_CPUS)
             model.fit(X_train, y_train)
 
         if regr_name == "EXF":
@@ -178,10 +178,9 @@ class RegressorOptimizer(OxariOptimizer):
                 'criterion': trial.suggest_categorical('criterion', ['squared_error', 'friedman_mse', 'poisson']),
                 # The number of features to consider when looking for the best split
                 # 'min_samples_split': trial.suggest_int("min_samples_split", 2, 12, step=2),
-                "n_jobs": trial.suggest_categorical('n_jobs', [-1])
             }
 
-            model = ExtraTreesRegressor(**param_space)
+            model = ExtraTreesRegressor(**param_space, n_jobs=USABLE_CPUS)
             model.fit(X_train, y_train)
 
         if regr_name == "XGB":
@@ -206,7 +205,7 @@ class RegressorOptimizer(OxariOptimizer):
                 'min_child_weight': trial.suggest_int('min_child_weight', 1, 5, step=1),
             }
 
-            model = xgb.XGBRegressor(**param_space)
+            model = xgb.XGBRegressor(**param_space, n_jobs=USABLE_CPUS)
             model.fit(X_train, y_train)
         if regr_name == "LGB":
 
@@ -219,7 +218,7 @@ class RegressorOptimizer(OxariOptimizer):
                 'n_estimators': trial.suggest_int("n_estimators", 100, 300, step=100),
             }
 
-            model = lgb.LGBMRegressor(**param_space)
+            model = lgb.LGBMRegressor(**param_space, n_jobs=USABLE_CPUS)
             model.fit(X_train, y_train)
 
         if regr_name == "DT":

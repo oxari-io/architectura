@@ -14,7 +14,7 @@ from imputers import RevenueQuantileBucketImputer
 from imputers.core import BaselineImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
-from preprocessors.core import BaselinePreprocessor, FastIndustryNormalisationBaselinePreprocessor, ImprovedBaselinePreprocessor, NormalizedIIDPreprocessor
+from preprocessors.core import BaselinePreprocessor, FastIndustryNormalisationBaselinePreprocessor, ImprovedBaselinePreprocessor, ImprovedIIDPreprocessor, ImprovedNormalizedIIDPreprocessor, NormalizedIIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator, SupportVectorEstimator
 from sklearn.preprocessing import RobustScaler, PowerTransformer, StandardScaler
 from base.helper import ArcSinhTargetScaler, ArcSinhScaler, DummyFeatureScaler, DummyTargetScaler, LogTargetScaler
@@ -26,17 +26,18 @@ if __name__ == "__main__":
     num_reps = 10
     # loads the data just like CSVDataLoader, but a selection of the data
     configurations = [
-        IIDPreprocessor(fin_transformer=PowerTransformer()),
-        NormalizedIIDPreprocessor(fin_transformer=PowerTransformer()),
-        BaselinePreprocessor(fin_transformer=PowerTransformer()),
         ImprovedBaselinePreprocessor(fin_transformer=PowerTransformer()),
-        FastIndustryNormalisationBaselinePreprocessor(fin_transformer=PowerTransformer()),
+        BaselinePreprocessor(fin_transformer=PowerTransformer()),
+        ImprovedIIDPreprocessor(fin_transformer=PowerTransformer()),
+        IIDPreprocessor(fin_transformer=PowerTransformer()),
+        ImprovedNormalizedIIDPreprocessor(fin_transformer=PowerTransformer()),
+        NormalizedIIDPreprocessor(fin_transformer=PowerTransformer()),
     ]
 
     pbar = tqdm.tqdm(total=len(configurations) * num_reps)
-    dataset: OxariDataManager = get_small_datamanager_configuration(1).run()  # run() calls _transform()
     for i in range(num_reps):
-        bag = dataset.get_split_data(OxariDataManager.ORIGINAL, split_size_test=0.4)
+        dataset: OxariDataManager = get_small_datamanager_configuration(0.3).run()  # run() calls _transform()
+        bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
 
 

@@ -1,6 +1,7 @@
 import time
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import PowerTransformer
 from tqdm import tqdm
 
 from base import BaselineConfidenceEstimator, OxariDataManager
@@ -45,22 +46,19 @@ if __name__ == "__main__":
     pbar = tqdm(total=len(configurations) * num_repeats)
 
     for rep in range(15):
-        bag = dataset.get_split_data(OxariDataManager.ORIGINAL, split_size_test=0.6)
+        bag = dataset.get_split_data(OxariDataManager.ORIGINAL, split_size_test=0.7)
         SPLIT_1 = bag.scope_1
 
         for imputer in configurations:
             start = time.time()
             ppl1 = DefaultPipeline(
-                preprocessor=IIDPreprocessor(cat_normalizer=OxariCategoricalNormalizer(
-                    col_transformers=[SectorNameCatColumnNormalizer(),
-                                      IndustryNameCatColumnNormalizer(),
-                                      CountryCodeCatColumnNormalizer()])),
+                preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
                 feature_reducer=DummyFeatureReducer(),
                 imputer=imputer,
-                scope_estimator=MiniModelArmyEstimator(n_trials=20, n_startup_trials=10),
+                scope_estimator=MiniModelArmyEstimator(10, n_trials=20, n_startup_trials=40),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),
-            ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)
+            ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.test).fit_confidence(*SPLIT_1.train)
             time_elapsed_1 = time.time() - start
             all_results.append({"rep": rep, "time": time_elapsed_1, "scope": 1, **ppl1.evaluation_results})
             pbar.update(1)

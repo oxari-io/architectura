@@ -34,7 +34,7 @@ if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
     dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20231213_p_model_scope_imputation.pkl', 'rb'))
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240318_p_model_scope_imputation.pkl', 'rb'))
 
     data_to_impute = DATA.copy()
     data_to_impute = impute_missing_years(data_to_impute)
@@ -44,18 +44,35 @@ if __name__ == "__main__":
 
     keys = {
         "key_ticker": "text",
-        "meta_company_name": "text",
-        "meta_country_name": "text",
-        "ft_catm_industry_name": "text",
-        "ft_catm_sector": "text",
+        "meta_name": "text",
+        "meta_name_original": "text",
+        "meta_country": "text",
+        "meta_country_code": "text",
+        "meta_symbol": "text",
+        "meta_mic_code": "text",
+        "meta_exchange_code_unknown": "text",
+        "meta_description": "text",
+        "meta_industry_name": "text",
+        "meta_sector_name": "text",
         "ft_catm_region": "text",
         "ft_catm_sub_region": "text"
     }
-
+    # Bulk text -> 1 | Enable filter with search -> 5 | Company rough identifier -> 10 | Exact Identfier -> 15 
     options = {
         "weights": {
-            "key_ticker": 10,
-            "meta_company_name": 5,
+            "key_ticker": 15,
+            "meta_name": 10,
+            "meta_name_original": 10,
+            "meta_country": 5,
+            "meta_country_code": 5,
+            "meta_symbol": 10,
+            "meta_mic_code": 5,
+            "meta_exchange_code_unknown": 10,
+            "meta_description": 1,
+            "meta_industry_name": 5,
+            "meta_sector_name": 5,
+            "ft_catm_region": 5,
+            "ft_catm_sub_region": 5,
         },
         "name": "TextIndex"
     }
@@ -89,7 +106,7 @@ if __name__ == "__main__":
         axis=1,
         errors='ignore',
     )
-    df_scope_stats = df_statistics.groupby(df_statistics.filter(regex="^ft_cat", axis=1).columns.tolist() + ['key_year']).median().reset_index() #.fillna("NA")
+    df_scope_stats = df_statistics.groupby(['key_year', 'ft_catm_industry_name', 'ft_catm_sector_name', 'ft_catm_country_code', 'ft_catm_region', 'ft_catm_sub_region']).median().reset_index() #.fillna("NA")
 
     dateformat = 'T%Y%m%d'
     all_data_features = [

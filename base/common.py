@@ -703,9 +703,9 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # self.resources_postprocessor = database_deployer
 
     def _preprocess(self, X, **kwargs) -> ArrayLike:
-        self.info(f"Preprocess data using {self.preprocessor.__class__}")
+        self.logger.info(f"Preprocess data using {self.preprocessor.__class__}")
         X_new = self.preprocessor.transform(X, **kwargs)
-        self.info(f"Select feature subset using {self.feature_selector.__class__}")
+        self.logger.info(f"Select feature subset using {self.feature_selector.__class__}")
         X_new = self.feature_selector.transform(X_new, **kwargs)
         return X_new
 
@@ -1067,10 +1067,10 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
             return result
 
         for scope_str, pipeline in self.pipelines.items():
-            self.logger(f'Predicting {scope_str}...')
+            self.logger.info(f'Predicting {scope_str}...')
             y_pred = pipeline.predict(X, **kwargs)
             result[scope_str] = y_pred
-            self.logger(f'Done with {scope_str}...')
+            self.logger.info(f'Done with {scope_str}...')
         return result
 
     def collect_eval_results(self) -> List[dict]:

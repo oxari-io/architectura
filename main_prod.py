@@ -19,6 +19,7 @@ from feature_reducers import DummyFeatureReducer
 from feature_reducers.core import SelectionFeatureReducer
 from imputers import RevenueQuantileBucketImputer
 from imputers.categorical import HybridCategoricalStatisticsImputer
+from imputers.core import DummyImputer
 from imputers.iterative import OldOxariImputer
 from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
@@ -64,7 +65,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=HybridCategoricalStatisticsImputer(),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -72,7 +73,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=HybridCategoricalStatisticsImputer(),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -80,7 +81,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=HybridCategoricalStatisticsImputer(),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -113,7 +114,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
-        imputer=HybridCategoricalStatisticsImputer(),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -121,7 +122,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
-        imputer=HybridCategoricalStatisticsImputer(),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -129,7 +130,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
-        imputer=HybridCategoricalStatisticsImputer(),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),

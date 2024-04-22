@@ -12,6 +12,7 @@ import pathlib
 import pickle
 from datastores.saver import LocalDestination, OxariSavingManager, PickleSaver
 from feature_reducers.core import DummyFeatureReducer
+from imputers.core import DummyImputer
 from imputers.revenue_bucket import RevenueQuantileBucketImputer
 from pipeline.core import DefaultPipeline
 from postprocessors.core import ALEExplainer, DecisionExplainer, JumpRateExplainer, PDExplainer, PDVarianceExplainer, PermutationImportanceExplainer, ResidualExplainer, ShapExplainer
@@ -40,7 +41,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp1 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(10),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -48,7 +49,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp2 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(10),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
@@ -56,7 +57,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
     dp3 = DefaultPipeline(
         preprocessor=IIDPreprocessor(fin_transformer=PowerTransformer()),
         feature_reducer=DummyFeatureReducer(),
-        imputer=RevenueQuantileBucketImputer(10),
+        imputer=DummyImputer(),
         scope_estimator=MiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),

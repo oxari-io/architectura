@@ -122,11 +122,13 @@ class OxariCategoricalNormalizer(OxariTransformer, abc.ABC):
 
     def fit(self, X: ArrayLike, y: ArrayLike = None, **kwargs) -> Self:
         for transformer in self.col_transformers:
+            self.logger.info(f'Normalizing columns with {transformer.__class__}')
             transformer.fit(X, y)
         return self
     
     def transform(self, X: ArrayLike, **kwargs) -> ArrayLike:
         X_new = X.copy()
         for transformer in self.col_transformers:
+            self.logger.info(f'Normalizing columns with {transformer.__class__}')
             X_new = transformer.transform(X_new)
         return X_new

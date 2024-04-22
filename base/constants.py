@@ -1,4 +1,7 @@
 from pathlib import Path
+import multiprocessing
+
+USABLE_CPUS = int(multiprocessing.cpu_count()*0.75)
 
 OBJECT_DIR = Path("local/objects")
 DATA_DIR = Path("model-data/input")

@@ -1093,6 +1093,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
         self.statistics = {
             "performance": {metric: {f"scope_{i+1}": result[metric] for i, result in enumerate(scope_results)} for metric in ["sMAPE", "MAE"]},
             "confidence_rating": {f"scope_{i+1}": result["confidence_rating"] for i, result in enumerate(scope_results)},
+            "confidence_rating_detailed": {f"scope_{i+1}": result["confidence_rating_detailed"] for i, result in enumerate(scope_results)},
             "meta": {
                 "num_rows_tested": M.shape[0],
                 "num_companies_tested": M['key_ticker'].nunique()

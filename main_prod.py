@@ -38,7 +38,7 @@ DATE_FORMAT = 'T%Y%m%d'
 
 N_TRIALS = 40
 N_STARTUP_TRIALS = 20
-STAGE = "p_"
+STAGE = "p"
 
 # TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)
 # TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_)
@@ -225,10 +225,10 @@ if __name__ == "__main__":
     ## SAVE OBJECTS ###
 
     all_meta_models = [
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_scope_imputation").set_object(model_si).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_scope_imputation").set_object(model_si).set_datatarget(S3Destination(path="model-data/output")),
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name(f"{STAGE}_model").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name(f"{STAGE}_model").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     SavingManager = OxariSavingManager(*all_meta_models, )

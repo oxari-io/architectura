@@ -95,7 +95,7 @@ if __name__ == "__main__":
                     preprocessor=Preprocessor[1](fin_transformer=FeatureScaler[1]()),
                     feature_reducer=DummyFeatureReducer(),
                     imputer=imputer[1],
-                    scope_estimator=Model(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS, bucket_classifier=BucketClassifier()),
+                    scope_estimator=Model[1](10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS, bucket_classifier=BucketClassifier[1]()),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.test).fit_confidence(*SPLIT_1.train))

@@ -1,3 +1,4 @@
+from base.common import OxariMetaModel
 from base.dataset_loader import OxariDataManager, StatisticalLoader
 from lar_calculator.lar_model import OxariUnboundLAR
 from postprocessors.missing_year_imputers import CubicSplineMissingYearImputer, DerivativeMissingYearImputer, SimpleMissingYearImputer
@@ -66,3 +67,13 @@ def compute_jump_rates(imputed_data):
     jump_rate_evaluator = JumpRateEvaluator().fit(imputed_data)
     jump_rates = jump_rate_evaluator.transform(imputed_data)
     return jump_rate_evaluator, jump_rates
+
+
+def create_run_report(stage="p", today="No-Time", model_si:OxariMetaModel=None, model_lp:OxariMetaModel=None):
+    print("Eval results")
+    results = []
+    if model_si:
+        results.append(pd.json_normalize(model_si.collect_eval_results()))
+    if model_lp:
+        results.append(pd.json_normalize(model_lp.collect_eval_results()))
+    pd.concat(results).T.to_csv(f'local/prod_runs/{stage}_model_pipelines_{today}.csv')

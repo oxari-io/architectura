@@ -15,7 +15,7 @@ N_STARTUP_TRIALS = 1
 
 
 class MiniModelArmyEstimator(OxariScopeEstimator):
-    def __init__(self, n_buckets=5, cls_optimizer=None, rgs_optimizer=None, bucket_classifier=None, bucket_regressor=None, **kwargs):
+    def __init__(self, n_buckets=10, cls_optimizer=None, rgs_optimizer=None, bucket_classifier=None, bucket_regressor=None, **kwargs):
         super().__init__(**kwargs)
         self.n_buckets = n_buckets
         self.discretizer = BucketScopeDiscretizer(self.n_buckets)

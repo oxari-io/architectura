@@ -5,7 +5,7 @@ from base.helper import ArcSinhTargetScaler, ArcSinhScaler, DummyFeatureScaler, 
 from feature_reducers import (DropFeatureReducer, DummyFeatureReducer, FactorAnalysisFeatureReducer, AgglomerateFeatureReducer, GaussRandProjectionFeatureReducer,
                               IsomapDimensionalityFeatureReducer, PCAFeatureReducer, SparseRandProjectionFeatureReducer)
 from base import MAPIEConfidenceEstimator, OxariDataManager, BaselineConfidenceEstimator, JacknifeConfidenceEstimator, DirectLossConfidenceEstimator, PercentileOffsetConfidenceEstimator
-from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator, UnderfittedClsMiniModelArmyEstimator, PredictMedianEstimator, SingleBucketModelEstimator,
+from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator, UnderfittedClsMiniModelArmyEstimator, PredictMedianEstimator, SingleVoterModelEstimator,
                               SingleBucketVotingArmyEstimator)
 from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator, PredictMedianEstimator, EvenWeightMiniModelArmyEstimator)
 from scope_estimators import *
@@ -92,8 +92,8 @@ class ScopeEstimatorComparisonExperimentCommandLineParser(ExperimentCommandLineP
                                  default=[
                                      MiniModelArmyEstimator, GaussianProcessEstimator, XGBEstimator, LGBEstimator, IndependentFeatureVotingRegressionEstimator, KNNEstimator,
                                      BayesianRegressionEstimator, LinearRegressionEstimator, GLMEstimator, LinearSVREstimator, EvenWeightMiniModelArmyEstimator,
-                                     SingleBucketModelEstimator, UnderfittedClsMiniModelArmyEstimator, RandomGuessClsMiniModelArmyEstimator, MajorityClsMiniModelArmyEstimator,
-                                     MLPEstimator, PLSEstimator, RNEstimator, SingleBucketModelEstimator, SGDEstimator, SupportVectorEstimator, FastSupportVectorEstimator
+                                     SingleVoterModelEstimator, UnderfittedClsMiniModelArmyEstimator, RandomGuessClsMiniModelArmyEstimator, MajorityClsMiniModelArmyEstimator,
+                                     MLPEstimator, PLSEstimator, RNEstimator, SingleVoterModelEstimator, SGDEstimator, SupportVectorEstimator, FastSupportVectorEstimator
                                  ],
                                  dest='configurations',
                                  help='Names of scope estimator methods to compare',
@@ -118,7 +118,7 @@ class VotingVsSingleExperimentCommandLineParser(ExperimentCommandLineParser):
 
     def set_experiment_specific_arguments(self):
         self.parser.add_argument('-c',
-                                 default=[MiniModelArmyEstimator, SingleBucketModelEstimator, BaselineEstimator, PredictMedianEstimator],
+                                 default=[MiniModelArmyEstimator, SingleVoterModelEstimator, BaselineEstimator, PredictMedianEstimator],
                                  dest='configurations',
                                  help='Names of estimators to compare',
                                  nargs='*',

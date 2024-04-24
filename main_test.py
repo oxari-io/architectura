@@ -39,9 +39,9 @@ DATA_DIR = pathlib.Path('model-data/data/input')
 
 DATE_FORMAT = 'T%Y%m%d'
 
-N_TRIALS = 40
-N_STARTUP_TRIALS = 20
-STAGE = "q"
+N_TRIALS = 2
+N_STARTUP_TRIALS = 2
+STAGE = "t"
 
 # TODO: Refactor experiment sections into functions (allows quick turn on and off of sections)
 # TODO: Use constant STAGE to specify names for the savers (p_, q_, t_, d_)
@@ -99,11 +99,12 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
     X = data.filter(regex='ft_', axis=1)
     Y = data.filter(regex='tg_', axis=1)
     M = data.filter(regex='key_', axis=1)
-    
+
     bag = SplitBag(X, Y)
     model.evaluate(bag.train.X, bag.train.y, bag.test.X, bag.test.y, M)
-    
+
     return model
+
 
 def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
@@ -148,10 +149,10 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     X = data.filter(regex='ft_', axis=1)
     Y = data.filter(regex='tg_', axis=1)
     M = data.filter(regex='key_', axis=1)
-    
+
     bag = SplitBag(X, Y)
     model.evaluate(bag.train.X, bag.train.y, bag.test.X, bag.test.y, M)
-    
+
     return model
 
 
@@ -160,19 +161,24 @@ if __name__ == "__main__":
     now = time.strftime('T%Y%m%d%H%M')
 
     dataset = get_small_datamanager_configuration(0.1).run()
-    # Scope Imputation model 
-    model_si = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
+    # Scope Imputation model
+    # model_si = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset)
     # Live Prediciton model
     model_lp = train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset)
 
     ### EVALUATION RESULTS ###
-    create_run_report(STAGE, TODAY, model_si, model_lp)
-
-
+    create_run_report(
+        STAGE,
+        TODAY,
+        # model_si=model_si,
+        model_lp=model_lp,
+    )
 
     all_meta_models = [
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(S3Destination(path="model-data/output")),
+        # PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(
+        #     LocalDestination(path="model-data/output")),
+        # PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(
+        #     S3Destination(path="model-data/output")),
         PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
         PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
     ]

@@ -15,9 +15,11 @@ from imputers.core import DummyImputer
 from pipeline.core import DefaultPipeline
 from postprocessors import (DecisionExplainer, JumpRateExplainer, ResidualExplainer, ScopeImputerPostprocessor, ShapExplainer)
 from preprocessors import BaselinePreprocessor, IIDPreprocessor
+from preprocessors.core import NormalizedIIDPreprocessor
 from scope_estimators import MiniModelArmyEstimator
 from datasources.online import S3Datasource
 from datasources.local import LocalDatasource
+from scope_estimators.mini_model_army import EvenWeightMiniModelArmyEstimator
 from scope_estimators.svm import FastSupportVectorEstimator
 from sklearn.metrics import precision_recall_fscore_support
 DATA_DIR = pathlib.Path('local/data')
@@ -41,10 +43,10 @@ if __name__ == "__main__":
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
-        preprocessor=IIDPreprocessor(),
+        preprocessor=NormalizedIIDPreprocessor(),
         feature_reducer=DummyFeatureReducer(),
         imputer=DummyImputer(),
-        scope_estimator=MiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
+        scope_estimator=EvenWeightMiniModelArmyEstimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.test).fit_confidence(*SPLIT_1.train)
@@ -74,7 +76,7 @@ if __name__ == "__main__":
         y_grp_hat_reversed = dp1._reverse_scope(y_grp_hat)
 
         results = dp1.estimator.bucket_rg.evaluate(y_grp, y_grp_hat_reversed)
-        raw_metrics.append(raw_metrics)
+        raw_metrics.append(results)
 
 
     raw_metrics_df = pd.json_normalize(raw_metrics)

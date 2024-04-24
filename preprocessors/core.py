@@ -53,7 +53,7 @@ class BaselinePreprocessor(OxariPreprocessor):
 
     def __init__(self, fin_transformer=None, cat_transformer=None, cat_normalizer:OxariCategoricalNormalizer=None, **kwargs):
         super().__init__(**kwargs)
-        self.fin_transformer = fin_transformer or prep.RobustScaler()
+        self.fin_transformer = fin_transformer or prep.PowerTransformer()
         self.cat_transformer = cat_transformer or ce.TargetEncoder()
         self.cat_normalizer = cat_normalizer or OxariCategoricalNormalizer(
             col_transformers=[

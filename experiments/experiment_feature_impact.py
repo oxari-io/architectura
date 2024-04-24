@@ -118,6 +118,13 @@ if __name__ == "__main__":
 
     model = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
 
+    all_meta_models = [
+        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_feature_impact").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
+    ]
+
+    SavingManager = OxariSavingManager(*all_meta_models, )
+    SavingManager.run()
+
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
     SPLIT_1 = bag.scope_1
     SPLIT_2 = bag.scope_2

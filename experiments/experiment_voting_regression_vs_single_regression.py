@@ -9,34 +9,40 @@ from base.helper import LogTargetScaler
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
 # from imputers.revenue_bucket import RevenueBucketImputer
+from feature_reducers.core import DummyFeatureReducer
 from imputers import RevenueQuantileBucketImputer
+from imputers.core import DummyImputer
 from pipeline.core import DefaultPipeline
 from preprocessors import IIDPreprocessor
-from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator,
-                              PredictMedianEstimator,
-                              SingleBucketModelEstimator)
+from scope_estimators import (BaselineEstimator, MiniModelArmyEstimator, PredictMedianEstimator, SingleVoterModelEstimator)
 from experiments.experiment_argument_parser import VotingVsSingleExperimentCommandLineParser
+from scope_estimators.mini_model_army import EvenWeightMiniModelArmyEstimator
+
 
 def convert_estimators(estimators_string):
     # if the estimators are not strings, they are already in the right format (in that case it was the default argument of parser)
-    if not isinstance(estimators_string[0], str): 
-        return estimators_string 
-    
+    if not isinstance(estimators_string[0], str):
+        return estimators_string
+
     switcher = {
-        "SingleBucketVotingArmyEstimator": SingleBucketModelEstimator, 
-        "MiniModelArmyEstimator": MiniModelArmyEstimator, 
-        "BaselineEstimator": BaselineEstimator, 
+        "SingleBucketVotingArmyEstimator": SingleVoterModelEstimator,
+        "EvenWeightMiniModelArmyEstimator": EvenWeightMiniModelArmyEstimator,
+        "BaselineEstimator": BaselineEstimator,
         "PredictMedianEstimator": PredictMedianEstimator
     }
-    
+
     estimators = []
     for estimator in estimators_string:
         estimators.append(switcher.get(estimator))
-        
-    return estimators 
+
+    return estimators
+
 
 if __name__ == "__main__":
-    parser = VotingVsSingleExperimentCommandLineParser(description='Experiment arguments: number of repetitions, what scopes to incorporate (-s for all 3 scopes), what file to write to (-a to append to existing file) and what estimators to compare (write -c before specifying). Defaults: 10 repititions, scope 1 only, new file, estimators: MiniModelArmyEstimator, SingleBucketModelEstimator, BaselineEstimator, PredictMedianEstimator.')
+    parser = VotingVsSingleExperimentCommandLineParser(
+        description=
+        'Experiment arguments: number of repetitions, what scopes to incorporate (-s for all 3 scopes), what file to write to (-a to append to existing file) and what estimators to compare (write -c before specifying). Defaults: 10 repititions, scope 1 only, new file, estimators: MiniModelArmyEstimator, SingleBucketModelEstimator, BaselineEstimator, PredictMedianEstimator.'
+    )
 
     args = parser.parse_args()
     num_reps = args.num_reps
@@ -49,10 +55,9 @@ if __name__ == "__main__":
     print("results file: ", results_file)
     print("estimators: ", estimators)
 
-
     all_results = []
     for i in range(num_reps):
-        dataset = get_small_datamanager_configuration().run()  # run() calls _transform()
+        dataset = get_small_datamanager_configuration(0.25).run()  # run() calls _transform()
         bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
         SPLIT_1 = bag.scope_1
         if (scope == True):
@@ -64,8 +69,8 @@ if __name__ == "__main__":
 
             ppl1 = DefaultPipeline(
                 preprocessor=IIDPreprocessor(),
-                feature_reducer=PCAFeatureReducer(),
-                imputer=RevenueQuantileBucketImputer(),
+                feature_reducer=DummyFeatureReducer(),
+                imputer=DummyImputer(),
                 scope_estimator=Estimator(),
                 ci_estimator=BaselineConfidenceEstimator(),
                 scope_transformer=LogTargetScaler(),
@@ -74,21 +79,21 @@ if __name__ == "__main__":
             if (scope == True):
                 ppl2 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(),
-                    imputer=RevenueQuantileBucketImputer(),
+                    feature_reducer=DummyFeatureReducer(),
+                    imputer=DummyImputer(),
                     scope_estimator=Estimator(),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.val).fit_confidence(*SPLIT_2.train)
                 ppl3 = DefaultPipeline(
                     preprocessor=IIDPreprocessor(),
-                    feature_reducer=PCAFeatureReducer(),
-                    imputer=RevenueQuantileBucketImputer(),
+                    feature_reducer=DummyFeatureReducer(),
+                    imputer=DummyImputer(),
                     scope_estimator=Estimator(),
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_3.train).fit(*SPLIT_3.train).evaluate(*SPLIT_3.rem, *SPLIT_3.val).fit_confidence(*SPLIT_3.train)
-                
+
                 all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 2, **ppl2.evaluation_results})
                 all_results.append({"repetition": i + 1, "time": time.time() - start, "scope": 3, **ppl3.evaluation_results})
 
@@ -108,9 +113,9 @@ if __name__ == "__main__":
                 "test.RMSE",
                 "test.MAPE",
             ]]
-            
+
             fname = __loader__.name.split(".")[-1]
             if (results_file is True):
                 concatenated.to_csv(f'local/eval_results/{fname}.csv')
-            else: 
-                concatenated.to_csv(f'local/eval_results/{fname}.csv', header = False, mode='a')
+            else:
+                concatenated.to_csv(f'local/eval_results/{fname}.csv', header=False, mode='a')

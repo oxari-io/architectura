@@ -30,7 +30,7 @@ N_TRIALS = 20
 N_STARTUP_TRIALS = 40
 
 def spawn_model(Estimator:Callable):
-    if Estimator == MiniModelArmyEstimator:
+    if isinstance(Estimator(), MiniModelArmyEstimator):
         return Estimator(n_buckets=10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS)
     return Estimator(n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS)
 

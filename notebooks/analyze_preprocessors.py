@@ -13,7 +13,11 @@ results = pd.read_csv(cwd.parent / 'local/eval_results/experiment_preprocessors.
 results
 # %%
 plt.figure(figsize=(10,10))
-ax = sns.violinplot(results, x="preprocessor", y="raw.sMAPE")
+ax = sns.boxenplot(results, x="preprocessor", y="raw.sMAPE")
 plt.xticks(rotation=60)
 plt.show()
  # %%
+results.groupby("preprocessor")["raw.sMAPE"].describe().drop(columns="count").style.highlight_min(color = 'blue',  
+                       axis = 0).highlight_max(color = 'darkred',  
+                       axis = 0)
+# %%

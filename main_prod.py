@@ -65,7 +65,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
-        preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
+        preprocessor=IIDPreprocessor(fin_transformer=ArcSinhScaler()),
         feature_reducer=DummyFeatureReducer(),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
@@ -73,7 +73,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.test).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
-        preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
+        preprocessor=IIDPreprocessor(fin_transformer=ArcSinhScaler()),
         feature_reducer=DummyFeatureReducer(),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
@@ -81,7 +81,7 @@ def train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.test).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
-        preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
+        preprocessor=IIDPreprocessor(fin_transformer=ArcSinhScaler()),
         feature_reducer=DummyFeatureReducer(),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
@@ -115,7 +115,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
 
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
-        preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
+        preprocessor=IIDPreprocessor(fin_transformer=ArcSinhScaler()),
         feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
@@ -123,7 +123,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.test).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
-        preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
+        preprocessor=IIDPreprocessor(fin_transformer=ArcSinhScaler()),
         feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
@@ -131,7 +131,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.test).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
-        preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
+        preprocessor=IIDPreprocessor(fin_transformer=ArcSinhScaler()),
         feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),

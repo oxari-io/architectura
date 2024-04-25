@@ -105,6 +105,7 @@ if __name__ == "__main__":
                     "c_fintransformer": FeatureScaler[0],
                     "c_imputer": imputer[0],
                     "c_model": Model[0],
+                    "c_bucket_cls": BucketClassifier[0],
                     "repetition": i,
                     "time": time.time() - start_time,
                     **dp1.evaluation_results,

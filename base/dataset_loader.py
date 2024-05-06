@@ -419,7 +419,7 @@ class OxariDataManager(OxariMixin):
         return self
 
     #TODO: JUST OVERWRITE THIS ONE
-    def _transform(self, df:pd.DataFrame, **kwargs):
+    def _transform(self, df:pd.DataFrame, **kwargs) -> pd.DataFrame:
         # key_cols = list(df.columns[df.columns.str.startswith('key')])
         return df.drop_duplicates(['key_ticker', 'key_year']).sort_values(['key_ticker', 'key_year'], ascending=True)
 

@@ -41,26 +41,26 @@ if __name__ == "__main__":
     # NOTE: I hereby define vertical interpolation and horizontal interpolation.
     # - Vertical interpolation interpolates the NA's the column independently of other columns. Usually grouped by company.
     # - Horizontal interpolation does not take any other row into account for imputation. Basically making it time-independent.
-    data_fraction = 0.1
-    dataset_exchange_dedup = ExchangeBasedDeduplicatedScopeDataManager(
-        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
-        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
-        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
-        StatisticalLoader(datasource=CachingS3Datasource(path="model-data/input/statisticals.csv")),
-        RegionLoader(),
-    ).set_filter(CompanyDataFilter(frac=data_fraction)).run()
-    dataset_default = DefaultDataManager(
-        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
-        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
-        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
-        StatisticalLoader(datasource=CachingS3Datasource(path="model-data/input/statisticals.csv")),
-        RegionLoader(),
-    ).set_filter(CompanyDataFilter(frac=data_fraction)).run()
+    data_fraction = 1
 
-    configurations = [dataset_exchange_dedup, dataset_default]
     repeats = range(10)
-    with tqdm.tqdm(total=len(repeats) * len(configurations)) as pbar:
+    with tqdm.tqdm(total=len(repeats) * 2) as pbar:
+        dataset_exchange_dedup = ExchangeBasedDeduplicatedScopeDataManager(
+            FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
+            ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
+            CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
+            StatisticalLoader(datasource=CachingS3Datasource(path="model-data/input/statisticals.csv")),
+            # RegionLoader(),
+        ).set_filter(CompanyDataFilter(frac=data_fraction)).run()
+        dataset_default = DefaultDataManager(
+            FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
+            ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
+            CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
+            StatisticalLoader(datasource=CachingS3Datasource(path="model-data/input/statisticals.csv")),
+            # RegionLoader(),
+        ).set_filter(CompanyDataFilter(frac=data_fraction)).run()
         for i in repeats:
+            configurations = [dataset_exchange_dedup, dataset_default]
             for dataset in configurations:
                 bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
                 SPLIT_1 = bag.scope_1
@@ -77,7 +77,7 @@ if __name__ == "__main__":
                     ci_estimator=BaselineConfidenceEstimator(),
                     scope_transformer=LogTargetScaler(),
                 ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.test).fit_confidence(*SPLIT_1.train)
-                all_results.append({"time": time.time() - start, "scope": 1, **ppl1.evaluation_results})
+                all_results.append({"time": time.time() - start,"dataset":dataset.__class__.__name__, "scope": 1, **ppl1.evaluation_results})
 
                 concatenated = pd.json_normalize(all_results)
                 fname = __loader__.name.split(".")[-1]

@@ -11,7 +11,7 @@ from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CategoricalLoader, CompanyDataFilter, EmptyLoader, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
-from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
+from base.run_utils import compute_jump_rates, compute_lar, get_deduplicated_datamanager_configuration, impute_missing_years, impute_scopes
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from datasources.loaders import NetZeroIndexLoader, RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
@@ -32,9 +32,9 @@ MODEL_OUTPUT_DIR = pathlib.Path('model-data/output')
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
-    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_q_model_scope_imputation.pkl', 'rb'))
+    dataset = get_deduplicated_datamanager_configuration().set_filter(CompanyDataFilter(0.1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240318_p_model_scope_imputation.pkl', 'rb'))
 
     data_to_impute = DATA.copy()
     data_to_impute = impute_missing_years(data_to_impute)

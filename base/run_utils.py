@@ -1,5 +1,6 @@
 from base.common import OxariMetaModel
 from base.dataset_loader import OxariDataManager, StatisticalLoader
+from datasources.core import ExchangeBasedDeduplicatedPreviousScopeFeaturesDataManager
 from lar_calculator.lar_model import OxariUnboundLAR
 from postprocessors.missing_year_imputers import CubicSplineMissingYearImputer, DerivativeMissingYearImputer, SimpleMissingYearImputer
 from postprocessors.scope_imputers import JumpRateEvaluator, ScopeImputerPostprocessor
@@ -13,6 +14,15 @@ from datasources import PreviousScopeFeaturesDataManager
 
 def get_default_datamanager_configuration():
     return PreviousScopeFeaturesDataManager(
+        FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
+        ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
+        CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),
+        StatisticalLoader(datasource=CachingS3Datasource(path="model-data/input/statisticals.csv")),
+        RegionLoader(),
+    )
+
+def get_deduplicated_datamanager_configuration():
+    return ExchangeBasedDeduplicatedPreviousScopeFeaturesDataManager(
         FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")),
         ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")),
         CategoricalLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")),

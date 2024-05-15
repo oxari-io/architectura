@@ -1,3 +1,5 @@
+__azurite__*.json
+
 nohup*.out
 
 /**/experiment_optuna_metric.csv

@@ -13,6 +13,7 @@ from base.dataset_loader import CategoricalLoader, CompanyDataFilter, EmptyLoade
 from base.helper import LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, get_deduplicated_datamanager_configuration, impute_missing_years, impute_scopes
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
+from datasources.helper.dedup_func import categorical_name_and_exchange_priority_based_deduplication
 from datasources.loaders import NetZeroIndexLoader, RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
@@ -32,9 +33,13 @@ MODEL_OUTPUT_DIR = pathlib.Path('model-data/output')
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_p_model_scope_imputation.pkl', 'rb'))
-    dataset = get_deduplicated_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
+    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(0.01)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+
+    ld_cat = CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals.csv")).load()
+    ld_df_cat = categorical_name_and_exchange_priority_based_deduplication(ld_cat._data, './res/exchange_ranking.json')
+
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240423_q_model_scope_imputation.pkl', 'rb'))
 
     data_to_impute = DATA.copy()
     data_to_impute = impute_missing_years(data_to_impute)
@@ -82,7 +87,6 @@ if __name__ == "__main__":
     # Data prepared for saving
     ld_fin = FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials.csv")).load()
     ld_scp = ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes.csv")).load()
-    ld_cat = CategoricalLoader(datasource=LocalDatasource(path="model-data/input/categoricals.csv")).load()
     ld_reg = RegionLoader().load()
     cmb_ld = EmptyLoader()
 

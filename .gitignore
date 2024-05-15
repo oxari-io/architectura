@@ -1,6 +1,6 @@
+/test.csv
 __azurite__*.json
 test*.csv
-test.csv
 
 nohup*.out
 

@@ -111,25 +111,34 @@ def train_simple_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset):
 
 if __name__ == "__main__":
 
-    # cwd = pathlib.Path(__file__).parent
-    # model = pickle.load((cwd.parent / 'model-data/output/T20231113_p_model_experiment_feature_impact.pkl').open('rb'))
 
     dataset = get_small_datamanager_configuration(1).run()
 
-    model = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
+    # model = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset) 
 
-    all_meta_models = [
-        PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_feature_impact").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
-    ]
+    # all_meta_models = [
+    #     PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_feature_impact").set_object(model).set_datatarget(LocalDestination(path="model-data/output")),
+    # ]
 
-    SavingManager = OxariSavingManager(*all_meta_models, )
-    SavingManager.run()
+    # SavingManager = OxariSavingManager(*all_meta_models, )
+    # SavingManager.run()
 
     bag = dataset.get_split_data(OxariDataManager.ORIGINAL)
     SPLIT_1 = bag.scope_1
     SPLIT_2 = bag.scope_2
     SPLIT_3 = bag.scope_3
 
+    cwd = pathlib.Path(__file__).parent
+    model = pickle.load((cwd.parent / 'model-data/output/T20240429_p_model_feature_impact.pkl').open('rb'))
+
+    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    shap_package = (explainer0.shap_values, explainer0.X, explainer0.y)
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_shap").set_object(shap_package).set_datatarget(LocalDestination(path="model-data/output")).save()
+    
+    explainer1 = PDVarianceExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
+    package_pdv = (explainer1.pdv_importance, explainer1.X, explainer1.y)
+    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_pdv").set_object(package_pdv).set_datatarget(LocalDestination(path="model-data/output")).save()
+    
     explainer2 = ALEExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
     package_ale = (explainer2.ale_importance, explainer2.X, explainer2.y)
     PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_ale").set_object(package_ale).set_datatarget(LocalDestination(path="model-data/output")).save()
@@ -142,13 +151,7 @@ if __name__ == "__main__":
     package_permut = (explainer4.permut_importance, explainer4.X, explainer4.y)
     PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_permut").set_object(package_permut).set_datatarget(LocalDestination(path="model-data/output")).save()
 
-    explainer0 = ShapExplainer(model.get_pipeline(1), sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    shap_package = (explainer0.shap_values, explainer0.X, explainer0.y)
-    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_shap").set_object(shap_package).set_datatarget(LocalDestination(path="model-data/output")).save()
 
-    explainer1 = PDVarianceExplainer(model.get_pipeline(1), target_name="tg_numc_scope_1", sample_size=5000).fit(*SPLIT_1.train).explain(*SPLIT_1.test)
-    package_pdv = (explainer1.pdv_importance, explainer1.X, explainer1.y)
-    PickleSaver().set_time(time.strftime(DATE_FORMAT)).set_extension(".pkl").set_name("p_model_experiment_feature_impact_explainer_pdv").set_object(package_pdv).set_datatarget(LocalDestination(path="model-data/output")).save()
 
 
     # all_meta_models = [

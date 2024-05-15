@@ -32,8 +32,8 @@ MODEL_OUTPUT_DIR = pathlib.Path('model-data/output')
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_q_model_scope_imputation.pkl', 'rb'))
-    dataset = get_deduplicated_datamanager_configuration().set_filter(CompanyDataFilter(0.1)).run()
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_p_model_scope_imputation.pkl', 'rb'))
+    dataset = get_deduplicated_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
     data_to_impute = DATA.copy()
@@ -62,7 +62,9 @@ if __name__ == "__main__":
         "weights": {
             "key_ticker": 15,
             "meta_name": 10,
-            "meta_name_original": 10,
+            "meta_name_before_cleaning": 10,
+            "meta_name_after_normalization": 10,
+            "meta_name_before_cross_merge": 10,
             "meta_country": 5,
             "meta_country_code": 5,
             "meta_symbol": 10,
@@ -86,37 +88,28 @@ if __name__ == "__main__":
 
     cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
 
-    df = ld_cat._data.merge((ld_cat + ld_reg).data, on="key_ticker", how="left", suffixes=('', '_DROP')).filter(regex='^(?!.*_DROP)')
+    df = DATA.filter(regex="^(ft_cat|meta_|key_ticker|key_country_code)", axis=1)
+    ticker_lists = df.groupby("meta_name")["meta_other_ticker_list"].apply(sum)
+    df = df.drop(columns=["meta_other_ticker_list"]).drop_duplicates(subset=["meta_name"]).merge(ticker_lists, on="meta_name")
+    columns_order = ["key_ticker", "meta_name", 'ft_catm_industry_name', 'ft_catm_sector_name', 'ft_catm_country_code', 'ft_catm_region', 'ft_catm_sub_region']
+    df = df[columns_order+list(df.columns.difference(columns_order))].drop(columns=['meta_exchange_x', 'meta_name_x', 'meta_symbol_x']).merge(ld_cat._data, on="key_ticker", suffixes=(None, "_DROP"))
+    df = df[[c for c in df.columns if not c.endswith("_DROP")]]
     # df[df.select_dtypes('object').columns] = df[df.select_dtypes('object').columns].fillna("NA")
     # df[df.select_dtypes('category').columns] = df[df.select_dtypes('category').columns].astype(str).replace("nan", "NA")
 
     df_fin = ld_fin.data
 
-    df_statistics:pd.DataFrame = (cmb_ld).data.drop(
-        [
-            'key_ticker',
-            'key_country_code',
-            'ft_catm_near_target_status',
-            'ft_catm_near_target_year',
-            'ft_catm_orga_type',
-            'ft_catm_near_target_class',
-            'ft_catm_orga_type',
-            'ft_catb_committed',
-        ],
-        axis=1,
-        errors='ignore',
-    )
-    df_scope_stats = df_statistics.groupby(['key_year', 'ft_catm_industry_name', 'ft_catm_sector_name', 'ft_catm_country_code', 'ft_catm_region', 'ft_catm_sub_region']).median().reset_index() #.fillna("NA")
+    df_scope_stats = DATA.groupby(['key_year', 'ft_catm_industry_name', 'ft_catm_sector_name', 'ft_catm_country_code', 'ft_catm_region', 'ft_catm_sub_region']).median().reset_index() #.fillna("NA")
 
     dateformat = 'T%Y%m%d'
     all_data_features = [
-        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(
-            LocalDestination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(S3Destination(path="model-data/output")),
-        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(S3Destination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(LocalDestination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(
+        #     LocalDestination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(S3Destination(path="model-data/output")),
+        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(dateformat)).set_name("p_companies").set_object(df).set_datatarget(
             MongoDestination(index=keys, path="model-data/output", options=options)),
         MongoSaver().set_time(time.strftime(dateformat)).set_name("p_financials").set_object(df_fin).set_datatarget(

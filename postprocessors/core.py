@@ -41,7 +41,7 @@ def get_jump_rate(y_pre, y_post):
 
 def custom_masker(mask, x):
     x_ = x.copy()
-    x_[~mask] = None
+    x_[~mask] = np.nan
 
     return x_.reshape(
         1, len(x)

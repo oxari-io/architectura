@@ -256,6 +256,8 @@ class CategoricalLoader(PartialLoader):
         return self._data[self.columns]
 
 
+
+
 class SplitBag():
 
     class Pair:

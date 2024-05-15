@@ -61,7 +61,7 @@ class ExchangeBasedDeduplicatedScopeDataManager(DefaultDataManager):
 class ExchangeBasedDeduplicatedPreviousScopeFeaturesDataManager(PreviousScopeFeaturesDataManager):
     def _transform(self, df: pd.DataFrame) -> pd.DataFrame:
         self.logger.info("Deduplicating scopes based on exchange priority list")
-        self.exch_ranking_path = (Path(__file__).parent / 'misc' / 'exchange_ranking.json').absolute().as_posix()
+        self.exch_ranking_path = "res/exchange_ranking.json"
         df_ = name_and_exchange_priority_based_deduplication(df, self.exch_ranking_path)
         return super()._transform(df_)
 

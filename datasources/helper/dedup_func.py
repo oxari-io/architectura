@@ -75,28 +75,32 @@ def categorical_name_and_exchange_priority_based_deduplication(df:pd.DataFrame, 
     # note, clean exchange names are also available in meta_exchange_display_name after this merge
     df_ranked = pd.merge(df, exchange_df, on='meta_exchange', how='left')
     # sort by assigned rank
-    df_ranked = df_ranked.sort_values(by=[MAIN_NAME_COL, 'meta_exchange_rank'])
+    df_ranked = df_ranked.sort_values(by=[MAIN_NAME_COL, 'meta_exchange_rank']).replace(0,None)
 
     # fill data both ways to assure that all information is kept
 
-    rfill_group = lambda group: group.ffill().bfill()
-    filled_groups = []
-    grouped_data_list = []
-    c_ = 0
+    # rfill_group = lambda group: group.ffill().bfill()
+    # filled_groups = []
+    # grouped_data_list = []
+    # c_ = 0
 
-    # alternative itterative approach to avoid excessive RAM build-up of processing all groups at once
-    for _, group_ in tqdm(df_ranked.groupby(['key_year', 'meta_name']), desc="Front/Back Fill"):
-        filled_groups.append(rfill_group(group_))
-        c_ += 1
+    # # alternative itterative approach to avoid excessive RAM build-up of processing all groups at once
+    # for _, group_ in tqdm(df_ranked.groupby(['key_year', 'meta_name']), desc="Front/Back Fill"):
+    #     filled_groups.append(rfill_group(group_))
+    #     c_ += 1
         
-        # priodically append the data
-        if c_ % 20000 == 0:
-            grouped_data_list.append(pd.concat(filled_groups))
-            filled_groups = []
+    #     # priodically append the data
+    #     if c_ % 20000 == 0:
+    #         grouped_data_list.append(pd.concat(filled_groups))
+    #         filled_groups = []
     
-    # concat remaining groups
-    grouped_data_list.append(pd.concat(filled_groups))
-    grouped_df = pd.concat(grouped_data_list)
+    # # concat remaining groups
+    # grouped_data_list.append(pd.concat(filled_groups))
+    # grouped_df = pd.concat(grouped_data_list)
+    grouped_df = df_ranked.groupby([MAIN_NAME_COL]).ffill()
+    grouped_df[MAIN_NAME_COL] = df_ranked[MAIN_NAME_COL].copy()
+    grouped_df = grouped_df.groupby([MAIN_NAME_COL]).bfill()
+    grouped_df[MAIN_NAME_COL] = df_ranked[MAIN_NAME_COL].copy()
 
     # keep only data from top priority (highest rank) exchange
     top_priority_df = grouped_df.groupby([MAIN_NAME_COL]).head(1).reset_index(drop=True)

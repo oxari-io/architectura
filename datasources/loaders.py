@@ -1,5 +1,6 @@
 from base.dataset_loader import PartialLoader, SpecialLoader
 from typing_extensions import Self
+from datasources.helper.dedup_func import categorical_name_and_exchange_priority_based_deduplication
 from datasources.online import OnlineCSVDatasource, OnlineExcelDatasource
 import pandas as pd 
 import numpy as np
@@ -61,3 +62,16 @@ class RegionLoader(SpecialLoader):
     @property
     def lkeys(self):
         return [self.LKEY]
+    
+
+class ExchangePrioritizedMetaLoader(PartialLoader):
+    KEYS = ["isin"]
+    PATTERN = "ft_cat"
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+    @property
+    def data(self):
+        dt = categorical_name_and_exchange_priority_based_deduplication(self._data, "res/exchange_ranking.json")
+        return dt

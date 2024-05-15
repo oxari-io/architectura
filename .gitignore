@@ -1,4 +1,5 @@
 __azurite__*.json
+test*.csv
 
 nohup*.out
 

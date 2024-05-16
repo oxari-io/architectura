@@ -14,7 +14,7 @@ from pipeline.core import DefaultPipeline
 from postprocessors.missing_year_imputers import DerivativeMissingYearImputer
 from postprocessors.scope_imputers import ScopeImputerPostprocessor
 from preprocessors.core import IIDPreprocessor
-from scope_estimators.svm import SupportVectorEstimator
+from scope_estimators.svm import FastSupportVectorEstimator, SupportVectorEstimator
 
 
 
@@ -46,7 +46,7 @@ def const_pipeline(const_data_manager: OxariDataManager):
         preprocessor=IIDPreprocessor(),
         feature_reducer=PCAFeatureReducer(),
         imputer=RevenueQuantileBucketImputer(num_buckets=5),
-        scope_estimator=SupportVectorEstimator(n_trials=1, n_startup_trials=1),
+        scope_estimator=FastSupportVectorEstimator(n_trials=1, n_startup_trials=1),
         ci_estimator=BaselineConfidenceEstimator(),
         scope_transformer=LogTargetScaler(),
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.val).fit_confidence(*SPLIT_1.train)

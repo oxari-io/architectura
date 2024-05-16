@@ -28,7 +28,7 @@ if __name__ == "__main__":
     dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
 
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240423_q_model_scope_imputation.pkl', 'rb'))
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_p_model_scope_imputation.pkl', 'rb'))
 
     data_to_impute = DATA.copy()
     data_to_impute = impute_missing_years(data_to_impute)
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         "key_ticker": "text",
         "meta_name": "text",
         "meta_name_before_normalization": "text",
-        "meta_name_before_cross_merge": "text",
+        "meta_name_before_extrapolation": "text",
         "meta_country": "text",
         "meta_country_code": "text",
         "meta_symbol": "text",
@@ -59,7 +59,7 @@ if __name__ == "__main__":
             "key_ticker": 15,
             "meta_name": 10,
             "meta_name_before_normalization": 10,
-            "meta_name_before_cross_merge": 10,
+            "meta_name_before_extrapolation": 10,
             "meta_country": 5,
             "meta_country_code": 5,
             "meta_symbol": 10,
@@ -95,13 +95,13 @@ if __name__ == "__main__":
 
     dateformat = 'T%Y%m%d'
     all_data_features = [
-        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(LocalDestination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(
-        #     LocalDestination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(S3Destination(path="model-data/output")),
-        # CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(S3Destination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(
+            LocalDestination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(S3Destination(path="model-data/output")),
+        CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(S3Destination(path="model-data/output")),
         MongoSaver().set_time(time.strftime(dateformat)
                               ).set_name("p_companies").set_object(df).set_datatarget(MongoDestination(index=keys, path="model-data/output", options=options)),
         MongoSaver().set_time(time.strftime(dateformat)).set_name("p_financials").set_object(df_fin).set_datatarget(

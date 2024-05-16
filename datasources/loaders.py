@@ -73,5 +73,10 @@ class ExchangePrioritizedMetaLoader(PartialLoader):
 
     @property
     def data(self):
-        dt = categorical_name_and_exchange_priority_based_deduplication(self._data, "res/exchange_ranking.json")
-        return dt
+        return self._data_precomputed
+    
+    def load(self, **kwargs) -> Self:
+        super().load(**kwargs)
+        self.logger.info("Deduplicating based on rankend exchanges")
+        self._data_precomputed = categorical_name_and_exchange_priority_based_deduplication(self._data, "res/exchange_ranking.json")
+        return self

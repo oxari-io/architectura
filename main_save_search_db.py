@@ -14,6 +14,7 @@ from base.helper import LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, get_deduplicated_datamanager_configuration, impute_missing_years, impute_scopes
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from datasources.loaders import ExchangePrioritizedMetaLoader, NetZeroIndexLoader, RegionLoader
+from datasources.online import CachingS3Datasource
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from datasources.local import LocalDatasource
 from pymongo import ASCENDING, TEXT
@@ -25,9 +26,21 @@ MODEL_OUTPUT_DIR = pathlib.Path('model-data/output')
 
 if __name__ == "__main__":
     today = time.strftime('%d-%m-%Y')
+
+
+    # Data prepared for saving
+    ld_fin = FinancialLoader(datasource=CachingS3Datasource(path="model-data/input/financials.csv")).load()
+    ld_scp = ScopeLoader(datasource=CachingS3Datasource(path="model-data/input/scopes.csv")).load()
+    ld_cat = ExchangePrioritizedMetaLoader(datasource=CachingS3Datasource(path="model-data/input/categoricals.csv")).load()
+    ld_reg = RegionLoader().load()
+    cmb_ld = EmptyLoader()
+
+    cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
+
+
+    # Get Input Data
     dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-
     model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_p_model_scope_imputation.pkl', 'rb'))
 
     data_to_impute = DATA.copy()
@@ -75,21 +88,10 @@ if __name__ == "__main__":
         "name": "TextIndex"
     }
 
-    # Data prepared for saving
-    ld_fin = FinancialLoader(datasource=LocalDatasource(path="model-data/input/financials.csv")).load()
-    ld_scp = ScopeLoader(datasource=LocalDatasource(path="model-data/input/scopes.csv")).load()
-    ld_cat = ExchangePrioritizedMetaLoader(datasource=LocalDatasource(path="model-data/input/categoricals.csv")).load()
-    ld_reg = RegionLoader().load()
-    cmb_ld = EmptyLoader()
 
-    cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
 
-    df = ld_cat.data
-    # df[df.select_dtypes('object').columns] = df[df.select_dtypes('object').columns].fillna("NA")
-    # df[df.select_dtypes('category').columns] = df[df.select_dtypes('category').columns].astype(str).replace("nan", "NA")
-
+    df = ld_cat.data["key_ticker"].isin(ld_fin.data["key_ticker"].unique().tolist())
     df_fin = ld_fin.data
-
     df_scope_stats = DATA.groupby(['key_year', 'ft_catm_industry_name', 'ft_catm_sector_name', 'ft_catm_country_code', 'ft_catm_region',
                                    'ft_catm_sub_region']).median().reset_index()  #.fillna("NA")
 

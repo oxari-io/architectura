@@ -37,9 +37,9 @@ if __name__ == "__main__":
     cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
 
     # Get Input Data
-    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(0.01)).run()
+    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_q_model_scope_imputation.pkl', 'rb'))
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_p_model_scope_imputation.pkl', 'rb'))
 
     data_to_impute = DATA.copy()
     data_to_impute = impute_missing_years(data_to_impute)
@@ -107,8 +107,8 @@ if __name__ == "__main__":
 
     dateformat = 'T%Y%m%d'
     all_data_features = [
-        CompressedCSVSaver().set_time(time.strftime(dateformat)).set_extension(".tar.gz").set_name("p_combined").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
-        CompressedCSVSaver().set_time(time.strftime(dateformat)).set_extension(".tar.gz").set_name("p_combined").set_object(df).set_datatarget(S3Destination(path="model-data/output")),
+        CompressedCSVSaver().set_time(time.strftime(dateformat)).set_extension(".tar.gz").set_name("p_combined").set_object(df_all).set_datatarget(LocalDestination(path="model-data/output")),
+        CompressedCSVSaver().set_time(time.strftime(dateformat)).set_extension(".tar.gz").set_name("p_combined").set_object(df_all).set_datatarget(S3Destination(path="model-data/output")),
         CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_companies").set_object(df).set_datatarget(LocalDestination(path="model-data/output")),
         CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_financials").set_object(df_fin).set_datatarget(LocalDestination(path="model-data/output")),
         CSVSaver().set_time(time.strftime(dateformat)).set_extension(".csv").set_name("p_scope_stats").set_object(df_scope_stats).set_datatarget(

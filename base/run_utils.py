@@ -57,6 +57,13 @@ def impute_missing_years(data: pd.DataFrame):
     data = my_imputer.transform(data)
     return data
 
+def impute_reported_scope_values(data: pd.DataFrame):
+    print("\n", "Missing Year Imputation")
+    scope_cols = ["tg_numc_scope_1", "tg_numc_scope_2", "tg_numc_scope_3"]
+    scopes = data.groupby(["meta_name", "key_year"])[scope_cols].ffill().bfill()
+    data[scope_cols] = scopes[scope_cols]
+    return data
+
 
 def impute_scopes(model, data):
     print("Impute scopes with Model")

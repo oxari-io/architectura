@@ -1,4 +1,4 @@
-# pip install autoimpute
+
 import time
 
 import pandas as pd
@@ -7,7 +7,7 @@ from base.dataset_loader import CompanyDataFilter
 from base.helper import LogTargetScaler
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
-from imputers import RevenueQuantileBucketImputer, KNNBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
+from imputers import RevenueQuantileBucketImputer, KNNBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource
 from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split

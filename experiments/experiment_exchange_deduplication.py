@@ -1,4 +1,4 @@
-# pip install autoimpute
+
 import time
 from lightgbm import LGBMRegressor
 
@@ -12,7 +12,7 @@ from datasources.loaders import RegionLoader
 from datasources.online import CachingS3Datasource
 from feature_reducers import PCAFeatureReducer
 from feature_reducers.core import DummyFeatureReducer
-from imputers import RevenueQuantileBucketImputer, KNNBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
+from imputers import RevenueQuantileBucketImputer, KNNBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource
 from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split

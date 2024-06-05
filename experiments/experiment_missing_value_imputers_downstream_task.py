@@ -26,7 +26,6 @@ if __name__ == "__main__":
     all_results = []
     dataset = get_small_datamanager_configuration(0.5).run()
     configurations: list[OxariImputer] = [
-        # AutoImputer(),
         OldOxariImputer(verbose=False),
         DummyImputer(),
         MVEImputer(sub_estimator=MVEImputer.Strategy.DT, verbose=True),
@@ -35,7 +34,6 @@ if __name__ == "__main__":
         RevenueQuantileBucketImputer(num_buckets=11),
         TotalAssetsQuantileBucketImputer(num_buckets=11),
         KNNBucketImputer(num_buckets=9),
-        # AutoImputer(AutoImputer.strategies.PMM)
     ]
 
     num_repeats = 10

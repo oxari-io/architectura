@@ -11,8 +11,8 @@ from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.dataset_loader import CompanyDataFilter, EmptyLoader, FinancialLoader, ScopeLoader
 from base.helper import LogTargetScaler
-from base.run_utils import compute_jump_rates, compute_lar, get_deduplicated_datamanager_configuration, impute_missing_years, impute_scopes
-from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
+from base.run_utils import compute_jump_rates, compute_lar, impute_missing_years, impute_scopes
+from base.run_utils import get_default_datamanager_configuration, impute_reported_scope_values
 from datasources.loaders import ExchangePrioritizedMetaLoader, NetZeroIndexLoader, RegionLoader
 from datasources.online import CachingS3Datasource
 from datastores.saver import CSVSaver, CompressedCSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
@@ -37,11 +37,13 @@ if __name__ == "__main__":
     cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
 
     # Get Input Data
-    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
+    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(0.1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
+    data_to_impute = DATA.copy()
+    data_to_impute = impute_reported_scope_values(data_to_impute)
+    
     model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_p_model_scope_imputation.pkl', 'rb'))
 
-    data_to_impute = DATA.copy()
     data_to_impute = impute_missing_years(data_to_impute)
     scope_imputer, df_imputed_data = impute_scopes(model, data_to_impute)
     lar_model, lar_imputed_data = compute_lar(df_imputed_data)
@@ -87,6 +89,8 @@ if __name__ == "__main__":
     }
 
     df = ld_cat.data[ld_cat.data["key_ticker"].isin(ld_fin.data["key_ticker"].unique().tolist())]
+    # df = df.merge(ld_reg.data, left_on='meta_country_code', right_on='ft_catm_country_code', how="left")
+
     df_fin = ld_fin.data
     df_scope_stats = DATA.groupby(['key_year', 'ft_catm_industry_name', 'ft_catm_sector_name', 'ft_catm_country_code', 'ft_catm_region',
                                    'ft_catm_sub_region']).median().reset_index()  #.fillna("NA")

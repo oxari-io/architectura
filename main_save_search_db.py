@@ -37,13 +37,13 @@ if __name__ == "__main__":
     cmb_ld = ld_fin + ld_scp + ld_cat + ld_reg
 
     # Get Input Data
-    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(0.1)).run()
+    dataset = get_default_datamanager_configuration().set_filter(CompanyDataFilter(1)).run()
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     data_to_impute = DATA.copy()
-    data_to_impute = impute_reported_scope_values(data_to_impute)
     
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240508_p_model_scope_imputation.pkl', 'rb'))
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240612_p_model-si_python-3.10.13.pkl', 'rb'))
 
+    data_to_impute = impute_reported_scope_values(data_to_impute)
     data_to_impute = impute_missing_years(data_to_impute)
     scope_imputer, df_imputed_data = impute_scopes(model, data_to_impute)
     lar_model, lar_imputed_data = compute_lar(df_imputed_data)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         "name": "TextIndex"
     }
 
-    df = ld_cat.data[ld_cat.data["key_ticker"].isin(ld_fin.data["key_ticker"].unique().tolist())]
+    df = (ld_cat+ld_reg).data[ld_cat.data["key_ticker"].isin(ld_fin.data["key_ticker"].unique().tolist())]
     # df = df.merge(ld_reg.data, left_on='meta_country_code', right_on='ft_catm_country_code', how="left")
 
     df_fin = ld_fin.data

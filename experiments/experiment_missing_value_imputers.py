@@ -1,4 +1,4 @@
-# pip install autoimpute
+
 import time
 from lightgbm import LGBMRegressor
 
@@ -8,7 +8,7 @@ from base.dataset_loader import CompanyDataFilter, SimpleDataFilter
 from base.helper import LogTargetScaler
 from base.run_utils import get_default_datamanager_configuration, get_remote_datamanager_configuration, get_small_datamanager_configuration
 from feature_reducers import PCAFeatureReducer
-from imputers import RevenueQuantileBucketImputer, KNNBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, AutoImputer, OldOxariImputer, MVEImputer
+from imputers import RevenueQuantileBucketImputer, KNNBucketImputer, KMedianBucketImputer, BaselineImputer, RevenueBucketImputer, OldOxariImputer, MVEImputer
 from datasources import S3Datasource
 from sklearn.preprocessing import minmax_scale
 from sklearn.model_selection import train_test_split
@@ -34,7 +34,6 @@ if __name__ == "__main__":
     difficulties = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     dataset = get_small_datamanager_configuration(0.5).run()
     configurations: list[OxariImputer] = [
-        # AutoImputer(),
         BaselineImputer(),
         DummyImputer(),
         # *[
@@ -60,7 +59,6 @@ if __name__ == "__main__":
         OldOxariImputer(verbose=True),
         # LinearInterpolationImputer(), # Vertical - Not working
         # SplineInterpolationImputer(), # Vertical - Not working
-        # AutoImputer(AutoImputer.strategies.PMM)
     ]
     repeats = range(10)
     with tqdm.tqdm(total=len(repeats) * len(configurations) * len(difficulties)) as pbar:
@@ -77,9 +75,6 @@ if __name__ == "__main__":
             keep_columns_2 = X_train.loc[:, keeping_criterion_2].columns
 
             for imputer in configurations:
-                if (i > 0) and isinstance(imputer, AutoImputer):
-                    # Train this only once
-                    continue
                 imputer_all: OxariImputer = imputer.clone()
                 imputer_1: OxariImputer = imputer.clone()
                 imputer_2: OxariImputer = imputer.clone()

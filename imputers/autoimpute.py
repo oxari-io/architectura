@@ -1,13 +1,12 @@
 import itertools
 from typing import Union
 from typing_extensions import Self
-import kmedoids
 import numpy as np
 import pandas as pd
 from sklearn import cluster
 from sklearn.impute import SimpleImputer, KNNImputer
 from .core import BucketImputerBase
-from autoimpute.imputations import MiceImputer, MultipleImputer
+# from autoimpute.imputations import MiceImputer, MultipleImputer
 from enum import Enum
 
 class AutoImputer(BucketImputerBase):
@@ -28,7 +27,7 @@ class AutoImputer(BucketImputerBase):
     def __init__(self, strategy:strategies=strategies.DEFAULT, **kwargs):
         super().__init__(**kwargs)
         self.strategy = strategy
-        self._estimator = MultipleImputer(strategy=self.strategy.value)
+        # self._estimator = MultipleImputer(strategy=self.strategy.value)
 
 
     def fit(self, X: pd.DataFrame, y=None, **kwargs) -> Self:

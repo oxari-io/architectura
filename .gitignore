@@ -1,3 +1,7 @@
+/test.csv
+__azurite__*.json
+test*.csv
+
 nohup*.out
 
 /**/experiment_optuna_metric.csv

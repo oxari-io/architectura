@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Dict, List
 
 import pandas as pd
 
 from base.constants import DATA_DIR
 from base.dataset_loader import (CategoricalLoader, CompanyDataFilter, Datasource, FinancialLoader, OxariDataManager, PartialLoader, ScopeLoader)
+from datasources.helper.dedup_func import load_exchange_ranking, name_and_exchange_priority_based_deduplication
 from datasources.loaders import RegionLoader
 from datasources.local import LocalDatasource
 from datasources.online import CachingS3Datasource, S3Datasource
@@ -47,6 +50,23 @@ class PreviousScopeFeaturesDataManager(DefaultDataManager):
         return super()._transform(df)
 
 
+class ExchangeBasedDeduplicatedScopeDataManager(DefaultDataManager):
+    def _transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        self.logger.info("Deduplicating scopes based on exchange priority list")
+        self.exch_ranking_path = (Path(__file__).parent / 'misc' / 'exchange_ranking.json').absolute().as_posix()
+        df_ = name_and_exchange_priority_based_deduplication(df, self.exch_ranking_path)
+        return super()._transform(df_)
+
+
+class ExchangeBasedDeduplicatedPreviousScopeFeaturesDataManager(PreviousScopeFeaturesDataManager):
+    def _transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        self.logger.info("Deduplicating scopes based on exchange priority list")
+        self.exch_ranking_path = "res/exchange_ranking.json"
+        df_ = name_and_exchange_priority_based_deduplication(df, self.exch_ranking_path)
+        return super()._transform(df_)
+
+
+
 class CurrentYearFeatureDataManager(DefaultDataManager):
 
     def _transform(self, df: pd.DataFrame):
@@ -60,5 +80,3 @@ class TemporalFeaturesDataManager(PreviousScopeFeaturesDataManager, CurrentYearF
         df = super(PreviousScopeFeaturesDataManager, self)._transform(df)
         df = super(CurrentYearFeatureDataManager, self)._transform(df)
         return super()._transform(df)
-
-

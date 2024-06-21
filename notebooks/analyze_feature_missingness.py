@@ -18,7 +18,6 @@ from base import OxariDataManager
 from datasources.core import DefaultDataManager, PreviousScopeFeaturesDataManager
 from datasources.online import S3Datasource
 from pathlib import Path
-import autoimpute as imp
 import missingno as msno
 import matplotlib.patches as mpatches
 sns.set_palette('viridis')

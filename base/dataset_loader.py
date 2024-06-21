@@ -142,10 +142,12 @@ class EmptyLoader(PartialLoader):
 
 
 class CombinedLoader(PartialLoader):
+    SUFFIXES = (None, "_DROP")
 
     def __init__(self, _data: pd.DataFrame = None, **kwargs) -> None:
         super().__init__(**kwargs)
         self._data = _data
+        self._cols_drop = []
 
     def merge(self, loader_1: PartialLoader = None, loader_2: PartialLoader = None):
         tmp_data: pd.DataFrame = None
@@ -154,16 +156,26 @@ class CombinedLoader(PartialLoader):
         if isinstance(loader_2, SpecialLoader):
             self.logger.info(f"Merging special loader {loader_2.name} to {loader_1.name}")
             special_loader: SpecialLoader = loader_2
-            tmp_data = loader_1.data.merge(special_loader.data, left_on=special_loader.lkeys, right_on=special_loader.rkeys, how="left").sort_values(special_loader.lkeys)
+            tmp_data = loader_1.data.merge(special_loader.data, left_on=special_loader.lkeys, right_on=special_loader.rkeys, how="left", suffixes=self.SUFFIXES).sort_values(special_loader.lkeys)
         if not isinstance(loader_2, SpecialLoader):
             common_keys = list(set(loader_1.keys).intersection(loader_2.keys))
-            tmp_data = loader_1.data.merge(loader_2.data, on=common_keys, how="left").sort_values(common_keys)
+            tmp_data = loader_1.data.merge(loader_2.data, on=common_keys, how="left", suffixes=self.SUFFIXES).sort_values(common_keys)
         self._data = tmp_data
         return self
 
     @property
     def name(self):
         return self._name.strip()
+    
+    # def load(self, **kwargs) -> Self:
+    #     super().load(**kwargs)
+    #     self._cols_all = list(self._data.columns)
+    #     self._cols_drop = self._cols_all[list(self._data.columns.str.endswith(self.SUFFIXES[1]))]
+    #     return self
+    
+    # @property
+    # def data(self) -> pd.DataFrame:
+    #     return self._data.drop(columns=self._cols_drop, errors='ignore')
 
 
 class OldScopeLoader(PartialLoader):
@@ -254,6 +266,8 @@ class CategoricalLoader(PartialLoader):
     @property
     def data(self):
         return self._data[self.columns]
+
+
 
 
 class SplitBag():
@@ -418,10 +432,11 @@ class OxariDataManager(OxariMixin):
         self.col_others = list(_df_original.columns.difference(self.col_targets).difference(self.col_features))
         return self
 
-    #TODO: JUST OVERWRITE THIS ONE
-    def _transform(self, df:pd.DataFrame, **kwargs):
+    def _transform(self, df:pd.DataFrame, **kwargs) -> pd.DataFrame:
         # key_cols = list(df.columns[df.columns.str.startswith('key')])
-        return df.drop_duplicates(['key_ticker', 'key_year']).sort_values(['key_ticker', 'key_year'], ascending=True)
+        df = df.drop_duplicates(['key_ticker', 'key_year']).sort_values(['key_ticker', 'key_year'], ascending=True)
+        df = df.drop(columns=df.filter(regex='_DROP$', axis=1).columns)
+        return df 
 
     def add_data(self, name: str, df: pd.DataFrame, descr: str = "") -> pd.DataFrame:
         self.logger.info(f"Added {name} to {self.__class__.__name__}")

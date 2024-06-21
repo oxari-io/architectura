@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import PowerTransformer
-
+import sys
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
 from base.constants import FEATURE_SET_VIF_UNDER_10
@@ -170,14 +170,15 @@ if __name__ == "__main__":
     create_run_report(STAGE, TODAY, model_si, model_lp)
 
     ## SAVE OBJECTS ###
+    version_info = f"python-{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}" 
 
     all_meta_models = [
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model-si_{version_info}").set_object(model_si).set_datatarget(
             LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model-si_{version_info}").set_object(model_si).set_datatarget(
             S3Destination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_{version_info}").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_{version_info}").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     SavingManager = OxariSavingManager(*all_meta_models, )

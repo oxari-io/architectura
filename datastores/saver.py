@@ -1,6 +1,7 @@
 import io
 import os
 import pathlib
+import tarfile
 
 import cloudpickle as pkl
 from jmespath.ast import index
@@ -285,6 +286,25 @@ class MongoSaver(PartialSaver, abc.ABC):
         # https://stackoverflow.com/a/62691803/4162265
         records = obj.replace([np.nan], [None]).to_dict('records')
         return records
+
+
+class CompressedCSVSaver(PartialSaver, abc.ABC):
+
+    def _convert(self, obj: pd.DataFrame, **kwargs) -> io.BytesIO:
+        if not isinstance(obj, pd.DataFrame):
+            raise Exception(f'Object is not a dataframe but {obj.__class__}')
+        
+        csv_bytes = bytes(obj.to_csv(index=False), "utf-8")
+        csv_io = io.BytesIO(csv_bytes)
+        
+        tar_io = io.BytesIO()
+        with tarfile.open(fileobj=tar_io, mode="w:gz") as tar:
+            tarinfo = tarfile.TarInfo(name="data.csv")
+            tarinfo.size = len(csv_bytes)
+            tar.addfile(tarinfo, fileobj=csv_io)
+        
+        tar_io.seek(0)
+        return tar_io.read()
 
 # class DataSaver(PartialSaver, abc.ABC):
 #     SUB_FOLDER = Path("objects/estimates")

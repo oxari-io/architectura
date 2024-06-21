@@ -12,11 +12,14 @@ import shap
 import io
 import numpy as np
 # %%
+DATA = "T20240422"
+
+# %%
 cwd = pathlib.Path(__file__).parent
 shap_values, X, y = pickle.load(
     io.open(
         cwd.parent /
-        'model-data/output/T20240115_p_model_experiment_feature_impact_explainer.pkl',
+        'model-data/output/T20240505_p_model_experiment_feature_impact_explainer_shap.pkl',
         'rb'))
 
 shap_values
@@ -24,7 +27,7 @@ shap_values
 
 # %%
 ax = plt.gca()
-shap.summary_plot(shap_values, X, show=True, max_display=30, ax=ax)
+shap.summary_plot(shap_values, X, show=True, max_display=30)
 # %%
 ranked = pd.DataFrame(shap_values.abs.values.sum(0),
                       columns=["shap-value"],
@@ -47,7 +50,7 @@ shap.plots.scatter(shap_values[:, 'ft_numc_revenue'],
 # %%
 # # Here only 1000 observations are visualized, because this plot is quite heavy
 # # and can crash your Jupyter Notebook
-# shap.plots.force(shap_values[:100])
+shap.plots.force(shap_values[:50])
 # %%
 shap.plots.waterfall(shap_values[0])
 # %%
@@ -58,13 +61,13 @@ shap.plots.waterfall(shap_values[2])
 shap.plots.bar(shap_values, max_display=50)
 
 # %%
-# shap.plots.heatmap(shap_values)
+shap.plots.heatmap(shap_values)
 
 # %%
 pd_importance, X, y = pickle.load(
     io.open(
         cwd.parent /
-        'model-data/output/T20240115_p_model_experiment_feature_impact_explainer_pd.pkl',
+        'model-data/output/T20240501_p_model_experiment_feature_impact_explainer_pd.pkl',
         'rb'))
 pd_importance
 # %%
@@ -94,14 +97,14 @@ plt.show()
 # %%
 fig, ax = plt.subplots(1, 1, figsize=(10, 100))
 plot_pd(pd_importance, features=feature_indices, ax=ax, sharey=None)
-
+plt.show()
 # %%
 # %%
 cwd = pathlib.Path(__file__).parent
 permut_values, X, y = pickle.load(
     io.open(
         cwd.parent /
-        'model-data/output/T20240115_p_model_experiment_feature_impact_explainer_permut.pkl',
+        'model-data/output/T20240502_p_model_experiment_feature_impact_explainer_permut.pkl',
         'rb'))
 
 # Some plots explained https://towardsdatascience.com/introduction-to-shap-with-python-d27edc23c454
@@ -115,7 +118,7 @@ cwd = pathlib.Path(__file__).parent
 ale_values, X, y = pickle.load(
     io.open(
         cwd.parent /
-        'model-data/output/T20240114_p_model_experiment_feature_impact_explainer_ale_bkp.pkl',
+        'model-data/output/T20240429_p_model_experiment_feature_impact_explainer_ale.pkl',
         'rb'))
 
 # Some plots explained https://towardsdatascience.com/introduction-to-shap-with-python-d27edc23c454
@@ -149,15 +152,15 @@ plt.show()
 
 # %%
 # %%
-pdv_importance, X, y = pickle.load(
-    io.open(
-        cwd.parent /
-        'model-data/output/T20240116_p_model_experiment_feature_impact_explainer_pdv.pkl',
-        'rb'))
-pdv_importance
-# %%
-fig, ax = plt.subplots(1, 1, figsize=(10, 20))
-plot_pd_variance(pdv_importance, ax=ax)
+# pdv_importance, X, y = pickle.load(
+#     io.open(
+#         cwd.parent /
+#         'model-data/output/T20240116_p_model_experiment_feature_impact_explainer_pdv.pkl',
+#         'rb'))
+# pdv_importance
+# # %%
+# fig, ax = plt.subplots(1, 1, figsize=(10, 20))
+# plot_pd_variance(pdv_importance, ax=ax)
 
 # TODO: Compare different XGB model
 # TODO: Compare different FastSVR with SVR model

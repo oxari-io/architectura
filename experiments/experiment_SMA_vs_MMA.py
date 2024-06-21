@@ -13,6 +13,7 @@ from scope_estimators import (MiniModelArmyEstimator, UnderfittedClsMiniModelArm
 from experiments.experiment_argument_parser import ClassifierPerformanceExperimentCommandLineParser
 from scope_estimators.mini_model_army import MajorityClsMiniModelArmyEstimator, RandomGuessClsMiniModelArmyEstimator
 from scope_estimators.sector_model_army import DirectSectorModelArmyEstimator, SectorModelArmyEstimator
+from scope_estimators.industry_model_army import IndustryModelArmyEstimator
 
 if __name__ == "__main__":
     parser = ClassifierPerformanceExperimentCommandLineParser(
@@ -33,6 +34,7 @@ if __name__ == "__main__":
         configurations = [
             DirectSectorModelArmyEstimator(),
             SectorModelArmyEstimator(),
+            IndustryModelArmyEstimator(),
             MiniModelArmyEstimator()
         ]
           # run() calls _transform()

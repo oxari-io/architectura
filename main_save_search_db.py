@@ -41,7 +41,7 @@ if __name__ == "__main__":
     DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
     data_to_impute = DATA.copy()
     
-    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240612_p_model-si_python-3.10.13.pkl', 'rb'))
+    model = pkl.load(io.open(MODEL_OUTPUT_DIR / 'T20240614_p_model-si_python-3.10.13.pkl', 'rb'))
 
     data_to_impute = impute_reported_scope_values(data_to_impute)
     data_to_impute = impute_missing_years(data_to_impute)

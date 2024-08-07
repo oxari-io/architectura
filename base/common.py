@@ -868,7 +868,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
             return df.copy()
         
         if len(missing_features):
-            self.logger.warning(f"Features {list(missing_features)} were missing in the input. They are filled with 'None'. ")
+            self.logger.warning(f"{len(missing_features)}/{len(feature_names)} Features {list(missing_features)} were missing in the input. They are filled with 'None'. ")
 
             
         # Create a new DataFrame with the same index and the missing feature columns filled with None
@@ -887,10 +887,11 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         # Find the missing feature columns
         additional_features = set(df.columns) - set(feature_names) 
         if not len(additional_features):
+            self.logger.info('No unseen features found.')
             return df.copy()
         
         if len(additional_features):
-            self.logger.warning(f"Features {list(additional_features)} were never seen during training. They are removed. ")
+            self.logger.warning(f"{len(additional_features} Features {list(additional_features)} were never seen during training. They are removed. ")
 
             
         

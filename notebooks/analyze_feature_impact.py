@@ -58,7 +58,7 @@ shap.plots.waterfall(shap_values[1])
 # %%
 shap.plots.waterfall(shap_values[2])
 # %%
-shap.plots.bar(shap_values, max_display=50)
+shap.plots.bar(shap_values, max_display=160)
 
 # %%
 shap.plots.heatmap(shap_values)

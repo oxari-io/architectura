@@ -1,0 +1,838 @@
+,0,1,2,0,1,2
+scope,scope_1,scope_2,scope_3,scope_1,scope_2,scope_3
+imputer,DummyImputer,DummyImputer,DummyImputer,DummyImputer,DummyImputer,DummyImputer
+fin_transformer,ArcSinhScaler,ArcSinhScaler,ArcSinhScaler,ArcSinhScaler,ArcSinhScaler,ArcSinhScaler
+cat_transformer,TargetEncoder,TargetEncoder,TargetEncoder,TargetEncoder,TargetEncoder,TargetEncoder
+scope_transformer,LogTargetScaler,LogTargetScaler,LogTargetScaler,LogTargetScaler,LogTargetScaler,LogTargetScaler
+preprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor
+feature_selector,DummyFeatureReducer,DummyFeatureReducer,DummyFeatureReducer,SelectionFeatureReducer,SelectionFeatureReducer,SelectionFeatureReducer
+scope_estimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator
+pipeline,DefaultPipeline,DefaultPipeline,DefaultPipeline,DefaultPipeline,DefaultPipeline,DefaultPipeline
+stats.optimise.time,3282.2510120868683,5034.416213512421,4196.414469957352,2851.883720397949,2865.3014419078827,2510.83927154541
+stats.optimise.num_datapoints,32745,32061,20684,32745,32061,20684
+stats.fit.time,2311.5323526859283,2376.739222049713,1730.348358631134,636.3608031272888,565.906576871872,367.87411165237427
+stats.fit.num_datapoints,32745,32061,20684,32745,32061,20684
+stats.fit_confidence.time,44.296438217163086,46.65906000137329,27.824056386947632,39.315489530563354,38.33569359779358,25.42694115638733
+stats.fit_confidence.num_datapoints,32745,32061,20684,32745,32061,20684
+raw.evaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator
+raw.sMAPE,0.14211129304933368,0.12280102385244769,0.15491193767694655,0.20758545202170228,0.18316380550957573,0.20891611508362515
+raw.R2,0.7328183332822731,0.11510769761871009,0.6118520941894278,0.7167560534401354,0.7646146798420626,0.22848535732805753
+raw.MAE,1188.5329171414487,1547.5307009022272,4902.2326201783,1433.6185863183346,1920.947931127097,5302.884831821779
+raw.RMSE,175309190.99111378,4403894860.079363,743283053.3615915,180542905.47810426,1244998.3551358385,1140277746.48892
+raw.MAPE,224.3698864932555,2.4822647494383134,228.55186774138915,586.5941153669066,9.766671147305388,3525.2725642617334
+raw.offset_percentile.50%,1.0294209104242609,1.0208472569312974,1.0268487372745903,1.0355025262394786,1.027454499320576,1.0318524409328766
+raw.offset_percentile.75%,1.1049197042875911,1.0738231339998043,1.1044482101410855,1.1550324871856172,1.1222010524935535,1.1572463843506002
+raw.offset_percentile.90%,1.363101256779442,1.2889516122772038,1.3946630249496281,1.842503587549284,1.6510361413049728,1.873391317389695
+raw.offset_percentile.95%,2.1699238048127034,2.030956218409283,2.9214914527655296,6.917593730023126,4.88120779538116,7.221127174404187
+raw.confidence_rating.<10.0%,7593,7984,4799,6965,7192,4397
+raw.confidence_rating.10-20%,1065,759,644,1075,970,664
+raw.confidence_rating.20-50%,744,548,451,888,719,565
+raw.confidence_rating.50-100%,272,222,172,349,293,220
+raw.confidence_rating.100-200%,140,141,78,225,221,160
+raw.confidence_rating.>200.0%,419,366,320,731,625,458
+raw.confidence_rating_detailed.0.left,0.0,0.0,0.0,0.0,0.0,0.0
+raw.confidence_rating_detailed.0.right,10.0,10.0,10.0,10.0,10.0,10.0
+raw.confidence_rating_detailed.0.cnt,7593,7984,4799,6965,7192,4397
+raw.confidence_rating_detailed.1.left,10.0,10.0,10.0,10.0,10.0,10.0
+raw.confidence_rating_detailed.1.right,20.0,20.0,20.0,20.0,20.0,20.0
+raw.confidence_rating_detailed.1.cnt,1065,759,644,1075,970,664
+raw.confidence_rating_detailed.2.left,20.0,20.0,20.0,20.0,20.0,20.0
+raw.confidence_rating_detailed.2.right,50.0,50.0,50.0,50.0,50.0,50.0
+raw.confidence_rating_detailed.2.cnt,744,548,451,888,719,565
+raw.confidence_rating_detailed.3.left,50.0,50.0,50.0,50.0,50.0,50.0
+raw.confidence_rating_detailed.3.right,100.0,100.0,100.0,100.0,100.0,100.0
+raw.confidence_rating_detailed.3.cnt,272,222,172,349,293,220
+raw.confidence_rating_detailed.4.left,100.0,100.0,100.0,100.0,100.0,100.0
+raw.confidence_rating_detailed.4.right,200.0,200.0,200.0,200.0,200.0,200.0
+raw.confidence_rating_detailed.4.cnt,140,141,78,225,221,160
+raw.confidence_rating_detailed.5.left,200.0,200.0,200.0,200.0,200.0,200.0
+raw.confidence_rating_detailed.5.right,inf,inf,inf,inf,inf,inf
+raw.confidence_rating_detailed.5.cnt,419,366,320,731,625,458
+test.n_buckets,10,10,10,10,10,10
+test.classifier.evaluator,BucketClassifierEvauator,BucketClassifierEvauator,BucketClassifierEvauator,BucketClassifierEvauator,BucketClassifierEvauator,BucketClassifierEvauator
+test.classifier.balanced_accuracy,0.9481948566197088,0.9396809682187423,0.947541206830706,0.9152342895380926,0.9092024194181851,0.9201962673168902
+test.classifier.balanced_precision,0.948316580575825,0.9399046277763572,0.9478684072428262,0.9155995989947581,0.9095911586031432,0.9207754497601026
+test.classifier.balanced_recall,0.9481090589270009,0.9398203592814371,0.9477103960396039,0.9153718362161634,0.9092814371257485,0.9203279702970297
+test.classifier.balanced_f1,0.9481482701606114,0.9398108154599695,0.947692986116523,0.9153682643051924,0.9093280975523765,0.9204559242660062
+test.classifier.adj_lenient_acc,0.9750806215186162,0.9712574850299401,0.968440594059406,0.9506498583015733,0.9476047904191617,0.9535891089108911
+test.classifier.adj_strict_acc,0.9680445617121078,0.9661676646706587,0.963180693069307,0.9402912146975472,0.939620758483034,0.9443069306930693
+test.regressor.evaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator
+test.regressor.sMAPE,0.013189124312727882,0.008984420242142587,0.01331969517723991,0.017593983542862228,0.012417656211095722,0.014419397607149309
+test.regressor.R2,0.9960416838169895,0.9939192418855952,0.9945928542702921,0.9930473272989573,0.9894130862687132,0.994492847861045
+test.regressor.MAE,0.02855104942478448,0.020135316351558075,0.02616678764164515,0.033030681673377416,0.025682855076139433,0.029767421423706253
+test.regressor.RMSE,0.2086251296991155,0.1962125935440042,0.2726735074831463,0.2816480163886856,0.260088193648278,0.2777964921205404
+test.regressor.MAPE,0.02300013256752444,0.009292097639705427,0.014912875292051885,0.06785823572735142,0.014708686218738097,0.02289213263945354
+test.regressor.offset_percentile.50%,1.002671005580957,1.0017684337409216,1.0021186565555689,1.0031419629375058,1.0023095911253206,1.0024994334793345
+test.regressor.offset_percentile.75%,1.0091022402235983,1.0061550674990007,1.0084070041448192,1.0118192945986024,1.008884358474238,1.0112955116986548
+test.regressor.offset_percentile.90%,1.0246059892374888,1.0175387869731154,1.02538046990987,1.0310449452624735,1.0229705004120861,1.0312468883812471
+test.regressor.offset_percentile.95%,1.0445516888328499,1.0317375472191643,1.0512441866744873,1.0598876662928873,1.044880837683047,1.0569132674381314
+test.regressor.confidence_rating.<10.0%,10028,9868,6308,9906,9802,6296
+test.regressor.confidence_rating.10-20%,100,75,88,165,121,96
+test.regressor.confidence_rating.20-50%,72,63,38,110,70,51
+test.regressor.confidence_rating.50-100%,18,10,20,28,16,16
+test.regressor.confidence_rating.100-200%,7,4,9,11,2,4
+test.regressor.confidence_rating.>200.0%,8,0,1,13,9,1
+test.regressor.confidence_rating_detailed.0.left,0.0,0.0,0.0,0.0,0.0,0.0
+test.regressor.confidence_rating_detailed.0.right,10.0,10.0,10.0,10.0,10.0,10.0
+test.regressor.confidence_rating_detailed.0.cnt,10028,9868,6308,9906,9802,6296
+test.regressor.confidence_rating_detailed.1.left,10.0,10.0,10.0,10.0,10.0,10.0
+test.regressor.confidence_rating_detailed.1.right,20.0,20.0,20.0,20.0,20.0,20.0
+test.regressor.confidence_rating_detailed.1.cnt,100,75,88,165,121,96
+test.regressor.confidence_rating_detailed.2.left,20.0,20.0,20.0,20.0,20.0,20.0
+test.regressor.confidence_rating_detailed.2.right,50.0,50.0,50.0,50.0,50.0,50.0
+test.regressor.confidence_rating_detailed.2.cnt,72,63,38,110,70,51
+test.regressor.confidence_rating_detailed.3.left,50.0,50.0,50.0,50.0,50.0,50.0
+test.regressor.confidence_rating_detailed.3.right,100.0,100.0,100.0,100.0,100.0,100.0
+test.regressor.confidence_rating_detailed.3.cnt,18,10,20,28,16,16
+test.regressor.confidence_rating_detailed.4.left,100.0,100.0,100.0,100.0,100.0,100.0
+test.regressor.confidence_rating_detailed.4.right,200.0,200.0,200.0,200.0,200.0,200.0
+test.regressor.confidence_rating_detailed.4.cnt,7,4,9,11,2,4
+test.regressor.confidence_rating_detailed.5.left,200.0,200.0,200.0,200.0,200.0,200.0
+test.regressor.confidence_rating_detailed.5.right,inf,inf,inf,inf,inf,inf
+test.regressor.confidence_rating_detailed.5.cnt,8,0,1,13,9,1
+test.evaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator
+test.sMAPE,0.02563976865636968,0.018245382932545896,0.027189217520888095,0.039400180344212804,0.0303163473235311,0.03620262707926727
+test.R2,0.9385836879662197,0.9313264178975815,0.9280064537426308,0.8883963491210716,0.8558427145013769,0.8826579213236858
+test.MAE,0.028851188874501332,0.020632346048464534,0.026479771534196672,0.034739471064455074,0.027072970387236772,0.03134250967805219
+test.RMSE,0.8217756069046261,0.6593907719692261,0.9949601588400792,1.1284179999044965,0.9597414443647068,1.2823013777030765
+test.MAPE,0.03733022310039018,0.018810623167408034,0.03132296754501177,0.11644573194079522,0.0333240818348594,0.045799599184313616
+test.offset_percentile.50%,1.002697908622871,1.0018128991399924,1.0021459809672342,1.0032810187372565,1.0024414911360324,1.0026301202150136
+test.offset_percentile.75%,1.0096781690454935,1.0066921069578776,1.0090398922074915,1.0140851038662102,1.0107262204147696,1.0135128048512625
+test.offset_percentile.90%,1.0347543971364235,1.0281067868591143,1.0390408155190036,1.0809098943937856,1.0593151311656508,1.0728034803048143
+test.offset_percentile.95%,1.1094880098419435,1.0830099474247565,1.1438225942928328,1.2595487613658758,1.1818686565591785,1.2381953187498607
+test.confidence_rating.<10.0%,9696,9573,6066,9306,9266,5917
+test.confidence_rating.10-20%,175,186,144,314,272,191
+test.confidence_rating.20-50%,198,173,133,347,296,192
+test.confidence_rating.50-100%,97,65,82,155,121,102
+test.confidence_rating.100-200%,50,21,29,85,52,55
+test.confidence_rating.>200.0%,17,2,10,26,13,7
+test.confidence_rating_detailed.0.left,0.0,0.0,0.0,0.0,0.0,0.0
+test.confidence_rating_detailed.0.right,10.0,10.0,10.0,10.0,10.0,10.0
+test.confidence_rating_detailed.0.cnt,9696,9573,6066,9306,9266,5917
+test.confidence_rating_detailed.1.left,10.0,10.0,10.0,10.0,10.0,10.0
+test.confidence_rating_detailed.1.right,20.0,20.0,20.0,20.0,20.0,20.0
+test.confidence_rating_detailed.1.cnt,175,186,144,314,272,191
+test.confidence_rating_detailed.2.left,20.0,20.0,20.0,20.0,20.0,20.0
+test.confidence_rating_detailed.2.right,50.0,50.0,50.0,50.0,50.0,50.0
+test.confidence_rating_detailed.2.cnt,198,173,133,347,296,192
+test.confidence_rating_detailed.3.left,50.0,50.0,50.0,50.0,50.0,50.0
+test.confidence_rating_detailed.3.right,100.0,100.0,100.0,100.0,100.0,100.0
+test.confidence_rating_detailed.3.cnt,97,65,82,155,121,102
+test.confidence_rating_detailed.4.left,100.0,100.0,100.0,100.0,100.0,100.0
+test.confidence_rating_detailed.4.right,200.0,200.0,200.0,200.0,200.0,200.0
+test.confidence_rating_detailed.4.cnt,50,21,29,85,52,55
+test.confidence_rating_detailed.5.left,200.0,200.0,200.0,200.0,200.0,200.0
+test.confidence_rating_detailed.5.right,inf,inf,inf,inf,inf,inf
+test.confidence_rating_detailed.5.cnt,17,2,10,26,13,7
+train.n_buckets,10,10,10,10,10,10
+train.classifier.evaluator,BucketClassifierEvauator,BucketClassifierEvauator,BucketClassifierEvauator,BucketClassifierEvauator,BucketClassifierEvauator,BucketClassifierEvauator
+train.classifier.balanced_accuracy,0.9890333937479422,0.9880357182110524,0.9902523481291212,0.9739052046038574,0.9732910398983646,0.9769643201899878
+train.classifier.balanced_precision,0.9890417700024451,0.9880548997282778,0.9902625269820953,0.9740277329412124,0.9734749995190105,0.9770554794756925
+train.classifier.balanced_recall,0.9890305873155477,0.9880480075853981,0.9902533359118159,0.9739079448841982,0.9733013948149811,0.9769483658866757
+train.classifier.balanced_f1,0.9890328472124265,0.9880499328473454,0.9902539117672348,0.9739165621716309,0.9733314162588033,0.9769721312737424
+train.classifier.adj_lenient_acc,0.9949916935405062,0.993786960101804,0.9945465093792303,0.9848284960422163,0.9828829503206328,0.9854573583446142
+train.classifier.adj_strict_acc,0.9933059708785302,0.9924146018913591,0.9932701605105395,0.9816524968240008,0.9802629937370562,0.9830593695610134
+train.regressor.evaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator
+train.regressor.sMAPE,0.006964292232746636,0.004383540639893061,0.006087555705132861,0.00967136245924375,0.006637539019726763,0.008653270760699952
+train.regressor.R2,0.9985151070971467,0.9980795200182266,0.9986062022528376,0.9973646458035174,0.9963194617057434,0.9978342040209972
+train.regressor.MAE,0.010005675272651615,0.007682094552203367,0.009348640419597487,0.014338809556928567,0.011669103918526602,0.012434216031088852
+train.regressor.RMSE,0.12851282787649404,0.11046746646100777,0.1386869668692204,0.17040582031802948,0.1527514197396043,0.1724673380759516
+train.regressor.MAPE,0.012656026520660037,0.004899721140666884,0.007473153098538288,0.021355804204496318,0.007364237261957345,0.011502132897508737
+train.regressor.offset_percentile.50%,1.000919728224311,1.0006829977076814,1.0007625145035923,1.0013555002378831,1.0010759698197884,1.001053222484342
+train.regressor.offset_percentile.75%,1.0034427470424203,1.002504648042738,1.003055908111437,1.0062127684329798,1.0044269642257535,1.0055031508710104
+train.regressor.offset_percentile.90%,1.010901449528752,1.0075713700356976,1.0102533129885338,1.016623473729959,1.0120671817104776,1.0159201425486977
+train.regressor.offset_percentile.95%,1.0208804782893994,1.0147560074467123,1.0199355982389078,1.031250330958201,1.0227384248875093,1.0300099652456183
+train.regressor.confidence_rating.<10.0%,40546,39849,25635,40307,39682,25489
+train.regressor.confidence_rating.10-20%,195,124,111,359,229,192
+train.regressor.confidence_rating.20-50%,114,79,67,173,131,122
+train.regressor.confidence_rating.50-100%,29,16,18,37,19,32
+train.regressor.confidence_rating.100-200%,19,4,19,31,6,15
+train.regressor.confidence_rating.>200.0%,29,5,5,25,10,5
+train.regressor.confidence_rating_detailed.0.left,0.0,0.0,0.0,0.0,0.0,0.0
+train.regressor.confidence_rating_detailed.0.right,10.0,10.0,10.0,10.0,10.0,10.0
+train.regressor.confidence_rating_detailed.0.cnt,40546,39849,25635,40307,39682,25489
+train.regressor.confidence_rating_detailed.1.left,10.0,10.0,10.0,10.0,10.0,10.0
+train.regressor.confidence_rating_detailed.1.right,20.0,20.0,20.0,20.0,20.0,20.0
+train.regressor.confidence_rating_detailed.1.cnt,195,124,111,359,229,192
+train.regressor.confidence_rating_detailed.2.left,20.0,20.0,20.0,20.0,20.0,20.0
+train.regressor.confidence_rating_detailed.2.right,50.0,50.0,50.0,50.0,50.0,50.0
+train.regressor.confidence_rating_detailed.2.cnt,114,79,67,173,131,122
+train.regressor.confidence_rating_detailed.3.left,50.0,50.0,50.0,50.0,50.0,50.0
+train.regressor.confidence_rating_detailed.3.right,100.0,100.0,100.0,100.0,100.0,100.0
+train.regressor.confidence_rating_detailed.3.cnt,29,16,18,37,19,32
+train.regressor.confidence_rating_detailed.4.left,100.0,100.0,100.0,100.0,100.0,100.0
+train.regressor.confidence_rating_detailed.4.right,200.0,200.0,200.0,200.0,200.0,200.0
+train.regressor.confidence_rating_detailed.4.cnt,19,4,19,31,6,15
+train.regressor.confidence_rating_detailed.5.left,200.0,200.0,200.0,200.0,200.0,200.0
+train.regressor.confidence_rating_detailed.5.right,inf,inf,inf,inf,inf,inf
+train.regressor.confidence_rating_detailed.5.cnt,29,5,5,25,10,5
+train.evaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator,DefaultRegressorEvaluator
+train.sMAPE,0.009581541769820344,0.006431472620080647,0.008385725056507427,0.01632454816691586,0.013121541361280383,0.01494878980661328
+train.R2,0.9860056916370042,0.9834010898018742,0.9885736647115105,0.9675360469992311,0.948815695600453,0.968955654123128
+train.MAE,0.010021776852473963,0.007689097286160518,0.009351935615681484,0.014478330107643878,0.011773108243614772,0.012547194358266012
+train.RMSE,0.39452509590751056,0.32476505234351394,0.3970902766071384,0.5980887425439162,0.5696367341582241,0.6529641618526857
+train.MAPE,0.015699402853598814,0.0070934634345734444,0.0097478974415769,0.0284892351430837,0.013672857880358118,0.017950283876756352
+train.offset_percentile.50%,1.0009210053633526,1.0006841092966419,1.0007629521978725,1.0013753773359326,1.001082408814249,1.001068910420293
+train.offset_percentile.75%,1.0034648493088318,1.002523231794641,1.0030645793329065,1.0064842738045598,1.0045750079573779,1.0056843457186468
+train.offset_percentile.90%,1.0112120781389156,1.0078031396610427,1.0104679343659702,1.0193230428727158,1.0140946995620208,1.0178756994765457
+train.offset_percentile.95%,1.0233965935976401,1.0168959364471373,1.0221071095458831,1.0523615384227,1.0373840741612659,1.0487411347747804
+train.confidence_rating.<10.0%,40282,39589,25452,39534,38951,25039
+train.confidence_rating.10-20%,257,215,166,571,434,288
+train.confidence_rating.20-50%,214,186,135,475,392,311
+train.confidence_rating.50-100%,84,53,62,196,209,154
+train.confidence_rating.100-200%,55,26,34,115,77,54
+train.confidence_rating.>200.0%,40,8,6,41,14,9
+train.confidence_rating_detailed.0.left,0.0,0.0,0.0,0.0,0.0,0.0
+train.confidence_rating_detailed.0.right,10.0,10.0,10.0,10.0,10.0,10.0
+train.confidence_rating_detailed.0.cnt,40282,39589,25452,39534,38951,25039
+train.confidence_rating_detailed.1.left,10.0,10.0,10.0,10.0,10.0,10.0
+train.confidence_rating_detailed.1.right,20.0,20.0,20.0,20.0,20.0,20.0
+train.confidence_rating_detailed.1.cnt,257,215,166,571,434,288
+train.confidence_rating_detailed.2.left,20.0,20.0,20.0,20.0,20.0,20.0
+train.confidence_rating_detailed.2.right,50.0,50.0,50.0,50.0,50.0,50.0
+train.confidence_rating_detailed.2.cnt,214,186,135,475,392,311
+train.confidence_rating_detailed.3.left,50.0,50.0,50.0,50.0,50.0,50.0
+train.confidence_rating_detailed.3.right,100.0,100.0,100.0,100.0,100.0,100.0
+train.confidence_rating_detailed.3.cnt,84,53,62,196,209,154
+train.confidence_rating_detailed.4.left,100.0,100.0,100.0,100.0,100.0,100.0
+train.confidence_rating_detailed.4.right,200.0,200.0,200.0,200.0,200.0,200.0
+train.confidence_rating_detailed.4.cnt,55,26,34,115,77,54
+train.confidence_rating_detailed.5.left,200.0,200.0,200.0,200.0,200.0,200.0
+train.confidence_rating_detailed.5.right,inf,inf,inf,inf,inf,inf
+train.confidence_rating_detailed.5.cnt,40,8,6,41,14,9
+optimal_params.cls.max_depth,12,18,9,12,15,21
+optimal_params.cls.colsample_bytree,0.6,0.9,0.7,0.5,0.7,0.7
+optimal_params.cls.min_child_weight,0.0011746863745536703,0.2719861207278538,0.001531663802686619,0.13963820515460948,0.001962427778070747,0.0011960120377973614
+optimal_params.cls.subsample,0.8,0.8,0.7,0.7,0.6,0.7
+optimal_params.cls.learning_rate,0.23489402592177258,0.18164872637473845,0.24349137728468542,0.11233059531989235,0.23452495869384835,0.20945004328824754
+optimal_params.cls.n_estimators,400,400,500,500,400,400
+optimal_params.rgs.candidates.0.RFR.best_params.n_estimators,300,300,300,100,300,200
+optimal_params.rgs.candidates.0.RFR.best_params.max_features,0.6000000000000001,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+optimal_params.rgs.candidates.0.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.0.RFR.best_params.criterion,poisson,friedman_mse,squared_error,poisson,poisson,friedman_mse
+optimal_params.rgs.candidates.0.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.0.LGB.best_params.max_depth,15,12,12,12,21,15
+optimal_params.rgs.candidates.0.LGB.best_params.colsample_bytree,0.5,0.8,0.7,0.8,0.9,0.6
+optimal_params.rgs.candidates.0.LGB.best_params.min_child_weight,0.007697087971250206,0.002583830814083736,0.02148549753011603,0.0064533157145797,0.7653565288741175,0.8307475945982001
+optimal_params.rgs.candidates.0.LGB.best_params.subsample,0.8,0.7,0.7,0.7,0.8,0.8
+optimal_params.rgs.candidates.0.LGB.best_params.learning_rate,0.13209010437992133,0.17583775019219222,0.0817319130484774,0.2799211063857286,0.29243723117779075,0.21978713261152422
+optimal_params.rgs.candidates.0.LGB.best_params.n_estimators,300,300,300,300,300,300
+optimal_params.rgs.candidates.0.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.0.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.0.KNN.best_params.p,1,1,1,1,1,1
+optimal_params.rgs.candidates.0.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.0.EXF.best_params.n_estimators,200,100,100,200,200,300
+optimal_params.rgs.candidates.0.EXF.best_params.max_features,0.8,0.8,0.4,0.8,0.8,0.6000000000000001
+optimal_params.rgs.candidates.0.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.0.EXF.best_params.criterion,squared_error,friedman_mse,friedman_mse,poisson,squared_error,poisson
+optimal_params.rgs.candidates.0.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.1.RFR.best_params.n_estimators,200,500,300,400,400,100
+optimal_params.rgs.candidates.1.RFR.best_params.max_features,0.2,0.6000000000000001,0.4,0.8,0.8,0.6000000000000001
+optimal_params.rgs.candidates.1.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.1.RFR.best_params.criterion,squared_error,friedman_mse,poisson,poisson,squared_error,friedman_mse
+optimal_params.rgs.candidates.1.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.1.LGB.best_params.max_depth,15,18,18,21,21,18
+optimal_params.rgs.candidates.1.LGB.best_params.colsample_bytree,0.9,0.5,0.8,0.8,0.7,0.9
+optimal_params.rgs.candidates.1.LGB.best_params.min_child_weight,0.01037326562785649,0.83860703851038,1.2863874820537204,4.885163835702793,0.42906690999553526,0.013511187427833896
+optimal_params.rgs.candidates.1.LGB.best_params.subsample,0.6,0.6,0.9,0.7,0.8,0.7
+optimal_params.rgs.candidates.1.LGB.best_params.learning_rate,0.15641365815608244,0.15695586180753784,0.1105297240463716,0.2965822119054231,0.2940427531105257,0.2846860781634891
+optimal_params.rgs.candidates.1.LGB.best_params.n_estimators,300,300,300,300,300,200
+optimal_params.rgs.candidates.1.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.1.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.1.KNN.best_params.p,1,1,1,1,1,1
+optimal_params.rgs.candidates.1.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.1.EXF.best_params.n_estimators,300,200,100,200,100,300
+optimal_params.rgs.candidates.1.EXF.best_params.max_features,0.4,0.6000000000000001,0.6000000000000001,0.8,0.8,0.8
+optimal_params.rgs.candidates.1.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.1.EXF.best_params.criterion,friedman_mse,poisson,poisson,poisson,friedman_mse,friedman_mse
+optimal_params.rgs.candidates.1.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.2.RFR.best_params.n_estimators,200,200,400,300,200,300
+optimal_params.rgs.candidates.2.RFR.best_params.max_features,0.4,0.8,0.6000000000000001,0.8,0.4,0.8
+optimal_params.rgs.candidates.2.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.2.RFR.best_params.criterion,poisson,squared_error,squared_error,friedman_mse,friedman_mse,friedman_mse
+optimal_params.rgs.candidates.2.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.2.LGB.best_params.max_depth,15,15,15,21,15,15
+optimal_params.rgs.candidates.2.LGB.best_params.colsample_bytree,0.7,0.5,0.5,0.9,0.8,0.9
+optimal_params.rgs.candidates.2.LGB.best_params.min_child_weight,0.0013731309755749164,0.010413026693855552,0.008431475002093729,0.045441183494693685,0.00955415693588745,0.8990889503805086
+optimal_params.rgs.candidates.2.LGB.best_params.subsample,0.8,0.5,0.5,0.7,0.7,0.7
+optimal_params.rgs.candidates.2.LGB.best_params.learning_rate,0.20899259667396608,0.16960739700461544,0.05586139834615301,0.2971093378551883,0.2891312371456126,0.2894413176997896
+optimal_params.rgs.candidates.2.LGB.best_params.n_estimators,200,300,300,300,300,300
+optimal_params.rgs.candidates.2.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.2.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.2.KNN.best_params.p,2,1,1,1,1,1
+optimal_params.rgs.candidates.2.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.2.EXF.best_params.n_estimators,300,200,100,200,200,100
+optimal_params.rgs.candidates.2.EXF.best_params.max_features,0.6000000000000001,0.6000000000000001,0.4,0.8,0.4,0.6000000000000001
+optimal_params.rgs.candidates.2.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.2.EXF.best_params.criterion,friedman_mse,squared_error,poisson,poisson,squared_error,poisson
+optimal_params.rgs.candidates.2.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.3.RFR.best_params.n_estimators,300,400,100,300,500,100
+optimal_params.rgs.candidates.3.RFR.best_params.max_features,0.6000000000000001,0.2,0.6000000000000001,0.8,0.6000000000000001,0.6000000000000001
+optimal_params.rgs.candidates.3.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.3.RFR.best_params.criterion,friedman_mse,squared_error,squared_error,friedman_mse,squared_error,poisson
+optimal_params.rgs.candidates.3.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.3.LGB.best_params.max_depth,12,18,21,18,18,12
+optimal_params.rgs.candidates.3.LGB.best_params.colsample_bytree,0.7,0.5,0.8,0.9,0.8,0.7
+optimal_params.rgs.candidates.3.LGB.best_params.min_child_weight,2.9546771791825432,0.5116018320230047,0.23222916097311389,0.003680471260932655,1.9231101196513838,0.010003245489545386
+optimal_params.rgs.candidates.3.LGB.best_params.subsample,0.9,0.8,0.9,0.8,0.9,0.7
+optimal_params.rgs.candidates.3.LGB.best_params.learning_rate,0.09852532311450983,0.15423865318196722,0.07271603188250315,0.29767288652713275,0.2985032938866395,0.2655335723131017
+optimal_params.rgs.candidates.3.LGB.best_params.n_estimators,300,200,300,300,300,300
+optimal_params.rgs.candidates.3.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.3.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.3.KNN.best_params.p,1,2,1,1,1,1
+optimal_params.rgs.candidates.3.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.3.EXF.best_params.n_estimators,300,200,200,200,300,200
+optimal_params.rgs.candidates.3.EXF.best_params.max_features,0.8,0.6000000000000001,0.8,0.8,0.4,0.8
+optimal_params.rgs.candidates.3.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.3.EXF.best_params.criterion,poisson,friedman_mse,squared_error,poisson,squared_error,friedman_mse
+optimal_params.rgs.candidates.3.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.4.RFR.best_params.n_estimators,200,400,400,300,400,200
+optimal_params.rgs.candidates.4.RFR.best_params.max_features,0.4,0.4,0.6000000000000001,0.6000000000000001,0.8,0.6000000000000001
+optimal_params.rgs.candidates.4.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.4.RFR.best_params.criterion,friedman_mse,poisson,poisson,friedman_mse,friedman_mse,poisson
+optimal_params.rgs.candidates.4.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.4.LGB.best_params.max_depth,18,15,12,12,15,12
+optimal_params.rgs.candidates.4.LGB.best_params.colsample_bytree,0.6,0.7,0.7,0.5,0.7,0.8
+optimal_params.rgs.candidates.4.LGB.best_params.min_child_weight,0.12206649441372208,0.0030556626249382793,0.4972240453348479,0.970357942702437,0.007023414597911118,0.020811756869626084
+optimal_params.rgs.candidates.4.LGB.best_params.subsample,0.7,0.7,0.5,0.6,0.5,0.5
+optimal_params.rgs.candidates.4.LGB.best_params.learning_rate,0.10982013246502575,0.13648718744694052,0.10193695587785156,0.2978517234680427,0.29546862260019924,0.2914265970957042
+optimal_params.rgs.candidates.4.LGB.best_params.n_estimators,300,200,300,300,300,300
+optimal_params.rgs.candidates.4.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.4.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.4.KNN.best_params.p,1,1,1,1,2,1
+optimal_params.rgs.candidates.4.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.4.EXF.best_params.n_estimators,300,200,300,200,100,300
+optimal_params.rgs.candidates.4.EXF.best_params.max_features,0.4,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+optimal_params.rgs.candidates.4.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.4.EXF.best_params.criterion,friedman_mse,poisson,squared_error,poisson,poisson,friedman_mse
+optimal_params.rgs.candidates.4.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.5.RFR.best_params.n_estimators,400,100,300,500,300,300
+optimal_params.rgs.candidates.5.RFR.best_params.max_features,0.6000000000000001,0.2,0.8,0.4,0.8,0.4
+optimal_params.rgs.candidates.5.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.5.RFR.best_params.criterion,friedman_mse,poisson,poisson,poisson,poisson,squared_error
+optimal_params.rgs.candidates.5.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.5.LGB.best_params.max_depth,12,12,21,9,21,21
+optimal_params.rgs.candidates.5.LGB.best_params.colsample_bytree,0.8,0.6,0.5,0.8,0.8,0.6
+optimal_params.rgs.candidates.5.LGB.best_params.min_child_weight,0.15489395828991007,0.01214185755461188,0.023738149892677245,2.0473832204167173,0.0029671448831586574,1.00631463650626
+optimal_params.rgs.candidates.5.LGB.best_params.subsample,0.9,0.8,0.8,0.5,0.5,0.7
+optimal_params.rgs.candidates.5.LGB.best_params.learning_rate,0.09094431773006326,0.09880591623841241,0.08411461885632612,0.29900006375628757,0.2872564853510016,0.2975107880493104
+optimal_params.rgs.candidates.5.LGB.best_params.n_estimators,300,300,300,300,300,300
+optimal_params.rgs.candidates.5.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.5.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.5.KNN.best_params.p,1,1,1,1,1,1
+optimal_params.rgs.candidates.5.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.5.EXF.best_params.n_estimators,100,100,100,100,200,200
+optimal_params.rgs.candidates.5.EXF.best_params.max_features,0.4,0.8,0.8,0.8,0.8,0.4
+optimal_params.rgs.candidates.5.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.5.EXF.best_params.criterion,friedman_mse,poisson,poisson,squared_error,friedman_mse,poisson
+optimal_params.rgs.candidates.5.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.6.RFR.best_params.n_estimators,400,100,300,400,300,400
+optimal_params.rgs.candidates.6.RFR.best_params.max_features,0.2,0.2,0.8,0.8,0.8,0.6000000000000001
+optimal_params.rgs.candidates.6.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.6.RFR.best_params.criterion,squared_error,poisson,squared_error,squared_error,squared_error,poisson
+optimal_params.rgs.candidates.6.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.6.LGB.best_params.max_depth,21,21,18,21,18,21
+optimal_params.rgs.candidates.6.LGB.best_params.colsample_bytree,0.8,0.5,0.8,0.6,0.8,0.7
+optimal_params.rgs.candidates.6.LGB.best_params.min_child_weight,0.00620603438004124,0.011119248483203044,0.1010913166414719,0.06002983049805492,4.928676040500349,0.15094138279208497
+optimal_params.rgs.candidates.6.LGB.best_params.subsample,0.8,0.8,0.7,0.8,0.5,0.6
+optimal_params.rgs.candidates.6.LGB.best_params.learning_rate,0.1717527970610578,0.11745191277542753,0.11256094582874893,0.24187651841583507,0.2869185186413193,0.29770028800703013
+optimal_params.rgs.candidates.6.LGB.best_params.n_estimators,200,300,300,200,300,200
+optimal_params.rgs.candidates.6.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.6.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.6.KNN.best_params.p,1,1,1,1,2,1
+optimal_params.rgs.candidates.6.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.6.EXF.best_params.n_estimators,300,200,300,200,200,100
+optimal_params.rgs.candidates.6.EXF.best_params.max_features,0.6000000000000001,0.6000000000000001,0.4,0.4,0.8,0.8
+optimal_params.rgs.candidates.6.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.6.EXF.best_params.criterion,squared_error,friedman_mse,squared_error,squared_error,poisson,poisson
+optimal_params.rgs.candidates.6.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.7.RFR.best_params.n_estimators,200,200,300,500,200,500
+optimal_params.rgs.candidates.7.RFR.best_params.max_features,0.2,0.2,0.8,0.8,0.4,0.8
+optimal_params.rgs.candidates.7.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.7.RFR.best_params.criterion,poisson,friedman_mse,friedman_mse,friedman_mse,squared_error,poisson
+optimal_params.rgs.candidates.7.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.7.LGB.best_params.max_depth,18,18,12,15,9,12
+optimal_params.rgs.candidates.7.LGB.best_params.colsample_bytree,0.8,0.8,0.7,0.9,0.8,0.8
+optimal_params.rgs.candidates.7.LGB.best_params.min_child_weight,0.043863226983506476,0.05293434330855119,0.4879495612170805,0.4771279923140256,0.2718170595736314,0.035017518032212466
+optimal_params.rgs.candidates.7.LGB.best_params.subsample,0.7,0.9,0.7,0.8,0.6,0.8
+optimal_params.rgs.candidates.7.LGB.best_params.learning_rate,0.16077455400362112,0.11018280568218536,0.08612782617947409,0.24987816279476072,0.29792665947501734,0.23678141230967012
+optimal_params.rgs.candidates.7.LGB.best_params.n_estimators,300,300,200,300,300,300
+optimal_params.rgs.candidates.7.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.7.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.7.KNN.best_params.p,1,1,1,1,1,1
+optimal_params.rgs.candidates.7.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.7.EXF.best_params.n_estimators,300,200,200,100,200,300
+optimal_params.rgs.candidates.7.EXF.best_params.max_features,0.8,0.8,0.8,0.8,0.8,0.8
+optimal_params.rgs.candidates.7.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.7.EXF.best_params.criterion,poisson,poisson,poisson,friedman_mse,friedman_mse,poisson
+optimal_params.rgs.candidates.7.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.8.RFR.best_params.n_estimators,200,100,300,400,200,200
+optimal_params.rgs.candidates.8.RFR.best_params.max_features,0.6000000000000001,0.2,0.2,0.8,0.8,0.6000000000000001
+optimal_params.rgs.candidates.8.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.8.RFR.best_params.criterion,friedman_mse,friedman_mse,squared_error,poisson,friedman_mse,squared_error
+optimal_params.rgs.candidates.8.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.8.LGB.best_params.max_depth,18,9,12,18,21,9
+optimal_params.rgs.candidates.8.LGB.best_params.colsample_bytree,0.6,0.6,0.8,0.6,0.9,0.9
+optimal_params.rgs.candidates.8.LGB.best_params.min_child_weight,0.0012381113717307205,0.3670349693555387,0.02552667970130657,0.6408052059027062,0.004835265907165973,0.001484143083289625
+optimal_params.rgs.candidates.8.LGB.best_params.subsample,0.8,0.7,0.9,0.8,0.5,0.5
+optimal_params.rgs.candidates.8.LGB.best_params.learning_rate,0.145316206020394,0.12439532044799026,0.0837384669157115,0.29959105503006084,0.29883888055013064,0.29683810370404945
+optimal_params.rgs.candidates.8.LGB.best_params.n_estimators,300,300,200,300,300,300
+optimal_params.rgs.candidates.8.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.8.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.8.KNN.best_params.p,1,1,1,2,1,1
+optimal_params.rgs.candidates.8.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.8.EXF.best_params.n_estimators,200,100,100,300,200,200
+optimal_params.rgs.candidates.8.EXF.best_params.max_features,0.8,0.8,0.8,0.8,0.6000000000000001,0.8
+optimal_params.rgs.candidates.8.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.8.EXF.best_params.criterion,poisson,squared_error,poisson,poisson,squared_error,poisson
+optimal_params.rgs.candidates.8.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+optimal_params.rgs.candidates.9.RFR.best_params.n_estimators,200,400,200,400,300,100
+optimal_params.rgs.candidates.9.RFR.best_params.max_features,0.8,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+optimal_params.rgs.candidates.9.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.9.RFR.best_params.criterion,poisson,friedman_mse,squared_error,squared_error,poisson,friedman_mse
+optimal_params.rgs.candidates.9.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+optimal_params.rgs.candidates.9.LGB.best_params.max_depth,15,12,21,18,15,18
+optimal_params.rgs.candidates.9.LGB.best_params.colsample_bytree,0.6,0.9,0.8,0.9,0.9,0.7
+optimal_params.rgs.candidates.9.LGB.best_params.min_child_weight,1.5544840651669212,0.04452543297722436,0.18156266393147288,4.544147641945977,0.003622438643939411,0.8850269543094909
+optimal_params.rgs.candidates.9.LGB.best_params.subsample,0.9,0.8,0.8,0.5,0.8,0.7
+optimal_params.rgs.candidates.9.LGB.best_params.learning_rate,0.06811788905755299,0.12080567165198385,0.05140143140093798,0.2656819972198956,0.24207256724760345,0.2970214495988782
+optimal_params.rgs.candidates.9.LGB.best_params.n_estimators,300,300,300,300,300,300
+optimal_params.rgs.candidates.9.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+optimal_params.rgs.candidates.9.KNN.best_params.n_neighbors,3,3,3,3,3,3
+optimal_params.rgs.candidates.9.KNN.best_params.p,1,1,1,1,1,1
+optimal_params.rgs.candidates.9.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+optimal_params.rgs.candidates.9.EXF.best_params.n_estimators,100,200,300,300,200,200
+optimal_params.rgs.candidates.9.EXF.best_params.max_features,0.8,0.4,0.8,0.8,0.8,0.6000000000000001
+optimal_params.rgs.candidates.9.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+optimal_params.rgs.candidates.9.EXF.best_params.criterion,friedman_mse,poisson,squared_error,friedman_mse,squared_error,squared_error
+optimal_params.rgs.candidates.9.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.preprocessor.fin_transformer,ArcSinhScaler,ArcSinhScaler,ArcSinhScaler,ArcSinhScaler,ArcSinhScaler,ArcSinhScaler
+cfg.preprocessor.cat_transformer,TargetEncoder,TargetEncoder,TargetEncoder,TargetEncoder,TargetEncoder,TargetEncoder
+cfg.preprocessor.imputer,DummyImputer,DummyImputer,DummyImputer,DummyImputer,DummyImputer,DummyImputer
+cfg.preprocessor.cols,"['ft_catm_country_code', 'ft_catm_exchange', 'ft_catm_industry_name', 'ft_catm_region', 'ft_catm_sector_name', 'ft_catm_sub_region']","['ft_catm_country_code', 'ft_catm_exchange', 'ft_catm_industry_name', 'ft_catm_region', 'ft_catm_sector_name', 'ft_catm_sub_region']","['ft_catm_country_code', 'ft_catm_exchange', 'ft_catm_industry_name', 'ft_catm_region', 'ft_catm_sector_name', 'ft_catm_sub_region']","['ft_catm_country_code', 'ft_catm_exchange', 'ft_catm_industry_name', 'ft_catm_region', 'ft_catm_sector_name', 'ft_catm_sub_region']","['ft_catm_country_code', 'ft_catm_exchange', 'ft_catm_industry_name', 'ft_catm_region', 'ft_catm_sector_name', 'ft_catm_sub_region']","['ft_catm_country_code', 'ft_catm_exchange', 'ft_catm_industry_name', 'ft_catm_region', 'ft_catm_sector_name', 'ft_catm_sub_region']"
+cfg.preprocessor.drop_invariant,False,False,False,False,False,False
+cfg.preprocessor.handle_missing,value,value,value,value,value,value
+cfg.preprocessor.handle_unknown,value,value,value,value,value,value
+cfg.preprocessor.hierarchy,,,,,,
+cfg.preprocessor.min_samples_leaf,20,20,20,20,20,20
+cfg.preprocessor.return_df,True,True,True,True,True,True
+cfg.preprocessor.smoothing,10,10,10,10,10,10
+cfg.preprocessor.verbose,0,0,0,0,0,0
+cfg.preprocessor.name,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor,NormalizedIIDPreprocessor
+cfg.feature_selector.n_components_,138,138,138,18,18,18
+cfg.feature_selector.name,DummyFeatureReducer,DummyFeatureReducer,DummyFeatureReducer,SelectionFeatureReducer,SelectionFeatureReducer,SelectionFeatureReducer
+cfg.scope_estimator.n_buckets,10,10,10,10,10,10
+cfg.scope_estimator.name,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator,EvenWeightMiniModelArmyEstimator
+cfg.scope_estimator.cls.max_depth,12,18,9,12,15,21
+cfg.scope_estimator.cls.colsample_bytree,0.6,0.9,0.7,0.5,0.7,0.7
+cfg.scope_estimator.cls.min_child_weight,0.0011746863745536703,0.2719861207278538,0.001531663802686619,0.13963820515460948,0.001962427778070747,0.0011960120377973614
+cfg.scope_estimator.cls.subsample,0.8,0.8,0.7,0.7,0.6,0.7
+cfg.scope_estimator.cls.learning_rate,0.23489402592177258,0.18164872637473845,0.24349137728468542,0.11233059531989235,0.23452495869384835,0.20945004328824754
+cfg.scope_estimator.cls.n_estimators,400,400,500,500,400,400
+cfg.scope_estimator.rgs.candidates.0.RFR.best_params.n_estimators,300,300,300,100,300,200
+cfg.scope_estimator.rgs.candidates.0.RFR.best_params.max_features,0.6000000000000001,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+cfg.scope_estimator.rgs.candidates.0.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.0.RFR.best_params.criterion,poisson,friedman_mse,squared_error,poisson,poisson,friedman_mse
+cfg.scope_estimator.rgs.candidates.0.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.0.LGB.best_params.max_depth,15,12,12,12,21,15
+cfg.scope_estimator.rgs.candidates.0.LGB.best_params.colsample_bytree,0.5,0.8,0.7,0.8,0.9,0.6
+cfg.scope_estimator.rgs.candidates.0.LGB.best_params.min_child_weight,0.007697087971250206,0.002583830814083736,0.02148549753011603,0.0064533157145797,0.7653565288741175,0.8307475945982001
+cfg.scope_estimator.rgs.candidates.0.LGB.best_params.subsample,0.8,0.7,0.7,0.7,0.8,0.8
+cfg.scope_estimator.rgs.candidates.0.LGB.best_params.learning_rate,0.13209010437992133,0.17583775019219222,0.0817319130484774,0.2799211063857286,0.29243723117779075,0.21978713261152422
+cfg.scope_estimator.rgs.candidates.0.LGB.best_params.n_estimators,300,300,300,300,300,300
+cfg.scope_estimator.rgs.candidates.0.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.0.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.0.KNN.best_params.p,1,1,1,1,1,1
+cfg.scope_estimator.rgs.candidates.0.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.0.EXF.best_params.n_estimators,200,100,100,200,200,300
+cfg.scope_estimator.rgs.candidates.0.EXF.best_params.max_features,0.8,0.8,0.4,0.8,0.8,0.6000000000000001
+cfg.scope_estimator.rgs.candidates.0.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.0.EXF.best_params.criterion,squared_error,friedman_mse,friedman_mse,poisson,squared_error,poisson
+cfg.scope_estimator.rgs.candidates.0.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.1.RFR.best_params.n_estimators,200,500,300,400,400,100
+cfg.scope_estimator.rgs.candidates.1.RFR.best_params.max_features,0.2,0.6000000000000001,0.4,0.8,0.8,0.6000000000000001
+cfg.scope_estimator.rgs.candidates.1.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.1.RFR.best_params.criterion,squared_error,friedman_mse,poisson,poisson,squared_error,friedman_mse
+cfg.scope_estimator.rgs.candidates.1.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.1.LGB.best_params.max_depth,15,18,18,21,21,18
+cfg.scope_estimator.rgs.candidates.1.LGB.best_params.colsample_bytree,0.9,0.5,0.8,0.8,0.7,0.9
+cfg.scope_estimator.rgs.candidates.1.LGB.best_params.min_child_weight,0.01037326562785649,0.83860703851038,1.2863874820537204,4.885163835702793,0.42906690999553526,0.013511187427833896
+cfg.scope_estimator.rgs.candidates.1.LGB.best_params.subsample,0.6,0.6,0.9,0.7,0.8,0.7
+cfg.scope_estimator.rgs.candidates.1.LGB.best_params.learning_rate,0.15641365815608244,0.15695586180753784,0.1105297240463716,0.2965822119054231,0.2940427531105257,0.2846860781634891
+cfg.scope_estimator.rgs.candidates.1.LGB.best_params.n_estimators,300,300,300,300,300,200
+cfg.scope_estimator.rgs.candidates.1.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.1.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.1.KNN.best_params.p,1,1,1,1,1,1
+cfg.scope_estimator.rgs.candidates.1.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.1.EXF.best_params.n_estimators,300,200,100,200,100,300
+cfg.scope_estimator.rgs.candidates.1.EXF.best_params.max_features,0.4,0.6000000000000001,0.6000000000000001,0.8,0.8,0.8
+cfg.scope_estimator.rgs.candidates.1.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.1.EXF.best_params.criterion,friedman_mse,poisson,poisson,poisson,friedman_mse,friedman_mse
+cfg.scope_estimator.rgs.candidates.1.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.2.RFR.best_params.n_estimators,200,200,400,300,200,300
+cfg.scope_estimator.rgs.candidates.2.RFR.best_params.max_features,0.4,0.8,0.6000000000000001,0.8,0.4,0.8
+cfg.scope_estimator.rgs.candidates.2.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.2.RFR.best_params.criterion,poisson,squared_error,squared_error,friedman_mse,friedman_mse,friedman_mse
+cfg.scope_estimator.rgs.candidates.2.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.2.LGB.best_params.max_depth,15,15,15,21,15,15
+cfg.scope_estimator.rgs.candidates.2.LGB.best_params.colsample_bytree,0.7,0.5,0.5,0.9,0.8,0.9
+cfg.scope_estimator.rgs.candidates.2.LGB.best_params.min_child_weight,0.0013731309755749164,0.010413026693855552,0.008431475002093729,0.045441183494693685,0.00955415693588745,0.8990889503805086
+cfg.scope_estimator.rgs.candidates.2.LGB.best_params.subsample,0.8,0.5,0.5,0.7,0.7,0.7
+cfg.scope_estimator.rgs.candidates.2.LGB.best_params.learning_rate,0.20899259667396608,0.16960739700461544,0.05586139834615301,0.2971093378551883,0.2891312371456126,0.2894413176997896
+cfg.scope_estimator.rgs.candidates.2.LGB.best_params.n_estimators,200,300,300,300,300,300
+cfg.scope_estimator.rgs.candidates.2.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.2.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.2.KNN.best_params.p,2,1,1,1,1,1
+cfg.scope_estimator.rgs.candidates.2.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.2.EXF.best_params.n_estimators,300,200,100,200,200,100
+cfg.scope_estimator.rgs.candidates.2.EXF.best_params.max_features,0.6000000000000001,0.6000000000000001,0.4,0.8,0.4,0.6000000000000001
+cfg.scope_estimator.rgs.candidates.2.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.2.EXF.best_params.criterion,friedman_mse,squared_error,poisson,poisson,squared_error,poisson
+cfg.scope_estimator.rgs.candidates.2.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.3.RFR.best_params.n_estimators,300,400,100,300,500,100
+cfg.scope_estimator.rgs.candidates.3.RFR.best_params.max_features,0.6000000000000001,0.2,0.6000000000000001,0.8,0.6000000000000001,0.6000000000000001
+cfg.scope_estimator.rgs.candidates.3.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.3.RFR.best_params.criterion,friedman_mse,squared_error,squared_error,friedman_mse,squared_error,poisson
+cfg.scope_estimator.rgs.candidates.3.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.3.LGB.best_params.max_depth,12,18,21,18,18,12
+cfg.scope_estimator.rgs.candidates.3.LGB.best_params.colsample_bytree,0.7,0.5,0.8,0.9,0.8,0.7
+cfg.scope_estimator.rgs.candidates.3.LGB.best_params.min_child_weight,2.9546771791825432,0.5116018320230047,0.23222916097311389,0.003680471260932655,1.9231101196513838,0.010003245489545386
+cfg.scope_estimator.rgs.candidates.3.LGB.best_params.subsample,0.9,0.8,0.9,0.8,0.9,0.7
+cfg.scope_estimator.rgs.candidates.3.LGB.best_params.learning_rate,0.09852532311450983,0.15423865318196722,0.07271603188250315,0.29767288652713275,0.2985032938866395,0.2655335723131017
+cfg.scope_estimator.rgs.candidates.3.LGB.best_params.n_estimators,300,200,300,300,300,300
+cfg.scope_estimator.rgs.candidates.3.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.3.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.3.KNN.best_params.p,1,2,1,1,1,1
+cfg.scope_estimator.rgs.candidates.3.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.3.EXF.best_params.n_estimators,300,200,200,200,300,200
+cfg.scope_estimator.rgs.candidates.3.EXF.best_params.max_features,0.8,0.6000000000000001,0.8,0.8,0.4,0.8
+cfg.scope_estimator.rgs.candidates.3.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.3.EXF.best_params.criterion,poisson,friedman_mse,squared_error,poisson,squared_error,friedman_mse
+cfg.scope_estimator.rgs.candidates.3.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.4.RFR.best_params.n_estimators,200,400,400,300,400,200
+cfg.scope_estimator.rgs.candidates.4.RFR.best_params.max_features,0.4,0.4,0.6000000000000001,0.6000000000000001,0.8,0.6000000000000001
+cfg.scope_estimator.rgs.candidates.4.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.4.RFR.best_params.criterion,friedman_mse,poisson,poisson,friedman_mse,friedman_mse,poisson
+cfg.scope_estimator.rgs.candidates.4.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.4.LGB.best_params.max_depth,18,15,12,12,15,12
+cfg.scope_estimator.rgs.candidates.4.LGB.best_params.colsample_bytree,0.6,0.7,0.7,0.5,0.7,0.8
+cfg.scope_estimator.rgs.candidates.4.LGB.best_params.min_child_weight,0.12206649441372208,0.0030556626249382793,0.4972240453348479,0.970357942702437,0.007023414597911118,0.020811756869626084
+cfg.scope_estimator.rgs.candidates.4.LGB.best_params.subsample,0.7,0.7,0.5,0.6,0.5,0.5
+cfg.scope_estimator.rgs.candidates.4.LGB.best_params.learning_rate,0.10982013246502575,0.13648718744694052,0.10193695587785156,0.2978517234680427,0.29546862260019924,0.2914265970957042
+cfg.scope_estimator.rgs.candidates.4.LGB.best_params.n_estimators,300,200,300,300,300,300
+cfg.scope_estimator.rgs.candidates.4.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.4.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.4.KNN.best_params.p,1,1,1,1,2,1
+cfg.scope_estimator.rgs.candidates.4.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.4.EXF.best_params.n_estimators,300,200,300,200,100,300
+cfg.scope_estimator.rgs.candidates.4.EXF.best_params.max_features,0.4,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+cfg.scope_estimator.rgs.candidates.4.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.4.EXF.best_params.criterion,friedman_mse,poisson,squared_error,poisson,poisson,friedman_mse
+cfg.scope_estimator.rgs.candidates.4.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.5.RFR.best_params.n_estimators,400,100,300,500,300,300
+cfg.scope_estimator.rgs.candidates.5.RFR.best_params.max_features,0.6000000000000001,0.2,0.8,0.4,0.8,0.4
+cfg.scope_estimator.rgs.candidates.5.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.5.RFR.best_params.criterion,friedman_mse,poisson,poisson,poisson,poisson,squared_error
+cfg.scope_estimator.rgs.candidates.5.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.5.LGB.best_params.max_depth,12,12,21,9,21,21
+cfg.scope_estimator.rgs.candidates.5.LGB.best_params.colsample_bytree,0.8,0.6,0.5,0.8,0.8,0.6
+cfg.scope_estimator.rgs.candidates.5.LGB.best_params.min_child_weight,0.15489395828991007,0.01214185755461188,0.023738149892677245,2.0473832204167173,0.0029671448831586574,1.00631463650626
+cfg.scope_estimator.rgs.candidates.5.LGB.best_params.subsample,0.9,0.8,0.8,0.5,0.5,0.7
+cfg.scope_estimator.rgs.candidates.5.LGB.best_params.learning_rate,0.09094431773006326,0.09880591623841241,0.08411461885632612,0.29900006375628757,0.2872564853510016,0.2975107880493104
+cfg.scope_estimator.rgs.candidates.5.LGB.best_params.n_estimators,300,300,300,300,300,300
+cfg.scope_estimator.rgs.candidates.5.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.5.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.5.KNN.best_params.p,1,1,1,1,1,1
+cfg.scope_estimator.rgs.candidates.5.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.5.EXF.best_params.n_estimators,100,100,100,100,200,200
+cfg.scope_estimator.rgs.candidates.5.EXF.best_params.max_features,0.4,0.8,0.8,0.8,0.8,0.4
+cfg.scope_estimator.rgs.candidates.5.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.5.EXF.best_params.criterion,friedman_mse,poisson,poisson,squared_error,friedman_mse,poisson
+cfg.scope_estimator.rgs.candidates.5.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.6.RFR.best_params.n_estimators,400,100,300,400,300,400
+cfg.scope_estimator.rgs.candidates.6.RFR.best_params.max_features,0.2,0.2,0.8,0.8,0.8,0.6000000000000001
+cfg.scope_estimator.rgs.candidates.6.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.6.RFR.best_params.criterion,squared_error,poisson,squared_error,squared_error,squared_error,poisson
+cfg.scope_estimator.rgs.candidates.6.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.6.LGB.best_params.max_depth,21,21,18,21,18,21
+cfg.scope_estimator.rgs.candidates.6.LGB.best_params.colsample_bytree,0.8,0.5,0.8,0.6,0.8,0.7
+cfg.scope_estimator.rgs.candidates.6.LGB.best_params.min_child_weight,0.00620603438004124,0.011119248483203044,0.1010913166414719,0.06002983049805492,4.928676040500349,0.15094138279208497
+cfg.scope_estimator.rgs.candidates.6.LGB.best_params.subsample,0.8,0.8,0.7,0.8,0.5,0.6
+cfg.scope_estimator.rgs.candidates.6.LGB.best_params.learning_rate,0.1717527970610578,0.11745191277542753,0.11256094582874893,0.24187651841583507,0.2869185186413193,0.29770028800703013
+cfg.scope_estimator.rgs.candidates.6.LGB.best_params.n_estimators,200,300,300,200,300,200
+cfg.scope_estimator.rgs.candidates.6.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.6.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.6.KNN.best_params.p,1,1,1,1,2,1
+cfg.scope_estimator.rgs.candidates.6.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.6.EXF.best_params.n_estimators,300,200,300,200,200,100
+cfg.scope_estimator.rgs.candidates.6.EXF.best_params.max_features,0.6000000000000001,0.6000000000000001,0.4,0.4,0.8,0.8
+cfg.scope_estimator.rgs.candidates.6.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.6.EXF.best_params.criterion,squared_error,friedman_mse,squared_error,squared_error,poisson,poisson
+cfg.scope_estimator.rgs.candidates.6.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.7.RFR.best_params.n_estimators,200,200,300,500,200,500
+cfg.scope_estimator.rgs.candidates.7.RFR.best_params.max_features,0.2,0.2,0.8,0.8,0.4,0.8
+cfg.scope_estimator.rgs.candidates.7.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.7.RFR.best_params.criterion,poisson,friedman_mse,friedman_mse,friedman_mse,squared_error,poisson
+cfg.scope_estimator.rgs.candidates.7.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.7.LGB.best_params.max_depth,18,18,12,15,9,12
+cfg.scope_estimator.rgs.candidates.7.LGB.best_params.colsample_bytree,0.8,0.8,0.7,0.9,0.8,0.8
+cfg.scope_estimator.rgs.candidates.7.LGB.best_params.min_child_weight,0.043863226983506476,0.05293434330855119,0.4879495612170805,0.4771279923140256,0.2718170595736314,0.035017518032212466
+cfg.scope_estimator.rgs.candidates.7.LGB.best_params.subsample,0.7,0.9,0.7,0.8,0.6,0.8
+cfg.scope_estimator.rgs.candidates.7.LGB.best_params.learning_rate,0.16077455400362112,0.11018280568218536,0.08612782617947409,0.24987816279476072,0.29792665947501734,0.23678141230967012
+cfg.scope_estimator.rgs.candidates.7.LGB.best_params.n_estimators,300,300,200,300,300,300
+cfg.scope_estimator.rgs.candidates.7.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.7.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.7.KNN.best_params.p,1,1,1,1,1,1
+cfg.scope_estimator.rgs.candidates.7.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.7.EXF.best_params.n_estimators,300,200,200,100,200,300
+cfg.scope_estimator.rgs.candidates.7.EXF.best_params.max_features,0.8,0.8,0.8,0.8,0.8,0.8
+cfg.scope_estimator.rgs.candidates.7.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.7.EXF.best_params.criterion,poisson,poisson,poisson,friedman_mse,friedman_mse,poisson
+cfg.scope_estimator.rgs.candidates.7.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.8.RFR.best_params.n_estimators,200,100,300,400,200,200
+cfg.scope_estimator.rgs.candidates.8.RFR.best_params.max_features,0.6000000000000001,0.2,0.2,0.8,0.8,0.6000000000000001
+cfg.scope_estimator.rgs.candidates.8.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.8.RFR.best_params.criterion,friedman_mse,friedman_mse,squared_error,poisson,friedman_mse,squared_error
+cfg.scope_estimator.rgs.candidates.8.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.8.LGB.best_params.max_depth,18,9,12,18,21,9
+cfg.scope_estimator.rgs.candidates.8.LGB.best_params.colsample_bytree,0.6,0.6,0.8,0.6,0.9,0.9
+cfg.scope_estimator.rgs.candidates.8.LGB.best_params.min_child_weight,0.0012381113717307205,0.3670349693555387,0.02552667970130657,0.6408052059027062,0.004835265907165973,0.001484143083289625
+cfg.scope_estimator.rgs.candidates.8.LGB.best_params.subsample,0.8,0.7,0.9,0.8,0.5,0.5
+cfg.scope_estimator.rgs.candidates.8.LGB.best_params.learning_rate,0.145316206020394,0.12439532044799026,0.0837384669157115,0.29959105503006084,0.29883888055013064,0.29683810370404945
+cfg.scope_estimator.rgs.candidates.8.LGB.best_params.n_estimators,300,300,200,300,300,300
+cfg.scope_estimator.rgs.candidates.8.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.8.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.8.KNN.best_params.p,1,1,1,2,1,1
+cfg.scope_estimator.rgs.candidates.8.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.8.EXF.best_params.n_estimators,200,100,100,300,200,200
+cfg.scope_estimator.rgs.candidates.8.EXF.best_params.max_features,0.8,0.8,0.8,0.8,0.6000000000000001,0.8
+cfg.scope_estimator.rgs.candidates.8.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.8.EXF.best_params.criterion,poisson,squared_error,poisson,poisson,squared_error,poisson
+cfg.scope_estimator.rgs.candidates.8.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.scope_estimator.rgs.candidates.9.RFR.best_params.n_estimators,200,400,200,400,300,100
+cfg.scope_estimator.rgs.candidates.9.RFR.best_params.max_features,0.8,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+cfg.scope_estimator.rgs.candidates.9.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.9.RFR.best_params.criterion,poisson,friedman_mse,squared_error,squared_error,poisson,friedman_mse
+cfg.scope_estimator.rgs.candidates.9.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.scope_estimator.rgs.candidates.9.LGB.best_params.max_depth,15,12,21,18,15,18
+cfg.scope_estimator.rgs.candidates.9.LGB.best_params.colsample_bytree,0.6,0.9,0.8,0.9,0.9,0.7
+cfg.scope_estimator.rgs.candidates.9.LGB.best_params.min_child_weight,1.5544840651669212,0.04452543297722436,0.18156266393147288,4.544147641945977,0.003622438643939411,0.8850269543094909
+cfg.scope_estimator.rgs.candidates.9.LGB.best_params.subsample,0.9,0.8,0.8,0.5,0.8,0.7
+cfg.scope_estimator.rgs.candidates.9.LGB.best_params.learning_rate,0.06811788905755299,0.12080567165198385,0.05140143140093798,0.2656819972198956,0.24207256724760345,0.2970214495988782
+cfg.scope_estimator.rgs.candidates.9.LGB.best_params.n_estimators,300,300,300,300,300,300
+cfg.scope_estimator.rgs.candidates.9.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.scope_estimator.rgs.candidates.9.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.scope_estimator.rgs.candidates.9.KNN.best_params.p,1,1,1,1,1,1
+cfg.scope_estimator.rgs.candidates.9.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.scope_estimator.rgs.candidates.9.EXF.best_params.n_estimators,100,200,300,300,200,200
+cfg.scope_estimator.rgs.candidates.9.EXF.best_params.max_features,0.8,0.4,0.8,0.8,0.8,0.6000000000000001
+cfg.scope_estimator.rgs.candidates.9.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.scope_estimator.rgs.candidates.9.EXF.best_params.criterion,friedman_mse,poisson,squared_error,friedman_mse,squared_error,squared_error
+cfg.scope_estimator.rgs.candidates.9.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.name,DefaultPipeline,DefaultPipeline,DefaultPipeline,DefaultPipeline,DefaultPipeline,DefaultPipeline
+cfg.cls.max_depth,12,18,9,12,15,21
+cfg.cls.colsample_bytree,0.6,0.9,0.7,0.5,0.7,0.7
+cfg.cls.min_child_weight,0.0011746863745536703,0.2719861207278538,0.001531663802686619,0.13963820515460948,0.001962427778070747,0.0011960120377973614
+cfg.cls.subsample,0.8,0.8,0.7,0.7,0.6,0.7
+cfg.cls.learning_rate,0.23489402592177258,0.18164872637473845,0.24349137728468542,0.11233059531989235,0.23452495869384835,0.20945004328824754
+cfg.cls.n_estimators,400,400,500,500,400,400
+cfg.rgs.candidates.0.RFR.best_params.n_estimators,300,300,300,100,300,200
+cfg.rgs.candidates.0.RFR.best_params.max_features,0.6000000000000001,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+cfg.rgs.candidates.0.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.0.RFR.best_params.criterion,poisson,friedman_mse,squared_error,poisson,poisson,friedman_mse
+cfg.rgs.candidates.0.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.0.LGB.best_params.max_depth,15,12,12,12,21,15
+cfg.rgs.candidates.0.LGB.best_params.colsample_bytree,0.5,0.8,0.7,0.8,0.9,0.6
+cfg.rgs.candidates.0.LGB.best_params.min_child_weight,0.007697087971250206,0.002583830814083736,0.02148549753011603,0.0064533157145797,0.7653565288741175,0.8307475945982001
+cfg.rgs.candidates.0.LGB.best_params.subsample,0.8,0.7,0.7,0.7,0.8,0.8
+cfg.rgs.candidates.0.LGB.best_params.learning_rate,0.13209010437992133,0.17583775019219222,0.0817319130484774,0.2799211063857286,0.29243723117779075,0.21978713261152422
+cfg.rgs.candidates.0.LGB.best_params.n_estimators,300,300,300,300,300,300
+cfg.rgs.candidates.0.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.0.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.0.KNN.best_params.p,1,1,1,1,1,1
+cfg.rgs.candidates.0.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.0.EXF.best_params.n_estimators,200,100,100,200,200,300
+cfg.rgs.candidates.0.EXF.best_params.max_features,0.8,0.8,0.4,0.8,0.8,0.6000000000000001
+cfg.rgs.candidates.0.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.0.EXF.best_params.criterion,squared_error,friedman_mse,friedman_mse,poisson,squared_error,poisson
+cfg.rgs.candidates.0.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.1.RFR.best_params.n_estimators,200,500,300,400,400,100
+cfg.rgs.candidates.1.RFR.best_params.max_features,0.2,0.6000000000000001,0.4,0.8,0.8,0.6000000000000001
+cfg.rgs.candidates.1.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.1.RFR.best_params.criterion,squared_error,friedman_mse,poisson,poisson,squared_error,friedman_mse
+cfg.rgs.candidates.1.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.1.LGB.best_params.max_depth,15,18,18,21,21,18
+cfg.rgs.candidates.1.LGB.best_params.colsample_bytree,0.9,0.5,0.8,0.8,0.7,0.9
+cfg.rgs.candidates.1.LGB.best_params.min_child_weight,0.01037326562785649,0.83860703851038,1.2863874820537204,4.885163835702793,0.42906690999553526,0.013511187427833896
+cfg.rgs.candidates.1.LGB.best_params.subsample,0.6,0.6,0.9,0.7,0.8,0.7
+cfg.rgs.candidates.1.LGB.best_params.learning_rate,0.15641365815608244,0.15695586180753784,0.1105297240463716,0.2965822119054231,0.2940427531105257,0.2846860781634891
+cfg.rgs.candidates.1.LGB.best_params.n_estimators,300,300,300,300,300,200
+cfg.rgs.candidates.1.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.1.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.1.KNN.best_params.p,1,1,1,1,1,1
+cfg.rgs.candidates.1.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.1.EXF.best_params.n_estimators,300,200,100,200,100,300
+cfg.rgs.candidates.1.EXF.best_params.max_features,0.4,0.6000000000000001,0.6000000000000001,0.8,0.8,0.8
+cfg.rgs.candidates.1.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.1.EXF.best_params.criterion,friedman_mse,poisson,poisson,poisson,friedman_mse,friedman_mse
+cfg.rgs.candidates.1.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.2.RFR.best_params.n_estimators,200,200,400,300,200,300
+cfg.rgs.candidates.2.RFR.best_params.max_features,0.4,0.8,0.6000000000000001,0.8,0.4,0.8
+cfg.rgs.candidates.2.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.2.RFR.best_params.criterion,poisson,squared_error,squared_error,friedman_mse,friedman_mse,friedman_mse
+cfg.rgs.candidates.2.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.2.LGB.best_params.max_depth,15,15,15,21,15,15
+cfg.rgs.candidates.2.LGB.best_params.colsample_bytree,0.7,0.5,0.5,0.9,0.8,0.9
+cfg.rgs.candidates.2.LGB.best_params.min_child_weight,0.0013731309755749164,0.010413026693855552,0.008431475002093729,0.045441183494693685,0.00955415693588745,0.8990889503805086
+cfg.rgs.candidates.2.LGB.best_params.subsample,0.8,0.5,0.5,0.7,0.7,0.7
+cfg.rgs.candidates.2.LGB.best_params.learning_rate,0.20899259667396608,0.16960739700461544,0.05586139834615301,0.2971093378551883,0.2891312371456126,0.2894413176997896
+cfg.rgs.candidates.2.LGB.best_params.n_estimators,200,300,300,300,300,300
+cfg.rgs.candidates.2.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.2.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.2.KNN.best_params.p,2,1,1,1,1,1
+cfg.rgs.candidates.2.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.2.EXF.best_params.n_estimators,300,200,100,200,200,100
+cfg.rgs.candidates.2.EXF.best_params.max_features,0.6000000000000001,0.6000000000000001,0.4,0.8,0.4,0.6000000000000001
+cfg.rgs.candidates.2.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.2.EXF.best_params.criterion,friedman_mse,squared_error,poisson,poisson,squared_error,poisson
+cfg.rgs.candidates.2.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.3.RFR.best_params.n_estimators,300,400,100,300,500,100
+cfg.rgs.candidates.3.RFR.best_params.max_features,0.6000000000000001,0.2,0.6000000000000001,0.8,0.6000000000000001,0.6000000000000001
+cfg.rgs.candidates.3.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.3.RFR.best_params.criterion,friedman_mse,squared_error,squared_error,friedman_mse,squared_error,poisson
+cfg.rgs.candidates.3.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.3.LGB.best_params.max_depth,12,18,21,18,18,12
+cfg.rgs.candidates.3.LGB.best_params.colsample_bytree,0.7,0.5,0.8,0.9,0.8,0.7
+cfg.rgs.candidates.3.LGB.best_params.min_child_weight,2.9546771791825432,0.5116018320230047,0.23222916097311389,0.003680471260932655,1.9231101196513838,0.010003245489545386
+cfg.rgs.candidates.3.LGB.best_params.subsample,0.9,0.8,0.9,0.8,0.9,0.7
+cfg.rgs.candidates.3.LGB.best_params.learning_rate,0.09852532311450983,0.15423865318196722,0.07271603188250315,0.29767288652713275,0.2985032938866395,0.2655335723131017
+cfg.rgs.candidates.3.LGB.best_params.n_estimators,300,200,300,300,300,300
+cfg.rgs.candidates.3.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.3.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.3.KNN.best_params.p,1,2,1,1,1,1
+cfg.rgs.candidates.3.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.3.EXF.best_params.n_estimators,300,200,200,200,300,200
+cfg.rgs.candidates.3.EXF.best_params.max_features,0.8,0.6000000000000001,0.8,0.8,0.4,0.8
+cfg.rgs.candidates.3.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.3.EXF.best_params.criterion,poisson,friedman_mse,squared_error,poisson,squared_error,friedman_mse
+cfg.rgs.candidates.3.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.4.RFR.best_params.n_estimators,200,400,400,300,400,200
+cfg.rgs.candidates.4.RFR.best_params.max_features,0.4,0.4,0.6000000000000001,0.6000000000000001,0.8,0.6000000000000001
+cfg.rgs.candidates.4.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.4.RFR.best_params.criterion,friedman_mse,poisson,poisson,friedman_mse,friedman_mse,poisson
+cfg.rgs.candidates.4.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.4.LGB.best_params.max_depth,18,15,12,12,15,12
+cfg.rgs.candidates.4.LGB.best_params.colsample_bytree,0.6,0.7,0.7,0.5,0.7,0.8
+cfg.rgs.candidates.4.LGB.best_params.min_child_weight,0.12206649441372208,0.0030556626249382793,0.4972240453348479,0.970357942702437,0.007023414597911118,0.020811756869626084
+cfg.rgs.candidates.4.LGB.best_params.subsample,0.7,0.7,0.5,0.6,0.5,0.5
+cfg.rgs.candidates.4.LGB.best_params.learning_rate,0.10982013246502575,0.13648718744694052,0.10193695587785156,0.2978517234680427,0.29546862260019924,0.2914265970957042
+cfg.rgs.candidates.4.LGB.best_params.n_estimators,300,200,300,300,300,300
+cfg.rgs.candidates.4.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.4.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.4.KNN.best_params.p,1,1,1,1,2,1
+cfg.rgs.candidates.4.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.4.EXF.best_params.n_estimators,300,200,300,200,100,300
+cfg.rgs.candidates.4.EXF.best_params.max_features,0.4,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+cfg.rgs.candidates.4.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.4.EXF.best_params.criterion,friedman_mse,poisson,squared_error,poisson,poisson,friedman_mse
+cfg.rgs.candidates.4.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.5.RFR.best_params.n_estimators,400,100,300,500,300,300
+cfg.rgs.candidates.5.RFR.best_params.max_features,0.6000000000000001,0.2,0.8,0.4,0.8,0.4
+cfg.rgs.candidates.5.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.5.RFR.best_params.criterion,friedman_mse,poisson,poisson,poisson,poisson,squared_error
+cfg.rgs.candidates.5.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.5.LGB.best_params.max_depth,12,12,21,9,21,21
+cfg.rgs.candidates.5.LGB.best_params.colsample_bytree,0.8,0.6,0.5,0.8,0.8,0.6
+cfg.rgs.candidates.5.LGB.best_params.min_child_weight,0.15489395828991007,0.01214185755461188,0.023738149892677245,2.0473832204167173,0.0029671448831586574,1.00631463650626
+cfg.rgs.candidates.5.LGB.best_params.subsample,0.9,0.8,0.8,0.5,0.5,0.7
+cfg.rgs.candidates.5.LGB.best_params.learning_rate,0.09094431773006326,0.09880591623841241,0.08411461885632612,0.29900006375628757,0.2872564853510016,0.2975107880493104
+cfg.rgs.candidates.5.LGB.best_params.n_estimators,300,300,300,300,300,300
+cfg.rgs.candidates.5.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.5.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.5.KNN.best_params.p,1,1,1,1,1,1
+cfg.rgs.candidates.5.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.5.EXF.best_params.n_estimators,100,100,100,100,200,200
+cfg.rgs.candidates.5.EXF.best_params.max_features,0.4,0.8,0.8,0.8,0.8,0.4
+cfg.rgs.candidates.5.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.5.EXF.best_params.criterion,friedman_mse,poisson,poisson,squared_error,friedman_mse,poisson
+cfg.rgs.candidates.5.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.6.RFR.best_params.n_estimators,400,100,300,400,300,400
+cfg.rgs.candidates.6.RFR.best_params.max_features,0.2,0.2,0.8,0.8,0.8,0.6000000000000001
+cfg.rgs.candidates.6.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.6.RFR.best_params.criterion,squared_error,poisson,squared_error,squared_error,squared_error,poisson
+cfg.rgs.candidates.6.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.6.LGB.best_params.max_depth,21,21,18,21,18,21
+cfg.rgs.candidates.6.LGB.best_params.colsample_bytree,0.8,0.5,0.8,0.6,0.8,0.7
+cfg.rgs.candidates.6.LGB.best_params.min_child_weight,0.00620603438004124,0.011119248483203044,0.1010913166414719,0.06002983049805492,4.928676040500349,0.15094138279208497
+cfg.rgs.candidates.6.LGB.best_params.subsample,0.8,0.8,0.7,0.8,0.5,0.6
+cfg.rgs.candidates.6.LGB.best_params.learning_rate,0.1717527970610578,0.11745191277542753,0.11256094582874893,0.24187651841583507,0.2869185186413193,0.29770028800703013
+cfg.rgs.candidates.6.LGB.best_params.n_estimators,200,300,300,200,300,200
+cfg.rgs.candidates.6.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.6.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.6.KNN.best_params.p,1,1,1,1,2,1
+cfg.rgs.candidates.6.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.6.EXF.best_params.n_estimators,300,200,300,200,200,100
+cfg.rgs.candidates.6.EXF.best_params.max_features,0.6000000000000001,0.6000000000000001,0.4,0.4,0.8,0.8
+cfg.rgs.candidates.6.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.6.EXF.best_params.criterion,squared_error,friedman_mse,squared_error,squared_error,poisson,poisson
+cfg.rgs.candidates.6.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.7.RFR.best_params.n_estimators,200,200,300,500,200,500
+cfg.rgs.candidates.7.RFR.best_params.max_features,0.2,0.2,0.8,0.8,0.4,0.8
+cfg.rgs.candidates.7.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.7.RFR.best_params.criterion,poisson,friedman_mse,friedman_mse,friedman_mse,squared_error,poisson
+cfg.rgs.candidates.7.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.7.LGB.best_params.max_depth,18,18,12,15,9,12
+cfg.rgs.candidates.7.LGB.best_params.colsample_bytree,0.8,0.8,0.7,0.9,0.8,0.8
+cfg.rgs.candidates.7.LGB.best_params.min_child_weight,0.043863226983506476,0.05293434330855119,0.4879495612170805,0.4771279923140256,0.2718170595736314,0.035017518032212466
+cfg.rgs.candidates.7.LGB.best_params.subsample,0.7,0.9,0.7,0.8,0.6,0.8
+cfg.rgs.candidates.7.LGB.best_params.learning_rate,0.16077455400362112,0.11018280568218536,0.08612782617947409,0.24987816279476072,0.29792665947501734,0.23678141230967012
+cfg.rgs.candidates.7.LGB.best_params.n_estimators,300,300,200,300,300,300
+cfg.rgs.candidates.7.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.7.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.7.KNN.best_params.p,1,1,1,1,1,1
+cfg.rgs.candidates.7.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.7.EXF.best_params.n_estimators,300,200,200,100,200,300
+cfg.rgs.candidates.7.EXF.best_params.max_features,0.8,0.8,0.8,0.8,0.8,0.8
+cfg.rgs.candidates.7.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.7.EXF.best_params.criterion,poisson,poisson,poisson,friedman_mse,friedman_mse,poisson
+cfg.rgs.candidates.7.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.8.RFR.best_params.n_estimators,200,100,300,400,200,200
+cfg.rgs.candidates.8.RFR.best_params.max_features,0.6000000000000001,0.2,0.2,0.8,0.8,0.6000000000000001
+cfg.rgs.candidates.8.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.8.RFR.best_params.criterion,friedman_mse,friedman_mse,squared_error,poisson,friedman_mse,squared_error
+cfg.rgs.candidates.8.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.8.LGB.best_params.max_depth,18,9,12,18,21,9
+cfg.rgs.candidates.8.LGB.best_params.colsample_bytree,0.6,0.6,0.8,0.6,0.9,0.9
+cfg.rgs.candidates.8.LGB.best_params.min_child_weight,0.0012381113717307205,0.3670349693555387,0.02552667970130657,0.6408052059027062,0.004835265907165973,0.001484143083289625
+cfg.rgs.candidates.8.LGB.best_params.subsample,0.8,0.7,0.9,0.8,0.5,0.5
+cfg.rgs.candidates.8.LGB.best_params.learning_rate,0.145316206020394,0.12439532044799026,0.0837384669157115,0.29959105503006084,0.29883888055013064,0.29683810370404945
+cfg.rgs.candidates.8.LGB.best_params.n_estimators,300,300,200,300,300,300
+cfg.rgs.candidates.8.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.8.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.8.KNN.best_params.p,1,1,1,2,1,1
+cfg.rgs.candidates.8.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.8.EXF.best_params.n_estimators,200,100,100,300,200,200
+cfg.rgs.candidates.8.EXF.best_params.max_features,0.8,0.8,0.8,0.8,0.6000000000000001,0.8
+cfg.rgs.candidates.8.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.8.EXF.best_params.criterion,poisson,squared_error,poisson,poisson,squared_error,poisson
+cfg.rgs.candidates.8.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>
+cfg.rgs.candidates.9.RFR.best_params.n_estimators,200,400,200,400,300,100
+cfg.rgs.candidates.9.RFR.best_params.max_features,0.8,0.8,0.6000000000000001,0.8,0.6000000000000001,0.8
+cfg.rgs.candidates.9.RFR.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.9.RFR.best_params.criterion,poisson,friedman_mse,squared_error,squared_error,poisson,friedman_mse
+cfg.rgs.candidates.9.RFR.Model,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>,<class 'sklearn.ensemble._forest.RandomForestRegressor'>
+cfg.rgs.candidates.9.LGB.best_params.max_depth,15,12,21,18,15,18
+cfg.rgs.candidates.9.LGB.best_params.colsample_bytree,0.6,0.9,0.8,0.9,0.9,0.7
+cfg.rgs.candidates.9.LGB.best_params.min_child_weight,1.5544840651669212,0.04452543297722436,0.18156266393147288,4.544147641945977,0.003622438643939411,0.8850269543094909
+cfg.rgs.candidates.9.LGB.best_params.subsample,0.9,0.8,0.8,0.5,0.8,0.7
+cfg.rgs.candidates.9.LGB.best_params.learning_rate,0.06811788905755299,0.12080567165198385,0.05140143140093798,0.2656819972198956,0.24207256724760345,0.2970214495988782
+cfg.rgs.candidates.9.LGB.best_params.n_estimators,300,300,300,300,300,300
+cfg.rgs.candidates.9.LGB.Model,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>,<class 'lightgbm.sklearn.LGBMRegressor'>
+cfg.rgs.candidates.9.KNN.best_params.n_neighbors,3,3,3,3,3,3
+cfg.rgs.candidates.9.KNN.best_params.p,1,1,1,1,1,1
+cfg.rgs.candidates.9.KNN.Model,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>,<class 'sklearn.neighbors._regression.KNeighborsRegressor'>
+cfg.rgs.candidates.9.EXF.best_params.n_estimators,100,200,300,300,200,200
+cfg.rgs.candidates.9.EXF.best_params.max_features,0.8,0.4,0.8,0.8,0.8,0.6000000000000001
+cfg.rgs.candidates.9.EXF.best_params.min_samples_leaf,2,2,2,2,2,2
+cfg.rgs.candidates.9.EXF.best_params.criterion,friedman_mse,poisson,squared_error,friedman_mse,squared_error,squared_error
+cfg.rgs.candidates.9.EXF.Model,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>,<class 'sklearn.ensemble._forest.ExtraTreesRegressor'>

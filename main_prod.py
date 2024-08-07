@@ -173,12 +173,12 @@ if __name__ == "__main__":
     version_info = f"python-{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}" 
 
     all_meta_models = [
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model-si_{version_info}").set_object(model_si).set_datatarget(
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}-model_si-{version_info}").set_object(model_si).set_datatarget(
             LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model-si_{version_info}").set_object(model_si).set_datatarget(
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}-model_si-{version_info}").set_object(model_si).set_datatarget(
             S3Destination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_{version_info}").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_{version_info}").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}-model-{version_info}").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}-model-{version_info}").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
     ]
 
     SavingManager = OxariSavingManager(*all_meta_models, )

@@ -121,7 +121,7 @@ class PartialSaver(OxariLoggerMixin, abc.ABC):
     def name(self):
         composed_name = f"{self._name}"
         if self._time:
-            composed_name = f"{self._time}_"+composed_name
+            composed_name = f"{self._time}-"+composed_name
         if self._extension:
             composed_name += f"{self._extension}"
 

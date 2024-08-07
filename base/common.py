@@ -872,7 +872,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
 
             
         # Create a new DataFrame with the same index and the missing feature columns filled with None
-        missing_features_df = pd.DataFrame(columns=list(missing_features), index=df.index)
+        missing_features_df = pd.DataFrame(columns=list(missing_features), index=df.index).infer_objects()
         
         # Concatenate the input DataFrame and the missing features DataFrame
         extended_df = pd.concat([df, missing_features_df], axis=1)

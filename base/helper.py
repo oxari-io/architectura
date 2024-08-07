@@ -143,7 +143,7 @@ class LogTargetScaler(OxariScopeTransformer):
         return np.log1p(y.copy())
 
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
-        transfomed_y = np.expm1(y.copy())
+        transfomed_y = np.expm1(y.copy().astype(float))
         # This is a failsafe in case the model spits out a number waaaay too high and np.expm1 becomes infinite
         position_inf = np.isinf(transfomed_y)
         transfomed_y[position_inf] = np.finfo(float).max
@@ -156,10 +156,10 @@ class ArcSinhTargetScaler(OxariScopeTransformer):
         super().__init__(**kwargs)
 
     def transform(self, y, **kwargs) -> ArrayLike:
-        return np.arcsinh(y.copy())
+        return np.arcsinh(y.copy().astype(float))
 
     def reverse_transform(self, y, **kwargs) -> ArrayLike:
-        return np.sinh(y.copy())
+        return np.sinh(y.copy().astype(float))
 
 
 class DummyTargetScaler(OxariScopeTransformer):
@@ -177,10 +177,10 @@ class ArcSinhScaler(OxariFeatureTransformer):
         super().__init__(**kwargs)
 
     def transform(self, X, y=None, **kwargs) -> ArrayLike:
-        return np.arcsinh(X.copy())
+        return np.arcsinh(X.copy().astype(float))
 
     def reverse_transform(self, X, **kwargs) -> ArrayLike:
-        return np.sinh(X.copy())
+        return np.sinh(X.copy().astype(float))
 
 
 class DummyFeatureScaler(OxariFeatureTransformer):

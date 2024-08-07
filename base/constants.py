@@ -1,5 +1,7 @@
 from pathlib import Path
 import multiprocessing
+import json
+import io
 
 USABLE_CPUS = int(multiprocessing.cpu_count()*0.75)
 
@@ -29,6 +31,12 @@ FEATURE_SET_CATEGORICALS = [
     'ft_catm_country_code',
     'ft_catm_industry_name',
     'ft_catm_sector_name',
+]
+
+FEATURE_SET_PREV_SCOPE = [
+    'ft_numc_prior_tg_numc_scope_1',
+    'ft_numc_prior_tg_numc_scope_2',
+    'ft_numc_prior_tg_numc_scope_3',
 ]
 
 # ===== BELOW ARE FEATURE SETS IDENTIFIED USING SIMPLE METHODS =====
@@ -66,23 +74,7 @@ FEATURE_SET_SELECT_K_BEST = [
 ] + FEATURE_SET_CATEGORICALS
 
 # This set is a reduction in which Variance Inflation Factor (VIF) technique was used. Removed everything with VIV > 10
-FEATURE_SET_VIF_UNDER_10 = [
-    'ft_numc_acrued_expenses', 'ft_numc_additional_paid_in_capital', 'ft_numc_assets_held_for_sale', 'ft_numc_cash', 'ft_numc_cash_equivalents',
-    'ft_numc_derivative_product_liabilities', 'ft_numc_financial_assets', 'ft_numc_free_cash_flow', 'ft_numc_goodwill', 'ft_numc_hedging_assets', 'ft_numc_income',
-    'ft_numc_income_tax_paid', 'ft_numc_intangible_assets', 'ft_numc_interest_paid', 'ft_numc_investing_actvities.net_intangibles', 'ft_numc_investment_properties',
-    'ft_numc_investments_and_advances', 'ft_numc_leases', 'ft_numc_long_term_provisions', 'ft_numc_minority_interest', 'ft_numc_minority_interests', 'ft_numc_other_current_assets',
-    'ft_numc_other_income_expense', 'ft_numc_other_non_current_assets', 'ft_numc_other_operating_expenses', 'ft_numc_other_receivables', 'ft_numc_other_shareholders_equity',
-    'ft_numc_other_short_term_investments', 'ft_numc_pensions', 'ft_numc_preferred_stock_dividends', 'ft_numc_prepaid_assets', 'ft_numc_prior_tg_numc_scope_1',
-    'ft_numc_prior_tg_numc_scope_2', 'ft_numc_prior_tg_numc_scope_3', 'ft_numc_rd_expenses', 'ft_numc_restricted_cash', 'ft_numc_roa', 'ft_numc_roe', 'ft_numc_total_assets',
-    'ft_numc_tresury_stock'
-] + FEATURE_SET_CATEGORICALS
+FEATURE_SET_VIF_UNDER_05 = json.load(io.open('/res/vif_05.json','w')) + FEATURE_SET_PREV_SCOPE
+FEATURE_SET_VIF_UNDER_10 = json.load(io.open('/res/vif_10.json','w')) + FEATURE_SET_PREV_SCOPE
+FEATURE_SET_VIF_UNDER_15 = json.load(io.open('/res/vif_15.json','w')) + FEATURE_SET_PREV_SCOPE
 
-# This set is a reduction in which Variance Inflation Factor (VIF) technique was used. Removed everything with VIV > 5
-FEATURE_SET_VIF_UNDER_5 = [
-    'ft_numc_acrued_expenses', 'ft_numc_additional_paid_in_capital', 'ft_numc_assets_held_for_sale', 'ft_numc_cash_equivalents', 'ft_numc_derivative_product_liabilities',
-    'ft_numc_financial_assets', 'ft_numc_goodwill', 'ft_numc_hedging_assets', 'ft_numc_income_tax_paid', 'ft_numc_interest_paid', 'ft_numc_investing_actvities.net_intangibles',
-    'ft_numc_investment_properties', 'ft_numc_leases', 'ft_numc_long_term_provisions', 'ft_numc_minority_interests', 'ft_numc_other_current_assets', 'ft_numc_other_income_expense',
-    'ft_numc_other_non_current_assets', 'ft_numc_other_operating_expenses', 'ft_numc_other_shareholders_equity', 'ft_numc_other_short_term_investments',
-    'ft_numc_preferred_stock_dividends', 'ft_numc_prepaid_assets', 'ft_numc_prior_tg_numc_scope_1', 'ft_numc_prior_tg_numc_scope_2', 'ft_numc_prior_tg_numc_scope_3',
-    'ft_numc_rd_expenses', 'ft_numc_roa', 'ft_numc_roe', 'ft_numc_tresury_stock'
-] + FEATURE_SET_CATEGORICALS

@@ -25,9 +25,9 @@ PARENT_PATH = Path('..').absolute().resolve().as_posix()
 PARENT_PATH
 # %%
 dataset = PreviousScopeFeaturesDataManager(
-    FinancialLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/financials")),
-    ScopeLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/scopes")),
-    CategoricalLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/categoricals")),
+    FinancialLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/financials.csv")),
+    ScopeLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/scopes.csv")),
+    CategoricalLoader(datasource=LocalDatasource(path=PARENT_PATH + "/model-data/input/categoricals.csv")),
     RegionLoader(),
 ).set_filter(CompanyDataFilter(frac=1)).run()
 DATA = dataset.get_data_by_name(OxariDataManager.ORIGINAL)
@@ -46,7 +46,8 @@ indices = df_scopes["tg_numc_scope_1"] > 0
 df_scopes
 
 # %%
-numerical_features = df_scopes.filter(regex="^ft_numc", axis=1)
+numerical_features = df_scopes.filter(regex="^ft_num", axis=1)
+categorical_features = df_scopes.filter(regex="^ft_cat", axis=1)
 
 # %%
 thresh = 0.5
@@ -143,19 +144,29 @@ print(f"features_VIF_under_5 = {vif[vif['VIF Factor'] < 5].features.tolist()}")
 plt.figure(figsize=(25, 20))
 sns.heatmap(numerical_features[vif[vif["VIF Factor"] < 5].features.tolist()].corr().abs(), vmin=-1, vmax=1, cmap='bwr')
 # %%
-from sklearn.feature_selection import RFECV
-from xgboost import XGBRegressor
-from sklearn.svm import SVR
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.ensemble import RandomForestRegressor
+import json
+import io 
+json.dump(vif[vif["VIF Factor"] < 5].features.tolist()+categorical_features.columns.tolist(), io.open(PARENT_PATH+'/res/vif_05.json', 'w'), indent=2)
+json.dump(vif[vif["VIF Factor"] < 10].features.tolist()+categorical_features.columns.tolist(), io.open(PARENT_PATH+'/res/vif_10.json', 'w'), indent=2)
+json.dump(vif[vif["VIF Factor"] < 15].features.tolist()+categorical_features.columns.tolist(), io.open(PARENT_PATH+'/res/vif_15.json', 'w'), indent=2)
 
-estimator = RandomForestRegressor()
-selector = RFECV(estimator, step=0.1, cv=10, verbose=True)
-selector = selector.fit(numerical_features[~y.isna()], y[~y.isna()])
 
-# %%
+# # %%
+# from sklearn.feature_selection import RFECV
+# from xgboost import XGBRegressor
+# from sklearn.svm import SVR
+# from sklearn.neighbors import KNeighborsRegressor
+# from sklearn.ensemble import RandomForestRegressor
 
-plt.figure(figsize=(25, 20))
-sns.heatmap(numerical_features.iloc[:, selector.support_].corr().abs(), vmin=-1, vmax=1, cmap='bwr')
+# estimator = RandomForestRegressor()
+# selector = RFECV(estimator, step=0.1, cv=10, verbose=True)
+# selector = selector.fit(numerical_features[~y.isna()], y[~y.isna()])
+
+# # %%
+
+# plt.figure(figsize=(25, 20))
+# sns.heatmap(numerical_features.iloc[:, selector.support_].corr().abs(), vmin=-1, vmax=1, cmap='bwr')
+
+# # %%
 
 # %%

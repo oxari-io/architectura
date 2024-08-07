@@ -1,6 +1,6 @@
 import pathlib
 import time
-
+import sys 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -168,14 +168,16 @@ if __name__ == "__main__":
     ### EVALUATION RESULTS ###
     create_run_report(STAGE, TODAY, model_si, model_lp)
 
+    version_info = f"python-{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}" 
 
 
     all_meta_models = [
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model_scope_imputation").set_object(model_si).set_datatarget(S3Destination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
-        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}_model").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),
-    ]
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}-model_si-{version_info}").set_object(model_si).set_datatarget(
+            LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}-model_si-{version_info}").set_object(model_si).set_datatarget(
+            S3Destination(path="model-data/output")),
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}-model-{version_info}").set_object(model_lp).set_datatarget(LocalDestination(path="model-data/output")),
+        PickleSaver().set_time(TODAY).set_extension(".pkl").set_name(f"{STAGE}-model-{version_info}").set_object(model_lp).set_datatarget(S3Destination(path="model-data/output")),    ]
 
     SavingManager = OxariSavingManager(*all_meta_models, )
     SavingManager.run()

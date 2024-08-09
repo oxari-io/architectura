@@ -53,7 +53,7 @@ class KNOptimizer(OxariOptimizer):
     def score_trial(self, trial:optuna.Trial, X_train, y_train, X_val, y_val, **kwargs):
         
         param_space = {
-            "n_neighbors": trial.suggest_int("n_neighbors", 1, step=15),
+            "n_neighbors": trial.suggest_int("n_neighbors", 1, 15),
             "weights": trial.suggest_categorical("weights", ["uniform", "distance"]),
         }
         

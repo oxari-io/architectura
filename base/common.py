@@ -891,7 +891,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
             return df.copy()
         
         if len(additional_features):
-            self.logger.warning(f"{len(additional_features} Features {list(additional_features)} were never seen during training. They are removed. ")
+            self.logger.warning(f"{len(additional_features)} Features {list(additional_features)} were never seen during training. They are removed. ")
 
             
         

@@ -3,6 +3,7 @@ import multiprocessing
 import json
 import io
 
+
 USABLE_CPUS = int(multiprocessing.cpu_count()*0.75)
 
 OBJECT_DIR = Path("local/objects")
@@ -74,7 +75,9 @@ FEATURE_SET_SELECT_K_BEST = [
 ] + FEATURE_SET_CATEGORICALS
 
 # This set is a reduction in which Variance Inflation Factor (VIF) technique was used. Removed everything with VIV > 10
-FEATURE_SET_VIF_UNDER_05 = json.load(io.open('/res/vif_05.json','w')) + FEATURE_SET_PREV_SCOPE
-FEATURE_SET_VIF_UNDER_10 = json.load(io.open('/res/vif_10.json','w')) + FEATURE_SET_PREV_SCOPE
-FEATURE_SET_VIF_UNDER_15 = json.load(io.open('/res/vif_15.json','w')) + FEATURE_SET_PREV_SCOPE
+FEATURE_SET_VIF_UNDER_05 = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_05.json','r')) + FEATURE_SET_PREV_SCOPE))
+FEATURE_SET_VIF_UNDER_10 = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_10.json','r')) + FEATURE_SET_PREV_SCOPE))
+FEATURE_SET_VIF_UNDER_15 = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_15.json','r')) + FEATURE_SET_PREV_SCOPE))
+FEATURE_SET_VIF_UNDER_20 = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_20.json','r')) + FEATURE_SET_PREV_SCOPE))
+FEATURE_SET_VIF_UNDER_25 = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_25.json','r')) + FEATURE_SET_PREV_SCOPE))
 

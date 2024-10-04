@@ -12,7 +12,7 @@ from base.constants import FEATURE_SET_VIF_UNDER_10
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader, SplitBag
 from base.helper import ArcSinhScaler, DummyTargetScaler, LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, create_run_report, impute_missing_years, impute_scopes
-from base.run_utils import get_default_datamanager_configuration
+from base.run_utils import get_default_datamanager_configuration, get_small_datamanager_configuration
 from datasources.loaders import RegionLoader
 from datastores.saver import CSVSaver, LocalDestination, MongoDestination, MongoSaver, OxariSavingManager, PickleSaver, S3Destination
 from feature_reducers import DummyFeatureReducer
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     TODAY = time.strftime(DATE_FORMAT)
     now = time.strftime('T%Y%m%d%H%M')
 
-    dataset = get_default_datamanager_configuration().run()
+    dataset = get_small_datamanager_configuration(1).run()
     # Scope Imputation model
     model_si = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset)
     # Live Prediciton model

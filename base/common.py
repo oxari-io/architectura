@@ -707,6 +707,7 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         X_new = self.preprocessor.transform(X, **kwargs)
         self.logger.info(f"Select feature subset using {self.feature_selector.__class__}")
         X_new = self.feature_selector.transform(X_new, **kwargs)
+        # self.feature_names_in_ = self.feature_selector.feature_names_in_
         return X_new
 
     def _transform_scope(self, y, **kwargs) -> ArrayLike:

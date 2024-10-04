@@ -904,17 +904,8 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
     def _order_features(self, X: pd.DataFrame, feature_names) -> pd.DataFrame:
         return X[feature_names]
 
-class Test(OxariPipeline):
-
-    def evaluate(self, X_train, y_train, X_test, y_test) -> Self:
-        self.this_is_a_test = True
-        return super().evaluate(X_train, y_train, X_test, y_test)
-
-
-class TestTest(OxariPipeline):
-
-    def evaluate(self, X_train, y_train, X_test, y_test) -> Self:
-        return super().evaluate(X_train, y_train, X_test, y_test)
+    def get_features(self) -> ArrayLike:
+        return self.feature_selector.feature_names_in_
 
 
 class OxariConfidenceEstimator(OxariScopeEstimator, MultiOutputMixin):
@@ -1052,7 +1043,7 @@ class OxariMetaModel(OxariRegressor, MultiOutputMixin, abc.ABC):
                 all_features.extend(estimator.feature_names_in_)
             return list(set(all_features))
         pipeline = self.get_pipeline(scope)
-        return pipeline.feature_names_in_
+        return pipeline.get_features()
 
     @property
     def feature_names_in_(self):

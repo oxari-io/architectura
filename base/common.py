@@ -840,18 +840,18 @@ class OxariPipeline(OxariRegressor, MetaEstimatorMixin, abc.ABC):
         
         # Convert the input variable to a pandas DataFrame
         if isinstance(X, pd.Series):
-            X = X.to_frame().T
+            X = X.to_frame().T.fillna(value=np.nan)
         elif isinstance(X, dict):
-            X = pd.DataFrame(X, index=[0])
+            X = pd.DataFrame(X, index=[0]).fillna(value=np.nan)
         elif isinstance(X, list) and all(isinstance(item, dict) for item in X):
-            X = pd.DataFrame(X)
+            X = pd.DataFrame(X).fillna(value=np.nan)
         # elif isinstance(X, np.ndarray) and X.shape[1] == len(self.feature_names_in_):
         #     X = pd.DataFrame(X, columns=self.feature_names_in_)
             
         elif not isinstance(X, pd.DataFrame):
             raise ValueError("The input variable X must be a pandas Series, DataFrame, dictionary, or list of dictionaries.")
         
-        return X
+        return X.fillna(value=np.nan)
 
     def _extend_missing_features(self, df: pd.DataFrame, feature_names: List[str]) -> pd.DataFrame:
         """

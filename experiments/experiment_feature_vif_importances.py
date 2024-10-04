@@ -118,12 +118,12 @@ if __name__ == "__main__":
     FEATURE_SET_ALL = dataset.get_split_data(OxariDataManager.ORIGINAL).scope_1.train[0].columns.tolist()
 
     feature_sets = {
-        # "ft_set_vif_05":FEATURE_SET_VIF_UNDER_05, 
-        # "ft_set_vif_10":FEATURE_SET_VIF_UNDER_10, 
-        # "ft_set_vif_15":FEATURE_SET_VIF_UNDER_15,
-        "ft_set_vif_all":FEATURE_SET_ALL,
+        "ft_set_vif_05":FEATURE_SET_VIF_UNDER_05, 
+        "ft_set_vif_10":FEATURE_SET_VIF_UNDER_10, 
+        "ft_set_vif_15":FEATURE_SET_VIF_UNDER_15,
         "ft_set_vif_20":FEATURE_SET_VIF_UNDER_20,
         "ft_set_vif_25":FEATURE_SET_VIF_UNDER_25,
+        "ft_set_vif_all":FEATURE_SET_ALL,
     }
     for fs_name, feature_set in feature_sets.items():
         model = train_model_for_imputation(N_TRIALS, N_STARTUP_TRIALS, dataset, feature_set) 

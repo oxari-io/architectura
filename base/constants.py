@@ -80,4 +80,5 @@ FEATURE_SET_VIF_UNDER_10 = list(set(json.load(io.open(Path(__file__).parent.pare
 FEATURE_SET_VIF_UNDER_15 = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_15.json','r')) + FEATURE_SET_PREV_SCOPE))
 FEATURE_SET_VIF_UNDER_20 = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_20.json','r')) + FEATURE_SET_PREV_SCOPE))
 FEATURE_SET_VIF_UNDER_25 = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_25.json','r')) + FEATURE_SET_PREV_SCOPE))
+FEATURE_SET_VIF_UNDER_20_NO_STOCKS = list(set(json.load(io.open(Path(__file__).parent.parent / './res/vif_20_no_stocks.json','r')) + FEATURE_SET_PREV_SCOPE))
 

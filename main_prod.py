@@ -8,7 +8,7 @@ from sklearn.preprocessing import PowerTransformer
 import sys
 from base import (OxariDataManager, OxariMetaModel, helper)
 from base.confidence_intervall_estimator import BaselineConfidenceEstimator
-from base.constants import FEATURE_SET_VIF_UNDER_10
+from base.constants import FEATURE_SET_VIF_UNDER_10, FEATURE_SET_VIF_UNDER_20_NO_STOCKS
 from base.dataset_loader import CategoricalLoader, FinancialLoader, ScopeLoader, SplitBag
 from base.helper import ArcSinhScaler, DummyTargetScaler, LogTargetScaler
 from base.run_utils import compute_jump_rates, compute_lar, create_run_report, impute_missing_years, impute_scopes
@@ -116,7 +116,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     # Test what happens if not all the optimise functions are called.
     dp1 = DefaultPipeline(
         preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
-        feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
+        feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_20_NO_STOCKS),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
@@ -124,7 +124,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     ).optimise(*SPLIT_1.train).fit(*SPLIT_1.train).evaluate(*SPLIT_1.rem, *SPLIT_1.test).fit_confidence(*SPLIT_1.train)
     dp2 = DefaultPipeline(
         preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
-        feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
+        feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_20_NO_STOCKS),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),
@@ -132,7 +132,7 @@ def train_model_for_live_prediction(N_TRIALS, N_STARTUP_TRIALS, dataset):
     ).optimise(*SPLIT_2.train).fit(*SPLIT_2.train).evaluate(*SPLIT_2.rem, *SPLIT_2.test).fit_confidence(*SPLIT_2.train)
     dp3 = DefaultPipeline(
         preprocessor=NormalizedIIDPreprocessor(fin_transformer=ArcSinhScaler()),
-        feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_10),
+        feature_reducer=SelectionFeatureReducer(FEATURE_SET_VIF_UNDER_20_NO_STOCKS),
         imputer=DummyImputer(),
         scope_estimator=EvenWeightMiniModelArmyEstimator(10, n_trials=N_TRIALS, n_startup_trials=N_STARTUP_TRIALS),
         ci_estimator=BaselineConfidenceEstimator(),

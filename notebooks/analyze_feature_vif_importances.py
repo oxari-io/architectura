@@ -13,56 +13,25 @@ import io
 import numpy as np
 # %%
 DATA = "T20240422"
-
-# %%
 cwd = pathlib.Path(__file__).parent
-shap_values, X, y = pickle.load(
+def display_shap(cwd, model_name):
+    shap_values, X, y = pickle.load(
     io.open(
         cwd.parent /
-        'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_15.pkl',
+        model_name,
         'rb'))
-
-shap_values
-
-
+    shap.plots.bar(shap_values, max_display=160)
+    plt.show()
 # %%
-# ax = plt.gca()
-shap.summary_plot(shap_values, X, show=True)
+display_shap(cwd, 'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_05.pkl')
 # %%
-shap.plots.bar(shap_values, max_display=160)
+display_shap(cwd, 'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_10.pkl')
 # %%
-cwd = pathlib.Path(__file__).parent
-shap_values, X, y = pickle.load(
-    io.open(
-        cwd.parent /
-        'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_05.pkl',
-        'rb'))
-
-shap_values
-
-
+display_shap(cwd, 'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_15.pkl')
 # %%
-# ax = plt.gca()
-# shap.summary_plot(shap_values, X, show=True, max_display=30)
+display_shap(cwd, 'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_20.pkl')
 # %%
-shap.plots.bar(shap_values, max_display=160)
-
+display_shap(cwd, 'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_25.pkl')
 # %%
-
-# %%
-cwd = pathlib.Path(__file__).parent
-shap_values, X, y = pickle.load(
-    io.open(
-        cwd.parent /
-        'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_10.pkl',
-        'rb'))
-
-shap_values
-
-
-# %%
-# ax = plt.gca()
-# shap.summary_plot(shap_values, X, show=True, max_display=30)
-# %%
-shap.plots.bar(shap_values, max_display=160)
+display_shap(cwd, 'model-data/output/T20240808-p_model_fi_shap_ft_set_vif_all.pkl')
 # %%

@@ -1,0 +1,28 @@
+digraph "packages" {
+rankdir=BT
+charset="utf-8"
+"base" [color="aliceblue", label=<base>, shape="box", style="filled"];
+"base.common" [color="aliceblue", label=<base.common>, shape="box", style="filled"];
+"base.confidence_intervall_estimator" [color="aliceblue", label=<base.confidence_intervall_estimator>, shape="box", style="filled"];
+"base.constants" [color="aliceblue", label=<base.constants>, shape="box", style="filled"];
+"base.dataset_loader" [color="aliceblue", label=<base.dataset_loader>, shape="box", style="filled"];
+"base.helper" [color="aliceblue", label=<base.helper>, shape="box", style="filled"];
+"base.mappings" [color="aliceblue", label=<base.mappings>, shape="box", style="filled"];
+"base.metrics" [color="aliceblue", label=<base.metrics>, shape="box", style="filled"];
+"base.oxari_types" [color="aliceblue", label=<base.oxari_types>, shape="box", style="filled"];
+"base.run_utils" [color="aliceblue", label=<base.run_utils>, shape="box", style="filled"];
+"base" -> "base.common" [arrowhead="open", arrowtail="none"];
+"base" -> "base.confidence_intervall_estimator" [arrowhead="open", arrowtail="none"];
+"base" -> "base.dataset_loader" [arrowhead="open", arrowtail="none"];
+"base.common" -> "base.metrics" [arrowhead="open", arrowtail="none"];
+"base.common" -> "base.oxari_types" [arrowhead="open", arrowtail="none"];
+"base.confidence_intervall_estimator" -> "base" [arrowhead="open", arrowtail="none"];
+"base.confidence_intervall_estimator" -> "base.oxari_types" [arrowhead="open", arrowtail="none"];
+"base.dataset_loader" -> "base" [arrowhead="open", arrowtail="none"];
+"base.dataset_loader" -> "base.common" [arrowhead="open", arrowtail="none"];
+"base.dataset_loader" -> "base.oxari_types" [arrowhead="open", arrowtail="none"];
+"base.helper" -> "base.common" [arrowhead="open", arrowtail="none"];
+"base.helper" -> "base.oxari_types" [arrowhead="open", arrowtail="none"];
+"base.run_utils" -> "base.common" [arrowhead="open", arrowtail="none"];
+"base.run_utils" -> "base.dataset_loader" [arrowhead="open", arrowtail="none"];
+}

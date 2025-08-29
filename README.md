@@ -172,10 +172,10 @@ The codebase follows standard Python practices with:
 - Extensive logging and monitoring
 - Modular design for easy extension
 
-## License
-
-This project is proprietary software. All rights reserved.
-
----
-
 For detailed technical specifications and methodology, refer to the comprehensive technical report: `Portfolio__Carbon_Emission_Modelling.pdf`
+
+## Authors
+Codebase developed at Oxari B.V. (now a closed entity)
+
+If this is of any interest, please feel free to **contact** the main contributor:
+- [Olusanmi Hundogan](https://github.com/Olu93)

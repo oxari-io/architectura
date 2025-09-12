@@ -2,7 +2,7 @@
 
 A comprehensive machine learning pipeline architecture for carbon emission modeling and portfolio analysis.
 
-> **📋 Technical Report**: `Portfolio__Carbon_Emission_Modelling.pdf` (in the repo root) covers all theoretical aspects of the carbon emission modelling approach, including methodology, algorithms, and mathematical foundations.
+> **📋 Technical Report**: [Carbon_Emission_Modelling.pdf](./Carbon_Emission_Modelling.pdf) (in the repo root) covers all theoretical aspects of the carbon emission modelling approach, including methodology, algorithms, and mathematical foundations.
 
 ## Overview
 
@@ -172,10 +172,11 @@ The codebase follows standard Python practices with:
 - Extensive logging and monitoring
 - Modular design for easy extension
 
-For detailed technical specifications and methodology, refer to the comprehensive technical report: `Portfolio__Carbon_Emission_Modelling.pdf`
+For detailed technical specifications and methodology, refer to the comprehensive technical report: `Carbon_Emission_Modelling.pdf`
 
 ## Authors
 Codebase developed at Oxari B.V. (now a closed entity)
 
 If this is of any interest, please feel free to **contact** the main contributor:
 - [Olusanmi Hundogan](https://github.com/Olu93)
+- 

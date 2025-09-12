@@ -179,4 +179,3 @@ Codebase developed at Oxari B.V. (now a closed entity)
 
 If this is of any interest, please feel free to **contact** the main contributor:
 - [Olusanmi Hundogan](https://github.com/Olu93)
-- 

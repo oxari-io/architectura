@@ -1,5 +1,3 @@
-# architectura
-
 A comprehensive machine learning pipeline architecture for carbon emission modeling and portfolio analysis.
 
 > **📋 Technical Report**: [Carbon_Emission_Modelling.pdf](./Carbon_Emission_Modelling.pdf) (in the repo root) covers all theoretical aspects of the carbon emission modelling approach, including methodology, algorithms, and mathematical foundations.
